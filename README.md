@@ -1,5 +1,7 @@
 # ModelingToolkitStandardLibrary.jl
 
+[![CI](https://github.com/SciML/ModelingToolkitStandardLibrary.jl/actions/workflows/CI.yml/badge.svg)](https://github.com/SciML/ModelingToolkitStandardLibrary.jl/actions/workflows/CI.yml)
+
 A standard library of components to model the world and beyond.
 
 - [Electrical modeling](#electrical-modeling)
