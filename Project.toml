@@ -14,7 +14,7 @@ Symbolics = "0c5d862f-8b57-4792-8d23-62f2024744c7"
 IfElse = "0.1"
 ModelingToolkit = "5.26, 6"
 OrdinaryDiffEq = "5.56"
-Symbolics = "0.1, 1, 2, 3"
+Symbolics = "0.1, 1, 2, 3, 4"
 julia = "1.6"
 
 [extras]
