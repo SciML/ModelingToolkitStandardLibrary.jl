@@ -3,7 +3,10 @@
 function Ground(;name)
 ```
 
-Creates a ground [`Pin`](@ref), where the voltage is 0.
+Ground node with the potential of zero and connector `g`
+
+# Connectors
+- `g`
 """
 function Ground(;name)
     @named g = Pin()
@@ -16,11 +19,21 @@ end
 function Resistor(;name, R = 1.0)
 ```
 
-Creates an ideal Resistor following Ohm's Law with two pins `p` and `n`, and resistance `R`.
+Creates an ideal Resistor following Ohm's Law.
 
-# Variables
+# Observables
+- `R`
+  Resistance (negative, zero, positive)
+
+# States
 - `v(t)`
   The voltage across the resistor, given by `p.i * R`
+
+# Connectors
+- `p`
+  Positive pin
+- `n`
+  Negative pin
 """
 function Resistor(;name, R = 1.0)
     val = R
@@ -43,11 +56,21 @@ end
 function Capacitor(; name, C = 1.0)
 ```
 
-Creates an ideal Capacitor with two pins `p` and `n`, and capacitance `C`.
+Creates an ideal Capacitor.
 
-# Variables
+# Observables
+- `C`
+  Capacitance (zero or positive)
+
+# States
 - `v(t)`
   The voltage across the capacitor, given by `D(v) ~ p.i / C`
+
+# Connectors
+- `p`
+  Positive pin
+- `n`
+  Negative pin
 """
 function Capacitor(; name, C = 1.0)
     val = C
@@ -71,11 +94,21 @@ end
 function Inductor(; name, L = 1.0)
 ```
 
-Creates an ideal Inductor with two pins `p` and `n`, and inductance `L`.
+Creates an ideal Inductor.
 
-# Variables
+# Observables
+- `L`
+  Inductance (zero or positive)
+
+# States
 - `v(t)`
-  The voltage across the conductor, given by `D(p.i) ~ v / L`
+  The voltage across the inductor, given by `D(p.i) ~ v / L`
+
+# Connectors
+- `p`
+  Positive pin
+- `n`
+  Negative pin
 """
 function Inductor(; name, L = 1.0)
     val = L
@@ -99,7 +132,27 @@ end
 function IdealOpAmp(; name)
 ```
 
-Creates an ideal Operational Amplifier, with pins `p1`, `p2`, `n1` and `n2`.
+Creates an ideal Operational Amplifier.
+
+# States
+- `v1(t)`
+  Voltage of left port
+- `v2(t)`
+  Voltage of right port
+- `i1(t)`
+  Current of left port
+- `i2(t)`
+  Current of right port
+
+# Connectors
+- `p1`
+  Positive pin (left port)
+- `p2`
+  Positive pin (right port)
+- `n1`
+  Negative pin (left port)
+- `n2`
+  Negative pin (right port)
 """
 function IdealOpAmp(; name)
     @named p1 = Pin()

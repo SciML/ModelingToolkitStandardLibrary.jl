@@ -3,12 +3,18 @@
 function CurrentSensor(; name)
 ```
 
-Creates a circuit component with two pins `p` and `n` that measures the current flowing
-through it. Analogous to an ideal ammeter.
+Creates a circuit component that measures the current flowing through it. Analogous to
+an ideal ammeter.
 
-# Variables
+# States
 - `i(t)`
   Current through the sensor
+
+# Connectors
+- `p`
+ Positive pin
+- `n`
+  Negative pin
 """
 function CurrentSensor(; name)
     @named p = Pin()
@@ -27,11 +33,15 @@ end
 function PotentialSensor(; name)
 ```
 
-Creates a circuit component with a pin `p` which measures the potential at that point.
+Creates a circuit component which measures the potential at a pin.
 
-# Variables
+# States
 - `phi(t)`
   The potential at this point
+
+# Connectors
+- `p`
+  Pin at which potential is to be measured
 """
 function PotentialSensor(; name)
     @named p = Pin()
@@ -48,12 +58,18 @@ end
 function VoltageSensor(; name)
 ```
 
-Creates a circuit component with two pins `p` and `n` that measures the voltage across it.
-Analogous to an ideal voltmeter.
+Creates a circuit component that measures the voltage across it. Analogous to
+an ideal voltmeter.
 
-# Variables
+# States
 - `v(t)`
   The voltage across this component
+
+# Connectors
+- `p`
+  Positive pin
+- `n`
+  Negative pin
 """
 function VoltageSensor(; name)
     @named p = Pin()
@@ -75,7 +91,11 @@ function PowerSensor(; name)
 Combines a [`VoltageSensor`](@ref) and a [`CurrentSensor`](@ref) to measure the power being
 consumed by a circuit.
 
-# Pins
+# States
+- `power(t)`
+  The power being consumed, given by the product of voltage and current.
+
+# Connectors
 - `pc`
   Corresponds to the `p` pin of the [`CurrentSensor`](@ref)
 - `nc`
@@ -84,10 +104,6 @@ consumed by a circuit.
   Corresponds to the `p` pin of the [`VoltageSensor`](@ref)
 - `nv`
   Corresponds to the `n` pin of the [`VoltageSensor`](@ref)
-
-# Variables
-- `power(t)`
-  The power being consumed, given by the product of voltage and current.
 """
 function PowerSensor(; name)
     @named pc = Pin()
@@ -114,7 +130,13 @@ function MultiSensor(; name)
 
 Combines a [`VoltageSensor`](@ref) and a [`CurrentSensor`](@ref).
 
-# Pins
+# States
+- `v(t)`
+  The voltage across the [`VoltageSensor`](@ref)
+- `i(t)`
+  The current across the [`CurrentSensor`](@ref)
+
+# Connectors
 - `pc`
   Corresponds to the `p` pin of the [`CurrentSensor`](@ref)
 - `nc`
@@ -123,12 +145,6 @@ Combines a [`VoltageSensor`](@ref) and a [`CurrentSensor`](@ref).
   Corresponds to the `p` pin of the [`VoltageSensor`](@ref)
 - `nv`
   Corresponds to the `n` pin of the [`VoltageSensor`](@ref)
-
-# Variables
-- `v(t)`
-  The voltage across the [`VoltageSensor`](@ref)
-- `i(t)`
-  The current across the [`CurrentSensor`](@ref)
 """
 function MultiSensor(; name)
     @named pc = Pin()
