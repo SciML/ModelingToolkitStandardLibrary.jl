@@ -1,3 +1,15 @@
+"""
+```julia
+function CurrentSensor(; name)
+```
+
+Creates a circuit component with two pins `p` and `n` that measures the current flowing
+through it. Analogous to an ideal ammeter.
+
+# Variables
+- `i(t)`
+  Current through the sensor
+"""
 function CurrentSensor(; name)
     @named p = Pin()
     @named n = Pin()
@@ -10,6 +22,17 @@ function CurrentSensor(; name)
     ODESystem(eqs, t, [i], [], systems=[p, n], defaults=Dict(i => 1.0), name=name)
 end
 
+"""
+```julia
+function PotentialSensor(; name)
+```
+
+Creates a circuit component with a pin `p` which measures the potential at that point.
+
+# Variables
+- `phi(t)`
+  The potential at this point
+"""
 function PotentialSensor(; name)
     @named p = Pin()
     @variables phi(t)
@@ -20,6 +43,18 @@ function PotentialSensor(; name)
     ODESystem(eqs, t, [phi], [], systems=[p], defaults=Dict(phi => 1.0), name=name)
 end
 
+"""
+```julia
+function VoltageSensor(; name)
+```
+
+Creates a circuit component with two pins `p` and `n` that measures the voltage across it.
+Analogous to an ideal voltmeter.
+
+# Variables
+- `v(t)`
+  The voltage across this component
+"""
 function VoltageSensor(; name)
     @named p = Pin()
     @named n = Pin()
@@ -32,6 +67,28 @@ function VoltageSensor(; name)
     ODESystem(eqs, t, [v], [], systems=[p, n], defaults=Dict(v => 1.0), name=name)
 end
 
+"""
+```julia
+function PowerSensor(; name)
+```
+
+Combines a [`VoltageSensor`](@ref) and a [`CurrentSensor`](@ref) to measure the power being
+consumed by a circuit.
+
+# Pins
+- `pc`
+  Corresponds to the `p` pin of the [`CurrentSensor`](@ref)
+- `nc`
+  Corresponds to the `n` pin of the [`CurrentSensor`](@ref)
+- `pv`
+  Corresponds to the `p` pin of the [`VoltageSensor`](@ref)
+- `nv`
+  Corresponds to the `n` pin of the [`VoltageSensor`](@ref)
+
+# Variables
+- `power(t)`
+  The power being consumed, given by the product of voltage and current.
+"""
 function PowerSensor(; name)
     @named pc = Pin()
     @named nc = Pin()
@@ -50,6 +107,29 @@ function PowerSensor(; name)
     ODESystem(eqs, t, [power], [], systems=[pc, nc, pv, nv, voltage_sensor, current_sensor], defaults=Dict(power => 1.0), name=name)
 end
 
+"""
+```julia
+function MultiSensor(; name)
+```
+
+Combines a [`VoltageSensor`](@ref) and a [`CurrentSensor`](@ref).
+
+# Pins
+- `pc`
+  Corresponds to the `p` pin of the [`CurrentSensor`](@ref)
+- `nc`
+  Corresponds to the `n` pin of the [`CurrentSensor`](@ref)
+- `pv`
+  Corresponds to the `p` pin of the [`VoltageSensor`](@ref)
+- `nv`
+  Corresponds to the `n` pin of the [`VoltageSensor`](@ref)
+
+# Variables
+- `v(t)`
+  The voltage across the [`VoltageSensor`](@ref)
+- `i(t)`
+  The current across the [`CurrentSensor`](@ref)
+"""
 function MultiSensor(; name)
     @named pc = Pin()
     @named nc = Pin()
