@@ -1,5 +1,5 @@
-using ModelingToolkit, JuliaSimControls, OrdinaryDiffEq
-using JuliaSimControls.Blocks: t, Saturation, DeadZone, Integrator
+using ModelingToolkit, ModelingToolkitStandardLibrary, OrdinaryDiffEq
+using ModelingToolkitStandardLibrary.Blocks: t, Saturation, DeadZone, Integrator
 
 #=
 Testing strategy:
