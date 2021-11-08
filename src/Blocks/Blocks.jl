@@ -20,6 +20,9 @@ Dₜ = Differential(t)
 export Gain, Sum
 include("math.jl")
 
+export Saturation, DeadZone
+include("nonlinear.jl")
+
 export Constant, Integrator, Derivative
 include("continuous.jl")
 
