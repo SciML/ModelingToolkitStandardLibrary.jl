@@ -26,6 +26,16 @@ end
 
 A dead zone is a band within which the output is zero.
 Outside of the dead zone, the output changes linearly starting from zero at the band edge.
+```
+       y▲
+        │     /
+        │    /
+  u_min │   /
+─────|──┼──|───────► u
+    /   │   u_max
+   /    │
+  /     │
+```
 """
 function DeadZone(; u_max, u_min=-u_max, name)
     if !ModelingToolkit.isvariable(u_max)
