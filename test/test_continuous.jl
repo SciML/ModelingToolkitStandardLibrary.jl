@@ -125,3 +125,145 @@ end
         @test sum(abs2, sol[sos.y] - y) < 1e-4
     end
 end
+
+@testset "PID" begin
+    @info "Testing PID"
+
+    k = 2
+    Ti = 0.5
+    Td = 0.7
+    wp = 1
+    wd = 1
+    Ni = √(Td / Ti)
+    Nd = 12
+    y_max = Inf
+    y_min = -Inf
+    u_r = sin(t)
+    u_y = 0
+    function solve_with_input(; u_r, u_y, 
+        controller = PID(; k, Ti, Td, wp, wd, Ni, Nd, y_max, y_min, name=:controller)
+    )
+        @test count(ModelingToolkit.isinput, states(controller)) == 5 # 2 in PID, 1 sat, 1 I, 1 D
+        @test count(ModelingToolkit.isoutput, states(controller)) == 4
+        # TODO: check number of unbound inputs when available, should be 2
+        @named iosys = ODESystem([controller.u_r~u_r, controller.u_y~u_y], t, systems=[controller])
+        sys = structural_simplify(iosys)
+        prob = ODEProblem(sys, Pair[], (0.0, 10.0))
+        sol = solve(prob, Rosenbrock23(), saveat=0:0.1:10)
+        controller, sys, sol
+    end
+
+    # linearity in u_r
+    controller, sys, sol1 = solve_with_input(u_r=sin(t), u_y=0)
+    controller, sys, sol2 = solve_with_input(u_r=2sin(t), u_y=0)
+    @test sum(abs, sol1[controller.ea]) < eps() # This is the acutator model error due to saturation
+    @test 2sol1[controller.y] ≈ sol2[controller.y] rtol=1e-3 # linearity in u_r
+
+    # linearity in u_y
+    controller, sys, sol1 = solve_with_input(u_y=sin(t), u_r=0)
+    controller, sys, sol2 = solve_with_input(u_y=2sin(t), u_r=0)
+    @test sum(abs, sol1[controller.ea]) < eps() # This is the acutator model error due to saturation
+    @test 2sol1[controller.y] ≈ sol2[controller.y] rtol=1e-3 # linearity in u_y
+
+    # zero error
+    controller, sys, sol1 = solve_with_input(u_y=sin(t), u_r=sin(t))
+    @test sum(abs, sol1[controller.y]) ≈ 0 atol=sqrt(eps()) 
+
+    # test saturation
+    controller, sys, sol1 = solve_with_input(; u_r=10sin(t), u_y=0, 
+        controller = PID(; k, Ti, Td, wp, wd=0, Ni, Nd, y_max=10, y_min=-10, name=:controller)
+    )
+    @test extrema(sol1[controller.y]) == (-10, 10)
+
+
+    # test P set-point weighting
+    controller, sys, sol1 = solve_with_input(; u_r=sin(t), u_y=0, 
+        controller = PID(; k, Ti, Td, wp=0, wd, Ni, Nd, y_max, y_min, name=:controller)
+    )
+    @test sum(abs, sol1[controller.ep]) ≈ 0 atol=sqrt(eps()) 
+
+    # test D set-point weighting
+    controller, sys, sol1 = solve_with_input(; u_r=sin(t), u_y=0, 
+        controller = PID(; k, Ti, Td, wp, wd=0, Ni, Nd, y_max, y_min, name=:controller)
+    )
+    @test sum(abs, sol1[controller.ed]) ≈ 0 atol=sqrt(eps()) 
+
+
+    # zero integral gain
+    controller, sys, sol1 = solve_with_input(; u_r=sin(t), u_y=0, 
+        controller = PID(; k, Ti=false, Td, wp, wd, Ni, Nd, y_max, y_min, name=:controller)
+    )
+    @test isapprox(sum(abs, sol1[controller.I.y]), 0, atol=sqrt(eps()))
+    
+
+    # zero derivative gain
+    @test_skip begin # During the resolution of the non-linear system, the evaluation of the following equation(s) resulted in a non-finite number: [5]
+        controller, sys, sol1 = solve_with_input(; u_r=sin(t), u_y=0, 
+            controller = PID(; k, Ti, Td=false, wp, wd, Ni, Nd, y_max, y_min, name=:controller)
+        )
+        @test isapprox(sum(abs, sol1[controller.D.y]), 0, atol=sqrt(eps()))
+    end
+
+    # Tests below can be activated when the concept of unbound_inputs exists in MTK
+    # @test isequal(Set(unbound_inputs(controller)), @nonamespace(Set([controller.u_r, controller.u_y])))
+    # @test isempty(unbound_inputs(sys))
+    # @test isequal(bound_inputs(sys), inputs(sys))
+    # @test isequal(
+    #     Set(bound_inputs(sys)),
+    #     Set([controller.u_r, controller.u_y, controller.I.u, controller.D.u, controller.sat.u])
+    #     )
+end
+
+## Additional test of PID controller using ControlSystems
+# using ControlSystems
+# kd = 1
+# Nd = 12
+# Td = 1
+# T = Td/Nd
+# Cd = ss(-1/T, 1/T, -kd/T, kd/T) |> tf
+
+# C = ControlSystems.pid(kp=10, ki=1, kd=0, series=true, time=true) + 10*Cd
+# P = tf(1,[1, 0])^2
+# L = ss(P*C)
+
+# @named controller = PID(k=10, Ti=1, Td=1)
+# @named plant = Blocks.StateSpace(ssdata(ss(P))...)
+# @named iosys = ODESystem([
+#     controller.u_r~1,
+#     controller.u_y~plant.y[1],
+#     controller.y~plant.u[1]
+# ], t, systems=[controller, plant])
+# sys = structural_simplify(iosys)
+# prob = ODEProblem(sys, Pair[], (0.0, 6))
+# sol = solve(prob, Rosenbrock23())
+
+# res = step(feedback(L), sol.t)
+# y = res.y[:]
+# plot(res)
+# plot!(sol, vars=[plant.y[1]])
+# @test sol[plant.y[1]] ≈ y rtol = 1e-3
+##
+
+@testset "StateSpace" begin
+    @info "Testing StateSpace"
+    
+    A = [0 1; 0 0]
+    B = [0, 1]
+    C = [1 0]
+    D = 0
+    @named sys = Blocks.StateSpace(A,B,C,D)
+    @test count(ModelingToolkit.isinput, states(sys)) == 1
+    @test count(ModelingToolkit.isoutput, states(sys)) == 1
+    @named iosys = ODESystem([sys.u[1] ~ 1], t, systems=[sys])
+    iosys = structural_simplify(iosys)
+    prob = ODEProblem(iosys, Pair[], (0.0, 1.0))
+    sol = solve(prob, Rosenbrock23(), saveat=0:0.1:1)
+    @test sol[sys.x[2]] ≈ (0:0.1:1)
+    @test sol[sys.x[1]] ≈ sol[sys.y[1]]
+
+
+    D = randn(2, 2) # If there's only a `D` matrix, the result is a matrix gain
+    @named sys = Blocks.StateSpace([],[],[],D)
+    gain = Blocks.Gain(D, name=:sys)
+    @test sys == gain
+end
