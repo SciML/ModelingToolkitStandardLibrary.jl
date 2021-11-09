@@ -74,3 +74,54 @@ end
         @test sol[der.y] ≈ k .* y rtol=1e-2
     end
 end
+
+@testset "FirstOrder" begin
+    @info "Testing FirstOrder"
+
+    for k = [0.1, 1, 10], T = [0.1, 1, 10]
+        @named fo = FirstOrder(; k, T)
+        @test count(ModelingToolkit.isinput, states(fo)) == 1
+        @test count(ModelingToolkit.isoutput, states(fo)) == 1
+        @named iosys = ODESystem([fo.u~1], t, systems=[fo])
+        sys = structural_simplify(iosys)
+        prob = ODEProblem(sys, Pair[fo.u=>1., fo.x=>0], (0.0, 10.0))
+        sol = solve(prob, Rosenbrock23(), saveat=0:0.1:10)
+        y = k .* (1 .- exp.(.-sol.t ./ T)) # Known solution to first-order system
+        # plot([sol[fo.y] y]) |> display
+        @test sol[fo.y] ≈ y rtol=1e-3
+    end
+
+end
+
+@testset "SecondOrder" begin
+    @info "Testing SecondOrder"
+    
+    # The impulse response of a second-order system with damping d follows the equations below
+    function so(t,w,d)
+        val = if d == 0
+            1/w * sin(w*t)
+        elseif d < 1
+            1/(w*sqrt(1-d^2)) * exp(-d*w*t) * sin(w*sqrt(1-d^2)*t)
+        elseif d == 1
+            t*exp(-w*t)
+        else
+            1/(w*sqrt(d^2-1)) * exp(-d*w*t) * sinh(w*sqrt(d^2-1)*t)
+        end
+        val
+    end
+
+    w = 1
+    d = 0.5
+    for k = [0.1, 1, 10], w = [0.1, 1, 10], d = [0, 0.01, 0.1, 1, 1.1]
+        @named sos = SecondOrder(; k, w, d)
+        @test count(ModelingToolkit.isinput, states(sos)) == 1
+        @test count(ModelingToolkit.isoutput, states(sos)) == 1
+        @named iosys = ODESystem([sos.u~0], t, systems=[sos])
+        sys = structural_simplify(iosys)
+        prob = ODEProblem(sys, Pair[sos.u=>0.0, sos.xd=>1.0], (0.0, 10.0)) # set initial derivative state to 1 to simulate an impulse response
+        sol = solve(prob, Rosenbrock23(), saveat=0:0.1:10, reltol=1e-6)
+        y =  so.(sol.t,w,d)# Known solution to second-order system
+        # plot([sol[sos.y] y]) |> display
+        @test sum(abs2, sol[sos.y] - y) < 1e-4
+    end
+end
