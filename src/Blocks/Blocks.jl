@@ -23,7 +23,7 @@ include("math.jl")
 export Saturation, DeadZone
 include("nonlinear.jl")
 
-export Constant, Integrator, Derivative, FirstOrder, SecondOrder
+export Constant, Integrator, Derivative, FirstOrder, SecondOrder, PID, StateSpace
 include("continuous.jl")
 
 end
