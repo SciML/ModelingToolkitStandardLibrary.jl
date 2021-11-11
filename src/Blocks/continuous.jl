@@ -127,7 +127,7 @@ where the transfer function for the derivative includes additional filtering, se
 `gains`: If `gains = true`, `Ti` and `Td` will be interpreted as gains with a fundamental PID transfer function on parallel form `ki=Ti, kd=Td, k + ki/s + kd*s`
 """
 function PID(; k, Ti=false, Td=false, wp=1, wd=1,
-    Ni    = Ti == 0 ? Inf : √(Td / Ti),
+    Ni    = Ti == 0 ? Inf : max(√(Td / Ti), 1e-3),
     Nd    = 12,
     y_max = Inf,
     y_min = y_max > 0 ? -y_max : -Inf,
@@ -154,20 +154,25 @@ function PID(; k, Ti=false, Td=false, wp=1, wd=1,
         @named I = Integrator(k = 1/Ti)
     end
     @named sat = Saturation(; y_min, y_max)
+    derivative_action = Td > 0
     @parameters k=k Td=Td wp=wp wd=wd Ni=Ni Nd=Nd # TODO: move this line above the subsystem definitions when symbolic default values for parameters works. https://github.com/SciML/ModelingToolkit.jl/issues/1013
     # NOTE: Ti is not included as a parameter since we cannot support setting it to false after this constructor is called. Maybe Integrator can be tested with Ti = false setting k to 0 with IfElse?
     
     eqs = [
         e ~ u_r - u_y # Control error
         ep ~ wp*u_r - u_y  # Control error for proportional part with setpoint weight
-        ed ~ wd*u_r - u_y  # Control error for derivative part with setpoint weight
         ea ~ sat.y - sat.u # Actuator error due to saturation
         I.u ~ e + 1/(k*Ni)*ea  # Connect integrator block. The integrator integrates the control error and the anti-wind up tracking. Note the apparent tracking time constant 1/(k*Ni), since k appears after the integration and 1/Ti appears in the integrator block, the final tracking gain will be 1/(Ti*Ni) 
-        D.u ~ ed # Connect derivative block
-        sat.u ~ k*(ep + I.y + D.y) # unsaturated output = P + I + D
+        sat.u ~ derivative_action ? k*(ep + I.y + D.y) : k*(ep + I.y) # unsaturated output = P + I + D
         y ~ sat.y
     ]
-    ODESystem(eqs, t, name=name, systems=[I, D, sat])
+    systems = [I, sat]
+    if derivative_action
+        push!(eqs, ed ~ wd*u_r - u_y)
+        push!(eqs, D.u ~ ed) # Connect derivative block
+        push!(systems, D)
+    end
+    ODESystem(eqs, t, name=name, systems=systems)
 end
 
 """
