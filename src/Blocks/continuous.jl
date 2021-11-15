@@ -127,7 +127,7 @@ where the transfer function for the derivative includes additional filtering, se
 `gains`: If `gains = true`, `Ti` and `Td` will be interpreted as gains with a fundamental PID transfer function on parallel form `ki=Ti, kd=Td, k + ki/s + kd*s`
 """
 function PID(; k, Ti=false, Td=false, wp=1, wd=1,
-    Ni    = Ti == 0 ? Inf : max(√(Td / Ti), 1e-3),
+    Ni    = Ti == 0 ? Inf : √(max(Td / Ti, 1e-6)),
     Nd    = 12,
     y_max = Inf,
     y_min = y_max > 0 ? -y_max : -Inf,
