@@ -1,5 +1,5 @@
 using ModelingToolkitStandardLibrary.Electrical, ModelingToolkit, OrdinaryDiffEq, Test
-using ModelingToolkitStandardLibrary.Electrical: _step, _square_wave, _triangular_wave,
+using ModelingToolkitStandardLibrary.Blocks: _step, _square_wave, _triangular_wave,
                                  _cos_wave, _damped_sine_wave, _ramp
 # using Plots
 
@@ -7,40 +7,6 @@ using ModelingToolkitStandardLibrary.Electrical: _step, _square_wave, _triangula
 @named ground = Ground()
 R = 5
 @named resistor = Resistor(R=R)
-
-@info "Testing the voltage sources..."
-@testset "voltage sources" begin
-    @named resistor = Resistor(R=R)
-    @named voltage_sensor = VoltageSensor()
-    offset = 1
-    freq = 50
-    @named sinesource = SineVoltage(offset=offset, amplitude=1.0, frequency=freq, starttime=.5, phase=0.0)
-    @named constsource = ConstantVoltage(V=1.0)
-    @named stepsource = StepVoltage(height=10, offset=1.0, starttime=1.0)
-    sources = [constsource, sinesource, stepsource]
-    for source in sources
-        rc_eqs = [
-            connect(voltage_sensor.p, source.p, resistor.p)
-            connect(voltage_sensor.n, source.n, resistor.n, ground.g)
-             ]
-        @named rc_model = ODESystem(rc_eqs, t, systems = [resistor, source, voltage_sensor, ground])
-        sys = structural_simplify(rc_model)
-        u0 = [
-            resistor.p.i => 10.0
-            constsource.v => 1.0
-        ]
-        prob = ODEProblem(sys, u0, (0, 2.0))
-        sol = solve(prob, Rosenbrock23())
-
-        if source == constsource
-            @test sol[voltage_sensor.v][1:20000:end] ≈ ones(length(sol.t[1:20000:end])) atol=1e-3
-        elseif source == stepsource
-            @test sol[voltage_sensor.v][1:20000:end] ≈ [(t < 1) ? offset : offset + height for t in sol.t[1:20000:end]] atol=1e-3
-        else
-            @test sol[voltage_sensor.v][1:20000:end] ≈ [(t < 0.5) ? offset : offset + sin(2π*freq*(t .- 0.5)) for t in sol.t[1:20000:end]] atol=1e-6
-        end
-    end
-end
 
 @info "Testing the sensors..."
 @testset "sensors" begin
@@ -196,55 +162,7 @@ end
     # savefig(plt, "integrator")
 end
 
-@info "Testing voltage function generators..."
-@testset "Voltage function generators" begin
-    st, o, h, f, A, et, ϕ, d, δ = 0.7, 1.25, 3, 2, 2.5, 2.5, π/4, 0.1, 0.0001
-
-    @named ground = Ground()
-    @named res = Resistor()
-    @named voltage_sensor = VoltageSensor()
-    @named vstep = StepVoltage(starttime=st, offset=o, height=h)
-    @named vsquare = SquareVoltage(offset=o, starttime=st, amplitude=A, frequency=f)
-    @named vtri = TriangularVoltage(offset=o, starttime=st, amplitude=A, frequency=f)
-    # @named vsawtooth = SawToothVoltage(amplitude=A, starttime=st, frequency=f, offset=o)
-    @named vcosine = CosineVoltage(offset=o, amplitude=A, frequency=f, starttime=st, phase=ϕ)
-    @named vdamped_sine = DampedSineVoltage(offset=o, amplitude=A, frequency=f, starttime=st, phase=ϕ, damping_coef=d)
-    @named vramp = RampVoltage(offset=o, starttime=st, endtime=et, height=h)
-
-    vsources = [vtri, vsquare, vstep, vcosine, vdamped_sine, vramp]
-    waveforms(i, x) = getindex([o .+ (x .> st) .* _triangular_wave.(x, δ, f, A, st),
-                                o .+ (x .> st) .* _square_wave.(x, δ, f, A, st),
-                                o .+  _step.(x, δ, h, st),
-                                # o .+ (x .> st). * _sawtooth_wave.(x, δ, f, A, st),
-                                o .+ (x .> st) .* _cos_wave.(x, f, A, st, ϕ),
-                                o .+ (x .> st) .* _damped_sine_wave.(x, f, A, st, ϕ, d),
-                                o .+ _ramp.(x, δ, st, et, h)], i)
-    for i in 1:length(vsources)
-        vsource = vsources[i]
-        @info Symbolics.getname(vsource)
-        eqs = [
-            connect(vsource.p, voltage_sensor.p, res.p)
-            connect(ground.g, voltage_sensor.n, vsource.n, res.n)
-        ]
-        @named vmodel = ODESystem(eqs, t, systems = [voltage_sensor, res, vsource, ground])
-        vsys = structural_simplify(vmodel)
-
-        u0 = [
-            vsource.v => 1
-            res.v => 1
-        ]
-
-        prob = ODEProblem(vsys, u0, (0, 10.0))
-        vsol = solve(prob, dt=0.1, Rosenbrock23())
-
-        @test vsol[vsource.v][1150:end] ≈ waveforms(i, vsol.t)[1150:end] atol=1e-1
-        # For visual inspection
-        # plt = plot(sol)
-        # savefig(plt, "test_current_$(Symbolics.getname(source))")
-    end
-end
-
-@info "Testing the Current generators..."
+#=@info "Testing the Current generators..."
 @testset "Current function generators" begin
     st, o, h, f, A, et, ϕ, d, δ = 0.7, 1.25, 3, 2, 2.5, 2.5, π/4, 0.1, 0.0001
 
@@ -290,4 +208,4 @@ end
         # plt = plot(sol)
         # savefig(plt, "test_current_$(Symbolics.getname(source))")
     end
-end
+end=#

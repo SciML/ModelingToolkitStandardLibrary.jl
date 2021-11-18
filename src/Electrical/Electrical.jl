@@ -22,12 +22,10 @@ export # Analog Components
        CurrentSensor, PotentialSensor, VoltageSensor,
        PowerSensor, MultiSensor,
        #Analog Sources
-       ConstantVoltage, SineVoltage, StepVoltage, RampVoltage,
-       SquareVoltage, TriangularVoltage,
-       CosineVoltage, DampedSineVoltage,
-       ConstantCurrent, SineCurrent, StepCurrent, RampCurrent,
+       #=ConstantCurrent, SineCurrent, StepCurrent, RampCurrent,
        SquareCurrent, TriangularCurrent,
-       CosineCurrent, DampedSineCurrent,
+       CosineCurrent, DampedSineCurrent,=#
+       CurrentSource, VoltageSource,
        connect, Pin
 
        # Digital Gates

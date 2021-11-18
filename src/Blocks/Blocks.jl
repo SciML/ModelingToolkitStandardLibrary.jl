@@ -13,6 +13,7 @@ where `u` are inputs, `x` are state variables and `y` are outputs. `x,u,y` are a
 """
 module Blocks
 using ModelingToolkit, Symbolics, IfElse, OrdinaryDiffEq
+using ModelingToolkit: @register
 
 @parameters t
 Dₜ = Differential(t)
@@ -25,5 +26,9 @@ include("nonlinear.jl")
 
 export Constant, Integrator, Derivative, FirstOrder, SecondOrder, PID, StateSpace
 include("continuous.jl")
+
+export ConstantFunction, SmoothCosineFunction, SmoothDampedSineFunction, SmoothRampFunction,
+       SmoothSineFunction, SmoothSquareFunction, SmoothStepFunction, SmoothTriangularFunction
+include("wave_functions.jl")
 
 end
