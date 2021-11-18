@@ -6,9 +6,9 @@ _damped_sine_wave(x, f, A, st, ϕ, d) = exp((st-x)*d)*A*sin(2*π*f*(x-st) + ϕ)
 _ramp(x, δ, st, et, h) = h/(et-st)*(_xH(x, δ, st) - _xH(x, δ, et))
 _sine(x, f, A, st, ϕ) = A*sin(2*π*f*(x - st) + ϕ)
 _square_wave(x, δ, f, A, st) = A*2atan(sin(2π*(x-st)*f)/δ)/π
-_step(x, δ, h, a) = h*(atan((x-a)/δ)/π + 0.5)
+_step(x, δ, h, a) = h*(atan((x-a)/δ)/π + 1//2)
 _triangular_wave(x, δ, f, A, st) = A*(1-2acos((1 - δ)sin(2π*(x-st)*f))/π)
-_xH(x, δ, tₒ) = 0.5*(x-tₒ)*(1+((x-tₒ)/sqrt((x-tₒ)^2+δ^2)))
+_xH(x, δ, tₒ) = (x-tₒ)*(1+((x-tₒ)/sqrt((x-tₒ)^2+δ^2)))/2
 
 
 @register _constant(K)
