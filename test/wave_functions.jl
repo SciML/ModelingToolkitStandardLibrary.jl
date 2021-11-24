@@ -15,7 +15,7 @@ waveforms(i, x) = getindex([o .+ (x .> st) .* _triangular_wave.(x, δ, f, A, st)
                             o .+ (x .> st) .* _cos_wave.(x, f, A, st, ϕ),
                             o .+ (x .> st) .* _damped_sine_wave.(x, f, A, st, ϕ, d),
                             o .+ _ramp.(x, δ, st, et, h)], i)
-#=
+
 @info "Testing voltage function generators..."
 @testset "Voltage function generators" begin
 
@@ -58,4 +58,42 @@ waveforms(i, x) = getindex([o .+ (x .> st) .* _triangular_wave.(x, δ, f, A, st)
         # plt = plot(sol)
         # savefig(plt, "test_current_$(Symbolics.getname(source))")
     end
-end=#
+end
+
+@info "Testing current function generators..."
+@testset "Current function generators" begin
+    @named current_sensor = CurrentSensor()
+    @named source = CurrentSource()
+
+    @named step   = SmoothStepFunction(starttime=st, offset=o, height=h)
+    @named square = SmoothSquareFunction(offset=o, starttime=st, amplitude=A, frequency=f)
+    @named tri    = SmoothTriangularFunction(offset=o, starttime=st, amplitude=A, frequency=f)
+    @named cosine = SmoothCosineFunction(offset=o, amplitude=A, frequency=f, starttime=st, phase=ϕ)
+    @named ramp   = SmoothRampFunction(offset=o, starttime=st, endtime=et, height=h)
+    @named damped_sine = SmoothDampedSineFunction(offset=o, amplitude=A, frequency=f, starttime=st, phase=ϕ, damping_coef=d)
+    # @named vsawtooth = SawToothVoltage(amplitude=A, starttime=st, frequency=f, offset=o)
+    
+    wavefunctions = [tri, square, step, cosine, damped_sine, ramp]
+    for w in 1:length(wavefunctions)
+        wave = wavefunctions[w]
+        @info "Testing $(Symbolics.getname(wave))"
+        eqs = [
+            wave.y ~ source.i
+            connect(source.p, resistor.p)
+            connect(source.n, resistor.n)
+        ]
+        @named model = ODESystem(eqs, t, systems = [wave, source, resistor])
+        sys = alias_elimination(model)
+
+        u0 = [
+            source.i => 1
+            resistor.v => 1
+            source.v => 1
+        ]
+
+        prob = ODEProblem(sys, u0, (0, 10.0))
+        sol = solve(prob, dt=0.1, Rosenbrock23())
+        # plot(sol)
+        @test sol[source.i][1150:end] ≈ waveforms(w, sol.t)[1150:end] atol=1e-1
+    end
+end

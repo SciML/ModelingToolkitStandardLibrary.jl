@@ -22,9 +22,6 @@ export # Analog Components
        CurrentSensor, PotentialSensor, VoltageSensor,
        PowerSensor, MultiSensor,
        #Analog Sources
-       #=ConstantCurrent, SineCurrent, StepCurrent, RampCurrent,
-       SquareCurrent, TriangularCurrent,
-       CosineCurrent, DampedSineCurrent,=#
        CurrentSource, VoltageSource,
        connect, Pin
 
