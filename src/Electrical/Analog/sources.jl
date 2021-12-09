@@ -15,6 +15,27 @@ _xH(x, δ, tₒ) = 0.5*(x-tₒ)*(1+((x-tₒ)/sqrt((x-tₒ)^2+δ^2)))
 @register _triangular_wave(x, δ, f, A, st)
 
 # Voltage sources
+"""
+```julia
+function ConstantVoltage(;name, V=1.0)
+```
+
+The source for an ideal constant voltage.
+
+# Observables
+- `V`
+  The constant voltage across the terminals of this source
+
+# States
+- `v(t)`
+  The voltage across this source, given by `p.v - n.v` and is always constant
+
+# Connectors
+- `p`
+  Positive pin
+- `n`
+  Negative pin
+"""
 function ConstantVoltage(;name, V=1.0)
     val = V
 
@@ -31,6 +52,37 @@ function ConstantVoltage(;name, V=1.0)
     ODESystem(eqs, t, [v], [V], systems=[p, n], defaults=Dict(V => val), name=name)
 end
 
+"""
+```julia
+function CosineVoltage(;name, offset=0.0, amplitude=1.0, frequency=1.0, starttime=0.0, phase=0.0)
+```
+
+A source in which the voltage across its terminals is a cosine function of time, after
+a specified `starttime`. Before this, the voltage is 0.
+
+# Observables
+- `offset`
+  A constant added to the value of the cosine function
+- `amplitude`
+  The amplitude of the cosine function
+- `frequency`
+  The frequency of the cosine function
+- `starttime`
+  The time at which the source starts functioning. Before this time, the voltage across
+  its terminals is 0.
+- `phase`
+  The phase offset of the cosine function
+
+# States
+- `v(t)`
+  The voltage across this source, given by `p.v - n.v`
+
+# Connectors
+- `p`
+  Positive port
+- `n`
+  Negative port
+"""
 function CosineVoltage(;name, offset=0.0, amplitude=1.0, frequency=1.0, starttime=0.0, phase=0.0)
     o, A, f, st, ϕ = offset, amplitude, frequency, starttime, phase
     δ = 0.00001
