@@ -57,12 +57,11 @@ end
 function CosineVoltage(;name, offset=0.0, amplitude=1.0, frequency=1.0, starttime=0.0, phase=0.0)
 ```
 
-A source in which the voltage across its terminals is a cosine function of time, after
-a specified `starttime`. Before this, the voltage is 0.
+A source in which the voltage across its terminals is a cosine function of time.
 
 # Observables
 - `offset`
-  A constant added to the value of the cosine function
+  A constant offset added to the voltage output
 - `amplitude`
   The amplitude of the cosine function
 - `frequency`
@@ -101,6 +100,38 @@ function CosineVoltage(;name, offset=0.0, amplitude=1.0, frequency=1.0, starttim
     ODESystem(eqs, t, [v], [offset, amplitude, frequency, starttime, phase], systems=[p, n], defaults=defaults, name=name)
 end
 
+"""
+```julia
+function DampedSineVoltage(;name, offset=0.0, amplitude=1.0, frequency=1.0, starttime=0.0, phase=0.0, damping_coef=0.0)
+```
+
+A source in which the voltage across its terminals is a damped sine function of time.
+
+# Observables
+- `offset`
+  A constant offset added to the voltage output
+- `amplitude`
+  The amplitude of the damped sine function
+- `frequency`
+  The frequency of the damped sine function
+- `starttime`
+  The time at which the source starts functioning. Before this time, the voltage across
+  its terminals is 0.
+- `phase`
+  The phase offset of the damped sine function
+- `damping_coef`
+  Damping coefficient of the damped sine function
+
+# States
+- `v(t)`
+  The voltage across this source, given by `p.v - n.v`
+
+# Connectors
+- `p`
+  Positive port
+- `n`
+  Negative port
+"""
 function DampedSineVoltage(;name, offset=0.0, amplitude=1.0, frequency=1.0, starttime=0.0, phase=0.0, damping_coef=0.0)
     o, A, f, st, ϕ, d = offset, amplitude, frequency, starttime, phase, damping_coef
     δ = 0.0001
@@ -119,6 +150,34 @@ function DampedSineVoltage(;name, offset=0.0, amplitude=1.0, frequency=1.0, star
     ODESystem(eqs, t, [v], [offset, amplitude, frequency, starttime, phase, damping_coef], systems=[p, n], defaults=defaults, name=name)
 end
 
+"""
+```julia
+function RampVoltage(;name, offset=0.0, starttime=0.0, endtime=1.0, height=1.0)
+```
+
+A source in which the voltage across grows linearly from `offset` to `offset+height` over
+the time interval `[starttime, endtime]`
+
+# Observables
+- `offset`
+  A constant offset added to the voltage output
+- `starttime`
+  The time at which the voltage starts growing
+- `endtime`
+  The time at which the voltage finishes growing
+- `height`
+  The amount that the voltage grows in the interval `[starttime, endtime]`
+
+# States
+- `v(t)`
+  The voltage across this source, given by `p.v - n.v`
+
+# Connectors
+- `p`
+  Positive port
+- `n`
+  Negative port
+"""
 function RampVoltage(;name, offset=0.0, starttime=0.0, endtime=1.0, height=1.0)
     o, st, et, h = offset, starttime, endtime, height
     δ = 0.0001
@@ -137,6 +196,36 @@ function RampVoltage(;name, offset=0.0, starttime=0.0, endtime=1.0, height=1.0)
     ODESystem(eqs, t, [v], [offset, starttime, endtime, height], systems=[p, n], defaults=defaults, name=name)
 end
 
+"""
+```julia
+function SineVoltage(;name, offset=0.0, amplitude=1.0, frequency=1.0, starttime=0.0, phase=0.0)
+```
+
+A source in which the voltage across its terminals is a sine function of time.
+
+# Observables
+- `offset`
+  A constant offset added to the voltage output
+- `amplitude`
+  The amplitude of the sine function
+- `frequency`
+  The frequency of the sine function
+- `starttime`
+  The time at which the source starts functioning. Before this time, the voltage across
+  its terminals is 0.
+- `phase`
+  The phase offset of the sine function
+
+# States
+- `v(t)`
+  The voltage across this source, given by `p.v - n.v`
+
+# Connectors
+- `p`
+  Positive port
+- `n`
+  Negative port
+"""
 function SineVoltage(;name, offset=0.0, amplitude=1.0, frequency=1.0, starttime=0.0, phase=0.0)
     o, A, f, st, ϕ = offset, amplitude, frequency, starttime, phase
 
@@ -154,6 +243,34 @@ function SineVoltage(;name, offset=0.0, amplitude=1.0, frequency=1.0, starttime=
     ODESystem(eqs, t, [v], [offset, amplitude, frequency, starttime, phase], systems=[p, n], defaults=defaults, name=name)
 end
 
+"""
+```julia
+function SquareVoltage(; name, offset=0.0, amplitude=1.0, frequency=1.0, starttime=0.0)
+```
+
+A source in which the voltage across its terminals is a square function of time.
+
+# Observables
+- `offset`
+  A constant offset added to the voltage output
+- `amplitude`
+  The amplitude of the square wave function
+- `frequency`
+  The frequency of the square wave function
+- `starttime`
+  The time at which the source starts functioning. Before this time, the voltage across
+  its terminals is 0.
+
+# States
+- `v(t)`
+  The voltage across this source, given by `p.v - n.v`
+
+# Connectors
+- `p`
+  Positive port
+- `n`
+  Negative port
+"""
 function SquareVoltage(; name, offset=0.0, amplitude=1.0, frequency=1.0, starttime=0.0)
     o, A, f, st  = offset, amplitude, frequency, starttime
     δ = 0.0001
