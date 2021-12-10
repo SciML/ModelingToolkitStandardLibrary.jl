@@ -10,7 +10,7 @@ end
 
 A pin in an analog circuit.
 
-# Variables
+# States
 - `v(t)`
   The voltage at this pin
 - `i(t)`
@@ -33,7 +33,7 @@ end
 
 A pin in a digital circuit.
 
-# Variables
+# States
 - `v(t)`
   The voltage at this pin
 - `i(t)`

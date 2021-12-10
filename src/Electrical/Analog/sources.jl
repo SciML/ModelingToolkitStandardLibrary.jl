@@ -289,6 +289,32 @@ function SquareVoltage(; name, offset=0.0, amplitude=1.0, frequency=1.0, startti
     ODESystem(eqs, t, [v], [offset, amplitude, frequency, starttime], systems=[p, n], defaults=defaults, name=name)
 end
 
+"""
+```julia
+function StepVoltage(;name, offset=0.0, starttime=0.0, height=1.0)
+```
+
+A source in which the voltage across its terminals increases from `offset` to `offset+height` at
+`starttime`
+
+# Observables
+- `offset`
+  A constant offset added to the voltage output
+- `starttime`
+  The time at which the source starts functioning, and the voltage jumps
+- `height`
+  Magnitude of increase in voltage
+
+# States
+- `v(t)`
+  The voltage across this source, given by `p.v - n.v`
+
+# Connectors
+- `p`
+  Positive port
+- `n`
+  Negative port
+"""
 function StepVoltage(;name, offset=0.0, starttime=0.0, height=1.0)
     o, st, h = offset, starttime, height
     δ = 0.0001
@@ -307,6 +333,33 @@ function StepVoltage(;name, offset=0.0, starttime=0.0, height=1.0)
     ODESystem(eqs, t, [v], [offset, starttime, height], systems=[p, n], defaults=defaults, name=name)
 end
 
+"""
+```julia
+function TriangularVoltage(; name, offset=0.0, amplitude=1.0, frequency=1.0, starttime=0.0)
+```
+
+A source in which the voltage across its terminals is a triangular function of time.
+
+# Observables
+- `offset`
+  A constant offset added to the voltage output
+- `amplitude`
+  Amplitude of the triangular wave function
+- `frequency`
+  Frequency of the triangular wave function
+- `starttime`
+  The time at which the source starts functioning. Before this, the output of the source is 0
+
+# States
+- `v(t)`
+  The voltage across this source, given by `p.v - n.v`
+
+# Connectors
+- `p`
+  Positive port
+- `n`
+  Negative port
+"""
 function TriangularVoltage(; name, offset=0.0, amplitude=1.0, frequency=1.0, starttime=0.0)
     o, A, f, st  = offset, amplitude, frequency, starttime
     δ = 0.0001
