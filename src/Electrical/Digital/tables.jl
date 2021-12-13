@@ -28,7 +28,7 @@ function _not(x)
   typeof(i) != Int && return X
   NotTable[i]
 end
-@register _not(x)
+@register_symbolic _not(x)
 
 # MISO AND gate
 AndTable = OffsetArray([
@@ -56,11 +56,11 @@ function _and(x...)
   end
   return y[end]
 end
-@register _and(x...)
-@register _and(a, b)
-@register _and(a, b, c)
-@register _and(a, b, c, d)
-@register _and(a, b, c, d, e)
+@register_symbolic _and(x...)
+@register_symbolic _and(a, b)
+@register_symbolic _and(a, b, c)
+@register_symbolic _and(a, b, c, d)
+@register_symbolic _and(a, b, c, d, e)
 
 # MISO OR gate
 OrTable = OffsetArray([
@@ -89,12 +89,12 @@ function _or(x...)
   end
   return y[end]
 end
-@register _or(x...)
-@register _or(a, b)
-@register _or(a, b, c)
-@register _or(a, b, c, d)
-@register _or(a, b, c, d, e)
-@register _or(a, b, c, d, e, f, g, h)
+@register_symbolic _or(x...)
+@register_symbolic _or(a, b)
+@register_symbolic _or(a, b, c)
+@register_symbolic _or(a, b, c, d)
+@register_symbolic _or(a, b, c, d, e)
+@register_symbolic _or(a, b, c, d, e, f, g, h)
 
 # MISO :XOR gate
 
@@ -124,10 +124,10 @@ function _xor(x...)
   end
   return y[end]
 end
-@register _xor(x...)
-@register _xor(a, b)
-@register _xor(a, b, c)
-@register _xor(a, b, c, d)
-@register _xor(a, b, c, d, e)
+@register_symbolic _xor(x...)
+@register_symbolic _xor(a, b)
+@register_symbolic _xor(a, b, c)
+@register_symbolic _xor(a, b, c, d)
+@register_symbolic _xor(a, b, c, d, e)
 
 # TODO: revisit y[1] for all miso gates for 9-level logic

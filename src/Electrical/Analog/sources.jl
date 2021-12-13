@@ -7,12 +7,12 @@ _step(x, δ, h, a) = h*(atan((x-a)/δ)/π + 0.5)
 _triangular_wave(x, δ, f, A, st) = A*(1-2acos((1 - δ)sin(2π*(x-st)*f))/π)
 _xH(x, δ, tₒ) = 0.5*(x-tₒ)*(1+((x-tₒ)/sqrt((x-tₒ)^2+δ^2)))
 
-@register _cos_wave(x, f, A, st, ϕ)
-@register _damped_sine_wave(x, f, A, st, ϕ, damping)
-@register _ramp(x, δ, st, et, h)
-@register _square_wave(x, δ, f, A, st)
-@register _step(x, δ, h, a)
-@register _triangular_wave(x, δ, f, A, st)
+@register_symbolic _cos_wave(x, f, A, st, ϕ)
+@register_symbolic _damped_sine_wave(x, f, A, st, ϕ, damping)
+@register_symbolic _ramp(x, δ, st, et, h)
+@register_symbolic _square_wave(x, δ, f, A, st)
+@register_symbolic _step(x, δ, h, a)
+@register_symbolic _triangular_wave(x, δ, f, A, st)
 
 # Voltage sources
 """
