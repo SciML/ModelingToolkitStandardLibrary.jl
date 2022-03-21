@@ -50,21 +50,22 @@ function CosineVoltage(;name, offset=0.0, amplitude=1.0, frequency=1.0, starttim
 end
 
 function DampedSineVoltage(;name, offset=0.0, amplitude=1.0, frequency=1.0, starttime=0.0, phase=0.0, damping_coef=0.0)
-    o, A, f, st, ϕ, d = offset, amplitude, frequency, starttime, phase, damping_coef
-    δ = 0.0001
-
-    @named p = Pin()
-    @named n = Pin()
-    @parameters offset amplitude frequency starttime phase damping_coef
-    @variables v(t)
-
+    δ = 0.00001
+    @named oneport = OnePort()
+    @unpack v, i = oneport
+    pars = @parameters begin
+        offset=offset
+        amplitude=amplitude 
+        frequency=frequency
+        starttime=starttime
+        phase=phase 
+        damping_coef=damping_coef
+    end
     eqs = [
-           v ~ p.v - n.v
-           v ~ _step(t, δ, o, 0.0) + _damped_sine_wave(t, f, A, st, ϕ, d) * _step(t, δ, 1.0, st)
-           0 ~ p.i + n.i
-          ]
-    defaults = Dict(zip((offset, amplitude, frequency, starttime, phase, damping_coef), (o, A, f, st, ϕ, d)))
-    ODESystem(eqs, t, [v], [offset, amplitude, frequency, starttime, phase, damping_coef], systems=[p, n], defaults=defaults, name=name)
+        v ~ _damped_sine_wave(t, frequency, amplitude, starttime, phase, damping_coef) * _step(t, δ, 1.0, starttime)
+    ]
+    
+    extend(ODESystem(eqs, t, [], pars; name=name), oneport)
 end
 
 function RampVoltage(;name, offset=0.0, starttime=0.0, endtime=1.0, height=1.0)
@@ -84,7 +85,7 @@ function RampVoltage(;name, offset=0.0, starttime=0.0, endtime=1.0, height=1.0)
     extend(ODESystem(eqs, t, [], pars; name=name), oneport)
 end
 
-function CosineVoltage(;name, offset=0.0, amplitude=1.0, frequency=1.0, starttime=0.0, phase=0.0)
+function SineVoltage(;name, offset=0.0, amplitude=1.0, frequency=1.0, starttime=0.0, phase=0.0)
     δ = 0.00001
 
     @named oneport = OnePort()
@@ -122,179 +123,177 @@ function SquareVoltage(; name, offset=0.0, amplitude=1.0, frequency=1.0, startti
 end
 
 function StepVoltage(;name, offset=0.0, starttime=0.0, height=1.0)
-    o, st, h = offset, starttime, height
     δ = 0.0001
 
-    @named p = Pin()
-    @named n = Pin()
-    @parameters offset starttime height
-    @variables v(t)
-
+    @named oneport = OnePort()
+    @unpack v, i = oneport
+    pars = @parameters begin
+        offset=offset
+        height=height 
+        starttime=starttime 
+    end
     eqs = [
-           v ~ p.v - n.v
-           v ~ offset + _step(t, δ, h, st)
-           0 ~ p.i + n.i
-          ]
-    defaults = Dict(zip((offset, starttime, height), (o, st, h)))
-    ODESystem(eqs, t, [v], [offset, starttime, height], systems=[p, n], defaults=defaults, name=name)
+        v ~ _step(t, δ, height, starttime) + offset
+    ]
+    
+    extend(ODESystem(eqs, t, [], pars; name=name), oneport)
 end
 
 function TriangularVoltage(; name, offset=0.0, amplitude=1.0, frequency=1.0, starttime=0.0)
-    o, A, f, st  = offset, amplitude, frequency, starttime
-    δ = 0.0001
+    δ = 0.00001
 
-    @named p = Pin()
-    @named n = Pin()
-    @parameters offset amplitude frequency starttime
-    @variables v(t)
-    
+    @named oneport = OnePort()
+    @unpack v, i = oneport
+    pars = @parameters begin
+        offset=offset
+        amplitude=amplitude 
+        frequency=frequency 
+        starttime=starttime 
+    end
     eqs = [
-        v ~ p.v - n.v
-        0 ~ p.i + n.i
-        v ~ offset + (t>st) * _triangular_wave(t, δ, f, A, st)
+        v ~ _triangular_wave(t, δ, frequency, amplitude, starttime) * _step(t, δ, 1.0, starttime) + offset
     ]
-    defaults = Dict(zip((offset, amplitude, frequency, starttime), (o, A, f, st)))
-    ODESystem(eqs, t, [v], [offset, amplitude, frequency, starttime], systems=[p, n], defaults=defaults, name=name)
+    
+    extend(ODESystem(eqs, t, [], pars; name=name), oneport)
 end
 
 # Current Sources
-function ConstantCurrent(;name, I=1.0)
-    val = I
-
-    @named p = Pin()
-    @named n = Pin()
-    @parameters I
-    @variables i(t)
-
+function ConstantCurrent(;name, 
+    I = 1.0, # [A]
+    )   
+    @named oneport = OnePort()
+    @unpack v, i = oneport
+    pars = @parameters A=A
     eqs = [
-           0 ~ p.i + n.i
-           i ~ p.i
-           i ~ I
-          ]
-    ODESystem(eqs, t, [i], [I], systems=[p, n], defaults=Dict(I => val), name=name)
+        i ~ I
+    ]
+    
+    extend(ODESystem(eqs, t, [], pars; name=name), oneport)
 end
 
 function CosineCurrent(;name, offset=0.0, amplitude=1.0, frequency=1.0, starttime=0.0, phase=0.0)
-    o, A, f, st, ϕ = offset, amplitude, frequency, starttime, phase
     δ = 0.00001
 
-    @named p = Pin()
-    @named n = Pin()
-    @parameters offset amplitude frequency starttime phase
-    @variables i(t)
-
+    @named oneport = OnePort()
+    @unpack v, i = oneport
+    pars = @parameters begin
+        offset=offset
+        amplitude=amplitude 
+        frequency=frequency 
+        starttime=starttime 
+        phase=phase
+    end
     eqs = [
-           i ~ _cos_wave(t, f, A, st, ϕ) * _step(t, δ, 1.0, st) + offset
-           0 ~ p.i + n.i
-           i ~ p.i
-          ]
-    defaults = Dict(zip((offset, amplitude, frequency, starttime, phase), (o, A, f, st, ϕ)))
-    ODESystem(eqs, t, [i], [offset, amplitude, frequency, starttime, phase], systems=[p, n], defaults=defaults, name=name)
+        i ~ _cos_wave(t, frequency, amplitude, starttime, phase) * _step(t, δ, 1.0, starttime) + offset
+    ]
+    
+    extend(ODESystem(eqs, t, [], pars; name=name), oneport)
 end
 
-function DampedSineCurrent(;name, offset=0.0, amplitude=1.0, frequency=1.0, starttime=0.0, phase=0.0, damping_coef=1.0)
-    o, A, f, st, ϕ, d = offset, amplitude, frequency, starttime, phase, damping_coef
-    δ = 0.0001
-
-    @named p = Pin()
-    @named n = Pin()
-    @parameters offset amplitude frequency starttime phase damping_coef
-    @variables i(t)
-
+function DampedSineCurrent(;name, offset=0.0, amplitude=1.0, frequency=1.0, starttime=0.0, phase=0.0, damping_coef=0.0)
+    δ = 0.00001
+    @named oneport = OnePort()
+    @unpack v, i = oneport
+    pars = @parameters begin
+        offset=offset
+        amplitude=amplitude 
+        frequency=frequency
+        starttime=starttime
+        phase=phase 
+        damping_coef=damping_coef
+    end
     eqs = [
-           i ~ _step(t, δ, o, 0.0) + _damped_sine_wave(t, f, A, st, ϕ, d) * _step(t, δ, 1.0, st)
-           0 ~ p.i + n.i
-           i ~ p.i
-          ]
-    defaults = Dict(zip((offset, amplitude, frequency, starttime, phase, damping_coef), (o, A, f, st, ϕ, d)))
-    ODESystem(eqs, t, [i], [offset, amplitude, frequency, starttime, phase, damping_coef], systems=[p, n], defaults=defaults, name=name)
+        i ~ _damped_sine_wave(t, frequency, amplitude, starttime, phase, damping_coef) * _step(t, δ, 1.0, starttime)
+    ]
+    
+    extend(ODESystem(eqs, t, [], pars; name=name), oneport)
 end
 
 function RampCurrent(;name, offset=0.0, starttime=0.0, endtime=1.0, height=1.0)
-    o, st, et, h = offset, starttime, endtime, height
-    δ = 0.0001
-
-    @named p = Pin()
-    @named n = Pin()
-    @parameters offset starttime endtime height
-    @variables i(t)
-
+    δ = 0.00001
+    @named oneport = OnePort()
+    @unpack v, i = oneport
+    pars = @parameters begin
+        offset=offset
+        height=height 
+        starttime=starttime 
+        endtime=endtime
+    end
     eqs = [
-           i ~ _step(t, δ, o, 0.0) + _ramp(t, δ, st, et, h)
-           0 ~ p.i + n.i
-           i ~ p.i
-          ]
-    defaults = Dict(zip((offset, starttime, endtime, height), (o, st, et, h)))
-    ODESystem(eqs, t, [i], [offset, starttime, endtime, height], systems=[p, n], defaults=defaults, name=name)
+        i ~ _ramp(t, δ, 1.0, starttime, height) + offset
+    ]
+    
+    extend(ODESystem(eqs, t, [], pars; name=name), oneport)
 end
 
 function SineCurrent(;name, offset=0.0, amplitude=1.0, frequency=1.0, starttime=0.0, phase=0.0)
-    o, A, f, st, ϕ = offset, amplitude, frequency, starttime, phase
+    δ = 0.00001
 
-    @named p = Pin()
-    @named n = Pin()
-    @parameters offset amplitude frequency starttime phase
-    @variables i(t)
-
+    @named oneport = OnePort()
+    @unpack v, i = oneport
+    pars = @parameters begin
+        offset=offset
+        amplitude=amplitude 
+        frequency=frequency 
+        starttime=starttime 
+        phase=phase
+    end
     eqs = [
-           i ~ offset + (t > st) * (A*sin(2*π*f*(t - st) + ϕ))
-           0 ~ p.i + n.i
-           i ~ p.i
-          ]
-    defaults = Dict(zip((offset, amplitude, frequency, starttime, phase), (o, A, f, st, ϕ)))
-    ODESystem(eqs, t, [i], [offset, amplitude, frequency, starttime, phase], systems=[p, n], defaults=defaults, name=name)
+        i ~ _sin_wave(t, frequency, amplitude, starttime, phase) * _step(t, δ, 1.0, starttime) + offset
+    ]
+    
+    extend(ODESystem(eqs, t, [], pars; name=name), oneport)
 end
 
 function SquareCurrent(; name, offset=0.0, amplitude=1.0, frequency=1.0, starttime=0.0)
-    o, A, f, st  = offset, amplitude, frequency, starttime
     δ = 0.0001
 
-    @named p = Pin()
-    @named n = Pin()
-    @parameters offset amplitude frequency starttime
-    @variables i(t)
-    
+    @named oneport = OnePort()
+    @unpack v, i = oneport
+    pars = @parameters begin
+        offset=offset
+        amplitude=amplitude 
+        starttime=starttime 
+        endtime=endtime
+    end
     eqs = [
-        0 ~ p.i + n.i
-        i ~ o + _square_wave(t, δ, f, A, st) * (t > st)
-        i ~ p.i
-        ]
-    defaults = Dict(zip((offset, amplitude, frequency, starttime), (o, A, f, st)))
-    ODESystem(eqs, t, [i], [offset, amplitude, frequency, starttime], systems=[p, n], defaults=defaults, name=name)
+        i ~ _square_wave(t, frequency, amplitude, starttime, phase) * _step(t, δ, 1.0, starttime) + offset
+    ]
+    
+    extend(ODESystem(eqs, t, [], pars; name=name), oneport)
 end
 
 function StepCurrent(;name, offset=0.0, starttime=0.0, height=1.0)
-    o, st, h = offset, starttime, height
     δ = 0.0001
 
-    @named p = Pin()
-    @named n = Pin()
-    @parameters offset starttime height
-    @variables i(t)
-
+    @named oneport = OnePort()
+    @unpack v, i = oneport
+    pars = @parameters begin
+        offset=offset
+        height=height 
+        starttime=starttime 
+    end
     eqs = [
-           i ~ offset + _step(t, δ, h, st)
-           0 ~ p.i + n.i
-           i ~ p.i
-          ]
-    defaults = Dict(zip((offset, starttime, height), (o, st, h)))
-    ODESystem(eqs, t, [i], [offset, starttime, height], systems=[p, n], defaults=defaults, name=name)
+        i ~ _step(t, δ, height, starttime) + offset
+    ]
+    
+    extend(ODESystem(eqs, t, [], pars; name=name), oneport)
 end
 
 function TriangularCurrent(; name, offset=0.0, amplitude=1.0, frequency=1.0, starttime=0.0)
-    o, A, f, st  = offset, amplitude, frequency, starttime
-    δ = 0.0001
+    δ = 0.00001
 
-    @named p = Pin()
-    @named n = Pin()
-    @parameters offset amplitude frequency starttime
-    @variables i(t)
-    
+    @named oneport = OnePort()
+    @unpack v, i = oneport
+    pars = @parameters begin
+        offset=offset
+        amplitude=amplitude 
+        frequency=frequency 
+        starttime=starttime 
+    end
     eqs = [
-        0 ~ p.i + n.i
-        i ~ offset + _step(t, δ, 1, st) * _triangular_wave(t, δ, f, A, st)
-        i ~ p.i
+        i ~ _triangular_wave(t, δ, frequency, amplitude, starttime) * _step(t, δ, 1.0, starttime) + offset
     ]
-    defaults = Dict(zip((offset, amplitude, frequency, starttime), (o, A, f, st)))
-    ODESystem(eqs, t, [i], [offset, amplitude, frequency, starttime], systems=[p, n], defaults=defaults, name=name)
+    
+    extend(ODESystem(eqs, t, [], pars; name=name), oneport)
 end
