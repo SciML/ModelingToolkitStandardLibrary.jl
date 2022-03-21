@@ -1,57 +1,48 @@
 function Ground(;name)
     @named g = Pin()
     eqs = [g.v ~ 0]
-    ODESystem(eqs, t, [], [], systems=[g], name=name)
+    ODESystem(eqs, t, [], []; systems=[g], name=name)
 end
 
-function Resistor(;name, R = 1.0)
-    val = R
+function Resistor(;name, 
+    R = 1.0, # [Ohm] Resistance
+    )   
+    @named oneport = OnePort()
+    @unpack v, i = oneport
+    pars = @parameters R=R
+    eqs = [
+        v ~ i * R
+    ]
     
-    @named p = Pin()
-    @named n = Pin()
-    @parameters R
-    @variables v(t)
-
-    eqs = [
-           v ~ p.v - n.v
-           0 ~ p.i + n.i
-           v ~ p.i * R
-          ]
-    ODESystem(eqs, t, [v], [R], systems=[p, n], defaults=Dict(R => val), name=name)
+    extend(ODESystem(eqs, t, [], pars; name=name), oneport)
 end
 
-function Capacitor(; name, C = 1.0)
-    val = C
+function Capacitor(; name, 
+    C=1.0, # [F] Capacity
+    v0=0.0, # [V] Initial voltage  
+    )
 
-    @named p = Pin()
-    @named n = Pin()
-    @parameters C
-    @variables v(t)
-
-    D = Differential(t)
+    @named oneport = OnePort(;v0=v0)
+    @unpack v, i = oneport
+    pars = @parameters C=C
     eqs = [
-           v ~ p.v - n.v
-           0 ~ p.i + n.i
-           D(v) ~ p.i / C
-          ]
-    ODESystem(eqs, t, [v], [C], systems=[p, n], defaults=Dict(C => val), name=name)
+        D(v) ~ i / C
+    ]
+    extend(ODESystem(eqs, t, [], pars; name=name), oneport)
 end
 
-function Inductor(; name, L = 1.0)
-    val = L
+function Inductor(; name, 
+    L=1.0e-6, # [H] Inductance
+    i0=0.0, # [A] Initial current
+    )
 
-    @named p = Pin()
-    @named n = Pin()
-    @parameters L
-    @variables v(t)
-
-    D = Differential(t)
+    @named oneport = OnePort(;i0=i0)
+    @unpack v, i = oneport
+    pars = @parameters L=L
     eqs = [
-           v ~ p.v - n.v
-           0 ~ p.i + n.i
-           D(p.i) ~ v / L
-          ]
-    ODESystem(eqs, t, [v], [L], systems=[p, n], defaults=Dict(L => val), name=name)
+        D(i) ~ 1 / L * v
+    ]
+    extend(ODESystem(eqs, t, [], pars; name=name), oneport)
 end
 
 function IdealOpAmp(; name)
@@ -59,8 +50,12 @@ function IdealOpAmp(; name)
     @named p2 = Pin()
     @named n1 = Pin()
     @named n2 = Pin()
-    @variables v1(t) v2(t) # u"v"
-    @variables i1(t) i2(t) # u"A"
+    sts = @variables begin
+        v1(t) 
+        v2(t) 
+        i1(t) 
+        i2(t)
+    end
 
     eqs = [
         v1 ~ p1.v - n1.v
@@ -72,5 +67,5 @@ function IdealOpAmp(; name)
         v1 ~ 0
         i1 ~ 0
     ]
-    ODESystem(eqs, t, [i1, i2, v1, v2], [], systems=[p1, p2, n1, n2], name=name)
+    ODESystem(eqs, t, sts, [], systems=[p1, p2, n1, n2], name=name)
 end

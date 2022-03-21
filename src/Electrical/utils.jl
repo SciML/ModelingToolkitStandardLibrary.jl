@@ -1,6 +1,29 @@
 @connector function Pin(;name)
-    @variables v(t) i(t)
-    ODESystem(Equation[], t, [v, i], [], name=name, defaults=Dict(v=>1.0, i=>1.0))
+    sts = @variables begin
+        v(t)                    # Potential at the pin [V]
+        i(t), [connect=Flow]    # Current flowing into the pin [A]
+    end 
+    ODESystem(Equation[], t, sts, [], name=name, defaults=Dict(v=>1.0, i=>1.0))
+end
+
+function OnePort(;name, 
+    v0=0.0, # [V] Initial voltage across the component
+    i0=0.0, # [A] Initial current through the component
+    )
+
+    @named p = Pin()
+    @named n = Pin()
+    sts = @variables begin
+        v(t)=v0
+        i(t)=i0
+    end
+    eqs = [
+        v ~ p.v - n.v
+        0 ~ p.i + n.i
+        i ~ p.i
+    ]
+    
+    return compose(ODESystem(eqs, t, sts, []; name=name), p, n)
 end
 
 @connector function DigitalPin(; name)
@@ -12,53 +35,3 @@ end
     ODESystem(Equation[], t, [val, v, i], [], defaults=Dict(val=>0, i=>0), name=name)
 end
 
-abstract type ElectricalPin end
-ModelingToolkit.promote_connect_rule(::Type{DigitalPin}, ::Type{Pin}) = ElectricalPin
-ModelingToolkit.promote_connect_rule(::Type{Pin}, ::Type{DigitalPin}) = ElectricalPin
-ModelingToolkit.promote_connect_rule(::Type{ElectricalPin}, ::Type{DigitalPin}) = ElectricalPin
-ModelingToolkit.promote_connect_rule(::Type{ElectricalPin}, ::Type{Pin}) = ElectricalPin
-
-function ModelingToolkit.connect(::Type{<:Pin}, ps...)
-    eqs = [
-           0 ~ sum(p->p.i, ps) # KCL
-          ]
-    # KVL
-    for i in 1:length(ps)-1
-        push!(eqs, ps[i].v ~ ps[i+1].v)
-    end
-
-    return eqs
-end
-
-function ModelingToolkit.connect(::Type{DigitalPin}, ps...)
-    eqs = [
-           0 ~ sum(p->p.i, ps) # KCL
-          ]
-    # KVL
-    for i in 1:length(ps)-1
-        push!(eqs, ps[i].val ~ ps[i+1].val)
-    end
-    for i in 1:length(ps)-1
-        push!(eqs, ps[i].v ~ ps[i+1].v)
-    end
-    return eqs
-end
-
-function ModelingToolkit.connect(::Type{ElectricalPin}, ps...)
-    eqs = [
-           0 ~ sum(p->p.i, ps) # KCL
-          ]
-
-    # KVL
-    digpins = ModelingToolkit.ODESystem[]
-    for p in ps
-        ModelingToolkit.get_connection_type(p) == DigitalPin && push!(digpins, p)
-    end
-    for i in 1:length(digpins)-1
-        push!(eqs, digpins[i].val ~ digpins[i+1].val)
-    end
-    for i in 1:length(ps)-1
-        push!(eqs, ps[i].v ~ ps[i+1].v)
-    end
-    return eqs
-end

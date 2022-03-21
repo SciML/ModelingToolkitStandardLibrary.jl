@@ -1,36 +1,36 @@
 function TemperatureSensor(; name)
-    @named hp = HeatPort()
-    @variables T(t)
+    @named a = HeatPort()
+    @variables T(t) # [K] Absolute temperature
     
     eqs = [
-        T ~ hp.T
-        hp.Q_flow ~ 0
+        T ~ a.T
+        a.Q_flow ~ 0
     ]
-    ODESystem(eqs, t, [T], [], systems=[hp], name=name)
+    ODESystem(eqs, t, [T], [], systems=[a], name=name)
 end
 
 function RelativeTemperatureSensor(; name)
-    @named hp1 = HeatPort()
-    @named hp2 = HeatPort()
-    @variables T(t)
+    @named a = HeatPort()
+    @named b = HeatPort()
+    @variables T(t) # [K] Relative temperature a.T - b.T
     
     eqs = [
-        T ~ hp1.T - hp2.T
-        hp1.Q_flow ~ 0
-        hp2.Q_flow ~ 0
+        T ~ a.T - b.T
+        a.Q_flow ~ 0
+        b.Q_flow ~ 0
     ]
-    ODESystem(eqs, t, [T], [], systems=[hp1, hp2], name=name)
+    ODESystem(eqs, t, [T], [], systems=[a, b], name=name)
 end
 
 function HeatFlowSensor(; name)
-    @named hp1 = HeatPort()
-    @named hp2 = HeatPort()
-    @variables Q_flow(t)
+    @named a = HeatPort()
+    @named b = HeatPort()
+    @variables Q_flow(t) # [W] Heat flow from port a to port b
     
     eqs = [
-        hp1.T ~ hp2.T
-        hp1.Q_flow + hp2.Q_flow ~ 0
-        Q_flow ~ hp1.Q_flow
+        a.T ~ b.T
+        a.Q_flow + b.Q_flow ~ 0
+        Q_flow ~ a.Q_flow
     ]
-    ODESystem(eqs, t, [Q_flow], [], systems=[hp1, hp2], name=name)
+    ODESystem(eqs, t, [Q_flow], [], systems=[a, b], name=name)
 end

@@ -4,12 +4,13 @@ function ThermalGround(; name)
     ODESystem(eqs, t, systems=[hp], name=name)
 end
 
-function HeatCapacitor(; name, C=1.0)
-    c_th = C
-    
+function HeatCapacitor(; name, C=1.0)    
     @named hp = HeatPort()
-    @parameters C
-    @variables T(t) dt(t)
+    @parameters C=C
+    sts = @variables begin
+        T(t) # Temperature of element
+        dt(t) # "Time derivative of temperature
+    end
 
     D = Differential(t)
     eqs = [
@@ -17,49 +18,46 @@ function HeatCapacitor(; name, C=1.0)
         dt ~ D(T)
         D(T) ~ hp.Q_flow / C
         ]
-    ODESystem(eqs, t, [T, dt], [C], systems=[hp], defaults=Dict(C => c_th), name=name)
+    ODESystem(eqs, t, sts, [C]; systems=[hp], name=name)
 end
 
-function ThermalConductor(; name, G=1.0)
-    g_th = G
 
-    @named hp1 = HeatPort()
-    @named hp2 = HeatPort()
-    @parameters G
-    @variables Q_flow(t) T(t)
-
+function ThermalConductor(;name, 
+    G = 1.0, # [W/K] Constant thermal conductance of material
+    )   
+    @named element1d = Element1D()
+    @unpack Q_flow, dT = element1d
+    pars = @parameters G=G
     eqs = [
-        T ~ hp1.T - hp2.T
-        Q_flow ~ G*T
-        Q_flow ~ hp1.Q_flow
-        -Q_flow ~ hp2.Q_flow
+        Q_flow ~ G * dT
     ]
-    ODESystem(eqs, t, [Q_flow, T], [G], systems=[hp1, hp2], defaults=Dict(G => g_th), name=name)
+    
+    extend(ODESystem(eqs, t, [], pars; name=name), element1d)
 end
 
-function ThermalResistor(; name, R=1.0)
-    r_th = R
-    @named hp1 = HeatPort()
-    @named hp2 = HeatPort()
-    @parameters R
-    @variables Q_flow(t) T(t)
-
+function ThermalResistor(; name,
+    R = 1.0, # [K/W] Constant thermal resistance of material
+    )   
+    @named element1d = Element1D()
+    @unpack Q_flow, dT = element1d
+    pars = @parameters R=R
     eqs = [
-        T ~ R*Q_flow
-        T ~ hp1.T - hp2.T
-        hp1.Q_flow ~ Q_flow
-        hp2.Q_flow ~ -Q_flow
+        dT ~ R * Q_flow
     ]
-    ODESystem(eqs, t, [Q_flow, T], [R], systems=[hp1, hp2], defaults=Dict(R => r_th), name=name)
+    
+    extend(ODESystem(eqs, t, [], pars; name=name), element1d)
 end
 
-function ConvectiveConductor(; name, G=1.0)
-    g_c = G
-
+function ConvectiveConductor(; name, 
+    G=1.0, # [W/K] Convective thermal conductance
+    )
     @named solidport = HeatPort()
     @named fluidport = HeatPort()
-    @parameters G # Convective thermal conductance
-    @variables Q_flow(t) dT(t) 
+    @parameters G=G
+    sts = @variables begin
+        Q_flow(t) # [W] Heat flow rate from solid -> fluid
+        dT(t) # [K] Temperature difference solid.T - fluid.T
+    end
 
     eqs = [
         dT ~ solidport.T - fluidport.T
@@ -67,16 +65,19 @@ function ConvectiveConductor(; name, G=1.0)
         fluidport.Q_flow ~ -Q_flow
         dT ~ G*Q_flow
     ]
-    ODESystem(eqs, t, [Q_flow, dT], [G], systems=[solidport, fluidport], defaults=Dict(G => g_c), name=name)
+    ODESystem(eqs, t, sts, [G]; systems=[solidport, fluidport], name=name)
 end
 
-function ConvectiveResistor(; name, R=1.0)
-    r_c = R
-
+function ConvectiveResistor(; name, 
+    R=1.0, # [K/W] Convective thermal resistance
+    )
     @named solidport = HeatPort()
     @named fluidport = HeatPort()
-    @parameters R # Convective thermal resistance
-    @variables Q_flow(t) dT(t)
+    @parameters R=R
+    sts = @variables begin
+        Q_flow(t) # [W] Heat flow rate from solid -> fluid
+        dT(t) # [K] Temperature difference solid.T - fluid.T
+    end
 
     eqs = [
         dT ~ solidport.T - fluidport.T
@@ -84,32 +85,27 @@ function ConvectiveResistor(; name, R=1.0)
         fluidport.Q_flow ~ -Q_flow
         dT ~ R*Q_flow
     ]
-    ODESystem(eqs, t, [Q_flow, dT], [R], systems=[solidport, fluidport], defaults=Dict(R => r_c), name=name)
+    ODESystem(eqs, t, sts, [R]; systems=[solidport, fluidport], name=name)
 end
 
-function BodyRadiation(; name, G=1.0)
-    g_r = G 
-    σ   = 5.6703744191844294e-8 # Stefan-Boltzmann constant
-    
-    @named hp1 = HeatPort()
-    @named hp2 = HeatPort()
-    @parameters G # Net radiation conductance between two surfaces 
-    @variables Q_flow(t)
+function BodyRadiation(; name, 
+    Gr=1.0, # [m^2] Net radiation conductance between two surfaces
+    )
+    sigma = 5.6703744191844294e-8 # Stefan-Boltzmann constant
 
+    @named element1d = Element1D()
+    @unpack Q_flow, dT = element1d
+    pars = @parameters G=G
     eqs = [
-        Q_flow ~ G*σ*(hp1.T^4 - hp2.T^4)
+        Q_flow ~ Gr * sigma * (element1d.a.T^4 - element1d.b.T^4)
     ]
-    ODESystem(eqs, t, [Q_flow], [G], systems=[hp1, hp2], defaults=Dict(G => g_r), name=name)
+    
+    extend(ODESystem(eqs, t, [], pars; name=name), element1d)
 end
 
 function ThermalCollector(; name, N=1)
-    hp = []
-    for i in 1:N
-        _hp = HeatPort(name=Symbol(:hp, i))
-        push!(hp, _hp)
-    end
+    hp = [HeatPort(name=Symbol(:hp, i)) for i in 1:N]
     @named collector_port = HeatPort()
-
     eqs = [
         collector_port.Q_flow + sum(k -> k.Q_flow, hp) ~ 0
         collector_port.T ~ hp[1].T
@@ -117,5 +113,5 @@ function ThermalCollector(; name, N=1)
     for i in 1:N-1
         push!(eqs, hp[i].T ~ hp[i+1].T)
     end
-    ODESystem(eqs, t, [], [], systems=[hp..., collector_port], name=name)
+    ODESystem(eqs, t, [], []; systems=[hp..., collector_port], name=name)
 end

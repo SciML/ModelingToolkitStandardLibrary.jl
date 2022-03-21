@@ -1,23 +1,29 @@
-function FixedHeatFlow(; name, Q_flow=1.0, T₀=293.15, α=0.0)
-    qflow, tem₀, alpha = Q_flow, T₀, α
-    
-    @parameters Q_flow T₀ α
-    @named hp = HeatPort()
+function FixedHeatFlow(; name, 
+    Q_flow=1.0, # [W] Fixed heat flow rate at port
+    T_ref=293.15, # [K] Reference temperature
+    alpha=0.0, # [1/K] Temperature coefficient of heat flow rate
+    )
+   
+    pars = @parameters begin 
+        Q_flow=Q_flow 
+        T_ref=T_ref 
+        alpha=alpha
+    end
+    @named b = HeatPort()
     
     eqs = [
-        hp.Q_flow ~ -Q_flow * (1 + α*(hp.T - T₀))
+        b.Q_flow ~ -Q_flow * (1 + alpha * (b.T - T_ref))
     ]
-    ODESystem(eqs, t, [], [Q_flow, T₀, α], systems=[hp], defaults=Dict(zip((Q_flow, T₀, α), (qflow, tem₀, alpha))), name=name)
+    ODESystem(eqs, t, [], pars; systems=[b], name=name)
 end
 
-function FixedTemperature(; name, T=0.0)
-    tem = T
-
-    @named hp = HeatPort()
-    @parameters T
-
+function FixedTemperature(; name, 
+    T=0.0 # [K] Fixed temperature boundary condition
+    )
+    @named b = HeatPort()
+    @parameters T=T
     eqs = [
-        hp.T ~ T
+        b.T ~ T
     ]
-    ODESystem(eqs, t, [], [T], systems=[hp], defaults=Dict(T => tem), name=name)
+    ODESystem(eqs, t, [], [T]; systems=[b], name=name)
 end

@@ -1,52 +1,52 @@
 # Define and register smooth functions
-_cos_wave(x, f, A, st, ϕ) = A*cos(2*π*f*(x-st) + ϕ)
-_damped_sine_wave(x, f, A, st, ϕ, d) = exp((st-x)*d)*A*sin(2*π*f*(x-st) + ϕ)
-_ramp(x, δ, st, et, h) = h/(et-st)*(_xH(x, δ, st) - _xH(x, δ, et))
-_square_wave(x, δ, f, A, st) = A*2atan(sin(2π*(x-st)*f)/δ)/π
-_step(x, δ, h, a) = h*(atan((x-a)/δ)/π + 0.5)
-_triangular_wave(x, δ, f, A, st) = A*(1-2acos((1 - δ)sin(2π*(x-st)*f))/π)
-_xH(x, δ, tₒ) = 0.5*(x-tₒ)*(1+((x-tₒ)/sqrt((x-tₒ)^2+δ^2)))
+_cos_wave(t, f, A, st, ϕ) = A*cos(2*π*f*(t - st) + ϕ)
+_sin_wave(t, f, A, st, ϕ) = A*sin(2*π*f*(t - st) + ϕ)
+_damped_sine_wave(t, f, A, st, ϕ, d) = exp((st-t)*d)*A*sin(2*π*f*(t-st) + ϕ)
+_ramp(t, δ, st, et, h) = h/(et-st)*(_xH(t, δ, st) - _xH(t, δ, et))
+_square_wave(t, δ, f, A, st) = A*2atan(sin(2π*(t-st)*f)/δ)/π
+_step(t, δ, h, a) = h*(atan((t-a)/δ)/π + 0.5)
+_triangular_wave(t, δ, f, A, st) = A*(1-2acos((1 - δ)sin(2π*(t-st)*f))/π)
+_xH(t, δ, tₒ) = (t-tₒ)*(1+((t-tₒ)/sqrt((t-tₒ)^2+δ^2)))/2
 
-@register _cos_wave(x, f, A, st, ϕ)
-@register _damped_sine_wave(x, f, A, st, ϕ, damping)
-@register _ramp(x, δ, st, et, h)
-@register _square_wave(x, δ, f, A, st)
-@register _step(x, δ, h, a)
-@register _triangular_wave(x, δ, f, A, st)
+@register_symbolic _cos_wave(t, f, A, st, ϕ)
+@register_symbolic _sin_wave(t, f, A, st, ϕ)
+@register_symbolic _damped_sine_wave(t, f, A, st, ϕ, damping)
+@register_symbolic _ramp(t, δ, st, et, h)
+@register_symbolic _square_wave(t, δ, f, A, st)
+@register_symbolic _step(t, δ, h, a)
+@register_symbolic _triangular_wave(t, δ, f, A, st)
 
 # Voltage sources
-function ConstantVoltage(;name, V=1.0)
-    val = V
-
-    @named p = Pin()
-    @named n = Pin()
-    @parameters V
-    @variables v(t)
-
+function ConstantVoltage(;name, 
+    V = 1.0, # [V]
+    )   
+    @named oneport = OnePort()
+    @unpack v, i = oneport
+    pars = @parameters V=V
     eqs = [
-           v ~ p.v - n.v
-           0 ~ p.i + n.i
-           v ~ V
-          ]
-    ODESystem(eqs, t, [v], [V], systems=[p, n], defaults=Dict(V => val), name=name)
+        v ~ V
+    ]
+    
+    extend(ODESystem(eqs, t, [], pars; name=name), oneport)
 end
 
 function CosineVoltage(;name, offset=0.0, amplitude=1.0, frequency=1.0, starttime=0.0, phase=0.0)
-    o, A, f, st, ϕ = offset, amplitude, frequency, starttime, phase
     δ = 0.00001
 
-    @named p = Pin()
-    @named n = Pin()
-    @parameters offset amplitude frequency starttime phase
-    @variables v(t)
-
+    @named oneport = OnePort()
+    @unpack v, i = oneport
+    pars = @parameters begin
+        offset=offset
+        amplitude=amplitude 
+        frequency=frequency 
+        starttime=starttime 
+        phase=phase
+    end
     eqs = [
-           v ~ p.v - n.v
-           v ~ _cos_wave(t, f, A, st, ϕ) * _step(t, δ, 1.0, st) + offset
-           0 ~ p.i + n.i
-          ]
-    defaults = Dict(zip((offset, amplitude, frequency, starttime, phase), (o, A, f, st, ϕ)))
-    ODESystem(eqs, t, [v], [offset, amplitude, frequency, starttime, phase], systems=[p, n], defaults=defaults, name=name)
+        v ~ _cos_wave(t, frequency, amplitude, starttime, phase) * _step(t, δ, 1.0, starttime) + offset
+    ]
+    
+    extend(ODESystem(eqs, t, [], pars; name=name), oneport)
 end
 
 function DampedSineVoltage(;name, offset=0.0, amplitude=1.0, frequency=1.0, starttime=0.0, phase=0.0, damping_coef=0.0)
@@ -68,56 +68,57 @@ function DampedSineVoltage(;name, offset=0.0, amplitude=1.0, frequency=1.0, star
 end
 
 function RampVoltage(;name, offset=0.0, starttime=0.0, endtime=1.0, height=1.0)
-    o, st, et, h = offset, starttime, endtime, height
-    δ = 0.0001
-
-    @named p = Pin()
-    @named n = Pin()
-    @parameters offset starttime endtime height
-    @variables v(t)
-
+    δ = 0.00001
+    @named oneport = OnePort()
+    @unpack v, i = oneport
+    pars = @parameters begin
+        offset=offset
+        height=height 
+        starttime=starttime 
+        endtime=endtime
+    end
     eqs = [
-           v ~ p.v - n.v
-           v ~ offset + _ramp(t, δ, st, et, h)
-           0 ~ p.i + n.i
-          ]
-    defaults = Dict(zip((offset, starttime, endtime, height), (o, st, et, h)))
-    ODESystem(eqs, t, [v], [offset, starttime, endtime, height], systems=[p, n], defaults=defaults, name=name)
+        v ~ _ramp(t, δ, 1.0, starttime, height) + offset
+    ]
+    
+    extend(ODESystem(eqs, t, [], pars; name=name), oneport)
 end
 
-function SineVoltage(;name, offset=0.0, amplitude=1.0, frequency=1.0, starttime=0.0, phase=0.0)
-    o, A, f, st, ϕ = offset, amplitude, frequency, starttime, phase
+function CosineVoltage(;name, offset=0.0, amplitude=1.0, frequency=1.0, starttime=0.0, phase=0.0)
+    δ = 0.00001
 
-    @named p = Pin()
-    @named n = Pin()
-    @parameters offset amplitude frequency starttime phase
-    @variables v(t)
-
+    @named oneport = OnePort()
+    @unpack v, i = oneport
+    pars = @parameters begin
+        offset=offset
+        amplitude=amplitude 
+        frequency=frequency 
+        starttime=starttime 
+        phase=phase
+    end
     eqs = [
-           v ~ p.v - n.v
-           v ~ offset + (t > st) * (A*sin(2*π*f*(t - st) + ϕ))
-           0 ~ p.i + n.i
-          ]
-    defaults = Dict(zip((offset, amplitude, frequency, starttime, phase), (o, A, f, st, ϕ)))
-    ODESystem(eqs, t, [v], [offset, amplitude, frequency, starttime, phase], systems=[p, n], defaults=defaults, name=name)
+        v ~ _sin_wave(t, frequency, amplitude, starttime, phase) * _step(t, δ, 1.0, starttime) + offset
+    ]
+    
+    extend(ODESystem(eqs, t, [], pars; name=name), oneport)
 end
 
 function SquareVoltage(; name, offset=0.0, amplitude=1.0, frequency=1.0, starttime=0.0)
-    o, A, f, st  = offset, amplitude, frequency, starttime
     δ = 0.0001
 
-    @named p = Pin()
-    @named n = Pin()
-    @parameters offset amplitude frequency starttime
-    @variables v(t)
-    
+    @named oneport = OnePort()
+    @unpack v, i = oneport
+    pars = @parameters begin
+        offset=offset
+        amplitude=amplitude 
+        starttime=starttime 
+        endtime=endtime
+    end
     eqs = [
-        v ~ p.v - n.v
-        0 ~ p.i + n.i
-        v ~ o + _square_wave(t, δ, f, A, st) * (t > st)
-        ]
-    defaults = Dict(zip((offset, amplitude, frequency, starttime), (o, A, f, st)))
-    ODESystem(eqs, t, [v], [offset, amplitude, frequency, starttime], systems=[p, n], defaults=defaults, name=name)
+        v ~ _square_wave(t, frequency, amplitude, starttime, phase) * _step(t, δ, 1.0, starttime) + offset
+    ]
+    
+    extend(ODESystem(eqs, t, [], pars; name=name), oneport)
 end
 
 function StepVoltage(;name, offset=0.0, starttime=0.0, height=1.0)

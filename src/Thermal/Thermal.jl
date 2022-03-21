@@ -17,6 +17,7 @@ export # Thermal Components
        RelativeTemperatureSensor, HeatFlowSensor, TemperatureSensor,
        # Thermal Sources
        FixedHeatFlow, FixedTemperature, ThermalGround,
-       connect, HeatPort
+       # Interface
+       HeatPort
 
 end
