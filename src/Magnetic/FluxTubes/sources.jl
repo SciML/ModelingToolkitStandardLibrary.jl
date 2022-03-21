@@ -1,15 +1,14 @@
-function ConstantMagneticPotentialDifference(;name, V_m=1.0)
-    val = V_m
-    @named two_port_elementary = TwoPortElementary()
-    @unpack port_p, port_n = two_port_elementary
-    @parameters V_m
-    @variables Phi(t)
+function ConstantMagneticPotentialDifference(;name, 
+    V_m=1.0,
+    )   
+    @named twoport = TwoPortElementary()
+    @unpack v, i = twoport
+    pars = @parameters V_m=V_m
     eqs = [
-        V_m ~ port_p.V_m - port_n.V_m,
-        Phi ~ port_p.Phi,
-        0 ~ port_p.Phi + port_n.Phi,
+        V_m,
     ]
-    extend(ODESystem(eqs, t, [Phi], [V_m], systems=[port_p, port_n], defaults=Dict(V_m => val), name=name), two_port_elementary)
+    
+    extend(ODESystem(eqs, t, [], pars; name=name), twoport)
 end
 
 function ConstantMagneticFlux(;name, Phi=1.0)
