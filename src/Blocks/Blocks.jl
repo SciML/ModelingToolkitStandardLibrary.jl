@@ -15,7 +15,7 @@ module Blocks
 using ModelingToolkit, Symbolics, IfElse, OrdinaryDiffEq
 
 @parameters t
-Dₜ = Differential(t)
+D = Differential(t)
 
 export Gain, Sum
 include("math.jl")

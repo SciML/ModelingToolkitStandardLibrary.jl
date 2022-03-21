@@ -3,6 +3,7 @@ using ModelingToolkitStandardLibrary.Electrical, ModelingToolkit, OrdinaryDiffEq
 R = 1.0
 C = 1.0
 V = 1.0
+@parameters t
 @named resistor = Resistor(R=R)
 @named capacitor = Capacitor(C=C)
 @named source = ConstantVoltage(V=V)
@@ -14,7 +15,7 @@ rc_eqs = [
           connect(capacitor.n, source.n, ground.g)
          ]
 
-@named rc_model = ODESystem(rc_eqs, systems=[resistor, capacitor, source, ground])
+@named rc_model = ODESystem(rc_eqs, t, systems=[resistor, capacitor, source, ground])
 sys = structural_simplify(rc_model)
 u0 = [
       capacitor.v => 0.0

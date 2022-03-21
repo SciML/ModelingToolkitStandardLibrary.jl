@@ -22,7 +22,7 @@ function Integrator(; k=1, name)
     @variables x(t)=0 u(t)=0 [input=true] y(t)=0 [output=true]
     @parameters k=k
     eqs = [
-        Dₜ(x) ~ k*u
+        D(x) ~ k*u
         y ~ x
     ]
     ODESystem(eqs, t, name=name)
@@ -47,7 +47,7 @@ function Derivative(; k=1, T, name)
     @variables x(t)=0 u(t)=0 [input=true] y(t)=0 [output=true]
     @parameters T=T k=k
     eqs = [
-        Dₜ(x) ~ (u - x) / T
+        D(x) ~ (u - x) / T
         y ~ (k/T)*(u - x)
     ]
     ODESystem(eqs, t, name=name)
@@ -68,7 +68,7 @@ function FirstOrder(; k=1, T, name)
     @variables x(t)=0 u(t)=0 [input=true] y(t) [output=true]
     @parameters T=T k=k
     eqs = [
-        Dₜ(x) ~ (-x + k*u) / T
+        D(x) ~ (-x + k*u) / T
         y ~ x
     ]
     ODESystem(eqs, t, name=name)
@@ -91,8 +91,8 @@ function SecondOrder(; k=1, w, d, name)
     @variables x(t)=0 xd(t)=0 u(t)=0 [input=true] y(t) [output=true]
     @parameters k=k w=w d=d
     eqs = [
-        Dₜ(x) ~ xd
-        Dₜ(xd) ~ w*(w*(k*u - x) - 2*d*xd)
+        D(x) ~ xd
+        D(xd) ~ w*(w*(k*u - x) - 2*d*xd)
         y ~ x
     ]
     ODESystem(eqs, t, name=name)
@@ -205,7 +205,7 @@ function StateSpace(A, B, C, D=0; x0=zeros(size(A,1)), name)
     y = collect(y)
     # @parameters A=A B=B C=C D=D # This is buggy
     eqs = [
-        Dₜ.(x) .~ A*x .+ B*u
+        D.(x) .~ A*x .+ B*u
         y      .~ C*x .+ D*u
     ]
     ODESystem(eqs, t, name=name)

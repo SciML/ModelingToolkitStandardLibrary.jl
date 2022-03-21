@@ -1,5 +1,7 @@
 using ModelingToolkit, ModelingToolkitStandardLibrary, OrdinaryDiffEq
-using ModelingToolkitStandardLibrary.Blocks: t, Saturation, DeadZone, Integrator
+using ModelingToolkitStandardLibrary.Blocks: Saturation, DeadZone, Integrator
+
+@parameters t
 
 #=
 Testing strategy:

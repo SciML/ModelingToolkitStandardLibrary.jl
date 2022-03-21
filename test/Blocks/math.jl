@@ -1,6 +1,7 @@
 using ModelingToolkit, OrdinaryDiffEq
 using ModelingToolkitStandardLibrary.Blocks
-using ModelingToolkitStandardLibrary.Blocks: Dₜ, t
+
+@parameters t
 
 #=
 Testing strategy:
