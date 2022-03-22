@@ -254,7 +254,6 @@ function SquareCurrent(; name, offset=0.0, amplitude=1.0, frequency=1.0, startti
         offset=offset
         amplitude=amplitude 
         starttime=starttime 
-        endtime=endtime
     end
     eqs = [
         i ~ _square_wave(t, frequency, amplitude, starttime, phase) * _step(t, δ, 1.0, starttime) + offset
