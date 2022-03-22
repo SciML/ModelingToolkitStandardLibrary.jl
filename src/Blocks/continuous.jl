@@ -205,8 +205,8 @@ function StateSpace(A, B, C, D=0; x0=zeros(size(A,1)), name)
     y = collect(y)
     # @parameters A=A B=B C=C D=D # This is buggy
     eqs = [
-        D.(x) .~ A*x .+ B*u
-        y      .~ C*x .+ D*u
+        Differential(t).(x) .~ A*x .+ B*u # cannot use D here
+        y .~ C*x .+ D*u
     ]
     ODESystem(eqs, t, name=name)
 end
