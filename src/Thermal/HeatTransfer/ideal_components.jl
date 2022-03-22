@@ -89,7 +89,7 @@ function ConvectiveResistor(; name,
 end
 
 function BodyRadiation(; name, 
-    Gr=1.0, # [m^2] Net radiation conductance between two surfaces
+    G=1.0, # [m^2] Net radiation conductance between two surfaces
     )
     sigma = 5.6703744191844294e-8 # Stefan-Boltzmann constant
 
@@ -97,7 +97,7 @@ function BodyRadiation(; name,
     @unpack Q_flow, dT = element1d
     pars = @parameters G=G
     eqs = [
-        Q_flow ~ Gr * sigma * (element1d.a.T^4 - element1d.b.T^4)
+        Q_flow ~ G * sigma * (element1d.a.T^4 - element1d.b.T^4)
     ]
     
     extend(ODESystem(eqs, t, [], pars; name=name), element1d)
