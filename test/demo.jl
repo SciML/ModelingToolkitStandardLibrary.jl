@@ -1,4 +1,5 @@
 using ModelingToolkitStandardLibrary.Electrical, ModelingToolkit, OrdinaryDiffEq #, Plots
+using Test
 
 R = 1.0
 C = 1.0
@@ -17,10 +18,8 @@ rc_eqs = [
 
 @named rc_model = ODESystem(rc_eqs, t, systems=[resistor, capacitor, source, ground])
 sys = structural_simplify(rc_model)
-u0 = [
-      capacitor.v => 0.0
-      capacitor.p.i => 0.0
-     ]
-prob = ODAEProblem(sys, u0, (0, 10.0))
+prob = ODAEProblem(sys, Pair[], (0, 10.0))
 sol = solve(prob, Tsit5())
 #plot(sol)
+
+@test isapprox(sol[capacitor.v][end], V, atol=1e-2)
