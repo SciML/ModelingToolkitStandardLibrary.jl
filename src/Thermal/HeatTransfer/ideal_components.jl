@@ -4,7 +4,9 @@ function ThermalGround(; name)
     ODESystem(eqs, t, systems=[hp], name=name)
 end
 
-function HeatCapacitor(; name, C=1.0)    
+function HeatCapacitor(; name, 
+    C=1.0, # [J/K] Heat capacity of element
+    )    
     @named hp = HeatPort()
     @parameters C=C
     sts = @variables begin
@@ -23,7 +25,7 @@ end
 
 
 function ThermalConductor(;name, 
-    G = 1.0, # [W/K] Constant thermal conductance of material
+    G=1.0, # [W/K] Constant thermal conductance of material
     )   
     @named element1d = Element1D()
     @unpack Q_flow, dT = element1d
@@ -36,7 +38,7 @@ function ThermalConductor(;name,
 end
 
 function ThermalResistor(; name,
-    R = 1.0, # [K/W] Constant thermal resistance of material
+    R=1.0, # [K/W] Constant thermal resistance of material
     )   
     @named element1d = Element1D()
     @unpack Q_flow, dT = element1d
