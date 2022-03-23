@@ -1,13 +1,13 @@
 function ThermalGround(; name)
-    @named hp = HeatPort()
-    eqs = [hp.T ~ 0]
-    ODESystem(eqs, t, systems=[hp], name=name)
+    @named a = HeatPort()
+    eqs = [a.T ~ 0]
+    ODESystem(eqs, t, systems=[a], name=name)
 end
 
 function HeatCapacitor(; name, 
     C=1.0, # [J/K] Heat capacity of element
     )    
-    @named hp = HeatPort()
+    @named a = HeatPort()
     @parameters C=C
     sts = @variables begin
         T(t) # Temperature of element
@@ -16,11 +16,11 @@ function HeatCapacitor(; name,
 
     D = Differential(t)
     eqs = [
-        T ~ hp.T
+        T ~ a.T
         dt ~ D(T)
-        D(T) ~ hp.Q_flow / C
+        D(T) ~ a.Q_flow / C
         ]
-    ODESystem(eqs, t, sts, [C]; systems=[hp], name=name)
+    ODESystem(eqs, t, sts, [C]; systems=[a], name=name)
 end
 
 
