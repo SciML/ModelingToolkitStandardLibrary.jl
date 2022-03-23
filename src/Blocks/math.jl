@@ -1,24 +1,25 @@
-import Symbolics.scalarize
-
 """
     Gain(k; name)
 
 Outputs `y = k*u`. `k` can be a scalar or an array.
 """
 function Gain(k=1; name)
-    @variables u(t)=0 [input=true] y(t) [output=true]
-    @parameters k=k
+    @named u = RealInput()
+    @named y = RealOutput()
+    pars = @parameters k=k
     eqs = [
-        y ~ k*u
+        y.u ~ k*u.u
     ]
-    ODESystem(eqs, t, name=name)
+    compose(ODESystem(eqs, t, [], pars; name=name), [y, u])
 end
 
 function Gain(K::AbstractArray; name)
     ny,nu = size(K, 1), size(K, 2)
     @variables u[1:nu](t)=0 [input=true] y[1:ny](t)=0 [output=true]
+    u = collect(u)
+    y = collect(y)
     eqs = y .~ K*u
-    ODESystem(eqs, t, name=name)
+    ODESystem(eqs, t, [u, y], [], name=name)
 end
 
 """
@@ -31,19 +32,22 @@ A block that subtracts one signal from another can thus be created by `@named su
 """
 function Sum(n::Int; name)
     @variables u[1:n](t)=0 [input=true] y(t)=0 [output=true]
-    eqs = [y ~ scalarize(sum(u))]
-    ODESystem(eqs, t, name=name)
+    u = collect(u)
+    eqs = [y ~ sum(u)]
+    ODESystem(eqs, t, [u, y], name=name)
 end
 
 function Sum(k::AbstractVector; name)
     n = length(k)
     @variables u[1:n](t)=0 [input=true] y(t)=0 [output=true]
-    eqs = [y ~ scalarize(sum(k[i]*u[i] for i ∈ 1:n))]
-    ODESystem(eqs, t, name=name)
+    u = collect(u)
+    eqs = [y ~ sum(k[i]*u[i] for i ∈ 1:n)]
+    ODESystem(eqs, t, [u, y], name=name)
 end
 
 function Product(n::Int=2; name)
     @variables u[1:n](t)=0 [input=true] y(t)=0 [output=true]
-    eqs = [y ~ scalarize(prod(u))]
-    ODESystem(eqs, t, name=name)
+    u = collect(u)
+    eqs = [y ~ prod(u)]
+    ODESystem(eqs, t, [u, y], name=name)
 end

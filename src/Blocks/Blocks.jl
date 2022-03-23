@@ -17,6 +17,8 @@ using ModelingToolkit, Symbolics, IfElse, OrdinaryDiffEq
 @parameters t
 D = Differential(t)
 
+include("utils.jl")
+
 export Gain, Sum
 include("math.jl")
 

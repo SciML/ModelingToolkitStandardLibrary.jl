@@ -4,13 +4,13 @@
 
 Outputs a constant value `val`.
 """
-function Constant(val; name)
-    @variables y(t)=val [output=true]
-    @parameters val=val
+function Constant(;name, k=1)
+    @named y = RealOutput()
+    pars = @parameters k=k
     eqs = [
-        y ~ val
+        y.u ~ k
     ]
-    ODESystem(eqs, t, name=name)
+    compose(ODESystem(eqs, t, [], pars; name=name), [y])
 end
 
 """
@@ -19,13 +19,15 @@ end
 Outputs `y = ∫k*u dt`, corresponding to the transfer function `1/s`.
 """
 function Integrator(; k=1, name)
-    @variables x(t)=0 u(t)=0 [input=true] y(t)=0 [output=true]
-    @parameters k=k
+    @named u = RealInput()
+    @named y = RealOutput()
+    sts = @variables x(t)=0
+    pars = @parameters k=k
     eqs = [
-        D(x) ~ k*u
-        y ~ x
+        D(x) ~ k*u.u
+        y.u ~ x
     ]
-    ODESystem(eqs, t, name=name)
+    compose(ODESystem(eqs, t, sts, pars; name=name), [y, u])
 end
 
 """
@@ -44,13 +46,16 @@ where `T` is the time constant of the filter.
 A smaller `T` leads to a more ideal approximation of the derivative.
 """
 function Derivative(; k=1, T, name)
-    @variables x(t)=0 u(t)=0 [input=true] y(t)=0 [output=true]
-    @parameters T=T k=k
+    @named u = RealInput()
+    @named y = RealOutput()
+    sts = @variables x(t)=0
+    pars = @parameters T=T k=k
     eqs = [
-        D(x) ~ (u - x) / T
-        y ~ (k/T)*(u - x)
+        D(x) ~ (u.u - x) / T
+        y.u ~ (k/T)*(u.u - x)
     ]
-    ODESystem(eqs, t, name=name)
+    compose(ODESystem(eqs, t, sts, pars; name=name), [y, u])
+
 end
 
 """
@@ -65,13 +70,15 @@ sT + 1
 ```
 """
 function FirstOrder(; k=1, T, name)
-    @variables x(t)=0 u(t)=0 [input=true] y(t) [output=true]
-    @parameters T=T k=k
+    @named u = RealInput()
+    @named y = RealOutput()
+    sts = @variables x(t)=0
+    pars = @parameters T=T k=k
     eqs = [
-        D(x) ~ (-x + k*u) / T
-        y ~ x
+        D(x) ~ (-x + k*u.u) / T
+        y.u ~ x
     ]
-    ODESystem(eqs, t, name=name)
+    compose(ODESystem(eqs, t, sts, pars; name=name), [y, u])
 end
 
 """
@@ -88,14 +95,16 @@ Critical damping corresponds to `d=1`, which yields the fastest step response wi
 `d = 1/√2` corresponds to a Butterworth filter of order 2 (maximally flat frequency response).
 """
 function SecondOrder(; k=1, w, d, name)
-    @variables x(t)=0 xd(t)=0 u(t)=0 [input=true] y(t) [output=true]
-    @parameters k=k w=w d=d
+    @named u = RealInput()
+    @named y = RealOutput()
+    sts = @variables x(t)=0 xd(t)=0
+    pars = @parameters k=k w=w d=d
     eqs = [
         D(x) ~ xd
-        D(xd) ~ w*(w*(k*u - x) - 2*d*xd)
-        y ~ x
+        D(xd) ~ w*(w*(k*u.u - x) - 2*d*xd)
+        y.u ~ x
     ]
-    ODESystem(eqs, t, name=name)
+    compose(ODESystem(eqs, t, sts, pars; name=name), [y, u])
 end
 
 """
@@ -144,9 +153,12 @@ function PID(; k, Ti=false, Td=false, wp=1, wd=1,
     Td ≥ 0     || throw(ArgumentError("Td out of bounds, got $(Td) but expected Td ≥ 0"))
     y_max ≥ y_min || throw(ArgumentError("y_min must be smaller than y_max"))
 
-    @variables x(t)=0 u_r(t)=0 [input=true] u_y(t)=0 [input=true] y(t) [output=true] e(t)=0 ep(t)=0 ed(t)=0 ea(t)=0
-    
-    
+    @named r = RealInput() # reference
+    @named y = RealInput() # measurement
+    @named u = RealOutput() # control signal
+
+    sts = @variables x(t)=0 e(t)=0 ep(t)=0 ed(t)=0 ea(t)=0
+   
     @named D = Derivative(k = Td, T = Td/Nd) # NOTE: consider T = max(Td/Nd, 100eps()), but currently errors since a symbolic variable appears in a boolean expression in `max`.
     if isequal(Ti, false)
         @named I = Gain(false)
@@ -155,13 +167,13 @@ function PID(; k, Ti=false, Td=false, wp=1, wd=1,
     end
     @named sat = Saturation(; y_min, y_max)
     derivative_action = Td > 0
-    @parameters k=k Td=Td wp=wp wd=wd Ni=Ni Nd=Nd # TODO: move this line above the subsystem definitions when symbolic default values for parameters works. https://github.com/SciML/ModelingToolkit.jl/issues/1013
+    pars = @parameters k=k Td=Td wp=wp wd=wd Ni=Ni Nd=Nd # TODO: move this line above the subsystem definitions when symbolic default values for parameters works. https://github.com/SciML/ModelingToolkit.jl/issues/1013
     # NOTE: Ti is not included as a parameter since we cannot support setting it to false after this constructor is called. Maybe Integrator can be tested with Ti = false setting k to 0 with IfElse?
     
     eqs = [
-        e ~ u_r - u_y # Control error
-        ep ~ wp*u_r - u_y  # Control error for proportional part with setpoint weight
-        ea ~ sat.y - sat.u # Actuator error due to saturation
+        e ~ r.u - y.u # Control error
+        ep ~ wp*r.u - y.u  # Control error for proportional part with setpoint weight
+        ea ~ sat.y.u - sat.u.u # Actuator error due to saturation
         I.u ~ e + 1/(k*Ni)*ea  # Connect integrator block. The integrator integrates the control error and the anti-wind up tracking. Note the apparent tracking time constant 1/(k*Ni), since k appears after the integration and 1/Ti appears in the integrator block, the final tracking gain will be 1/(Ti*Ni) 
         sat.u ~ derivative_action ? k*(ep + I.y + D.y) : k*(ep + I.y) # unsaturated output = P + I + D
         y ~ sat.y
@@ -172,7 +184,7 @@ function PID(; k, Ti=false, Td=false, wp=1, wd=1,
         push!(eqs, D.u ~ ed) # Connect derivative block
         push!(systems, D)
     end
-    ODESystem(eqs, t, name=name, systems=systems)
+    ODESystem(eqs, t, sts, pars, name=name, systems=systems)
 end
 
 """
@@ -203,10 +215,10 @@ function StateSpace(A, B, C, D=0; x0=zeros(size(A,1)), name)
     x = collect(x) # https://github.com/JuliaSymbolics/Symbolics.jl/issues/379
     u = collect(u)
     y = collect(y)
-    # @parameters A=A B=B C=C D=D # This is buggy
+    # pars = @parameters A=A B=B C=C D=D # This is buggy
     eqs = [
         Differential(t).(x) .~ A*x .+ B*u # cannot use D here
         y .~ C*x .+ D*u
     ]
-    ODESystem(eqs, t, name=name)
+    ODESystem(eqs, t, [x,y,u], [], name=name)
 end
