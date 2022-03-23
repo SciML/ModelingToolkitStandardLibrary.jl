@@ -163,7 +163,7 @@ function ConstantCurrent(;name,
     )   
     @named oneport = OnePort()
     @unpack v, i = oneport
-    pars = @parameters A=A
+    pars = @parameters I=I
     eqs = [
         i ~ I
     ]
