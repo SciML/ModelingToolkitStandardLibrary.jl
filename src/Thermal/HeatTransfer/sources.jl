@@ -21,9 +21,9 @@ function FixedTemperature(; name,
     T=0.0 # [K] Fixed temperature boundary condition
     )
     @named b = HeatPort()
-    @parameters T=T
+    pars = @parameters T=T
     eqs = [
         b.T ~ T
     ]
-    ODESystem(eqs, t, [], [T]; systems=[b], name=name)
+    ODESystem(eqs, t, [], pars; systems=[b], name=name)
 end
