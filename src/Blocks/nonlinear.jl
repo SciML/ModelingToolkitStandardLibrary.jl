@@ -12,13 +12,14 @@ function Saturation(; y_max, y_min=y_max > 0 ? -y_max : -Inf, name)
     if !ModelingToolkit.isvariable(y_max)
         y_max ≥ y_min || throw(ArgumentError("y_min must be smaller than y_max"))
     end
-    sts = @variables u(t)=0 [input=true] y(t)=0 [output=true]
+    @named u = RealInput()
+    @named y = RealOutput()
     pars = @parameters y_max=y_max y_min=y_min
     eqs = [
         # The equation below is equivalent to y ~ clamp(u, y_min, y_max)
-        y ~ ie(u > y_max, y_max, ie( (y_min < u) & (u < y_max), u, y_min))
+        y.u ~ ie(u.u > y_max, y_max, ie( (y_min < u.u) & (u.u < y_max), u.u, y_min))
     ]
-    ODESystem(eqs, t, sts, pars, name=name)
+    compose(ODESystem(eqs, t, [], pars; name=name), [y, u])
 end
 
 """
@@ -41,10 +42,11 @@ function DeadZone(; u_max, u_min=-u_max, name)
     if !ModelingToolkit.isvariable(u_max)
         u_max ≥ u_min || throw(ArgumentError("u_min must be smaller than u_max"))
     end
-    sts = @variables u(t)=0 [input=true] y(t)=0 [output=true]
+    @named u = RealInput()
+    @named y = RealOutput()
     pars = @parameters u_max=u_max u_min=u_min
     eqs = [
-        y ~ ie(u > u_max, u-u_max, ie( u < u_min, u-u_min, 0))
+        y.u ~ ie(u.u > u_max, u.u - u_max, ie(u.u < u_min, u.u - u_min, 0))
     ]
-    ODESystem(eqs, t, sts, pars, name=name)
+    compose(ODESystem(eqs, t, [], pars; name=name), [y, u])
 end

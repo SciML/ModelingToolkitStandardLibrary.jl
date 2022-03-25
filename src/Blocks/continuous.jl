@@ -143,6 +143,8 @@ function PID(; k, Ti=false, Td=false, wp=1, wd=1,
     gains = false,
     name
 )
+    # FIXME:
+
     if gains
         Ti = k / Ti
         Td = Td / k

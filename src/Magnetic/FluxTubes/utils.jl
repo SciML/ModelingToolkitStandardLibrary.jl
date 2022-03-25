@@ -5,3 +5,4 @@
     end
     ODESystem(Equation[], t, sts, []; name=name)
 end
+Base.@doc "Port for a Magnetic system." MagneticPort

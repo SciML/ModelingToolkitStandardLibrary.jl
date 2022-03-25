@@ -5,6 +5,7 @@
     end 
     ODESystem(Equation[], t, sts, [], name=name, defaults=Dict(v=>1.0, i=>1.0))
 end
+Base.@doc "Port for an electrical system." Pin
 
 function OnePort(;name, 
     v0=0.0, # [V] Initial voltage across the component

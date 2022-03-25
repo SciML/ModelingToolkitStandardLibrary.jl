@@ -5,7 +5,7 @@
     end
     ODESystem(Equation[], t, sts, [], name=name)
 end
-
+Base.@doc "Port for a thermal system." HeatPort
 
 function Element1D(;name, 
     dT0=0.0, # [K] Temperature difference across the component a.T - b.T
