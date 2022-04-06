@@ -1,65 +1,191 @@
-using ModelingToolkit, OrdinaryDiffEq
 using ModelingToolkitStandardLibrary.Blocks
+using ModelingToolkit, OrdinaryDiffEq
 
 @parameters t
 
-#=
-Testing strategy:
-The general strategy is to test systems using simple intputs where the solution is known on closed form. For algebraic systems (without differential variables), an integrator with a constant input is often used together with the system under test. 
-=#
-
-@testset "Gain" begin
-    @info "Testing Gain"
-    @named c = Gain(42)
+@testset "Constant" begin
+    @named c = Constant(; k=1)
     @named int = Integrator(; k=1)
-    @named iosys = ODESystem([int.u~c.y, c.u~1], t, systems=[c, int])
+    @named iosys = ODESystem(connect(c.output, int.input), t, systems=[int, c])
     sys = structural_simplify(iosys)
-    prob = ODEProblem(sys, Pair[], (0.0, 1.0))
-    sol = solve(prob, Rosenbrock23(), saveat=0:0.1:1)
-    @test sol[int.y] ≈ 42 .* (0:0.1:1)
 
-    # Matrix gain
-    @named c = Gain([2 0; 0 3])
-    ints = [Integrator(; k=1, name=Symbol("int$i")) for i in 1:2]
-    @named iosys = ODESystem([
-        ints[1].u~c.y[1],
-        ints[2].u~c.y[2],
-        c.u[1]~1,
-        c.u[2]~2,
-        ], t, systems=[c; ints])
-    sys = structural_simplify(iosys)
-    prob = ODEProblem(sys, Pair[], (0.0, 1.0))
-    sol = solve(prob, Rosenbrock23(), saveat=0:0.1:1)
-    @test sol[ints[1].y] ≈ 2 .* (0:0.1:1) # 2 * 1
-    @test sol[ints[2].y] ≈ 6 .* (0:0.1:1) # 3 * 2
+    prob = ODEProblem(sys, Pair[int.x=>1.0], (0.0, 1.0))
+
+    sol = solve(prob, Rodas4())
+
+    @test sol[int.output.u][end] ≈ 2
 end
 
+@testset "Gain" begin
+    @named c = Constant(; k=1)
+    @named gain = Gain(1;)
+    @named int = Integrator(; k=1)
+    @named model = ODESystem([connect(c.output, gain.input), connect(gain.output, int.input)], t, systems=[int, gain, c])
+    sys = structural_simplify(model)
+
+    prob = ODEProblem(sys, Pair[int.x=>1.0], (0.0, 1.0))
+
+    sol = solve(prob, Rodas4())
+
+    @test sol[int.output.u][end] ≈ 2
+end
+
+@testset "Feedback loop" begin
+    @named c = Constant(; k=2)
+    @named gain = Gain(1;)
+    @named int = Integrator(; k=1)
+    @named fb = Feedback(;)
+    @named model = ODESystem(
+        [
+            connect(c.output, fb.input1), 
+            connect(fb.input2, int.output), 
+            connect(fb.output, gain.input),
+            connect(gain.output, int.input),
+        ], 
+        t, 
+        systems=[int, gain, c, fb]
+    )
+    sys = structural_simplify(model)
+
+    prob = ODEProblem(sys, Pair[int.x=>0.0], (0.0, 100.0))
+
+    sol = solve(prob, Rodas4())
+    @test sol[int.output.u][end] ≈ 2
+end
+
+@testset "Add" begin
+    @named c1 = Constant(; k=1)
+    @named c2 = Constant(; k=2)
+    @named add = Add(;)
+    @named int = Integrator(; k=1)
+    @named model = ODESystem(
+        [
+            connect(c1.output, add.input1), 
+            connect(c2.output, add.input2), 
+            connect(add.output, int.input),
+        ], 
+        t, 
+        systems=[int, add, c1, c2]
+    )
+    sys = structural_simplify(model)
+
+    prob = ODEProblem(sys, Pair[int.x=>0.0], (0.0, 1.0))
+
+    sol = solve(prob, Rodas4())
+    @test sol[int.output.u][end] ≈ 3
+end
+
+@testset "Product" begin
+    @named c1 = Constant(; k=1)
+    @named c2 = Constant(; k=2)
+    @named prod = Product(;)
+    @named int = Integrator(; k=1)
+    @named model = ODESystem(
+        [
+            connect(c1.output, prod.input1), 
+            connect(c2.output, prod.input2), 
+            connect(prod.output, int.input),
+        ], 
+        t, 
+        systems=[int, prod, c1, c2]
+    )
+    sys = structural_simplify(model)
+
+    prob = ODEProblem(sys, Pair[int.x=>0.0], (0.0, 1.0))
+
+    sol = solve(prob, Rodas4())
+    @test sol[int.output.u][end] ≈ 2
+end
+
+@testset "Division" begin
+    @named c1 = Constant(; k=1)
+    @named c2 = Constant(; k=2)
+    @named div = Division(;)
+    @named int = Integrator(; k=1)
+    @named model = ODESystem(
+        [
+            connect(c1.output, div.input1), 
+            connect(c2.output, div.input2), 
+            connect(div.output, int.input),
+        ], 
+        t, 
+        systems=[int, div, c1, c2]
+    )
+    sys = structural_simplify(model)
+
+    prob = ODEProblem(sys, Pair[int.x=>0.0], (0.0, 1.0))
+
+    sol = solve(prob, Rodas4())
+    @test sol[int.output.u][end] ≈ 1/2
+end
+
+@testset "Abs" begin
+    @named c = Constant(; k=-1)
+    @named abs = Abs(;)
+    @named int = Integrator(; k=1)
+    @named model = ODESystem(
+        [
+            connect(c.output, abs.input), 
+            connect(abs.output, int.input),
+        ], 
+        t, 
+        systems=[int, abs, c]
+    )
+    sys = structural_simplify(model)
+
+    prob = ODEProblem(sys, Pair[int.x=>0.0], (0.0, 1.0))
+
+    sol = solve(prob, Rodas4())
+    @test sol[int.output.u][end] ≈ 1
+end
+
+@testset "Sqrt" begin
+    @named c = Constant(; k=4)
+    @named sqr = Sqrt(;)
+    @named int = Integrator(; k=1)
+    @named model = ODESystem(
+        [
+            connect(c.output, sqr.input), 
+            connect(sqr.output, int.input),
+        ], 
+        t, 
+        systems=[int, sqr, c]
+    )
+    sys = structural_simplify(model)
+
+    prob = ODEProblem(sys, Pair[int.x=>0.0], (0.0, 1.0))
+
+    sol = solve(prob, Rodas4())
+    @test sol[int.output.u][end] ≈ 2
+end
+
+@testset "Sign" begin
+    @named c = Constant(; k=3)
+    @named sig = Sign(;)
+    @named int = Integrator(; k=1)
+    @named model = ODESystem(
+        [
+            connect(c.output, sig.input), 
+            connect(sig.output, int.input),
+        ], 
+        t, 
+        systems=[int, sig, c]
+    )
+    sys = structural_simplify(model)
+
+    prob = ODEProblem(sys, Pair[int.x=>0.0], (0.0, 1.0))
+
+    sol = solve(prob, Rodas4())
+    @test sol[int.output.u][end] ≈ 1
+end
+
+@testset "MatrixGain" begin
+    K = [1 2; 3 4]
+    @named gain = MatrixGain(K;)
+    # TODO:
+end
 
 @testset "Sum" begin
-    @info "Testing Sum"
-    @named s = Sum(2)
-    ints = [Integrator(; k=1, name=Symbol("int$i")) for i in 1:2]
-    @named iosys = ODESystem([
-        ints[1].u~1,
-        ints[2].u~2,
-        ints[1].y~s.u[1],
-        ints[2].y~s.u[2],
-        ], t, systems=[s; ints])
-    sys = structural_simplify(iosys)
-    prob = ODEProblem(sys, Pair[], (0.0, 1.0))
-    sol = solve(prob, Rosenbrock23(), saveat=0:0.1:1)
-    @test sol[s.y] ≈ 3 .* (0:0.1:1)
-
-    @named s = Sum([1, -2])
-    ints = [Integrator(; k=1, name=Symbol("int$i")) for i in 1:2]
-    @named iosys = ODESystem([
-        ints[1].u~1,
-        ints[2].u~1,
-        ints[1].y~s.u[1],
-        ints[2].y~s.u[2],
-        ], t, systems=[s; ints])
-    sys = structural_simplify(iosys)
-    prob = ODEProblem(sys, Pair[], (0.0, 1.0))
-    sol = solve(prob, Rosenbrock23(), saveat=0:0.1:1)
-    @test sol[s.y] ≈ (1 + (-2)) .* (0:0.1:1)
+    @named s = Sum(2;)
+    # TODO:
 end

@@ -13,6 +13,7 @@ where `u` are inputs, `x` are state variables and `y` are outputs. `x,u,y` are a
 """
 module Blocks
 using ModelingToolkit, Symbolics, IfElse, OrdinaryDiffEq
+using IfElse: ifelse
 
 @parameters t
 D = Differential(t)
@@ -20,7 +21,7 @@ D = Differential(t)
 export RealInput, RealOutput, SISO
 include("utils.jl")
 
-export Gain, Sum
+export Gain, Sum, MatrixGain, Sum, Feedback, Add, Product, Division, Abs, Sign, Sqrt
 include("math.jl")
 
 export Saturation, DeadZone

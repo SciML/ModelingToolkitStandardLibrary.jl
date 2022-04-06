@@ -10,7 +10,7 @@ is known on closed form. For algebraic systems (without differential variables),
 an integrator with a constant input is often used together with the system under test. 
 =#
 
-@testset "Constant" begin
+@testset "Constant and Constant" begin
     @named c = Constant(; k=1)
     @named int = Integrator(; k=1)
     @named iosys = ODESystem(connect(c.y, int.u), t, systems=[int, c])
@@ -20,21 +20,6 @@ an integrator with a constant input is often used together with the system under
 
     sol = solve(prob, Rodas4(), saveat=0:0.1:1)
     @test sol[int.y.u][end] ≈ 2
-end
-
-@testset "Integrator" begin
-    @info "Testing Integrator"
-    for k = [0.1, 1, 10]
-        @named int = Integrator(; k)
-        @named iosys = ODESystem([int.u~1], t, systems=[int])
-        sys = structural_simplify(iosys)
-        prob = ODEProblem(sys, Pair[int.u=>1.], (0.0, 1.0))
-        sol = solve(prob, Rodas4(), saveat=0:0.1:1)
-
-        @test count(ModelingToolkit.isinput, states(int)) == 1
-        @test count(ModelingToolkit.isoutput, states(int)) == 1
-        @test sol[int.y] ≈ k .* (0:0.1:1)
-    end
 end
 
 @testset "Derivative" begin
@@ -55,7 +40,7 @@ end
     y1 = [0.0, 0.37523930001382705, 0.5069379343173124, 0.422447016206449, 0.17842742193310424, -0.14287580928455357, -0.44972307981519677, -0.6589741190943343, -0.7145299845867902, -0.5997749247850142, -0.34070236779586216, -5.95731929625698e-5, 0.33950710748637825, 0.595360048429, 0.7051403889991136, 0.6421181090255983, 0.4214753349401378, 0.09771852881756515, -0.24995564964733635, -0.5364893060362096, -0.6917461951831227]
     y10 = [0.0, 0.04673868865158038, 0.07970450452536708, 0.09093906605247397, 0.07779607227750623, 0.04360203242101193, -0.0031749143460660587, -0.050989771426848074, -0.08804727520541561, -0.10519046453331109, -0.09814083278784949, -0.06855209962041757, -0.023592611490189652, 0.025798926487949535, 0.0675952553752348, 0.0916256775597053, 0.09206230764744555, 0.06885879535935949, 0.027748930190142837, -0.021151336671582116, -0.06582115823326284]
 
-    for k = [0.1, 1, 10], (T,y) = zip([0.1, 1, 10], [y01, y1, y10])
+    for k = [0.1, 1, 10], (T,y) = zip([0.1, 1, 10], [y01, y1, y10]) 
         @named der = Derivative(; k, T)
         @named iosys = ODESystem([der.u~sin(t)], t, systems=[der])
         sys = structural_simplify(iosys)

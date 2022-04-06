@@ -5,12 +5,12 @@
 Outputs a constant value `val`.
 """
 function Constant(;name, k=1)
-    @named y = RealOutput()
+    @named output = RealOutput()
     pars = @parameters k=k
     eqs = [
-        y.u ~ k
+        output.u ~ k
     ]
-    compose(ODESystem(eqs, t, [], pars; name=name), [y])
+    compose(ODESystem(eqs, t, [], pars; name=name), [output])
 end
 
 """
@@ -18,16 +18,16 @@ end
 
 Outputs `y = ∫k*u dt`, corresponding to the transfer function `1/s`.
 """
-function Integrator(; k=1, name)
-    @named u = RealInput()
-    @named y = RealOutput()
+function Integrator(;name, k=1)
+    @named siso = SISO()
+    @unpack u, y = siso
     sts = @variables x(t)=0
     pars = @parameters k=k
     eqs = [
-        D(x) ~ k*u.u
-        y.u ~ x
+        D(x) ~ k * u
+        y ~ x
     ]
-    compose(ODESystem(eqs, t, sts, pars; name=name), [y, u])
+    extend(ODESystem(eqs, t, sts, pars; name=name), siso)
 end
 
 """
@@ -46,16 +46,15 @@ where `T` is the time constant of the filter.
 A smaller `T` leads to a more ideal approximation of the derivative.
 """
 function Derivative(; k=1, T, name)
-    @named u = RealInput()
-    @named y = RealOutput()
+    @named siso = SISO()
+    @unpack u, y = siso
     sts = @variables x(t)=0
     pars = @parameters T=T k=k
     eqs = [
-        D(x) ~ (u.u - x) / T
-        y.u ~ (k/T)*(u.u - x)
+        D(x) ~ (u - x) / T
+        y ~ (k / T) * (u - x)
     ]
-    compose(ODESystem(eqs, t, sts, pars; name=name), [y, u])
-
+    extend(ODESystem(eqs, t, sts, pars; name=name), siso)
 end
 
 """
@@ -70,15 +69,15 @@ sT + 1
 ```
 """
 function FirstOrder(; k=1, T, name)
-    @named u = RealInput()
-    @named y = RealOutput()
+    @named siso = SISO()
+    @unpack u, y = siso
     sts = @variables x(t)=0
     pars = @parameters T=T k=k
     eqs = [
-        D(x) ~ (-x + k*u.u) / T
-        y.u ~ x
+        D(x) ~ (u - x) / T
+        y ~ x
     ]
-    compose(ODESystem(eqs, t, sts, pars; name=name), [y, u])
+    extend(ODESystem(eqs, t, sts, pars; name=name), siso)
 end
 
 """
@@ -95,16 +94,16 @@ Critical damping corresponds to `d=1`, which yields the fastest step response wi
 `d = 1/√2` corresponds to a Butterworth filter of order 2 (maximally flat frequency response).
 """
 function SecondOrder(; k=1, w, d, name)
-    @named u = RealInput()
-    @named y = RealOutput()
+    @named siso = SISO()
+    @unpack u, y = siso
     sts = @variables x(t)=0 xd(t)=0
     pars = @parameters k=k w=w d=d
     eqs = [
         D(x) ~ xd
-        D(xd) ~ w*(w*(k*u.u - x) - 2*d*xd)
-        y.u ~ x
+        D(xd) ~ w*(w*(k*u - x) - 2*d*xd)
+        y ~ x
     ]
-    compose(ODESystem(eqs, t, sts, pars; name=name), [y, u])
+    extend(ODESystem(eqs, t, sts, pars; name=name), siso)
 end
 
 """
@@ -142,9 +141,7 @@ function PID(; k, Ti=false, Td=false, wp=1, wd=1,
     y_min = y_max > 0 ? -y_max : -Inf,
     gains = false,
     name
-)
-    # FIXME:
-
+    )
     if gains
         Ti = k / Ti
         Td = Td / k
