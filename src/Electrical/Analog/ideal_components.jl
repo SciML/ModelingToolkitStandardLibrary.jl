@@ -1,27 +1,32 @@
+"""
+Ground of an electrical circuit. The potential at the ground node is zero. 
+"""
 function Ground(;name)
     @named g = Pin()
     eqs = [g.v ~ 0]
     ODESystem(eqs, t, [], []; systems=[g], name=name)
 end
 
+"""
+Ideal linear electrical resistor.
+"""
 function Resistor(;name, 
-    R = 1.0, # [Ohm] Resistance
-    )   
+    R = 1.0) # [Ohm] Resistance
     @named oneport = OnePort()
     @unpack v, i = oneport
     pars = @parameters R=R
     eqs = [
         v ~ i * R
     ]
-    
     extend(ODESystem(eqs, t, [], pars; name=name), oneport)
 end
 
-function Capacitor(; name, 
+"""
+Ideal linear electrical capacitor.
+"""
+function Capacitor(;name, 
     C=1.0, # [F] Capacity
-    v0=0.0, # [V] Initial voltage  
-    )
-
+    v0=0.0) # [V] Initial voltage  
     @named oneport = OnePort(;v0=v0)
     @unpack v, i = oneport
     pars = @parameters C=C
@@ -31,11 +36,12 @@ function Capacitor(; name,
     extend(ODESystem(eqs, t, [], pars; name=name), oneport)
 end
 
-function Inductor(; name, 
+"""
+Ideal linear electrical inductor.
+"""
+function Inductor(;name, 
     L=1.0e-6, # [H] Inductance
-    i0=0.0, # [A] Initial current
-    )
-
+    i0=0.0) # [A] Initial current
     @named oneport = OnePort(;i0=i0)
     @unpack v, i = oneport
     pars = @parameters L=L
@@ -45,7 +51,12 @@ function Inductor(; name,
     extend(ODESystem(eqs, t, [], pars; name=name), oneport)
 end
 
-function IdealOpAmp(; name)
+"""
+Ideal operational amplifier (norator-nullator pair).
+The ideal OpAmp is a two-port. The left port is fixed to v1=0 and i1=0 (nullator). 
+At the right port both any voltage v2 and any current i2 are possible (norator).
+"""
+function IdealOpAmp(;name)
     @named p1 = Pin()
     @named p2 = Pin()
     @named n1 = Pin()
@@ -56,7 +67,6 @@ function IdealOpAmp(; name)
         i1(t) 
         i2(t)
     end
-
     eqs = [
         v1 ~ p1.v - n1.v
         v2 ~ p2.v - n2.v
