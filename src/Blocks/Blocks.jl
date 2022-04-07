@@ -24,10 +24,13 @@ include("utils.jl")
 export Gain, Sum, MatrixGain, Sum, Feedback, Add, Product, Division, Abs, Sign, Sqrt
 include("math.jl")
 
+export Constant, SinSource
+include("sources.jl")
+
 export Saturation, DeadZone
 include("nonlinear.jl")
 
-export Constant, Integrator, Derivative, FirstOrder, SecondOrder, PID, StateSpace
+export Integrator, Derivative, FirstOrder, SecondOrder, PID, StateSpace
 include("continuous.jl")
 
 end

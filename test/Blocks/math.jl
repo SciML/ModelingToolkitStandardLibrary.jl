@@ -3,18 +3,6 @@ using ModelingToolkit, OrdinaryDiffEq
 
 @parameters t
 
-@testset "Constant" begin
-    @named c = Constant(; k=1)
-    @named int = Integrator(; k=1)
-    @named iosys = ODESystem(connect(c.output, int.input), t, systems=[int, c])
-    sys = structural_simplify(iosys)
-
-    prob = ODEProblem(sys, Pair[int.x=>1.0], (0.0, 1.0))
-
-    sol = solve(prob, Rodas4())
-
-    @test sol[int.output.u][end] ≈ 2
-end
 
 @testset "Gain" begin
     @named c = Constant(; k=1)

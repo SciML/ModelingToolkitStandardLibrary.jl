@@ -1,18 +1,3 @@
-# TODO: remove initial values for all inputs once IO handling in MTK is in place
-"""
-    Constant(val; name)
-
-Outputs a constant value `val`.
-"""
-function Constant(;name, k=1)
-    @named output = RealOutput()
-    pars = @parameters k=k
-    eqs = [
-        output.u ~ k
-    ]
-    compose(ODESystem(eqs, t, [], pars; name=name), [output])
-end
-
 """
     Integrator(; k=1, name)
 

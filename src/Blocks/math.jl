@@ -128,8 +128,19 @@ function Sqrt(;name)
     extend(ODESystem(eqs, t, [], []; name=name), siso)
 end
 
+"""
+Output the sine of the input.
+"""
+function Sin(;name)
+    @named siso = SISO()
+    @unpack u, y = siso
+    eqs = [
+        y ~ sin(u)
+    ]
+    extend(ODESystem(eqs, t, [], []; name=name), siso)
+end
+
 # TODO:
-# Sin	Output the sine of the input
 # Cos	Output the cosine of the input
 # Tan	Output the tangent of the input
 # Asin	Output the arc sine of the input
