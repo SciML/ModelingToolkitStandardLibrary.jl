@@ -1,3 +1,7 @@
+"""
+Library of electrical models.
+This library contains electrical components to build up analog circuits.
+"""
 module Electrical
 
 using ModelingToolkit, Symbolics, IfElse, OrdinaryDiffEq
@@ -15,7 +19,14 @@ include("Analog/sources.jl")
 # include("Digital/tables.jl")
 # include("Digital/sources.jl")
 
-export # Analog Components
+# TODO: 
+# - digital
+# - machines
+# - multi-phase
+
+export #Interface
+       Pin,
+       # Analog Components
        Capacitor, Ground, Inductor, Resistor,
        Short, IdealOpAmp,
        # Analog Sensors
@@ -27,9 +38,8 @@ export # Analog Components
        CosineVoltage, DampedSineVoltage,
        ConstantCurrent, SineCurrent, StepCurrent, RampCurrent,
        SquareCurrent, TriangularCurrent,
-       CosineCurrent, DampedSineCurrent,
-       #Interface
-       Pin
+       CosineCurrent, DampedSineCurrent
+       
 
        # # Digital Gates
        # And, Or, Not, Xor, Nand, Nor, Xnor,
