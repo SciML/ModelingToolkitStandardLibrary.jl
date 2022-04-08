@@ -30,7 +30,7 @@ using ModelingToolkitStandardLibrary.Thermal, ModelingToolkit, OrdinaryDiffEq, T
     
     # Check if Relative temperature sensor reads the temperature of heat capacitor
     # when connected to a thermal conductor and a fixed temperature source 
-    @test sol[reltem_sensor.T] == temperatures[1, :] - temperatures[2, :] - sol[tem_src.b.T] # FIXME:
+    @test sol[reltem_sensor.T] + sol[tem_src.b.T] == sol[mass1.T] + sol[th_conductor.dT] 
     
     @info "Building a two-body system..."
     eqs = [
@@ -72,7 +72,7 @@ end
     @info "Building a heat-flow system..."
     eqs = [
         connect(mass1.a, th_resistor.a, th_conductor.a)
-        connect(th_conductor.b, flow_src.a, hf_sensor1.a, hf_sensor2.a)
+        connect(th_conductor.b, flow_src.b, hf_sensor1.a, hf_sensor2.a)
         connect(th_resistor.b, hf_sensor1.b, hf_sensor2.b, th_ground.a)
     ]
     @named h2 = ODESystem(eqs, t, 
@@ -88,7 +88,7 @@ end
     sol  = solve(prob, Rodas4())
     
     @test sol[th_conductor.T]*G == sol[th_conductor.Q_flow]
-    @test sol[th_conductor.Q_flow] ≈ sol[hf_sensor1.Q_flow] + sol[flow_src.hp.Q_flow]
+    @test sol[th_conductor.Q_flow] ≈ sol[hf_sensor1.Q_flow] + sol[flow_src.b.Q_flow]
 
     @test sol[mass1.T] == sol[th_resistor.T]
     @test sol[th_resistor.T]./R ≈ sol[th_resistor.Q_flow]
@@ -172,8 +172,8 @@ end
 
     @info "Building a heat collector..."
     eqs = [
-        connect(flow_src.b, collector.a, th_resistor.a)
-        connect(tem_src.a, collector.b)
+        connect(flow_src.b, collector.hp1, th_resistor.a)
+        connect(tem_src.a, collector.hp2)
         connect(hf_sensor.a, collector.collector_port)
         connect(hf_sensor.b, th_ground.a, th_resistor.b)
         ]
@@ -188,7 +188,7 @@ end
     prob = ODEProblem(sys, u0, (0, 3.0))
     sol  = solve(prob, Rodas4())
 
-    @test sol[collector.collector_port.Q_flow] + sol[collector.a.Q_flow] + sol[collector.b.Q_flow] ==
+    @test sol[collector.collector_port.Q_flow] + sol[collector.hp1.Q_flow] + sol[collector.hp2.Q_flow] ==
         zeros(length(sol[collector.collector_port.Q_flow]))
-    @test sol[collector.collector_port.T] == sol[collector.a.T] == sol[collector.b.T]
+    @test sol[collector.collector_port.T] == sol[collector.hp1.T] == sol[collector.hp2.T]
 end
