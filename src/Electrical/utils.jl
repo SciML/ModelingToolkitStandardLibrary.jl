@@ -9,9 +9,7 @@ Base.@doc "Port for an electrical system." Pin
 
 function OnePort(;name, 
     v0=0.0, # [V] Initial voltage across the component
-    i0=0.0, # [A] Initial current through the component
-    )
-
+    i0=0.0) # [A] Initial current through the component
     @named p = Pin()
     @named n = Pin()
     sts = @variables begin
@@ -23,7 +21,6 @@ function OnePort(;name,
         0 ~ p.i + n.i
         i ~ p.i
     ]
-    
     return compose(ODESystem(eqs, t, sts, []; name=name), p, n)
 end
 

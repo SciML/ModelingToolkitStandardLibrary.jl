@@ -45,5 +45,5 @@ end
     prob = ODEProblem(sys, [int.x=>1.0], (0.0, 1.0))
 
     sol = solve(prob, Rodas4())
-    @test sol[int.y.u][end] ≈ 2
+    @test sol[int.output.u][end] ≈ 2
 end

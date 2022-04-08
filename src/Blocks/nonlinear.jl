@@ -37,9 +37,9 @@ function DeadZone(; name, u_max, u_min=-u_max)
     end
     @named siso = SISO()
     @unpack u, y = siso
-    pars = @parameters y_max=y_max y_min=y_min
+    pars = @parameters u_max=u_max u_min=u_min
     eqs = [
-        y ~ ie(u > u_max, u - u_max, ie(u < u_min, u - u_min, 0))
+        y ~ ifelse(u > u_max, u - u_max, ifelse(u < u_min, u - u_min, 0))
     ]
     extend(ODESystem(eqs, t, [], pars; name=name), siso)
 end
