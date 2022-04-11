@@ -87,11 +87,11 @@ end
     prob = ODEProblem(sys, u0, (0, 3.0))
     sol  = solve(prob, Rodas4())
     
-    @test sol[th_conductor.T]*G == sol[th_conductor.Q_flow]
+    @test sol[th_conductor.dT] .* G == sol[th_conductor.Q_flow]
     @test sol[th_conductor.Q_flow] ≈ sol[hf_sensor1.Q_flow] + sol[flow_src.b.Q_flow]
 
-    @test sol[mass1.T] == sol[th_resistor.T]
-    @test sol[th_resistor.T]./R ≈ sol[th_resistor.Q_flow]
+    @test sol[mass1.T] == sol[th_resistor.a.T]
+    @test sol[th_resistor.dT] ./ R ≈ sol[th_resistor.Q_flow]
 
 end
 
@@ -173,7 +173,7 @@ end
     @info "Building a heat collector..."
     eqs = [
         connect(flow_src.b, collector.hp1, th_resistor.a)
-        connect(tem_src.a, collector.hp2)
+        connect(tem_src.b, collector.hp2)
         connect(hf_sensor.a, collector.collector_port)
         connect(hf_sensor.b, th_ground.a, th_resistor.b)
         ]

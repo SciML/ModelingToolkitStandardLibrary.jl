@@ -4,6 +4,9 @@ function ThermalGround(; name)
     ODESystem(eqs, t, systems=[a], name=name)
 end
 
+"""
+Lumped thermal element storing heat
+"""
 function HeatCapacitor(; name, 
     C=1.0, # [J/K] Heat capacity of element
     )    
@@ -11,19 +14,21 @@ function HeatCapacitor(; name,
     @parameters C=C
     sts = @variables begin
         T(t) # Temperature of element
-        dt(t) # "Time derivative of temperature
+        der_T(t) # "Time derivative of temperature
     end
 
     D = Differential(t)
     eqs = [
         T ~ a.T
-        dt ~ D(T)
+        der_T ~ D(T)
         D(T) ~ a.Q_flow / C
         ]
     ODESystem(eqs, t, sts, [C]; systems=[a], name=name)
 end
 
-
+"""
+Lumped thermal element transporting heat without storing it.
+"""
 function ThermalConductor(;name, 
     G=1.0, # [W/K] Constant thermal conductance of material
     )   
@@ -37,6 +42,9 @@ function ThermalConductor(;name,
     extend(ODESystem(eqs, t, [], pars; name=name), element1d)
 end
 
+"""
+Lumped thermal element transporting heat without storing it.
+"""
 function ThermalResistor(; name,
     R=1.0, # [K/W] Constant thermal resistance of material
     )   
@@ -50,6 +58,9 @@ function ThermalResistor(; name,
     extend(ODESystem(eqs, t, [], pars; name=name), element1d)
 end
 
+"""
+Lumped thermal element for heat convection.
+"""
 function ConvectiveConductor(; name, 
     G=1.0, # [W/K] Convective thermal conductance
     )
@@ -70,6 +81,9 @@ function ConvectiveConductor(; name,
     ODESystem(eqs, t, sts, [G]; systems=[solidport, fluidport], name=name)
 end
 
+"""
+Lumped thermal element for heat convection.
+"""
 function ConvectiveResistor(; name, 
     R=1.0, # [K/W] Convective thermal resistance
     )
@@ -90,6 +104,9 @@ function ConvectiveResistor(; name,
     ODESystem(eqs, t, sts, [R]; systems=[solidport, fluidport], name=name)
 end
 
+"""
+Lumped thermal element for radiation heat transfer.
+"""
 function BodyRadiation(; name, 
     G=1.0, # [m^2] Net radiation conductance between two surfaces
     )
@@ -105,6 +122,9 @@ function BodyRadiation(; name,
     extend(ODESystem(eqs, t, [], pars; name=name), element1d)
 end
 
+"""
+This is a model to collect the heat flows from `N` heatports to one single heatport.
+"""
 function ThermalCollector(; name, N=1)
     hp = [HeatPort(name=Symbol(:hp, i)) for i in 1:N]
     @named collector_port = HeatPort()

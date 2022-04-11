@@ -1,3 +1,6 @@
+"""
+Fixed heat flow boundary condition.
+"""
 function FixedHeatFlow(; name, 
     Q_flow=1.0, # [W] Fixed heat flow rate at port
     T_ref=293.15, # [K] Reference temperature
@@ -17,6 +20,9 @@ function FixedHeatFlow(; name,
     ODESystem(eqs, t, [], pars; systems=[b], name=name)
 end
 
+"""
+Fixed temperature boundary condition in Kelvin.
+"""
 function FixedTemperature(; name, 
     T=0.0 # [K] Fixed temperature boundary condition
     )

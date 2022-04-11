@@ -1,3 +1,6 @@
+"""
+Absolute temperature sensor in Kelvin.
+"""
 function TemperatureSensor(; name)
     @named a = HeatPort()
     @variables T(t) # [K] Absolute temperature
@@ -9,6 +12,9 @@ function TemperatureSensor(; name)
     ODESystem(eqs, t, [T], [], systems=[a], name=name)
 end
 
+"""
+Relative Temperature sensor.
+"""
 function RelativeTemperatureSensor(; name)
     @named a = HeatPort()
     @named b = HeatPort()
@@ -22,6 +28,9 @@ function RelativeTemperatureSensor(; name)
     ODESystem(eqs, t, [T], [], systems=[a, b], name=name)
 end
 
+"""
+Heat flow rate sensor.
+"""
 function HeatFlowSensor(; name)
     @named a = HeatPort()
     @named b = HeatPort()
