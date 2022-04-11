@@ -141,18 +141,20 @@ end
     @named radiator    = BodyRadiation(G=G)
     @named ground      = ThermalGround()
     @named dissipator  = ConvectiveConductor(G=10)
+    @named mass        = HeatCapacitor(C=10)
     
     @info "Building a radiator..."
     eqs = [
-        connect(gas_tem.b, radiator.a, base.a, dissipator.solidport)
+        connect(gas_tem.b, radiator.a, base.a, dissipator.solidport, mass.a)
         connect(base.b, radiator.b, coolant_tem.b, dissipator.fluidport)
     ]
-    @named rad = ODESystem(eqs, t, systems=[base, gas_tem, radiator, dissipator, coolant_tem])
+    @named rad = ODESystem(eqs, t, systems=[base, gas_tem, radiator, dissipator, coolant_tem, mass])
     sys = structural_simplify(rad)
 
     u0 = [
         base.Q_flow => 10
         dissipator.Q_flow => 10
+        mass.T => Tᵧ
     ]
     prob = ODEProblem(sys, u0, (0, 3.0))
     sol = solve(prob, Rodas4())
@@ -168,22 +170,24 @@ end
     @named th_ground   = ThermalGround()
     @named collector   = ThermalCollector(N=2)
     @named th_resistor = ThermalResistor(R=10) 
-    @named tem_src     = FixedTemperature(T=10)
+    @named mass        = HeatCapacitor(C=10)
 
     @info "Building a heat collector..."
     eqs = [
         connect(flow_src.b, collector.hp1, th_resistor.a)
         connect(tem_src.b, collector.hp2)
         connect(hf_sensor.a, collector.collector_port)
-        connect(hf_sensor.b, th_ground.a, th_resistor.b)
+        connect(hf_sensor.b, mass.a, th_resistor.b)
+        connect(mass.a, th_ground.a)
         ]
     @named coll = ODESystem(eqs, t, 
                             systems=[hf_sensor,flow_src, tem_src, 
-                            collector, th_resistor])
+                            collector, th_resistor, mass])
     sys = structural_simplify(coll)
 
     u0 = [
-        th_resistor.Q_flow => 1.0
+        th_resistor.Q_flow => 1.0,
+        mass.T => 0.0,
     ]
     prob = ODEProblem(sys, u0, (0, 3.0))
     sol  = solve(prob, Rodas4())

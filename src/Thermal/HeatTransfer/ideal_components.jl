@@ -9,11 +9,12 @@ Lumped thermal element storing heat
 """
 function HeatCapacitor(; name, 
     C=1.0, # [J/K] Heat capacity of element
+    T0=293.15 + 20,
     )    
     @named a = HeatPort()
     @parameters C=C
     sts = @variables begin
-        T(t) # Temperature of element
+        T(t)=T0 # Temperature of element
         der_T(t) # "Time derivative of temperature
     end
 
@@ -112,14 +113,17 @@ function BodyRadiation(; name,
     )
     sigma = 5.6703744191844294e-8 # Stefan-Boltzmann constant
 
-    @named element1d = Element1D()
-    @unpack Q_flow, dT = element1d
+    @named a = HeatPort()
+    @named b = HeatPort()
+    @variables Q_flow(t)
     pars = @parameters G=G
     eqs = [
-        Q_flow ~ G * sigma * (element1d.a.T^4 - element1d.b.T^4)
+        a.Q_flow ~ Q_flow
+        b.Q_flow + a.Q_flow ~ 0
+        Q_flow ~ G * sigma * (a.T^4 - b.T^4)
     ]
     
-    extend(ODESystem(eqs, t, [], pars; name=name), element1d)
+    compose(ODESystem(eqs, t, [Q_flow], pars; name=name), [a, b])
 end
 
 """

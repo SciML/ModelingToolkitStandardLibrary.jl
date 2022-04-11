@@ -1,9 +1,7 @@
 @connector function HeatPort(; name)
-    sts = @variables begin 
-        T(t)                        # Temperature in [K]
-        Q_flow(t), [connect=Flow]   # Heat flow rate in [W]
-    end
-    ODESystem(Equation[], t, sts, [], name=name)
+    @variables T(t)=273.15 + 20.0 # [K] Temperature of the port  
+    @variables Q_flow(t)=0.0 [connect = Flow] # [W] Heat flow rate at the port
+    ODESystem(Equation[], t, [T, Q_flow], [], name=name)
 end
 Base.@doc "Port for a thermal system." HeatPort
 
@@ -21,7 +19,7 @@ function Element1D(;name,
     eqs = [
         dT ~ a.T - b.T
         a.Q_flow ~ Q_flow
-        b.Q_flow ~ -Q_flow
+        a.Q_flow + b.Q_flow ~ 0
     ]
     
     return compose(ODESystem(eqs, t, sts, []; name=name), a, b)
