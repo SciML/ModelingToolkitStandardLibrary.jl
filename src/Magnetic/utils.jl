@@ -1,22 +1,10 @@
 @connector function MagneticPort(;name, complex=false)
     if complex 
-        V_m, Phi = @variables V_m(t)::Complex Phi(t)::Complex
+        V_m, Phi = @variables V_m(t)::Complex=0.0 + 0.0im Phi(t)::Complex=0.0 + 0.0im [connect=Flow]
     else
-        V_m, Phi = @variables V_m(t) Phi(t)
+        V_m, Phi = @variables V_m(t)=0.0 Phi(t)=0.0 [connect=Flow]
     end
-    ODESystem(Equation[], t, [V_m, Phi], [], name=name, defaults=Dict(V_m=>0.0, Phi=>0.0))
-end
-
-function ModelingToolkit.connect(::Type{<:MagneticPort}, ps...)
-    eqs = [
-           0 ~ sum(p->p.Phi, ps) # Gauss's law for magnetism
-          ]
-
-    for i in 1:length(ps)-1
-        push!(eqs, ps[i].V_m ~ ps[i+1].V_m)
-    end
-
-    return eqs
+    ODESystem(Equation[], t, [V_m, Phi], [], name=name)
 end
 
 const PositiveMagneticPort = MagneticPort
