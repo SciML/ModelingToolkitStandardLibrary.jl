@@ -170,6 +170,7 @@ end
     @named th_ground   = ThermalGround()
     @named collector   = ThermalCollector(N=2)
     @named th_resistor = ThermalResistor(R=10) 
+    @named tem_src     = FixedTemperature(T=10)
     @named mass        = HeatCapacitor(C=10)
 
     @info "Building a heat collector..."
