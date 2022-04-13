@@ -98,10 +98,28 @@ function PI(;name, k=1, T=1)
     @named e = RealInput() # control error
     @named u = RealOutput() # control signal
     @variables x(t)=0
+    T > 0 || error("Time constant `T` has to be strictly positive")
     pars = @parameters k=k T=T
     eqs = [
-        D(x) ~ e.u / T
-        u.u ~ k * (x + e.u)
+        D(x) ~ e.u * k / T
+        u.u ~ x + k * e.u
+    ]
+    compose(ODESystem(eqs, t, [x], pars; name=name), [e, u])
+end
+
+"""
+PI-controller with actuator saturation and anti-windup measure.
+"""
+function LimPI(;name, k=1, T=1, u_max=1, u_min=-u_max, Ta=1)
+    @named e = RealInput() # control error
+    @named u = RealOutput() # control signal
+    @variables x(t)=0
+    Ta > 0 || error("Time constant `Ta` has to be strictly positive")
+    T > 0 || error("Time constant `T` has to be strictly positive")
+    pars = @parameters k=k T=T u_max=u_max u_min=u_min
+    eqs = [
+        D(x) ~ e.u * k / T + 1 / Ta * (-(x + k * e.u) + max(min(k * e.u + x, u_max), u_min))
+        u.u ~ max(min(x + k * e.u, 1.5), -1.5)      
     ]
     compose(ODESystem(eqs, t, [x], pars; name=name), [e, u])
 end

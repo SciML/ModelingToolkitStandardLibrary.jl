@@ -10,7 +10,7 @@ function Saturation(;name, y_max, y_min=y_max > 0 ? -y_max : -Inf)
     @unpack u, y = siso
     pars = @parameters y_max=y_max y_min=y_min
     eqs = [
-        y ~ ifelse(u > y_max, y_max, ifelse( (y_min < u) & (u < y_max), u, y_min))
+        y ~ max(min(u, y_max), y_min)
     ]
     extend(ODESystem(eqs, t, [], pars; name=name), siso)
 end

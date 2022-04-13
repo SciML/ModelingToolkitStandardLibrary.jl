@@ -193,7 +193,7 @@ function Plant(;name, x0=zeros(2))
     compose(ODESystem(eqs, t, sts, []; name), [input, output])
 end
 
-@testset "PI Controller" begin
+@testset "PI controller" begin
     @named ref = Constant(; k=2)
     @named pi_controller = PI(k=1, T=1)
     @named plant = Plant()
@@ -213,5 +213,53 @@ end
     prob = ODEProblem(sys, Pair[], (0.0, 100.0))
 
     sol = solve(prob, Rodas4())
-    @test sol[pt2.output.u][end] ≈ 2
+    @test sol[plant.output.u][end] ≈ 2
+end
+
+@testset "PI controller with actuator saturation" begin
+    @named ref = Constant(; k=1)
+    @named pi_controller_lim = LimPI(k=3, T=0.5, u_max=1.5, u_min=-1.5, Ta=0.1)
+    @named pi_controller = PI(k=3, T=0.5)
+    @named sat = Saturation(y_max=1.5, y_min=-1.5)
+    @named plant = Plant()
+    @named fb = Feedback()
+
+    # without anti-windup measure
+    sol = let
+        @named model = ODESystem(
+            [
+                connect(ref.output, fb.input1), 
+                connect(plant.output, fb.input2),
+                connect(fb.output, pi_controller.e), 
+                connect(pi_controller.u, sat.input), 
+                connect(sat.output, plant.input), 
+            ], 
+            t, 
+            systems=[pi_controller, plant, ref, fb, sat]
+        )
+        sys = structural_simplify(model)
+        prob = ODEProblem(sys, Pair[], (0.0, 20.0))
+        sol = solve(prob, Rodas4())
+    end
+
+    # with anti-windup measure
+    sol_lim = let
+        @named model = ODESystem(
+            [
+                connect(ref.output, fb.input1), 
+                connect(plant.output, fb.input2),
+                connect(fb.output, pi_controller_lim.e), 
+                connect(pi_controller_lim.u, sat.input), 
+                connect(sat.output, plant.input), 
+            ], 
+            t, 
+            systems=[pi_controller_lim, plant, ref, fb, sat]
+        )
+        sys = structural_simplify(model)
+        prob = ODEProblem(sys, Pair[], (0.0, 20.0))
+        sol = solve(prob, Rodas4())
+    end
+
+    @test sol[plant.output.u][end] ≈ 2
+    @test sol_lim[plant.output.u][end] ≈ 2
 end
