@@ -21,6 +21,7 @@ export Saturation, DeadZone
 include("nonlinear.jl")
 
 export Integrator, Derivative, FirstOrder, SecondOrder #TODO: , PID, StateSpace
+export PI
 include("continuous.jl")
 
 end

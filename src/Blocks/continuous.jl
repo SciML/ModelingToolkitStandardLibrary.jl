@@ -92,6 +92,21 @@ function SecondOrder(; k=1, w, d, name)
 end
 
 """
+PI-controller without actuator saturation and anti-windup measure.
+"""
+function PI(;name, k=1, T=1)
+    @named e = RealInput() # control error
+    @named u = RealOutput() # control signal
+    @variables x(t)=0
+    pars = @parameters k=k T=T
+    eqs = [
+        D(x) ~ e.u / T
+        u.u ~ k * (x + e.u)
+    ]
+    compose(ODESystem(eqs, t, [x], pars; name=name), [e, u])
+end
+
+"""
     PID(; k, Ti=false, Td=false, wp=1, wd=1, Ni, Nd=12, y_max=Inf, y_min=-y_max, gains = false, name)
 
 Proportional-Integral-Derivative (PID) controller with output saturation, set-point weighting and integrator anti-windup.

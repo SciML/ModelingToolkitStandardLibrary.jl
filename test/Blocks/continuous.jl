@@ -178,3 +178,40 @@ end
     gain = Blocks.Gain(D, name=:sys)
     @test sys == gain
 end=#
+
+"""Second order demo plant"""
+function Plant(;name, x0=zeros(2))
+    @named input = RealInput()
+    @named output = RealOutput()
+    D = Differential(t)
+    sts = @variables x1(t)=x0[1] x2(t)=x0[2]
+    eqs= [
+        D(x1) ~ x2
+        D(x2) ~ -x1 - 0.5 * x2 + input.u
+        output.u ~ 0.9 * x1 + x2
+    ]
+    compose(ODESystem(eqs, t, sts, []; name), [input, output])
+end
+
+@testset "PI Controller" begin
+    @named ref = Constant(; k=2)
+    @named pi_controller = PI(k=1, T=1)
+    @named plant = Plant()
+    @named fb = Feedback()
+    @named model = ODESystem(
+        [
+            connect(ref.output, fb.input1), 
+            connect(plant.output, fb.input2),
+            connect(fb.output, pi_controller.e), 
+            connect(pi_controller.u, plant.input), 
+        ], 
+        t, 
+        systems=[pi_controller, plant, ref, fb]
+    )
+    sys = structural_simplify(model)
+
+    prob = ODEProblem(sys, Pair[], (0.0, 100.0))
+
+    sol = solve(prob, Rodas4())
+    @test sol[pt2.output.u][end] ≈ 2
+end
