@@ -12,6 +12,7 @@ using SafeTestsets
 
 # Thermal
 @safetestset "Thermal Circuits" begin include("Thermal/thermal.jl") end
+@safetestset "Thermal Demo" begin include("Thermal/demo.jl") end
 
 # Magnetic
 # @safetestset "Magnetic" begin include("Magnetic/magnetic.jl") end # TODO:
