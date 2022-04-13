@@ -1,17 +1,12 @@
-function ThermalGround(; name)
-    @named a = HeatPort()
-    eqs = [a.T ~ 0]
-    ODESystem(eqs, t, systems=[a], name=name)
-end
-
 """
 Lumped thermal element storing heat
+
+# Parameters:
+- `C`: [J/K] Heat capacity of element (= cp*m)
+- `T0`: Initial temperature of element
 """
-function HeatCapacitor(; name, 
-    C=1.0, # [J/K] Heat capacity of element
-    T0=293.15 + 20,
-    )    
-    @named a = HeatPort()
+function HeatCapacitor(; name, C=1.0, T0=293.15 + 20)    
+    @named port = HeatPort()
     @parameters C=C
     sts = @variables begin
         T(t)=T0 # Temperature of element
@@ -20,19 +15,20 @@ function HeatCapacitor(; name,
 
     D = Differential(t)
     eqs = [
-        T ~ a.T
+        T ~ port.T
         der_T ~ D(T)
-        D(T) ~ a.Q_flow / C
+        D(T) ~ port.Q_flow / C
         ]
-    ODESystem(eqs, t, sts, [C]; systems=[a], name=name)
+    ODESystem(eqs, t, sts, [C]; systems=[port], name=name)
 end
 
 """
 Lumped thermal element transporting heat without storing it.
+
+# Parameters:
+- `G`: [W/K] Constant thermal conductance of material
 """
-function ThermalConductor(;name, 
-    G=1.0, # [W/K] Constant thermal conductance of material
-    )   
+function ThermalConductor(;name, G=1.0)   
     @named element1d = Element1D()
     @unpack Q_flow, dT = element1d
     pars = @parameters G=G
@@ -45,10 +41,11 @@ end
 
 """
 Lumped thermal element transporting heat without storing it.
+
+# Parameters:
+- `R`: [K/W] Constant thermal resistance of material
 """
-function ThermalResistor(; name,
-    R=1.0, # [K/W] Constant thermal resistance of material
-    )   
+function ThermalResistor(; name, R=1.0)   
     @named element1d = Element1D()
     @unpack Q_flow, dT = element1d
     pars = @parameters R=R
@@ -61,12 +58,13 @@ end
 
 """
 Lumped thermal element for heat convection.
+
+# Parameters:
+- `G`: [W/K] Convective thermal conductance
 """
-function ConvectiveConductor(; name, 
-    G=1.0, # [W/K] Convective thermal conductance
-    )
-    @named solidport = HeatPort()
-    @named fluidport = HeatPort()
+function ConvectiveConductor(; name, G=1.0)
+    @named solid = HeatPort()
+    @named fluid = HeatPort()
     @parameters G=G
     sts = @variables begin
         Q_flow(t) # [W] Heat flow rate from solid -> fluid
@@ -74,20 +72,21 @@ function ConvectiveConductor(; name,
     end
 
     eqs = [
-        dT ~ solidport.T - fluidport.T
-        solidport.Q_flow ~ Q_flow
-        fluidport.Q_flow ~ -Q_flow
+        dT ~ solid.T - fluid.T
+        solid.Q_flow ~ Q_flow
+        fluid.Q_flow ~ -Q_flow
         dT ~ G*Q_flow
     ]
-    ODESystem(eqs, t, sts, [G]; systems=[solidport, fluidport], name=name)
+    ODESystem(eqs, t, sts, [G]; systems=[solid, fluid], name=name)
 end
 
 """
 Lumped thermal element for heat convection.
+
+# Parameters:
+- `R`: [K/W] Constant thermal resistance of material
 """
-function ConvectiveResistor(; name, 
-    R=1.0, # [K/W] Convective thermal resistance
-    )
+function ConvectiveResistor(; name, R=1.0)
     @named solidport = HeatPort()
     @named fluidport = HeatPort()
     @parameters R=R
@@ -107,37 +106,39 @@ end
 
 """
 Lumped thermal element for radiation heat transfer.
+
+# Parameters:
+- `G`:  [m^2] Net radiation conductance between two surfaces
 """
-function BodyRadiation(; name, 
-    G=1.0, # [m^2] Net radiation conductance between two surfaces
-    )
+function BodyRadiation(; name, G=1.0)
     sigma = 5.6703744191844294e-8 # Stefan-Boltzmann constant
 
-    @named a = HeatPort()
-    @named b = HeatPort()
-    @variables Q_flow(t)
+    @named element1d = Element1D()
+    @unpack Q_flow, dT = element1d
     pars = @parameters G=G
     eqs = [
-        a.Q_flow ~ Q_flow
-        b.Q_flow + a.Q_flow ~ 0
-        Q_flow ~ G * sigma * (a.T^4 - b.T^4)
+        port_a.Q_flow ~ Q_flow
+        port_b.Q_flow + port_a.Q_flow ~ 0
+        Q_flow ~ G * sigma * (port_a.T^4 - port_b.T^4)
     ]
     
-    compose(ODESystem(eqs, t, [Q_flow], pars; name=name), [a, b])
+    extend(ODESystem(eqs, t, [Q_flow], pars; name=name), element1d)
 end
 
 """
-This is a model to collect the heat flows from `N` heatports to one single heatport.
+Collects m heat flows
+
+This is a model to collect the heat flows from `m` heatports to one single heatport.
 """
-function ThermalCollector(; name, N=1)
-    hp = [HeatPort(name=Symbol(:hp, i)) for i in 1:N]
-    @named collector_port = HeatPort()
+function ThermalCollector(; name, m=1)
+    port_a = [HeatPort(name=Symbol(:port_a, i)) for i in 1:m]
+    @named port_b = HeatPort()
     eqs = [
-        collector_port.Q_flow + sum(k -> k.Q_flow, hp) ~ 0
-        collector_port.T ~ hp[1].T
+        port_b.Q_flow + sum(k -> k.Q_flow, port_a) ~ 0
+        port_b.T ~ port_a[1].T
     ]
-    for i in 1:N-1
-        push!(eqs, hp[i].T ~ hp[i+1].T)
+    for i in 1:m-1
+        push!(eqs, port_a[i].T ~ port_a[i+1].T)
     end
-    ODESystem(eqs, t, [], []; systems=[hp..., collector_port], name=name)
+    ODESystem(eqs, t, [], []; systems=[port_a..., port_b], name=name)
 end
