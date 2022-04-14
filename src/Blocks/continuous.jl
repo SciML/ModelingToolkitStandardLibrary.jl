@@ -119,7 +119,7 @@ function LimPI(;name, k=1, T=1, u_max=1, u_min=-u_max, Ta=1)
     pars = @parameters k=k T=T u_max=u_max u_min=u_min
     eqs = [
         D(x) ~ e.u * k / T + 1 / Ta * (-(x + k * e.u) + max(min(k * e.u + x, u_max), u_min))
-        u.u ~ max(min(x + k * e.u, 1.5), -1.5)      
+        u.u ~ max(min(x + k * e.u, u_max), u_min)      
     ]
     compose(ODESystem(eqs, t, [x], pars; name=name), [e, u])
 end
