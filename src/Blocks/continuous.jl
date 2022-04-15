@@ -3,10 +3,10 @@
 
 Outputs `y = ∫k*u dt`, corresponding to the transfer function `1/s`.
 """
-function Integrator(;name, k=1)
+function Integrator(;name, k=1 x0=0)
     @named siso = SISO()
     @unpack u, y = siso
-    sts = @variables x(t)=0
+    sts = @variables x(t)=x0
     pars = @parameters k=k
     eqs = [
         D(x) ~ k * u
@@ -30,10 +30,10 @@ and a state-space realization is given by `ss(-1/T, 1/T, -k/T, k/T)`
 where `T` is the time constant of the filter.
 A smaller `T` leads to a more ideal approximation of the derivative.
 """
-function Derivative(; k=1, T, name)
+function Derivative(; name, k=1, T=10, x0=0)
     @named siso = SISO()
     @unpack u, y = siso
-    sts = @variables x(t)=0
+    sts = @variables x(t)=x0
     pars = @parameters T=T k=k
     eqs = [
         D(x) ~ (u - x) / T
@@ -94,17 +94,42 @@ end
 """
 PI-controller without actuator saturation and anti-windup measure.
 """
-function PI(;name, k=1, T=1)
+function PI(;name, k=1, T=1, x_start=0)
     @named e = RealInput() # control error
     @named u = RealOutput() # control signal
-    @variables x(t)=0
+    @variables x(t)=x_start
     T > 0 || error("Time constant `T` has to be strictly positive")
     pars = @parameters k=k T=T
     eqs = [
-        D(x) ~ e.u * k / T
-        u.u ~ x + k * e.u
+        D(x) ~ 1 / T * e.u
+        u.u ~ k * (x + e.u)
     ]
     compose(ODESystem(eqs, t, [x], pars; name=name), [e, u])
+end
+
+"""
+Text-book version of a PID-controller.
+"""
+function PID(;name, k=1, Ti=1, Td=1, Nd=10, xi_start=0, xd_start=0)
+    @named e = RealInput() # control error
+    @named u = RealOutput() # control signal
+    Ti > 0 || error("Time constant `Ti` has to be strictly positive")
+    Td > 0 || error("Time constant `Td` has to be strictly positive")
+    Nd > 0 || error("`Nd` has to be strictly positive")
+    @named k = Gain(k=k)
+    @named I = Integrator(k=1/Ti, x0=xi_start)
+    @named D = Derivative(k=1/Td, T=1/Nd, x0=xd_start)
+    @named add = Add3()
+    eqs = [
+        connect(e, add.input1),
+        connect(e, I.u),
+        connect(e, D.u),
+        connect(I.y, add.input2),
+        connect(D.y, add.input3),
+        connect(add.output, k.u),
+        connect(k.y, u)
+    ]
+    ODESystem(eqs, t, [], []; name=name, systems=[P, I, D])
 end
 
 """
@@ -113,15 +138,16 @@ PI-controller with actuator saturation and anti-windup measure.
 function LimPI(;name, k=1, T=1, u_max=1, u_min=-u_max, Ta=1)
     @named e = RealInput() # control error
     @named u = RealOutput() # control signal
-    @variables x(t)=0
+    @variables x(t)=0 u_star
     Ta > 0 || error("Time constant `Ta` has to be strictly positive")
     T > 0 || error("Time constant `T` has to be strictly positive")
     pars = @parameters k=k T=T u_max=u_max u_min=u_min
     eqs = [
-        D(x) ~ e.u * k / T + 1 / Ta * (-(x + k * e.u) + max(min(k * e.u + x, u_max), u_min))
-        u.u ~ max(min(x + k * e.u, u_max), u_min)      
+        D(x) ~ e.u * k / T + 1 / Ta * (-u_star + u.u)
+        u.u ~ max(min(u_star, u_max), u_min)      
+        u_star ~ x + k * e.u
     ]
-    compose(ODESystem(eqs, t, [x], pars; name=name), [e, u])
+    compose(ODESystem(eqs, t, [x, u_star], pars; name=name), [e, u])
 end
 
 """
@@ -150,13 +176,13 @@ where the transfer function for the derivative includes additional filtering, se
 - `wd`: Set-point weighting in the derivative part.
 - `Nd`: Derivative limit, limits the derivative gain to Nd/Td. Reasonable values are ∈ [8, 20]. A higher value gives a better approximation of an ideal derivative at the expense of higher noise amplification.
 - `Ni`: `Ni*Ti` controls the time constant `Tₜ` of anti-windup tracking. A common (default) choice is `Tₜ = √(Ti*Td)` which is realized by `Ni = √(Td / Ti)`. Anti-windup can be effectively turned off by setting `Ni = Inf`.
-`gains`: If `gains = true`, `Ti` and `Td` will be interpreted as gains with a fundamental PID transfer function on parallel form `ki=Ti, kd=Td, k + ki/s + kd*s`
+` `gains`: If `gains = true`, `Ti` and `Td` will be interpreted as gains with a fundamental PID transfer function on parallel form `ki=Ti, kd=Td, k + ki/s + kd*s`
 """
-function PID(; k, Ti=false, Td=false, wp=1, wd=1,
+function LimPID(; k, Ti=false, Td=false, wp=1, wd=1,
     Ni    = Ti == 0 ? Inf : √(max(Td / Ti, 1e-6)),
     Nd    = 12,
-    y_max = Inf,
-    y_min = y_max > 0 ? -y_max : -Inf,
+    u_max = Inf,
+    u_min = u_max > 0 ? -u_max : -Inf,
     gains = false,
     name
     )
@@ -168,7 +194,7 @@ function PID(; k, Ti=false, Td=false, wp=1, wd=1,
     0 ≤ wd ≤ 1 || throw(ArgumentError("wd out of bounds, got $(wd) but expected wd ∈ [0, 1]"))
     Ti ≥ 0     || throw(ArgumentError("Ti out of bounds, got $(Ti) but expected Ti ≥ 0"))
     Td ≥ 0     || throw(ArgumentError("Td out of bounds, got $(Td) but expected Td ≥ 0"))
-    y_max ≥ y_min || throw(ArgumentError("y_min must be smaller than y_max"))
+    u_max ≥ u_min || throw(ArgumentError("u_min must be smaller than u_max"))
 
     @named r = RealInput() # reference
     @named y = RealInput() # measurement
@@ -182,17 +208,17 @@ function PID(; k, Ti=false, Td=false, wp=1, wd=1,
     else
         @named I = Integrator(k = 1/Ti)
     end
-    @named sat = Saturation(; y_min, y_max)
+    @named sat = Saturation(; y_min=y_min, y_max=y_max)
     derivative_action = Td > 0
     pars = @parameters k=k Td=Td wp=wp wd=wd Ni=Ni Nd=Nd # TODO: move this line above the subsystem definitions when symbolic default values for parameters works. https://github.com/SciML/ModelingToolkit.jl/issues/1013
     # NOTE: Ti is not included as a parameter since we cannot support setting it to false after this constructor is called. Maybe Integrator can be tested with Ti = false setting k to 0 with IfElse?
     
     eqs = [
         e ~ r.u - y.u # Control error
-        ep ~ wp*r.u - y.u  # Control error for proportional part with setpoint weight
+        ep ~ wp * r.u - y.u  # Control error for proportional part with setpoint weight
         ea ~ sat.y.u - sat.u.u # Actuator error due to saturation
-        I.u ~ e + 1/(k*Ni)*ea  # Connect integrator block. The integrator integrates the control error and the anti-wind up tracking. Note the apparent tracking time constant 1/(k*Ni), since k appears after the integration and 1/Ti appears in the integrator block, the final tracking gain will be 1/(Ti*Ni) 
-        sat.u ~ derivative_action ? k*(ep + I.y + D.y) : k*(ep + I.y) # unsaturated output = P + I + D
+        I.u ~ e + 1 / (k * Ni) * ea  # Connect integrator block. The integrator integrates the control error and the anti-wind up tracking. Note the apparent tracking time constant 1/(k*Ni), since k appears after the integration and 1/Ti appears in the integrator block, the final tracking gain will be 1/(Ti*Ni) 
+        sat.u ~ derivative_action ? k * (ep + I.y + D.y) : k * (ep + I.y) # unsaturated output = P + I + D
         y ~ sat.y
     ]
     systems = [I, sat]
@@ -214,28 +240,26 @@ y = Cx + Du
 ```
 Transfer functions can also be simulated by converting them to a StateSpace form.
 """
-function StateSpace(A, B, C, D=0; x0=zeros(size(A,1)), name)
-    nx = size(A,1)
-    nu = size(B,2)
-    ny = size(C,1)
-    if nx == 0
-        length(C) == length(B) == 0 || throw(ArgumentError("Dimension mismatch between A,B,C matrices"))
-        return Gain(D; name=name)
-    end
+function StateSpace(;A, B, C, D=nothing, x0=zeros(size(A,1)), name)
+    nx, nu, ny = size(A,1), size(B,2), size(C,1)
+    size(A,2) == nx || error("`A` has to be a square matrix.")
+    size(B,1) == nx || error("`B` has to be ($nx, $nu).")
+    size(C,1) == nx || error("`C` has to be ($ny, $nx).")
     if B isa AbstractVector
         B = reshape(B, length(B), 1)
     end
-    if D == 0
+    if nothing(D)
         D = zeros(ny, nu)
+    else
+        size(D) == (ny,nu) || error("`C` has to be ($ny, $nu).")
     end
-    @variables x[1:nx](t)=x0 u[1:nu](t)=0 [input=true] y[1:ny](t)=C*x0 [output=true]
-    x = collect(x) # https://github.com/JuliaSymbolics/Symbolics.jl/issues/379
-    u = collect(u)
-    y = collect(y)
+    @named mimo = MIMO(nin=nu, nout=ny)
+    @unpack u, y = mimo
+    @variables x[1:nx](t)=x0
     # pars = @parameters A=A B=B C=C D=D # This is buggy
     eqs = [
         Differential(t).(x) .~ A*x .+ B*u # cannot use D here
         y .~ C*x .+ D*u
     ]
-    ODESystem(eqs, t, [x,y,u], [], name=name)
+    extend(ODESystem(eqs, t, vcat(x...), [], name=name), mimo)
 end

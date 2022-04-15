@@ -40,8 +40,8 @@ function MIMO(;name, nin=1, nout=1)
         y[1:nout](t)=zeros(nout)
     end
     eqs = [
-        u ~ input.u
-        y ~ output.u
+        u .~ input.u
+        y .~ output.u
     ]
     return ODESystem(ModelingToolkit.scalarize.(eqs), t, vcat(u..., y...), []; name, systems=[input, output])
 end

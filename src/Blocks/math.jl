@@ -67,6 +67,25 @@ function Add(;name, k1=1, k2=1)
 end
 
 """
+Output the sum of the three inputs.
+"""
+function Add3(;name, k1=1, k2=1, k3=1)
+    @named input1 = RealInput()
+    @named input2 = RealInput()
+    @named input3 = RealInput()
+    @named output = RealOutput()
+    pars = @parameters begin
+        k1=k1
+        k2=k2
+        k3=k3
+    end
+    eqs= [
+        output.u ~ k1 * input1.u + k2 * input2.u + k3 * input3.u
+    ]
+    return compose(ODESystem(eqs, t, [], pars; name=name), input1, input2, input3, output)
+end
+
+"""
 Output product of the two inputs.
 """
 function Product(;name)
