@@ -1,10 +1,11 @@
 """
-    Saturation(; y_max, y_min=-y_max, name)
+Limit the range of a signal.
 
-The Limiter block passes its input signal as output signal as long as the input is within the specified upper and lower limits. 
-If this is not the case, the corresponding limits are passed as output.
+# Parameters:
+- `y_max`: Maximum of output signal
+- `y_min`: Minimum of output signal
 """
-function Saturation(;name, y_max, y_min=y_max > 0 ? -y_max : -Inf)
+function Limiter(;name, y_max, y_min=y_max > 0 ? -y_max : -Inf)
     y_max ≥ y_min || throw(ArgumentError("`y_min` must be smaller than `y_max`"))
     @named siso = SISO()
     @unpack u, y = siso

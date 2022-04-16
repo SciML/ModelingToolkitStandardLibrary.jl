@@ -3,13 +3,13 @@ using ModelingToolkitStandardLibrary.Blocks
 
 @parameters t
 
-@testset "Saturation" begin
+@testset "Limiter" begin
     y_max = 0.8
     y_min = -0.6
 
     @named c = Constant(; k=1)
     @named int = Integrator(; k=1)
-    @named sat = Saturation(; y_min, y_max)
+    @named sat = Limiter(; y_min, y_max)
     @named model = ODESystem([
             connect(c.output, int.input), 
             connect(int.output, sat.input),
