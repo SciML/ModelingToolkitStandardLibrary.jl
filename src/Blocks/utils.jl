@@ -1,29 +1,29 @@
-@connector function RealInput(;name, nin=1)
+@connector function RealInput(;name, nin=1, u_start=nin > 1 ? 0.0 : zeros(nin))
     if nin == 1
-        @variables u(t) = 0.0
+        @variables u(t) = u_start
     else
-        @variables u[1:nin](t) = zeros(nin)
+        @variables u[1:nin](t) = u_start
         u = collect(u)
     end
     ODESystem(Equation[], t, [u...], []; name=name)
 end
 
-@connector function RealOutput(;name, nout=1)
+@connector function RealOutput(;name, nout=1, u_start=nout > 1 ? 0.0 : zeros(nout))
     if nout == 1
-        @variables u(t) = 0.0
+        @variables u(t) = u_start
     else
-        @variables u[1:nout](t) = zeros(nout)
+        @variables u[1:nout](t) = u_start
         u = collect(u)
     end
     ODESystem(Equation[], t, [u...], []; name=name)
 end
 
-function SISO(;name)
-    @named input = RealInput()
-    @named output = RealOutput()
+function SISO(;name, u_start=0.0, y_start=0.0)
+    @named input = RealInput(u_start=u_start)
+    @named output = RealOutput(u_start=y_start)
     @variables begin
-        u(t)=0.0
-        y(t)=0.0
+        u(t)=u_start
+        y(t)=y_start
     end
     eqs = [
         u ~ input.u
@@ -32,16 +32,16 @@ function SISO(;name)
     return ODESystem(eqs, t, [u, y], []; name, systems=[input, output])
 end
 
-function MIMO(;name, nin=1, nout=1)
-    @named input = RealInput(nin=nin)
-    @named output = RealOutput(nout=nout)
+function MIMO(;name, nin=1, nout=1, u_start=zeros(nin), y_start=zeros(nout))
+    @named input = RealInput(nin=nin, u_start=u_start)
+    @named output = RealOutput(nout=nout, u_start=y_start)
     @variables begin
-        u[1:nin](t)=zeros(nin)
-        y[1:nout](t)=zeros(nout)
+        u[1:nin](t)=u_start
+        y[1:nout](t)=y_start
     end
     eqs = [
         u .~ input.u
         y .~ output.u
     ]
-    return ODESystem(ModelingToolkit.scalarize.(eqs), t, vcat(u..., y...), []; name, systems=[input, output])
+    return ODESystem(eqs, t, vcat(u..., y...), []; name, systems=[input, output])
 end
