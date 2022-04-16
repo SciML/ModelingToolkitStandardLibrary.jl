@@ -44,3 +44,23 @@ function DeadZone(; name, u_max, u_min=-u_max)
     ]
     extend(ODESystem(eqs, t, [], pars; name=name), siso)
 end
+
+"""
+Limits the slew rate of a signal.
+
+# Parameters:
+- `Rising`: Maximum rising slew rate
+- `falling`: Maximum falling slew rate
+- `Td`: Derivative time constant
+"""
+function SlewRateLimiter(;name, rising=1, falling=-rising, Td=0.001, y_start=0.0)
+    rising ≥ falling || throw(ArgumentError("`rising` must be smaller than `falling`"))
+    Td > 0 || throw(ArgumentError("Time constant `Td` must be strictly positive"))
+    @named siso = SISO(y_start=y_start)
+    @unpack u, y = siso
+    pars = @parameters rising=rising falling=falling
+    eqs = [
+        D(y) ~ max(min((u-y) / Td, rising), falling)
+    ]
+    extend(ODESystem(eqs, t, [], pars; name=name), siso)
+end

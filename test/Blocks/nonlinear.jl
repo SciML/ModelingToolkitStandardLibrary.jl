@@ -47,3 +47,19 @@ end
     sol = solve(prob, Rodas4())
     @test sol[int.output.u][end] ≈ 2
 end
+
+@testset "SlewRateLimiter" begin
+    @named source = SinSource(; frequency=1)
+    @named rl = SlewRateLimiter(; rising=0.5, falling=-0.5, Td=0.001)
+    @named iosys = ODESystem([
+        connect(source.output, rl.input),
+        ],
+        t,
+        systems=[source, rl],
+    )
+    sys = structural_simplify(iosys)
+
+    prob = ODEProblem(sys, Pair[], (0.0, 10.0))
+
+    @test_nowarn sol = solve(prob, Rodas4())
+end
