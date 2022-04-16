@@ -49,8 +49,8 @@ end
 end
 
 @testset "SlewRateLimiter" begin
-    @named source = SinSource(; frequency=1)
-    @named rl = SlewRateLimiter(; rising=0.5, falling=-0.5, Td=0.001)
+    @named source = SinSource(; frequency=1/2)
+    @named rl = SlewRateLimiter(; rising=1, falling=-1, Td=0.001, y_start=-1/3)
     @named iosys = ODESystem([
         connect(source.output, rl.input),
         ],
@@ -61,5 +61,6 @@ end
 
     prob = ODEProblem(sys, Pair[], (0.0, 10.0))
 
-    @test_nowarn sol = solve(prob, Rodas4())
+    sol = solve(prob, Rodas4())
+    @test all(abs.(sol[rl.output.u]) .<= 0.5)
 end
