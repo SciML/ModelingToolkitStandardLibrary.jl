@@ -159,16 +159,147 @@ function Sin(;name)
     extend(ODESystem(eqs, t, [], []; name=name), siso)
 end
 
-# TODO:
-# Cos	Output the cosine of the input
-# Tan	Output the tangent of the input
-# Asin	Output the arc sine of the input
-# Acos	Output the arc cosine of the input
-# Atan	Output the arc tangent of the input
-# Atan2	Output atan(u1/u2) of the inputs u1 and u2
-# Sinh	Output the hyperbolic sine of the input
-# Cosh	Output the hyperbolic cosine of the input
-# Tanh	Output the hyperbolic tangent of the input
-# Exp	Output the exponential (base e) of the input
-# Log	Output the natural (base e) logarithm of the input (input > 0 required)
-# Log10 Output the base 10 logarithm of the input (input > 0 required)
+"""
+Output the cosine of the input.
+"""
+function Cos(;name)
+    @named siso = SISO()
+    @unpack u, y = siso
+    eqs = [
+        y ~ cos(u)
+    ]
+    extend(ODESystem(eqs, t, [], []; name=name), siso)
+end
+
+"""
+Output the tangent of the input.
+"""
+function Tan(;name)
+    @named siso = SISO()
+    @unpack u, y = siso
+    eqs = [
+        y ~ tan(u)
+    ]
+    extend(ODESystem(eqs, t, [], []; name=name), siso)
+end
+
+"""
+Output the arc sine of the input.
+"""
+function Asin(;name)
+    @named siso = SISO()
+    @unpack u, y = siso
+    eqs = [
+        y ~ asin(u)
+    ]
+    extend(ODESystem(eqs, t, [], []; name=name), siso)
+end
+
+"""
+Output the arc cosine of the input.
+"""
+function Acos(;name)
+    @named siso = SISO()
+    @unpack u, y = siso
+    eqs = [
+        y ~ acos(u)
+    ]
+    extend(ODESystem(eqs, t, [], []; name=name), siso)
+end
+
+"""
+Output the arc tangent of the input.
+"""
+function Atan(;name)
+    @named siso = SISO()
+    @unpack u, y = siso
+    eqs = [
+        y ~ atan(u)
+    ]
+    extend(ODESystem(eqs, t, [], []; name=name), siso)
+end
+
+"""
+Output the arc tangent of the input.
+"""
+function Atan2(;name)
+    @named input1 = RealInput()
+    @named input2 = RealInput()
+    @named output = RealOutput()
+    eqs = [
+        output.u ~ atan(input1.u, input2.u)
+    ]
+    compose(ODESystem(eqs, t, [], []; name=name), [input1, input2, output])
+end
+
+"""
+Output the hyperbolic sine of the input.
+"""
+function Sinh(;name)
+    @named siso = SISO()
+    @unpack u, y = siso
+    eqs = [
+        y ~ sinh(u)
+    ]
+    extend(ODESystem(eqs, t, [], []; name=name), siso)
+end
+
+"""
+Output the hyperbolic cosine of the input.
+"""
+function Cosh(;name)
+    @named siso = SISO()
+    @unpack u, y = siso
+    eqs = [
+        y ~ cosh(u)
+    ]
+    extend(ODESystem(eqs, t, [], []; name=name), siso)
+end
+
+"""
+Output the hyperbolic tangent of the input.
+"""
+function Tanh(;name)
+    @named siso = SISO()
+    @unpack u, y = siso
+    eqs = [
+        y ~ tanh(u)
+    ]
+    extend(ODESystem(eqs, t, [], []; name=name), siso)
+end
+
+"""
+Output the exponential (base e) of the input.
+"""
+function Exp(;name)
+    @named siso = SISO()
+    @unpack u, y = siso
+    eqs = [
+        y ~ exp(u)
+    ]
+    extend(ODESystem(eqs, t, [], []; name=name), siso)
+end
+
+"""
+Output the natural (base e) logarithm of the input.
+"""
+function Log(;name)
+    @named siso = SISO()
+    @unpack u, y = siso
+    eqs = [
+        y ~ log(u)
+    ]
+    extend(ODESystem(eqs, t, [], []; name=name), siso)
+end
+
+"""
+Output the base 10 logarithm of the input.
+"""
+function Log10(;name)
+    @named siso = SISO()
+    @unpack u, y = siso
+    eqs = [
+        y ~ log10(u)
+    ]
+    extend(ODESystem(eqs, t, [], []; name=name), siso)
+end
