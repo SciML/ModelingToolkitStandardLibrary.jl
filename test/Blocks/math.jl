@@ -177,3 +177,53 @@ end
     @named s = Sum(2;)
     # TODO:
 end
+
+@testset "Math" begin
+    blocks = [Abs, Sign, Sqrt, Sin, Cos, Tan, Asin, Acos, Atan, Sinh, Cosh, Tanh, Exp]
+    for block in blocks
+        @named source = Sine()
+        @named b = block()
+        @named int = Integrator()
+        @named model = ODESystem([connect(source.output, b.input), connect(b.output, int.input)], t, systems=[int, b, source])
+        sys = structural_simplify(model)
+
+        prob = ODEProblem(sys, Pair[int.x=>0.0], (0.0, 1.0))
+
+        @test_nowarn sol = solve(prob, Rodas4())
+    end
+
+    blocks = [Log, Log10] # input must be positive
+    for block in blocks
+        @named source = Sin(; offset=2)
+        @named b = block()
+        @named int = Integrator()
+        @named model = ODESystem([connect(source.output, b.input), connect(b.output, int.input)], t, systems=[int, b, source])
+        sys = structural_simplify(model)
+
+        prob = ODEProblem(sys, Pair[int.x=>0.0], (0.0, 1.0))
+
+        @test_nowarn sol = solve(prob, Rodas4())
+    end
+end
+
+@testset "Atan2" begin
+    @named c1 = Constant(; k=1)
+    @named c2 = Constant(; k=2)
+    @named b = Atan2(;)
+    @named int = Integrator(; k=1)
+    @named model = ODESystem(
+        [
+            connect(c1.output, b.input1), 
+            connect(c2.output, b.input2), 
+            connect(b.output, int.input),
+        ], 
+        t, 
+        systems=[int, b, c1, c2]
+    )
+    sys = structural_simplify(model)
+
+    prob = ODEProblem(sys, Pair[int.x=>0.0], (0.0, 1.0))
+
+    sol = solve(prob, Rodas4())
+    @test sol[int.output.u][end] ≈ atan(1, 2)
+end
