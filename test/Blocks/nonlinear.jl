@@ -49,7 +49,7 @@ end
 end
 
 @testset "SlewRateLimiter" begin
-    @named source = SinSource(; frequency=1/2)
+    @named source = Sine(; frequency=1/2)
     @named rl = SlewRateLimiter(; rising=1, falling=-1, Td=0.001, y_start=-1/3)
     @named iosys = ODESystem([
         connect(source.output, rl.input),

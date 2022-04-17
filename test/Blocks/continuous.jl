@@ -24,7 +24,7 @@ an integrator with a constant input is often used together with the system under
 end
 
 @testset "Derivative" begin
-    @named source = SinSource(; frequency=1)
+    @named source = Sine(; frequency=1)
     @named int = Integrator(; k=1)
     @named der = Derivative(; k=1, T=0.001)
     @named iosys = ODESystem([

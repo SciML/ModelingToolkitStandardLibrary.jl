@@ -11,11 +11,12 @@ D = Differential(t)
 export RealInput, RealOutput, SISO
 include("utils.jl")
 
-export Gain, Sum, MatrixGain, Sum, Feedback, Add, Product, Division, Abs, Sign, Sqrt
-export Sin, Cos, Tan, Asin, Acos, Atan, Atan2, Sinh, Cosh, Tanh, Exp, Log, Log10
+export Gain, Sum, MatrixGain, Sum, Feedback, Add, Product, Division
+export Abs, Sign, Sqrt, Sin, Cos, Tan, Asin, Acos, Atan, Atan2, Sinh, Cosh, Tanh, Exp
+export Log, Log10
 include("math.jl")
 
-export Constant, SinSource, ClockSource, RampSource, StepSource
+export Constant, Sine, Cosine, Clock, Ramp, Step, ExpSine
 include("sources.jl")
 
 export Limiter, DeadZone, SlewRateLimiter
