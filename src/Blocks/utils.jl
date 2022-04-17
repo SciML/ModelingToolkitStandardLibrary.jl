@@ -29,7 +29,7 @@ function SISO(;name, u_start=0.0, y_start=0.0)
         u ~ input.u
         y ~ output.u
     ]
-    return ODESystem(eqs, t, [u, y], []; name, systems=[input, output])
+    return ODESystem(eqs, t, [u, y], []; name=name, systems=[input, output])
 end
 
 function MIMO(;name, nin=1, nout=1, u_start=zeros(nin), y_start=zeros(nout))
@@ -43,5 +43,5 @@ function MIMO(;name, nin=1, nout=1, u_start=zeros(nin), y_start=zeros(nout))
         u .~ input.u
         y .~ output.u
     ]
-    return ODESystem(eqs, t, vcat(u..., y...), []; name, systems=[input, output])
+    return ODESystem(eqs, t, vcat(u..., y...), []; name=name, systems=[input, output])
 end

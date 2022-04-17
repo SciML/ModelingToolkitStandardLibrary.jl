@@ -17,7 +17,7 @@ include("math.jl")
 export Constant, SinSource, ClockSource, RampSource, StepSource
 include("sources.jl")
 
-export Saturation, DeadZone
+export Limiter, DeadZone, SlewRateLimiter
 include("nonlinear.jl")
 
 export Integrator, Derivative, FirstOrder, SecondOrder, StateSpace

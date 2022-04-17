@@ -3,7 +3,7 @@
 
 Outputs `y = ∫k*u dt`, corresponding to the transfer function `1/s`.
 """
-function Integrator(;name, k=1 x0=0)
+function Integrator(;name, k=1, x0=0.0)
     @named siso = SISO()
     @unpack u, y = siso
     sts = @variables x(t)=x0
@@ -111,25 +111,25 @@ end
 Text-book version of a PID-controller.
 """
 function PID(;name, k=1, Ti=1, Td=1, Nd=10, xi_start=0, xd_start=0)
-    @named e = RealInput() # control error
-    @named u = RealOutput() # control signal
+    @named err_input = RealInput() # control error
+    @named ctr_output = RealOutput() # control signal
     Ti > 0 || error("Time constant `Ti` has to be strictly positive")
     Td > 0 || error("Time constant `Td` has to be strictly positive")
     Nd > 0 || error("`Nd` has to be strictly positive")
-    @named k = Gain(k=k)
-    @named I = Integrator(k=1/Ti, x0=xi_start)
-    @named D = Derivative(k=1/Td, T=1/Nd, x0=xd_start)
+    @named gain = Gain(k)
+    @named int = Integrator(k=1/Ti, x0=xi_start)
+    @named der = Derivative(k=1/Td, T=1/Nd, x0=xd_start)
     @named add = Add3()
     eqs = [
-        connect(e, add.input1),
-        connect(e, I.u),
-        connect(e, D.u),
-        connect(I.y, add.input2),
-        connect(D.y, add.input3),
-        connect(add.output, k.u),
-        connect(k.y, u)
+        connect(err_input, add.input1),
+        connect(err_input, int.input),
+        connect(err_input, der.input),
+        connect(int.output, add.input2),
+        connect(der.output, add.input3),
+        connect(add.output, gain.input),
+        connect(gain.output, ctr_output)
     ]
-    ODESystem(eqs, t, [], []; name=name, systems=[P, I, D])
+    ODESystem(eqs, t, [], []; name=name, systems=[gain, int, der, add, err_input, ctr_output])
 end
 
 """
@@ -243,23 +243,23 @@ Transfer functions can also be simulated by converting them to a StateSpace form
 function StateSpace(;A, B, C, D=nothing, x0=zeros(size(A,1)), name)
     nx, nu, ny = size(A,1), size(B,2), size(C,1)
     size(A,2) == nx || error("`A` has to be a square matrix.")
-    size(B,1) == nx || error("`B` has to be ($nx, $nu).")
-    size(C,1) == nx || error("`C` has to be ($ny, $nx).")
+    size(B,1) == nx || error("`B` has to be of dimension ($nx x $nu).")
+    size(C,2) == nx || error("`C` has to be of dimension ($ny x $nx).")
     if B isa AbstractVector
         B = reshape(B, length(B), 1)
     end
-    if nothing(D)
+    if isnothing(D)
         D = zeros(ny, nu)
     else
-        size(D) == (ny,nu) || error("`C` has to be ($ny, $nu).")
+        size(D) == (ny,nu) || error("`D` has to be of dimension ($ny x $nu).")
     end
-    @named mimo = MIMO(nin=nu, nout=ny)
-    @unpack u, y = mimo
+    @named input = RealInput(nin=nu)
+    @named output = RealOutput(nout=ny)
     @variables x[1:nx](t)=x0
     # pars = @parameters A=A B=B C=C D=D # This is buggy
     eqs = [
-        Differential(t).(x) .~ A*x .+ B*u # cannot use D here
-        y .~ C*x .+ D*u
+        [Differential(t)(x[i]) ~ sum(A[i,k] * x[k] for k in 1:nx) + sum(B[i,j] * input.u[j] for j in 1:nu) for i in 1:nx]..., # cannot use D here
+        [output.u[j] ~ sum(C[j,i] * x[i] for i in 1:nx) + sum(D[j,k] * input.u[k] for k in 1:nu) for j in 1:ny]...,
     ]
-    extend(ODESystem(eqs, t, vcat(x...), [], name=name), mimo)
+    compose(ODESystem(eqs, t, vcat(x...), [], name=name), [input, output])
 end

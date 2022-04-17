@@ -66,8 +66,87 @@ end
     @test sol[pt2.output.u][end] ≈ 1
 end
 
-#=
+@testset "StateSpace" begin
+    A = [0 1;-1 -0.5]
+    B = [0, 1]
+    C = [0.9 1;]
+    D = [0;;]
+    @named ss = StateSpace(;A,B,C,D,x0=zeros(2))
+    @named c = Constant(; k=1)
+    @named model = ODESystem(
+        [
+           connect(c.output, ss.input),
+        ], 
+        t, 
+        systems=[ss, c]
+    )
+    sys = structural_simplify(model)
+    prob = ODEProblem(sys, Pair[], (0.0, 100.0))
+    sol = solve(prob, Rodas4())
+    @test sol[ss.x[1]][end] ≈ 1
+    @test sol[ss.x[2]][end] ≈ 0
+end
+
+"""Second order demo plant"""
+function Plant(;name, x0=zeros(2))
+    @named input = RealInput()
+    @named output = RealOutput()
+    D = Differential(t)
+    sts = @variables x1(t)=x0[1] x2(t)=x0[2]
+    eqs= [
+        D(x1) ~ x2
+        D(x2) ~ -x1 - 0.5 * x2 + input.u
+        output.u ~ 0.9 * x1 + x2
+    ]
+    compose(ODESystem(eqs, t, sts, []; name), [input, output])
+end
+
+@testset "PI" begin
+    @named ref = Constant(; k=2)
+    @named pi_controller = PI(k=1, T=1)
+    @named plant = Plant()
+    @named fb = Feedback()
+    @named model = ODESystem(
+        [
+            connect(ref.output, fb.input1), 
+            connect(plant.output, fb.input2),
+            connect(fb.output, pi_controller.e), 
+            connect(pi_controller.u, plant.input), 
+        ], 
+        t, 
+        systems=[pi_controller, plant, ref, fb]
+    )
+    sys = structural_simplify(model)
+
+    prob = ODEProblem(sys, Pair[], (0.0, 100.0))
+
+    sol = solve(prob, Rodas4())
+    @test sol[plant.output.u][end] ≈ 2
+end
+
 @testset "PID" begin
+    @named ref = Constant(; k=2)
+    @named pid_controller = PID(k=3, Ti=0.5, Td=100)
+    @named plant = Plant()
+    @named fb = Feedback()
+    @named model = ODESystem(
+        [
+            connect(ref.output, fb.input1), 
+            connect(plant.output, fb.input2),
+            connect(fb.output, pid_controller.err_input), 
+            connect(pid_controller.ctr_output, plant.input), 
+        ], 
+        t, 
+        systems=[pid_controller, plant, ref, fb]
+    )
+    sys = structural_simplify(model)
+    prob = ODEProblem(sys, Pair[], (0.0, 100.0))
+    sol = solve(prob, Rodas4())
+    @test sol[plant.output.u][end] ≈ 2
+end
+
+#=
+@testset "LimPID" begin
     @info "Testing PID"
 
     k = 2
@@ -153,70 +232,9 @@ end
     #     Set(bound_inputs(sys)),
     #     Set([controller.u_r, controller.u_y, controller.I.u, controller.D.u, controller.sat.u])
     #     )
-end
-
-@testset "StateSpace" begin
-    @info "Testing StateSpace"
-    
-    A = [0 1; 0 0]
-    B = [0, 1]
-    C = [1 0]
-    D = 0
-    @named sys = Blocks.StateSpace(A,B,C,D)
-    @test count(ModelingToolkit.isinput, states(sys)) == 1
-    @test count(ModelingToolkit.isoutput, states(sys)) == 1
-    @named iosys = ODESystem([sys.u[1] ~ 1], t, systems=[sys])
-    iosys = structural_simplify(iosys)
-    prob = ODEProblem(iosys, Pair[], (0.0, 1.0))
-    sol = solve(prob, Rodas4(), saveat=0:0.1:1)
-    @test sol[sys.x[2]] ≈ (0:0.1:1)
-    @test sol[sys.x[1]] ≈ sol[sys.y[1]]
-
-
-    D = randn(2, 2) # If there's only a `D` matrix, the result is a matrix gain
-    @named sys = Blocks.StateSpace([],[],[],D)
-    gain = Blocks.Gain(D, name=:sys)
-    @test sys == gain
 end=#
 
-"""Second order demo plant"""
-function Plant(;name, x0=zeros(2))
-    @named input = RealInput()
-    @named output = RealOutput()
-    D = Differential(t)
-    sts = @variables x1(t)=x0[1] x2(t)=x0[2]
-    eqs= [
-        D(x1) ~ x2
-        D(x2) ~ -x1 - 0.5 * x2 + input.u
-        output.u ~ 0.9 * x1 + x2
-    ]
-    compose(ODESystem(eqs, t, sts, []; name), [input, output])
-end
-
-@testset "PI controller" begin
-    @named ref = Constant(; k=2)
-    @named pi_controller = PI(k=1, T=1)
-    @named plant = Plant()
-    @named fb = Feedback()
-    @named model = ODESystem(
-        [
-            connect(ref.output, fb.input1), 
-            connect(plant.output, fb.input2),
-            connect(fb.output, pi_controller.e), 
-            connect(pi_controller.u, plant.input), 
-        ], 
-        t, 
-        systems=[pi_controller, plant, ref, fb]
-    )
-    sys = structural_simplify(model)
-
-    prob = ODEProblem(sys, Pair[], (0.0, 100.0))
-
-    sol = solve(prob, Rodas4())
-    @test sol[plant.output.u][end] ≈ 2
-end
-
-@testset "PI controller with actuator saturation" begin
+@testset "LimPI" begin
     @named ref = Constant(; k=1)
     @named pi_controller_lim = LimPI(k=3, T=0.5, u_max=1.5, u_min=-1.5, Ta=0.1)
     @named pi_controller = PI(k=3, T=0.5)
