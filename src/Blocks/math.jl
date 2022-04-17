@@ -15,13 +15,13 @@ end
 Output the product of a gain matrix with the input signal vector.
 """
 function MatrixGain(K::AbstractArray; name)
-    ny, nu = size(K)
-    @named miso = MIMO(;nin=nu, nout=ny)
-    @unpack u, y = miso
+    nout, nin = size(K)
+    @named input = RealInput(;nin=nin)
+    @named output = RealOutput(;nout=nout)
     eqs = [
-        y[i] ~ sum(K[i,j] * u[j] for j in 1:nin) for i in 1:nout # FIXME: if array equations work
+        output.u[i] ~ sum(K[i,j] * input.u[j] for j in 1:nin) for i in 1:nout # FIXME: if array equations work
     ]
-    extend(ODESystem(eqs, t, [], []; name=name), miso)
+    compose(ODESystem(eqs, t, [], []; name=name), [input, output])
 end
 
 """
@@ -178,7 +178,7 @@ function Tan(;name)
     @named siso = SISO()
     @unpack u, y = siso
     eqs = [
-        y ~ tan(uP)
+        y ~ tan(u)
     ]
     extend(ODESystem(eqs, t, [], []; name=name), siso)
 end

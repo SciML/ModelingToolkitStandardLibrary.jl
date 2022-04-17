@@ -138,7 +138,7 @@ PI-controller with actuator saturation and anti-windup measure.
 function LimPI(;name, k=1, T=1, u_max=1, u_min=-u_max, Ta=1)
     @named e = RealInput() # control error
     @named u = RealOutput() # control signal
-    @variables x(t)=0 u_star
+    @variables x(t)=0.0 u_star(t)=0.0
     Ta > 0 || error("Time constant `Ta` has to be strictly positive")
     T > 0 || error("Time constant `T` has to be strictly positive")
     pars = @parameters k=k T=T u_max=u_max u_min=u_min

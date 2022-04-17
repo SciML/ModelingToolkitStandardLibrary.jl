@@ -179,8 +179,9 @@ end
 end
 
 @testset "Math" begin
-    blocks = [Abs, Sign, Sqrt, Sin, Cos, Tan, Asin, Acos, Atan, Sinh, Cosh, Tanh, Exp]
+    blocks = [Abs, Sign, Sin, Cos, Tan, Asin, Acos, Atan, Sinh, Cosh, Tanh, Exp]
     for block in blocks
+        @info "Testing $block..."
         @named source = Sine()
         @named b = block()
         @named int = Integrator()
@@ -192,9 +193,10 @@ end
         @test_nowarn sol = solve(prob, Rodas4())
     end
 
-    blocks = [Log, Log10] # input must be positive
+    blocks = [Sqrt, Log, Log10] # input must be positive
     for block in blocks
-        @named source = Sin(; offset=2)
+        @info "Testing $block..."
+        @named source = Sine(; offset=2)
         @named b = block()
         @named int = Integrator()
         @named model = ODESystem([connect(source.output, b.input), connect(b.output, int.input)], t, systems=[int, b, source])

@@ -81,7 +81,7 @@ end
         systems=[ss, c]
     )
     sys = structural_simplify(model)
-    prob = ODEProblem(sys, Pair[], (0.0, 100.0))
+    prob = ODEProblem(sys, Pair[], (0.0, 500.0))
     sol = solve(prob, Rodas4())
     @test sol[ss.x[1]][end] ≈ 1
     @test sol[ss.x[2]][end] ≈ 0
