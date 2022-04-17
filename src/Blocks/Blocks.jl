@@ -12,6 +12,7 @@ export RealInput, RealOutput, SISO
 include("utils.jl")
 
 export Gain, Sum, MatrixGain, Sum, Feedback, Add, Product, Division, Abs, Sign, Sqrt
+export Sin, Cos, Tan, Asin, Acos, Atan, Atan2, Sinh, Cosh, Tanh, Exp, Log, Log10
 include("math.jl")
 
 export Constant, SinSource, ClockSource, RampSource, StepSource

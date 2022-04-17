@@ -178,7 +178,7 @@ function Tan(;name)
     @named siso = SISO()
     @unpack u, y = siso
     eqs = [
-        y ~ tan(u)
+        y ~ tan(uP)
     ]
     extend(ODESystem(eqs, t, [], []; name=name), siso)
 end
