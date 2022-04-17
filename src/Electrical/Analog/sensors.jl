@@ -1,3 +1,6 @@
+"""
+Sensor to measure the current in a branch.
+"""
 function CurrentSensor(; name)
     @named p = Pin()
     @named n = Pin()
@@ -10,6 +13,9 @@ function CurrentSensor(; name)
     ODESystem(eqs, t, [i], [], systems=[p, n]; name=name)
 end
 
+"""
+Sensor to measure the potential.
+"""
 function PotentialSensor(; name)
     @named p = Pin()
     @variables phi(t)=1.0
@@ -20,6 +26,9 @@ function PotentialSensor(; name)
     ODESystem(eqs, t, [phi], [], systems=[p]; name=name)
 end
 
+"""
+Sensor to measure the voltage between two pins.
+"""
 function VoltageSensor(; name)
     @named p = Pin()
     @named n = Pin()
@@ -32,6 +41,9 @@ function VoltageSensor(; name)
     ODESystem(eqs, t, [v], []; systems=[p, n], name=name)
 end
 
+"""
+Sensor to measure the power
+"""
 function PowerSensor(; name)
     @named pc = Pin()
     @named nc = Pin()
@@ -50,6 +62,9 @@ function PowerSensor(; name)
     ODESystem(eqs, t, [power], []; systems=[pc, nc, pv, nv, voltage_sensor, current_sensor], name=name)
 end
 
+"""
+Sensor to measure current, voltage and power.
+"""
 function MultiSensor(; name)
     @named pc = Pin()
     @named nc = Pin()

@@ -9,9 +9,11 @@ end
 
 """
 Ideal linear electrical resistor.
+
+# Parameters: 
+- `R`: [Ohm] Resistance
 """
-function Resistor(;name, 
-    R = 1.0) # [Ohm] Resistance
+function Resistor(;name, R = 1.0)
     @named oneport = OnePort()
     @unpack v, i = oneport
     pars = @parameters R=R
@@ -23,10 +25,12 @@ end
 
 """
 Ideal linear electrical capacitor.
+
+# Parameters:
+- `C`: [F] Capacity
+- `v0`: [V] Initial voltage of capacitor
 """
-function Capacitor(;name, 
-    C=1.0, # [F] Capacity
-    v0=0.0) # [V] Initial voltage  
+function Capacitor(;name, C=1.0, v0=0.0) 
     @named oneport = OnePort(;v0=v0)
     @unpack v, i = oneport
     pars = @parameters C=C
@@ -38,10 +42,12 @@ end
 
 """
 Ideal linear electrical inductor.
+
+# Parameters:
+- `L`: [H] Inductance
+- `i0`: [A] Initial current through inductor
 """
-function Inductor(;name, 
-    L=1.0e-6, # [H] Inductance
-    i0=0.0) # [A] Initial current
+function Inductor(;name, L=1.0e-6, i0=0.0)
     @named oneport = OnePort(;i0=i0)
     @unpack v, i = oneport
     pars = @parameters L=L
