@@ -257,7 +257,7 @@ function StateSpace(;A, B, C, D=nothing, x0=zeros(size(A,1)), name)
     @named output = RealOutput(nout=ny)
     @variables x[1:nx](t)=x0
     # pars = @parameters A=A B=B C=C D=D # This is buggy
-    eqs = [
+    eqs = [ # FIXME: if array equations work
         [Differential(t)(x[i]) ~ sum(A[i,k] * x[k] for k in 1:nx) + sum(B[i,j] * input.u[j] for j in 1:nu) for i in 1:nx]..., # cannot use D here
         [output.u[j] ~ sum(C[j,i] * x[i] for i in 1:nx) + sum(D[j,k] * input.u[k] for k in 1:nu) for j in 1:ny]...,
     ]
