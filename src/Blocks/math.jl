@@ -19,7 +19,7 @@ function MatrixGain(K::AbstractArray; name)
     @named miso = MIMO(;nin=nu, nout=ny)
     @unpack u, y = miso
     eqs = [
-        y .~ K*u
+        y[i] ~ sum(K[i,j] * u[j] for j in 1:nin) for i in 1:nout # FIXME: if array equations work
     ]
     extend(ODESystem(eqs, t, [], []; name=name), miso)
 end
