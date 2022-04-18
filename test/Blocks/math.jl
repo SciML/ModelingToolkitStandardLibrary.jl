@@ -181,7 +181,6 @@ end
 @testset "Math" begin
     blocks = [Abs, Sign, Sin, Cos, Tan, Asin, Acos, Atan, Sinh, Cosh, Tanh, Exp]
     for block in blocks
-        @info "Testing $block..."
         @named source = Sine()
         @named b = block()
         @named int = Integrator()
@@ -195,7 +194,6 @@ end
 
     blocks = [Sqrt, Log, Log10] # input must be positive
     for block in blocks
-        @info "Testing $block..."
         @named source = Sine(; offset=2)
         @named b = block()
         @named int = Integrator()

@@ -81,10 +81,10 @@ end
         systems=[ss, c]
     )
     sys = structural_simplify(model)
-    prob = ODEProblem(sys, Pair[], (0.0, 500.0))
+    prob = ODEProblem(sys, Pair[], (0.0, 100.0))
     sol = solve(prob, Rodas4())
     @test sol[ss.x[1]][end] ≈ 1
-    @test sol[ss.x[2]][end] ≈ 0
+    @test sol[ss.x[2]][end] ≈ 0 atol=1e-3
 end
 
 """Second order demo plant"""
@@ -238,7 +238,7 @@ end=#
     @named ref = Constant(; k=1)
     @named pi_controller_lim = LimPI(k=3, T=0.5, u_max=1.5, u_min=-1.5, Ta=0.1)
     @named pi_controller = PI(k=3, T=0.5)
-    @named sat = Saturation(y_max=1.5, y_min=-1.5)
+    @named sat = Limiter(y_max=1.5, y_min=-1.5)
     @named plant = Plant()
     @named fb = Feedback()
 
@@ -278,6 +278,6 @@ end=#
         sol = solve(prob, Rodas4())
     end
 
-    @test sol[plant.output.u][end] ≈ 2
-    @test sol_lim[plant.output.u][end] ≈ 2
+    @test sol[plant.output.u][end] ≈ 1 atol=1e-3
+    @test sol_lim[plant.output.u][end] ≈ 1 atol=1e-3
 end

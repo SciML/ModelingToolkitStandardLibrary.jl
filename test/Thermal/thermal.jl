@@ -34,8 +34,8 @@ using ModelingToolkitStandardLibrary.Thermal, ModelingToolkit, OrdinaryDiffEq, T
     
     @info "Building a two-body system..."
     eqs = [
-        connect(T_sensor1.port_a, mass1.port, th_conductor.port_a)
-        connect(th_conductor.port_b, mass2.port, T_sensor2.port_a)
+        connect(T_sensor1.port, mass1.port, th_conductor.port_a)
+        connect(th_conductor.port_b, mass2.port, T_sensor2.port)
         final_T ~ (mass1.C * mass1.T + mass2.C * mass2.T) / 
         (mass1.C + mass2.C)
     ]
@@ -108,10 +108,10 @@ end
 
     @info "Building a piston-cylinder..."
     eqs = [
-        connect(gas_tem.port, gas.solid)
-        connect(gas.fluid, wall.port_a)
-        connect(wall.port_b, coolant.fluid)
-        connect(coolant.solid, coolant_tem.port)
+        connect(gas_tem.port, gas.solidport)
+        connect(gas.fluidport, wall.port_a)
+        connect(wall.port_b, coolant.fluidport)
+        connect(coolant.solidport, coolant_tem.port)
     ]
     @named piston = ODESystem(eqs, t, systems=[gas_tem, wall, gas, coolant, coolant_tem])
     sys = structural_simplify(piston)
@@ -167,7 +167,7 @@ end
     @named flow_src    = FixedHeatFlow(Q_flow=50, alpha=100)
     @named hf_sensor   = HeatFlowSensor()
     @named th_ground   = FixedTemperature(T=0)
-    @named collector   = ThermalCollector(N=2)
+    @named collector   = ThermalCollector(m=2)
     @named th_resistor = ThermalResistor(R=10) 
     @named tem_src     = FixedTemperature(T=10)
     @named mass        = HeatCapacitor(C=10)
@@ -177,7 +177,7 @@ end
         connect(flow_src.port, collector.port_a1, th_resistor.port_a)
         connect(tem_src.port, collector.port_a2)
         connect(hf_sensor.port_a, collector.port_b)
-        connect(hf_sensor.port_b, mass.a, th_resistor.port_b)
+        connect(hf_sensor.port_b, mass.port, th_resistor.port_b)
         connect(mass.port, th_ground.port)
         ]
     @named coll = ODESystem(eqs, t, 

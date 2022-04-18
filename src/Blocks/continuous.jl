@@ -204,11 +204,11 @@ function LimPID(; k, Ti=false, Td=false, wp=1, wd=1,
    
     @named D = Derivative(k = Td, T = Td/Nd) # NOTE: consider T = max(Td/Nd, 100eps()), but currently errors since a symbolic variable appears in a boolean expression in `max`.
     if isequal(Ti, false)
-        @named I = Gain(false)
+        @named I = Gain(1)
     else
         @named I = Integrator(k = 1/Ti)
     end
-    @named sat = Saturation(; y_min=y_min, y_max=y_max)
+    @named sat = Limiter(; y_min=y_min, y_max=y_max)
     derivative_action = Td > 0
     pars = @parameters k=k Td=Td wp=wp wd=wd Ni=Ni Nd=Nd # TODO: move this line above the subsystem definitions when symbolic default values for parameters works. https://github.com/SciML/ModelingToolkit.jl/issues/1013
     # NOTE: Ti is not included as a parameter since we cannot support setting it to false after this constructor is called. Maybe Integrator can be tested with Ti = false setting k to 0 with IfElse?

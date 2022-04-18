@@ -115,14 +115,13 @@ function BodyRadiation(; name, G=1.0)
 
     @named element1d = Element1D()
     @unpack Q_flow, dT = element1d
+    @unpack port_a, port_b = element1d
     pars = @parameters G=G
     eqs = [
-        port_a.Q_flow ~ Q_flow
-        port_b.Q_flow + port_a.Q_flow ~ 0
         Q_flow ~ G * sigma * (port_a.T^4 - port_b.T^4)
     ]
     
-    extend(ODESystem(eqs, t, [Q_flow], pars; name=name), element1d)
+    extend(ODESystem(eqs, t, [], pars; name=name), element1d)
 end
 
 """
