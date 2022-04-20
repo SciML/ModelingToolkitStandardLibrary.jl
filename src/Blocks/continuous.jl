@@ -30,7 +30,7 @@ and a state-space realization is given by `ss(-1/T, 1/T, -k/T, k/T)`
 where `T` is the time constant of the filter.
 A smaller `T` leads to a more ideal approximation of the derivative.
 """
-function Derivative(; name, k=1, T=10, x0=0)
+function Derivative(; name, k=1, T, x0=0.0)
     @named siso = SISO()
     @unpack u, y = siso
     sts = @variables x(t)=x0
