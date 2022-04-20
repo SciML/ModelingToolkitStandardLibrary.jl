@@ -61,6 +61,6 @@ end
 
     prob = ODEProblem(sys, Pair[], (0.0, 10.0))
 
-    sol = solve(prob, Rodas4())
-    @test all(abs.(sol[rl.output.u]) .<= 0.5)
+    sol = solve(prob, Rodas4(), saveat=0.01, abstol=1e-10, reltol=1e-10)
+    @test all(abs.(sol[rl.output.u]) .<= 0.51)
 end
