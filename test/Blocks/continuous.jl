@@ -15,11 +15,8 @@ an integrator with a constant input is often used together with the system under
     @named int = Integrator()
     @named iosys = ODESystem(connect(c.output, int.input), t, systems=[int, c])
     sys = structural_simplify(iosys)
-
     prob = ODEProblem(sys, Pair[int.x=>1.0], (0.0, 1.0))
-
     sol = solve(prob, Rodas4())
-
     @test sol[int.output.u][end] ≈ 2
 end
 
@@ -35,9 +32,7 @@ end
         systems=[int, source, der],
     )
     sys = structural_simplify(iosys)
-
     prob = ODEProblem(sys, Pair[int.x=>0.0], (0.0, 10.0))
-
     sol = solve(prob, Rodas4())
     @test isapprox(sol[source.output.u], sol[int.output.u], atol=1e-1)
 end
@@ -47,9 +42,7 @@ end
     @named pt1 = FirstOrder(; k=1.0, T=0.1)
     @named iosys = ODESystem(connect(c.output, pt1.input), t, systems=[pt1, c])
     sys = structural_simplify(iosys)
-
     prob = ODEProblem(sys, Pair[], (0.0, 100.0))
-
     sol = solve(prob, Rodas4())
     @test sol[pt1.output.u][end] ≈ 1
 end
@@ -59,9 +52,7 @@ end
     @named pt2 = SecondOrder(; k=1.0, w=1, d=0.5)
     @named iosys = ODESystem(connect(c.output, pt2.input), t, systems=[pt2, c])
     sys = structural_simplify(iosys)
-
     prob = ODEProblem(sys, Pair[], (0.0, 100.0))
-
     sol = solve(prob, Rodas4())
     @test sol[pt2.output.u][end] ≈ 1
 end
@@ -117,9 +108,7 @@ end
         systems=[pi_controller, plant, ref, fb]
     )
     sys = structural_simplify(model)
-
     prob = ODEProblem(sys, Pair[], (0.0, 100.0))
-
     sol = solve(prob, Rodas4())
     @test sol[plant.output.u][end] ≈ 2
 end
@@ -295,9 +284,7 @@ end
         systems=[pid_controller, plant, ref, fb]
     )
     sys = structural_simplify(model)
-
     prob = ODEProblem(sys, Pair[], (0.0, 100.0))
-
     sol = solve(prob, Rodas4())
 
     # Plots.plot(sol, vars=[plant.output.u, plant.input.u])
