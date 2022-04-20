@@ -269,7 +269,7 @@ end
 end
 
 @testset "LimPID" begin
-    @named ref = Constant(; k=2)
+    @named ref = Constant(; k=1)
     @named pid_controller = LimPID(k=3, Ti=0.5, Td=100, u_max=1.5, u_min=-1.5, Ni=0.1/0.5)
     @named plant = Plant()
     @named model = ODESystem(
