@@ -34,6 +34,9 @@ using ModelingToolkitStandardLibrary.Electrical, ModelingToolkit, OrdinaryDiffEq
     # Plots.plot(sol; vars=[capacitor.v, voltage_sensor.v])
     # Plots.plot(sol; vars=[power_sensor.power, capacitor.i * capacitor.v])
     # Plots.plot(sol; vars=[resistor.i, current_sensor.i])
+    @test sol[capacitor.v] ≈ sol[voltage_sensor.v] atol=1e-3
+    @test sol[power_sensor.power] ≈ sol[capacitor.i * capacitor.v] atol=1e-3
+    @test sol[resistor.i] ≈ sol[current_sensor.i] atol=1e-3
 end
 
 # simple voltage divider
@@ -52,7 +55,10 @@ end
     @named model = ODESystem(connections, t, systems=[R1, R2, source, ground])
     sys = structural_simplify(model)
     prob = ODEProblem(sys, Pair[], (0, 2.0))
-    @test_nowarn sol = solve(prob, Rodas4()) # has no state; does not work with Tsit5
+    sol = solve(prob, Rodas4()) # has no state; does not work with Tsit5
+    @test sol[R1.p.v][end] ≈ 10 atol=1e-3
+    @test sol[R1.n.v][end] ≈ 5 atol=1e-3
+    @test sol[R2.n.v][end] ≈ 0 atol=1e-3
 end
 
 # simple RC
@@ -71,10 +77,10 @@ end
     @named model = ODESystem(connections, t; systems=[resistor, capacitor, source, ground])
     sys = structural_simplify(model)
     prob = ODAEProblem(sys, [capacitor.v => 0.0], (0.0, 10.0))
-    @test_nowarn sol = solve(prob, Tsit5())
+    sol = solve(prob, Tsit5())
 
     # Plots.plot(sol; vars=[source.v, capacitor.v])
-
+    @test sol[capacitor.v][end] ≈ 10 atol=1e-3
 end
 
 # simple RL
@@ -93,9 +99,10 @@ end
     @named model = ODESystem(connections, t; systems=[resistor, inductor, source, ground])
     sys = structural_simplify(model)
     prob = ODAEProblem(sys, [inductor.i => 0.0], (0.0, 10.0))
-    @test_nowarn sol = solve(prob, Tsit5())
+    sol = solve(prob, Tsit5())
 
     # Plots.plot(sol; vars=[inductor.i, inductor.i])
+    @test sol[inductor.i][end] ≈ 10 atol=1e-3
 end
 
 # RC with different voltage sources
