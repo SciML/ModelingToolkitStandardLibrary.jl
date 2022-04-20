@@ -179,8 +179,7 @@ end
 end
 
 @testset "Math" begin
-    blocks = [Abs, Sign, Sin, Cos, Tan, Asin, Acos, Atan, Sinh, Cosh, Tanh, Exp]
-    for block in blocks
+    for (block, func) in [(Abs, abs), (Sin, sin), (Cos, cos), (Tan, tan), (Asin, asin), (Acos, acos), (Atan, atan), (Sinh, sinh), (Cosh, cosh), (Tanh, tanh), (Exp, exp)]
         @named source = Sine()
         @named b = block()
         @named int = Integrator()
@@ -189,11 +188,12 @@ end
 
         prob = ODEProblem(sys, Pair[int.x=>0.0], (0.0, 1.0))
 
-        @test_nowarn sol = solve(prob, Rodas4())
+        sol = solve(prob, Rodas4())
+        @test sol[b.output.u] ≈ func.(sol[source.output.u])
     end
 
-    blocks = [Sqrt, Log, Log10] # input must be positive
-    for block in blocks
+    # input must be positive
+    for (block, func) in [(Sqrt, sqrt), (Log, log), (Log10, log10)] 
         @named source = Sine(; offset=2)
         @named b = block()
         @named int = Integrator()
@@ -202,7 +202,8 @@ end
 
         prob = ODEProblem(sys, Pair[int.x=>0.0], (0.0, 1.0))
 
-        @test_nowarn sol = solve(prob, Rodas4())
+        sol = solve(prob, Rodas4())
+        @test sol[b.output.u] ≈ func.(sol[source.output.u])
     end
 end
 
