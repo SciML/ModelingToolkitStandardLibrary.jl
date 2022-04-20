@@ -145,10 +145,7 @@ end
     @test sol[plant.output.u][end] ≈ 2
 end
 
-#=
-@testset "LimPID" begin
-    @info "Testing PID"
-
+@test_skip begin 
     k = 2
     Ti = 0.5
     Td = 0.7
@@ -232,7 +229,7 @@ end
     #     Set(bound_inputs(sys)),
     #     Set([controller.u_r, controller.u_y, controller.I.u, controller.D.u, controller.sat.u])
     #     )
-end=#
+end
 
 @testset "LimPI" begin
     @named ref = Constant(; k=1)
@@ -280,4 +277,29 @@ end=#
 
     @test sol[plant.output.u][end] ≈ 1 atol=1e-3
     @test sol_lim[plant.output.u][end] ≈ 1 atol=1e-3
+end
+
+@testset "LimPID" begin
+    @named ref = Constant(; k=1)
+    @named pid_controller = LimPID(k=3, Ti=0.5, Td=100, u_max=1.5, u_min=-1.5, Ta=0.1/0.5)
+    @named plant = Plant()
+    @named fb = Feedback()
+    @named model = ODESystem(
+        [
+            connect(ref.output, fb.input1), 
+            connect(plant.output, fb.input2),
+            connect(fb.output, pid_controller.err_input), 
+            connect(pid_controller.ctr_output, plant.input), 
+        ], 
+        t, 
+        systems=[pid_controller, plant, ref, fb]
+    )
+    sys = structural_simplify(model)
+
+    prob = ODEProblem(sys, Pair[], (0.0, 100.0))
+
+    sol = solve(prob, Rodas4())
+
+    # Plots.plot(sol, vars=[plant.output.u, plant.input.u])
+    @test sol[plant.output.u][end] ≈ 1 atol=1e-3
 end
