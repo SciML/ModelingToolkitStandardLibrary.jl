@@ -1,12 +1,12 @@
 """
-    Integrator(; k=1, name)
+    Integrator(;name, k=1, x_start=0.0)
 
 Outputs `y = ∫k*u dt`, corresponding to the transfer function `1/s`.
 """
-function Integrator(;name, k=1, x0=0.0)
+function Integrator(;name, k=1, x_start=0.0)
     @named siso = SISO()
     @unpack u, y = siso
-    sts = @variables x(t)=x0
+    sts = @variables x(t)=x_start
     pars = @parameters k=k
     eqs = [
         D(x) ~ k * u
@@ -16,7 +16,7 @@ function Integrator(;name, k=1, x0=0.0)
 end
 
 """
-    Derivative(; k=1, T, name)
+    Derivative(; name, k=1, T, x_start=0.0)
 
 Outputs an approximate derivative of the input. The transfer function of this block is
 ```
@@ -30,10 +30,10 @@ and a state-space realization is given by `ss(-1/T, 1/T, -k/T, k/T)`
 where `T` is the time constant of the filter.
 A smaller `T` leads to a more ideal approximation of the derivative.
 """
-function Derivative(; name, k=1, T, x0=0.0)
+function Derivative(; name, k=1, T, x_start=0.0)
     @named siso = SISO()
     @unpack u, y = siso
-    sts = @variables x(t)=x0
+    sts = @variables x(t)=x_start
     pars = @parameters T=T k=k
     eqs = [
         D(x) ~ (u - x) / T
@@ -43,7 +43,7 @@ function Derivative(; name, k=1, T, x0=0.0)
 end
 
 """
-    FirstOrder(; k=1, T, name)
+    FirstOrder(; name, k=1, T, x_start=0.0)
 
 A first-order filter with a single real pole in `s = -T` and gain `k`. The transfer function
 is given by `Y(s)/U(s) = `
@@ -53,10 +53,10 @@ is given by `Y(s)/U(s) = `
 sT + 1
 ```
 """
-function FirstOrder(; k=1, T, name)
+function FirstOrder(; name, k=1, T, x_start=0.0)
     @named siso = SISO()
     @unpack u, y = siso
-    sts = @variables x(t)=0
+    sts = @variables x(t)=x_start
     pars = @parameters T=T k=k
     eqs = [
         D(x) ~ (k*u - x) / T
@@ -66,7 +66,7 @@ function FirstOrder(; k=1, T, name)
 end
 
 """
-    SecondOrder(; k=1, w, d, name)
+    SecondOrder(; name, k=1, w, d, x_start=0.0, xd_start=0.0)
 
 A second-order filter with gain `k`, a bandwidth of `w` rad/s and relative damping `d`. The transfer function
 is given by `Y(s)/U(s) = `
@@ -78,10 +78,10 @@ s² + 2d*w*s + w^2
 Critical damping corresponds to `d=1`, which yields the fastest step response without overshoot, d < 1` results in an under-damped filter while `d > 1` results in an over-damped filter.
 `d = 1/√2` corresponds to a Butterworth filter of order 2 (maximally flat frequency response).
 """
-function SecondOrder(; k=1, w, d, name)
+function SecondOrder(; name, k=1, w, d, x_start=0.0, xd_start=0.0)
     @named siso = SISO()
     @unpack u, y = siso
-    sts = @variables x(t)=0 xd(t)=0
+    sts = @variables x(t)=x_start xd(t)=xd_start
     pars = @parameters k=k w=w d=d
     eqs = [
         D(x) ~ xd
@@ -92,9 +92,11 @@ function SecondOrder(; k=1, w, d, name)
 end
 
 """
+    PI(;name, k=1, T, x_start=0.0)
+
 PI-controller without actuator saturation and anti-windup measure.
 """
-function PI(;name, k=1, T=1, x_start=0)
+function PI(;name, k=1, T, x_start=0.0)
     @named e = RealInput() # control error
     @named u = RealOutput() # control signal
     @variables x(t)=x_start
@@ -108,6 +110,8 @@ function PI(;name, k=1, T=1, x_start=0)
 end
 
 """
+    PID(;name, k=1, Ti=1, Td=1, Nd=10, xi_start=0, xd_start=0)
+
 Text-book version of a PID-controller.
 """
 function PID(;name, k=1, Ti=1, Td=1, Nd=10, xi_start=0, xd_start=0)
