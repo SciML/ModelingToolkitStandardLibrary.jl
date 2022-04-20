@@ -59,7 +59,7 @@ function FirstOrder(; k=1, T, name)
     sts = @variables x(t)=0
     pars = @parameters T=T k=k
     eqs = [
-        D(x) ~ (u - x) / T
+        D(x) ~ (k*u - x) / T
         y ~ x
     ]
     extend(ODESystem(eqs, t, sts, pars; name=name), siso)
