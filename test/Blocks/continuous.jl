@@ -269,19 +269,17 @@ end
 end
 
 @testset "LimPID" begin
-    @named ref = Constant(; k=1)
-    @named pid_controller = LimPID(k=3, Ti=0.5, Td=100, u_max=1.5, u_min=-1.5, Ta=0.1/0.5)
+    @named ref = Constant(; k=2)
+    @named pid_controller = LimPID(k=3, Ti=0.5, Td=100, u_max=1.5, u_min=-1.5, Ni=0.1/0.5)
     @named plant = Plant()
-    @named fb = Feedback()
     @named model = ODESystem(
         [
-            connect(ref.output, fb.input1), 
-            connect(plant.output, fb.input2),
-            connect(fb.output, pid_controller.err_input), 
+            connect(ref.output, pid_controller.reference), 
+            connect(plant.output, pid_controller.measurement),
             connect(pid_controller.ctr_output, plant.input), 
         ], 
         t, 
-        systems=[pid_controller, plant, ref, fb]
+        systems=[pid_controller, plant, ref]
     )
     sys = structural_simplify(model)
     prob = ODEProblem(sys, Pair[], (0.0, 100.0))

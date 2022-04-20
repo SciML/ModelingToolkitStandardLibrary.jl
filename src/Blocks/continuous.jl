@@ -178,14 +178,17 @@ where the transfer function for the derivative includes additional filtering, se
 - `Ni`: `Ni*Ti` controls the time constant `Tₜ` of anti-windup tracking. A common (default) choice is `Tₜ = √(Ti*Td)` which is realized by `Ni = √(Td / Ti)`. Anti-windup can be effectively turned off by setting `Ni = Inf`.
 ` `gains`: If `gains = true`, `Ti` and `Td` will be interpreted as gains with a fundamental PID transfer function on parallel form `ki=Ti, kd=Td, k + ki/s + kd*s`
 """
-function LimPID(; k, Ti=false, Td=false, wp=1, wd=1,
-    Ni    = Ti == 0 ? Inf : √(max(Td / Ti, 1e-6)),
-    Nd    = 12,
-    u_max = Inf,
-    u_min = u_max > 0 ? -u_max : -Inf,
-    gains = false,
-    name
+function LimPID(; name, k=1, Ti=false, Td=false, wp=1, wd=1,
+    Ni= Ti == 0 ? Inf : √(max(Td / Ti, 1e-6)),
+    Nd=10,
+    u_max=Inf,
+    u_min=u_max > 0 ? -u_max : -Inf,
+    gains=false,
+    xi_start=0.0,
+    xd_start=0.0,
     )
+    with_I = !isequal(Ti, false)
+    with_D = !isequal(Td, false)
     if gains
         Ti = k / Ti
         Td = Td / k
@@ -196,38 +199,70 @@ function LimPID(; k, Ti=false, Td=false, wp=1, wd=1,
     Td ≥ 0     || throw(ArgumentError("Td out of bounds, got $(Td) but expected Td ≥ 0"))
     u_max ≥ u_min || throw(ArgumentError("u_min must be smaller than u_max"))
 
-    @named r = RealInput() # reference
-    @named y = RealInput() # measurement
-    @named u = RealOutput() # control signal
-
-    sts = @variables x(t)=0 e(t)=0 ep(t)=0 ed(t)=0 ea(t)=0
-   
-    @named D = Derivative(k = Td, T = Td/Nd) # NOTE: consider T = max(Td/Nd, 100eps()), but currently errors since a symbolic variable appears in a boolean expression in `max`.
-    if isequal(Ti, false)
-        @named I = Gain(1)
+    @named reference = RealInput()
+    @named measurement = RealInput()
+    @named ctr_output = RealOutput() # control signal
+    @named addP = Add(k1=wp, k2=-1)
+    @named gainPID = Gain(k)
+    @named addPID = Add3()
+    if with_I
+        @named addI = Add3(k1=1, k2=-1, k3=1)
+        @named int = Integrator(k=1/Ti, x0=xi_start)
+        @named limiter = Limiter(y_max=u_max, y_min=u_min)
+        @named addSat = Add(k1=1, k2=-1)
+        @named gainTrack = Gain(1/(k * Ni))
     else
-        @named I = Integrator(k = 1/Ti)
+        @named Izero = Constant(k=0)
     end
-    @named sat = Limiter(; y_min=y_min, y_max=y_max)
-    derivative_action = Td > 0
-    pars = @parameters k=k Td=Td wp=wp wd=wd Ni=Ni Nd=Nd # TODO: move this line above the subsystem definitions when symbolic default values for parameters works. https://github.com/SciML/ModelingToolkit.jl/issues/1013
-    # NOTE: Ti is not included as a parameter since we cannot support setting it to false after this constructor is called. Maybe Integrator can be tested with Ti = false setting k to 0 with IfElse?
-    
+    if with_D
+        @named der = Derivative(k=1/Td, T=1/Nd, x0=xd_start)
+        @named addD = Add(k1=wd, k2=-1)
+    else
+        @named Dzero = Constant(k=0)
+    end
+
+    sys = [reference, measurement, ctr_output, addP, gainPID, addPID]
+    if with_I
+        push!(sys, [addI, int, limiter, addSat, gainTrack]...)
+    else
+        push!(sys, Izero)
+    end
+    if with_D
+        push!(sys, [addD, der]...)
+    else
+        push!(sys, Dzero)
+    end
+
     eqs = [
-        e ~ r.u - y.u # Control error
-        ep ~ wp * r.u - y.u  # Control error for proportional part with setpoint weight
-        ea ~ sat.y.u - sat.u.u # Actuator error due to saturation
-        I.u ~ e + 1 / (k * Ni) * ea  # Connect integrator block. The integrator integrates the control error and the anti-wind up tracking. Note the apparent tracking time constant 1/(k*Ni), since k appears after the integration and 1/Ti appears in the integrator block, the final tracking gain will be 1/(Ti*Ni) 
-        sat.u ~ derivative_action ? k * (ep + I.y + D.y) : k * (ep + I.y) # unsaturated output = P + I + D
-        y ~ sat.y
+        connect(reference, addP.input1),
+        connect(measurement, addP.input2),
+        connect(addP.output, addPID.input1),
+        connect(addPID.output, gainPID.input),
     ]
-    systems = [I, sat]
-    if derivative_action
-        push!(eqs, ed ~ wd*u_r - u_y)
-        push!(eqs, D.u ~ ed) # Connect derivative block
-        push!(systems, D)
+    if with_I
+        push!(eqs, connect(reference, addI.input1))
+        push!(eqs, connect(measurement, addI.input2))
+        push!(eqs, connect(gainPID.output, limiter.input))
+        push!(eqs, connect(limiter.output, ctr_output))
+        push!(eqs, connect(limiter.input, addSat.input2))
+        push!(eqs, connect(limiter.output, addSat.input1))
+        push!(eqs, connect(addSat.output, gainTrack.input))
+        push!(eqs, connect(gainTrack.output, addI.input3))
+        push!(eqs, connect(addI.output, int.input))
+        push!(eqs, connect(int.output, addPID.input3))
+    else
+        push!(eqs, connect(Izero.output, addPID.input3))
     end
-    ODESystem(eqs, t, sts, pars, name=name, systems=systems)
+    if with_D
+        push!(eqs, connect(reference, addD.input1))
+        push!(eqs, connect(measurement, addD.input2))
+        push!(eqs, connect(addD.output, der.input))
+        push!(eqs, connect(der.output, addPID.input2))
+    else
+        push!(eqs, connect(Dzero.output, addPID.input2))
+    end
+    
+    ODESystem(eqs, t, [], []; name=name, systems=sys)
 end
 
 """
