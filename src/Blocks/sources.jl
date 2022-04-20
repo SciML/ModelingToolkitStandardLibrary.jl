@@ -68,7 +68,7 @@ Generate clock signal.
 
 # Parameters: 
 - `offset`: Offset of output signal
-- `start_time`: [s] Output `y = offset` for `t < star_time`
+- `start_time`: [s] Output `y = offset` for `t < start_time`
 """
 function Clock(;name, 
     offset=0, # Offset of output signal
