@@ -46,6 +46,8 @@ function DeadZone(; name, u_max, u_min=-u_max)
 end
 
 """
+    SlewRateLimiter(;name, rising=1, falling=-rising, Td=0.001, y_start=0.0)
+    
 Limits the slew rate of a signal.
 
 # Parameters:
