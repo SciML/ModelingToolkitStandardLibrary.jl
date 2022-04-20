@@ -21,7 +21,7 @@ Generate sine signal.
 - `amplitude`: Amplitude of sine wave
 - `phase`: [rad] Phase of sine wave 
 - `offset`: Offset of output signal
-- `start_time`: [s] Output `y = offset` for `t < star_time`
+- `start_time`: [s] Output `y = offset` for `t < start_time`
 """
 function Sine(;name, 
     frequency=1, 
@@ -46,7 +46,7 @@ Generate cosine signal.
 - `amplitude`: Amplitude of sine wave
 - `phase`: [rad] Phase of sine wave 
 - `offset`: Offset of output signal
-- `start_time`: [s] Output `y = offset` for `t < star_time`
+- `start_time`: [s] Output `y = offset` for `t < start_time`
 """
 function Cosine(;name, 
     frequency=1, 
@@ -64,13 +64,13 @@ function Cosine(;name,
 end
 
 """
-Generate clock signal.
+Generate current time signal.
 
 # Parameters: 
 - `offset`: Offset of output signal
-- `start_time`: [s] Output `y = offset` for `t < star_time`
+- `start_time`: [s] Output `y = offset` for `t < start_time`
 """
-function Clock(;name, 
+function ContinuousClock(;name, 
     offset=0, # Offset of output signal
     start_time=0)
 
@@ -89,7 +89,7 @@ Generate ramp signal.
 - `height`: Height of ramp
 - `duration`: [s] Duration of ramp (= 0.0 gives a Step)
 - `offset`: Offset of output signal
-- `start_time`: [s] Output `y = offset` for `t < star_time`
+- `start_time`: [s] Output `y = offset` for `t < start_time`
 """
 function Ramp(;name, 
     offset=0,
@@ -112,7 +112,7 @@ Generate step signal.
 # Parameters:
 - `height`: Height of step
 - `offset`: Offset of output signal
-- `start_time`: [s] Output `y = offset` for `t < star_time`
+- `start_time`: [s] Output `y = offset` for `t < start_time`
 """
 function Step(;name, 
     offset=0, # Offset of output signal
@@ -136,7 +136,7 @@ Generate exponentially damped sine signal.
 - `damping`: [1/s] Damping coefficient of sine wave
 - `phase`: [rad] Phase of sine wave 
 - `offset`: Offset of output signal
-- `start_time`: [s] Output `y = offset` for `t < star_time`
+- `start_time`: [s] Output `y = offset` for `t < start_time`
 """
 function ExpSine(;name, 
     frequency=1, 

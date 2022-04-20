@@ -4,7 +4,7 @@ using ModelingToolkitStandardLibrary.Blocks
 @parameters t
 
 @testset "Sources" begin
-    sources = [Constant, Sine, Cosine, Clock, Ramp, Step, ExpSine]
+    sources = [Constant, Sine, Cosine, ContinuousClock, Ramp, Step, ExpSine]
     for source in sources
         @named src = source()
         @named int = Integrator()
