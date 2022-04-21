@@ -121,8 +121,8 @@ function PID(;name, k=1, Ti=1, Td=1, Nd=10, xi_start=0, xd_start=0)
     Td > 0 || error("Time constant `Td` has to be strictly positive")
     Nd > 0 || error("`Nd` has to be strictly positive")
     @named gain = Gain(k)
-    @named int = Integrator(k=1/Ti, x0=xi_start)
-    @named der = Derivative(k=1/Td, T=1/Nd, x0=xd_start)
+    @named int = Integrator(k=1/Ti, x_start=xi_start)
+    @named der = Derivative(k=1/Td, T=1/Nd, x_start=xd_start)
     @named add = Add3()
     eqs = [
         connect(err_input, add.input1),
@@ -211,7 +211,7 @@ function LimPID(; name, k=1, Ti=false, Td=false, wp=1, wd=1,
     @named addPID = Add3()
     if with_I
         @named addI = Add3(k1=1, k2=-1, k3=1)
-        @named int = Integrator(k=1/Ti, x0=xi_start)
+        @named int = Integrator(k=1/Ti, x_start=xi_start)
         @named limiter = Limiter(y_max=u_max, y_min=u_min)
         @named addSat = Add(k1=1, k2=-1)
         @named gainTrack = Gain(1/(k * Ni))
@@ -219,7 +219,7 @@ function LimPID(; name, k=1, Ti=false, Td=false, wp=1, wd=1,
         @named Izero = Constant(k=0)
     end
     if with_D
-        @named der = Derivative(k=1/Td, T=1/Nd, x0=xd_start)
+        @named der = Derivative(k=1/Td, T=1/Nd, x_start=xd_start)
         @named addD = Add(k1=wd, k2=-1)
     else
         @named Dzero = Constant(k=0)
@@ -270,7 +270,7 @@ function LimPID(; name, k=1, Ti=false, Td=false, wp=1, wd=1,
 end
 
 """
-    StateSpace(A, B, C, D=0; x0=zeros(size(A,1)), name)
+    StateSpace(A, B, C, D=0; x_start=zeros(size(A,1)), name)
 
 A linear, time-invariant state-space system on the form.
 ```
@@ -279,7 +279,7 @@ y = Cx + Du
 ```
 Transfer functions can also be simulated by converting them to a StateSpace form.
 """
-function StateSpace(;A, B, C, D=nothing, x0=zeros(size(A,1)), name)
+function StateSpace(;A, B, C, D=nothing, x_start=zeros(size(A,1)), name)
     nx, nu, ny = size(A,1), size(B,2), size(C,1)
     size(A,2) == nx || error("`A` has to be a square matrix.")
     size(B,1) == nx || error("`B` has to be of dimension ($nx x $nu).")
@@ -294,7 +294,7 @@ function StateSpace(;A, B, C, D=nothing, x0=zeros(size(A,1)), name)
     end
     @named input = RealInput(nin=nu)
     @named output = RealOutput(nout=ny)
-    @variables x[1:nx](t)=x0
+    @variables x[1:nx](t)=x_start
     # pars = @parameters A=A B=B C=C D=D # This is buggy
     eqs = [ # FIXME: if array equations work
         [Differential(t)(x[i]) ~ sum(A[i,k] * x[k] for k in 1:nx) + sum(B[i,j] * input.u[j] for j in 1:nu) for i in 1:nx]..., # cannot use D here

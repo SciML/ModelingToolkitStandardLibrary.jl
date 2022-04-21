@@ -62,7 +62,7 @@ end
     B = [0, 1]
     C = [0.9 1;]
     D = [0;;]
-    @named ss = StateSpace(;A,B,C,D,x0=zeros(2))
+    @named ss = StateSpace(;A,B,C,D,x_start=zeros(2))
     @named c = Constant(; k=1)
     @named model = ODESystem(
         [
@@ -79,11 +79,11 @@ end
 end
 
 """Second order demo plant"""
-function Plant(;name, x0=zeros(2))
+function Plant(;name, x_start=zeros(2))
     @named input = RealInput()
     @named output = RealOutput()
     D = Differential(t)
-    sts = @variables x1(t)=x0[1] x2(t)=x0[2]
+    sts = @variables x1(t)=x_start[1] x2(t)=x_start[2]
     eqs= [
         D(x1) ~ x2
         D(x2) ~ -x1 - 0.5 * x2 + input.u
