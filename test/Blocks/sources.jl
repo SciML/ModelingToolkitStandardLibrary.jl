@@ -90,7 +90,11 @@ end
 end
 
 @testset "Step" begin
-    @named src = Step(offset=1, height=2, start_time=0)
+    step(t, offset, height, start_time) = offset + t < start_time ? 0 : height
+
+    offset=1, height=2, start_time=5
+
+    @named src = Step(offset=offset, height=height, start_time=start_time)
     @named int = Integrator()
     @named iosys = ODESystem([
         connect(src.output, int.input),
@@ -103,8 +107,7 @@ end
     prob = ODEProblem(sys, Pair[int.x=>0.0], (0.0, 10.0))
 
     sol = solve(prob, Rodas4())
-    @test sol[src.output.u][1] ≈ 1 atol=1e-3
-    @test sol[src.output.u][end] ≈ 1 + 2 atol=1e-3
+    @test sol[src.output.u] ≈ step.(sol.t, offset, height, start_time) atol=1e-3
 end
 
 @testset "ExpSine" begin

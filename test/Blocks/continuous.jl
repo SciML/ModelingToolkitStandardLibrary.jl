@@ -38,23 +38,37 @@ end
 end
 
 @testset "PT1" begin
+    pt1_func(t, k, T) = k * (1 - exp(-t / T)) # Known solution to first-order system
+    
+    k, T = 1.0, 0.1
     @named c = Constant(; k=1)
-    @named pt1 = FirstOrder(; k=1.0, T=0.1)
+    @named pt1 = FirstOrder(; k=k, T=T)
     @named iosys = ODESystem(connect(c.output, pt1.input), t, systems=[pt1, c])
     sys = structural_simplify(iosys)
     prob = ODEProblem(sys, Pair[], (0.0, 100.0))
     sol = solve(prob, Rodas4())
-    @test sol[pt1.output.u][end] ≈ 1
+    @test sol[pt1.output.u] ≈ pt1_func.(sol.t, k, T) atol=1e-3
 end
 
 @testset "PT2" begin
+    # Known solution to second-order system
+    function pt2_func(t, k, w, d)
+        y = if d==0
+            -k*(-1 + cos(t*w))
+        else
+            d = complex(d)
+            real(k*(1 + (-cosh(sqrt(-1 + d^2)*t*w) - (d*sinh(sqrt(-1 + d^2)*t*w))/sqrt(-1 + d^2))/exp(d*t*w)))
+        end
+    end
+
+    k, w, d = 1.0, 1.0, 0.5
     @named c = Constant(; k=1)
-    @named pt2 = SecondOrder(; k=1.0, w=1, d=0.5)
+    @named pt2 = SecondOrder(; k=k, w=w, d=d)
     @named iosys = ODESystem(connect(c.output, pt2.input), t, systems=[pt2, c])
     sys = structural_simplify(iosys)
     prob = ODEProblem(sys, Pair[], (0.0, 100.0))
     sol = solve(prob, Rodas4())
-    @test sol[pt2.output.u][end] ≈ 1
+    @test sol[pt2.output.u] ≈ pt2_func.(sol.t, k, w, d) atol=1e-3
 end
 
 @testset "StateSpace" begin
@@ -74,7 +88,8 @@ end
     sys = structural_simplify(model)
     prob = ODEProblem(sys, Pair[], (0.0, 100.0))
     sol = solve(prob, Rodas4())
-    @test sol[ss.x[1]][end] ≈ 1
+    # equilibrium point is at [1, 0]
+    @test sol[ss.x[1]][end] ≈ 1 atol=1e-3
     @test sol[ss.x[2]][end] ≈ 0 atol=1e-3
 end
 
@@ -110,7 +125,7 @@ end
     sys = structural_simplify(model)
     prob = ODEProblem(sys, Pair[], (0.0, 100.0))
     sol = solve(prob, Rodas4())
-    @test sol[plant.output.u][end] ≈ 2
+    @test sol[ref.output.u - plant.output.u][end] ≈ 0 atol=1e-3 # zero control error after 100s
 end
 
 @testset "PID" begin
@@ -131,7 +146,7 @@ end
     sys = structural_simplify(model)
     prob = ODEProblem(sys, Pair[], (0.0, 100.0))
     sol = solve(prob, Rodas4())
-    @test sol[plant.output.u][end] ≈ 2
+    @test sol[ref.output.u - plant.output.u][end] ≈ 0 atol=1e-3 # zero control error after 100s
 end
 
 @test_skip begin 
@@ -264,8 +279,8 @@ end
         sol = solve(prob, Rodas4())
     end
 
-    @test sol[plant.output.u][end] ≈ 1 atol=1e-3
-    @test sol_lim[plant.output.u][end] ≈ 1 atol=1e-3
+    @test sol[ref.output.u - plant.output.u][end] ≈ 0 atol=1e-3 # zero control error after 100s
+    @test sol_lim[ref.output.u - plant.output.u][end] ≈ 0 atol=1e-3 # zero control error after 100s
 end
 
 @testset "LimPID" begin
@@ -286,5 +301,5 @@ end
     sol = solve(prob, Rodas4())
 
     # Plots.plot(sol, vars=[plant.output.u, plant.input.u])
-    @test sol[plant.output.u][end] ≈ 1 atol=1e-3
+    @test sol[ref.output.u - plant.output.u][end] ≈ 0 atol=1e-3 # zero control error after 100s
 end
