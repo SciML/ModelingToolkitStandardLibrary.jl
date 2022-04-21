@@ -110,41 +110,76 @@ function PI(;name, k=1, T, x_start=0.0)
 end
 
 """
-    PID(;name, k=1, Ti=1, Td=1, Nd=10, xi_start=0, xd_start=0)
+    PID(;name, k=1, Ti=false, Td=false, Nd=10, xi_start=0, xd_start=0)
 
 Text-book version of a PID-controller.
 """
-function PID(;name, k=1, Ti=1, Td=1, Nd=10, xi_start=0, xd_start=0)
+function PID(;name, k=1, Ti=false, Td=false, Nd=10, xi_start=0, xd_start=0)
+    with_I = !isequal(Ti, false)
+    with_D = !isequal(Td, false)
     @named err_input = RealInput() # control error
     @named ctr_output = RealOutput() # control signal
-    Ti > 0 || error("Time constant `Ti` has to be strictly positive")
-    Td > 0 || error("Time constant `Td` has to be strictly positive")
-    Nd > 0 || error("`Nd` has to be strictly positive")
-    @named gain = Gain(k)
-    @named int = Integrator(k=1/Ti, x_start=xi_start)
-    @named der = Derivative(k=1/Td, T=1/Nd, x_start=xd_start)
-    @named add = Add3()
+    !isequal(Ti, false) && (Ti ≥ 0 || throw(ArgumentError("Ti out of bounds, got $(Ti) but expected Ti ≥ 0")))
+    !isequal(Td, false) && (Td ≥ 0 || throw(ArgumentError("Td out of bounds, got $(Td) but expected Td ≥ 0")))
+    Nd > 0 || throw(ArgumentError("Nd out of bounds, got $(Nd) but expected Nd > 0"))
+
+    @named gainPID = Gain(k)
+    @named addPID = Add3()
+    if with_I
+        @named int = Integrator(k=1/Ti, x_start=xi_start)
+    else
+        @named Izero = Constant(k=0)
+    end
+    if with_D
+        @named der = Derivative(k=1/Td, T=1/Nd, x_start=xd_start)
+    else
+        @named Dzero = Constant(k=0)
+    end
+    sys = [err_input, ctr_output, gainPID, addPID]
+    if with_I
+        push!(sys, int)
+    else
+        push!(sys, Izero)
+    end
+    if with_D
+        push!(sys, der)
+    else
+        push!(sys, Dzero)
+    end
     eqs = [
-        connect(err_input, add.input1),
-        connect(err_input, int.input),
-        connect(err_input, der.input),
-        connect(int.output, add.input2),
-        connect(der.output, add.input3),
-        connect(add.output, gain.input),
-        connect(gain.output, ctr_output)
+        connect(err_input, addPID.input1),
+        connect(addPID.output, gainPID.input),
+        connect(gainPID.output, ctr_output)
     ]
-    ODESystem(eqs, t, [], []; name=name, systems=[gain, int, der, add, err_input, ctr_output])
+    if with_I
+        push!(eqs, connect(err_input, int.input))
+        push!(eqs, connect(int.output, addPID.input2))
+    else
+        push!(eqs, connect(err_input, Izero.input))
+        push!(eqs, connect(Izero.output, addPID.input2))
+    end
+    if with_D
+        push!(eqs, connect(err_input, der.input))
+        push!(eqs, connect(der.output, addPID.input3))
+    else
+        push!(eqs, connect(err_input, Dzero.input))
+        push!(eqs, connect(Dzero.output, addPID.input3))
+    end
+    ODESystem(eqs, t, [], []; name=name, systems=sys)
 end
 
 """
+    LimPI(;name, k=1, T, u_max=1, u_min=-u_max, Ta)
+
 PI-controller with actuator saturation and anti-windup measure.
 """
-function LimPI(;name, k=1, T=1, u_max=1, u_min=-u_max, Ta=1)
+function LimPI(;name, k=1, T, u_max=1, u_min=-u_max, Ta)
     @named e = RealInput() # control error
     @named u = RealOutput() # control signal
     @variables x(t)=0.0 u_star(t)=0.0
     Ta > 0 || error("Time constant `Ta` has to be strictly positive")
     T > 0 || error("Time constant `T` has to be strictly positive")
+    u_max ≥ u_min || throw(ArgumentError("u_min must be smaller than u_max"))
     pars = @parameters k=k T=T u_max=u_max u_min=u_min
     eqs = [
         D(x) ~ e.u * k / T + 1 / Ta * (-u_star + u.u)
@@ -199,10 +234,11 @@ function LimPID(; name, k=1, Ti=false, Td=false, wp=1, wd=1,
     end
     0 ≤ wp ≤ 1 || throw(ArgumentError("wp out of bounds, got $(wp) but expected wp ∈ [0, 1]"))
     0 ≤ wd ≤ 1 || throw(ArgumentError("wd out of bounds, got $(wd) but expected wd ∈ [0, 1]"))
-    Ti ≥ 0     || throw(ArgumentError("Ti out of bounds, got $(Ti) but expected Ti ≥ 0"))
-    Td ≥ 0     || throw(ArgumentError("Td out of bounds, got $(Td) but expected Td ≥ 0"))
+    !isequal(Ti, false) && (Ti ≥ 0 || throw(ArgumentError("Ti out of bounds, got $(Ti) but expected Ti ≥ 0")))
+    !isequal(Td, false) && (Td ≥ 0 || throw(ArgumentError("Td out of bounds, got $(Td) but expected Td ≥ 0")))
     u_max ≥ u_min || throw(ArgumentError("u_min must be smaller than u_max"))
-
+    Nd > 0 || throw(ArgumentError("Nd out of bounds, got $(Nd) but expected Nd > 0"))
+    
     @named reference = RealInput()
     @named measurement = RealInput()
     @named ctr_output = RealOutput() # control signal
