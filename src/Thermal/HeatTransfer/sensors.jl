@@ -1,14 +1,15 @@
 """
-Absolute temperature sensor in Kelvin.
+    TemperatureSensor(; name)
 
-This is an ideal absolute temperature sensor which returns the temperature of the connected port in Kelvin as an output
+Absolute temperature sensor in kelvin.
+
+This is an ideal absolute temperature sensor which returns the temperature of the connected port in kelvin as an output
 signal. The sensor itself has no thermal interaction with whatever it is connected to. Furthermore, no thermocouple-like 
 lags are associated with this sensor model.
 """
 function TemperatureSensor(; name)
     @named port = HeatPort()
     @variables T(t) # [K] Absolute temperature
-    
     eqs = [
         T ~ port.T
         port.Q_flow ~ 0
@@ -17,16 +18,17 @@ function TemperatureSensor(; name)
 end
 
 """
+    RelativeTemperatureSensor(; name)
+
 Relative Temperature sensor.
 
 The relative temperature `port_a.T - port_b.T` is determined between the two ports of this component and is provided as 
-output signal in Kelvin.
+output signal in kelvin.
 """
 function RelativeTemperatureSensor(; name)
     @named port_a = HeatPort()
     @named port_b = HeatPort()
     @variables T(t) # [K] Relative temperature a.T - b.T
-    
     eqs = [
         T ~ port_a.T - port_b.T
         port_a.Q_flow ~ 0
@@ -36,6 +38,8 @@ function RelativeTemperatureSensor(; name)
 end
 
 """
+    HeatFlowSensor(; name)
+
 Heat flow rate sensor.
 
 This model is capable of monitoring the heat flow rate flowing through this component. The sensed value of heat flow rate
@@ -47,7 +51,6 @@ function HeatFlowSensor(; name)
     @named port_a = HeatPort()
     @named port_b = HeatPort()
     @variables Q_flow(t) # [W] Heat flow from port a to port b
-    
     eqs = [
         port_a.T ~ port_b.T
         port_a.Q_flow + port_b.Q_flow ~ 0

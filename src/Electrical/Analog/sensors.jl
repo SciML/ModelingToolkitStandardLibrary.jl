@@ -1,5 +1,7 @@
 """
-Sensor to measure the current in a branch.
+    CurrentSensor(; name)
+
+Sensor to measure the current through a branch in amperes.
 """
 function CurrentSensor(; name)
     @named p = Pin()
@@ -14,7 +16,9 @@ function CurrentSensor(; name)
 end
 
 """
-Sensor to measure the potential.
+    PotentialSensor(; name)
+
+Sensor to measure the potential in volt.
 """
 function PotentialSensor(; name)
     @named p = Pin()
@@ -27,7 +31,9 @@ function PotentialSensor(; name)
 end
 
 """
-Sensor to measure the voltage between two pins.
+    VoltageSensor(; name)
+
+Sensor to measure the potential difference between two pins in volt.
 """
 function VoltageSensor(; name)
     @named p = Pin()
@@ -42,7 +48,9 @@ function VoltageSensor(; name)
 end
 
 """
-Sensor to measure the power
+    PowerSensor(; name)
+
+Sensor to measure the power in watt.
 """
 function PowerSensor(; name)
     @named pc = Pin()
@@ -63,7 +71,9 @@ function PowerSensor(; name)
 end
 
 """
-Sensor to measure current, voltage and power.
+    MultiSensor(; name)
+
+Sensor to measure current [A], voltage [V] and power [W].
 """
 function MultiSensor(; name)
     @named pc = Pin()

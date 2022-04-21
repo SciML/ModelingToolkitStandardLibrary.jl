@@ -1,5 +1,7 @@
 """
-Ground of an electrical circuit. The potential at the ground node is zero. 
+    Ground(;name)
+
+Ground of an electrical circuit. The potential at the ground node is zero. Every circuit must have one ground node.
 """
 function Ground(;name)
     @named g = Pin()
@@ -8,12 +10,14 @@ function Ground(;name)
 end
 
 """
+    Resistor(;name, R=1.0)
+
 Ideal linear electrical resistor.
 
 # Parameters: 
-- `R`: [Ohm] Resistance
+- `R`: [Ω] Resistance
 """
-function Resistor(;name, R = 1.0)
+function Resistor(;name, R=1.0)
     @named oneport = OnePort()
     @unpack v, i = oneport
     pars = @parameters R=R
@@ -24,14 +28,16 @@ function Resistor(;name, R = 1.0)
 end
 
 """
+    Capacitor(;name, C=1.0, v_start=0.0) 
+
 Ideal linear electrical capacitor.
 
 # Parameters:
 - `C`: [F] Capacity
-- `v0`: [V] Initial voltage of capacitor
+- `v_start`: [V] Initial voltage of capacitor
 """
-function Capacitor(;name, C=1.0, v0=0.0) 
-    @named oneport = OnePort(;v0=v0)
+function Capacitor(;name, C=1.0, v_start=0.0) 
+    @named oneport = OnePort(;v_start=v_start)
     @unpack v, i = oneport
     pars = @parameters C=C
     eqs = [
@@ -41,14 +47,16 @@ function Capacitor(;name, C=1.0, v0=0.0)
 end
 
 """
+    Inductor(;name, L=1.0e-6, i_start=0.0)
+
 Ideal linear electrical inductor.
 
 # Parameters:
 - `L`: [H] Inductance
-- `i0`: [A] Initial current through inductor
+- `i_start`: [A] Initial current through inductor
 """
-function Inductor(;name, L=1.0e-6, i0=0.0)
-    @named oneport = OnePort(;i0=i0)
+function Inductor(;name, L=1.0e-6, i_start=0.0)
+    @named oneport = OnePort(;i_start=i_start)
     @unpack v, i = oneport
     pars = @parameters L=L
     eqs = [
@@ -58,6 +66,8 @@ function Inductor(;name, L=1.0e-6, i0=0.0)
 end
 
 """
+    IdealOpAmp(;name)
+
 Ideal operational amplifier (norator-nullator pair).
 The ideal OpAmp is a two-port. The left port is fixed to v1=0 and i1=0 (nullator). 
 At the right port both any voltage v2 and any current i2 are possible (norator).

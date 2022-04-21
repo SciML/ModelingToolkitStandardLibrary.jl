@@ -1,16 +1,18 @@
 """
+    FixedHeatFlow(; name, Q_flow=1.0, T_ref=293.15, alpha=0.0)
+
 Fixed heat flow boundary condition.
 
 This model allows a specified amount of heat flow rate to be "injected" into a thermal system at a given port.
 The constant amount of heat flow rate `Q_flow` is given as a parameter. The heat flows into the component to which
 the component FixedHeatFlow is connected, if parameter `Q_flow` is positive.
+
+# Parameters:
+- `Q_flow`: [W] Fixed heat flow rate at port
+- `T_ref`: [K] Reference temperature
+- `alpha`: [1/K] Temperature coefficient of heat flow rate
 """
-function FixedHeatFlow(; name, 
-    Q_flow=1.0, # [W] Fixed heat flow rate at port
-    T_ref=293.15, # [K] Reference temperature
-    alpha=0.0, # [1/K] Temperature coefficient of heat flow rate
-    )
-   
+function FixedHeatFlow(; name, Q_flow=1.0, T_ref=293.15, alpha=0.0)
     pars = @parameters begin 
         Q_flow=Q_flow 
         T_ref=T_ref 
@@ -25,13 +27,16 @@ function FixedHeatFlow(; name,
 end
 
 """
-Fixed temperature boundary condition in Kelvin.
+    FixedTemperature(; name, T=0.0)
 
-This model defines a fixed temperature T at its port in Kelvin, i.e., it defines a fixed temperature as a boundary condition.
+Fixed temperature boundary condition in kelvin.
+
+This model defines a fixed temperature T at its port in kelvin, i.e., it defines a fixed temperature as a boundary condition.
+
+# Parameters:
+- `T`: [K] Fixed temperature boundary condition
 """
-function FixedTemperature(; name, 
-    T=0.0 # [K] Fixed temperature boundary condition
-    )
+function FixedTemperature(; name, T=0.0)
     @named port = HeatPort()
     pars = @parameters T=T
     eqs = [

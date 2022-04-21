@@ -108,11 +108,11 @@ end
 # RC with different voltage sources
 @testset "RC with voltage sources" begin
     @named source_const = ConstantVoltage(V=10)
-    @named source_sin = SineVoltage(offset=1, amplitude=10, frequency=2, starttime=0.5, phase=0)
-    @named source_step = StepVoltage(offset=1, height=10, starttime=0.5)
-    @named source_tri = TriangularVoltage(offset=1, starttime=0.5, amplitude=10, frequency=2)
-    @named source_dsin = DampedSineVoltage(offset=1, amplitude=10, frequency=2, starttime=0.5, phase=0, damping_coef=0.5)
-    @named source_ramp = RampVoltage(offset=1, height=10, starttime=0.5, endtime=1.5)
+    @named source_sin = SineVoltage(offset=1, amplitude=10, frequency=2, start_time=0.5, phase=0)
+    @named source_step = StepVoltage(offset=1, height=10, start_time=0.5)
+    @named source_tri = TriangularVoltage(offset=1, start_time=0.5, amplitude=10, frequency=2)
+    @named source_dsin = ExpSineVoltage(offset=1, amplitude=10, frequency=2, start_time=0.5, phase=0, damping=0.5)
+    @named source_ramp = RampVoltage(offset=1, height=10, start_time=0.5, end_time=1.5)
     sources = [source_const, source_sin, source_step, source_tri, source_dsin, source_ramp]
 
     @named resistor = Resistor(R=1)
@@ -138,11 +138,11 @@ end
 # RL with different voltage sources
 @testset "RL with voltage sources" begin
     @named source_const = ConstantVoltage(V=10)
-    @named source_sin = SineVoltage(offset=1, amplitude=10, frequency=2, starttime=0.5, phase=0)
-    @named source_step = StepVoltage(offset=1, height=10, starttime=0.5)
-    @named source_tri = TriangularVoltage(offset=1, starttime=0.5, amplitude=10, frequency=2)
-    @named source_dsin = DampedSineVoltage(offset=1, amplitude=10, frequency=2, starttime=0.5, phase=0, damping_coef=0.5)
-    @named source_ramp = RampVoltage(offset=1, height=10, starttime=0.5, endtime=1.5)
+    @named source_sin = SineVoltage(offset=1, amplitude=10, frequency=2, start_time=0.5, phase=0)
+    @named source_step = StepVoltage(offset=1, height=10, start_time=0.5)
+    @named source_tri = TriangularVoltage(offset=1, start_time=0.5, amplitude=10, frequency=2)
+    @named source_dsin = ExpSineVoltage(offset=1, amplitude=10, frequency=2, start_time=0.5, phase=0, damping=0.5)
+    @named source_ramp = RampVoltage(offset=1, height=10, start_time=0.5, end_time=1.5)
     sources = [source_const, source_sin, source_step, source_tri, source_dsin, source_ramp]
 
     @named resistor = Resistor(R=1.0)
@@ -168,11 +168,11 @@ end
 # RC with different current sources
 @testset "RC with current sources" begin
     @named source_const = ConstantCurrent(I=10)
-    @named source_sin = SineCurrent(offset=1, amplitude=10, frequency=2, starttime=0.5, phase=0)
-    @named source_step = StepCurrent(offset=1, height=10, starttime=0.5)
-    @named source_tri = TriangularCurrent(offset=1, starttime=0.5, amplitude=10, frequency=2)
-    @named source_dsin = DampedSineCurrent(offset=1, amplitude=10, frequency=2, starttime=0.5, phase=0, damping_coef=0.5)
-    @named source_ramp = RampCurrent(offset=1, height=10, starttime=0.5, endtime=1.5)
+    @named source_sin = SineCurrent(offset=1, amplitude=10, frequency=2, start_time=0.5, phase=0)
+    @named source_step = StepCurrent(offset=1, height=10, start_time=0.5)
+    @named source_tri = TriangularCurrent(offset=1, start_time=0.5, amplitude=10, frequency=2)
+    @named source_dsin = ExpSineCurrent(offset=1, amplitude=10, frequency=2, start_time=0.5, phase=0, damping=0.5)
+    @named source_ramp = RampCurrent(offset=1, height=10, start_time=0.5, end_time=1.5)
     sources = [source_const, source_sin, source_step, source_tri, source_dsin, source_ramp]
 
     @named resistor = Resistor(R=1)

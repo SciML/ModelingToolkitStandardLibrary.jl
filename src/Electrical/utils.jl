@@ -7,14 +7,21 @@
 end
 Base.@doc "Port for an electrical system." Pin
 
-function OnePort(;name, 
-    v0=0.0, # [V] Initial voltage across the component
-    i0=0.0) # [A] Initial current through the component
+"""
+    OnePort(;name, v_start=0.0, i_start=0.0)
+
+Component with two electrical pins p and n and current i from p to n.
+
+# Parameters:
+- `v_start`: [V] Initial voltage across the component
+- `i_start`: [A] Initial current through the component
+"""
+function OnePort(;name, v_start=0.0, i_start=0.0)
     @named p = Pin()
     @named n = Pin()
     sts = @variables begin
-        v(t)=v0
-        i(t)=i0
+        v(t)=v_start
+        i(t)=i_start
     end
     eqs = [
         v ~ p.v - n.v

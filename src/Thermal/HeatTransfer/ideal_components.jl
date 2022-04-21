@@ -1,15 +1,17 @@
 """
+    HeatCapacitor(; name, C=1.0, T_start=293.15 + 20)    
+
 Lumped thermal element storing heat
 
 # Parameters:
 - `C`: [J/K] Heat capacity of element (= cp*m)
-- `T0`: Initial temperature of element
+- `T_start`: Initial temperature of element
 """
-function HeatCapacitor(; name, C=1.0, T0=293.15 + 20)    
+function HeatCapacitor(; name, C=1.0, T_start=293.15 + 20)    
     @named port = HeatPort()
     @parameters C=C
     sts = @variables begin
-        T(t)=T0 # Temperature of element
+        T(t)=T_start # Temperature of element
         der_T(t) # "Time derivative of temperature
     end
 
@@ -18,11 +20,13 @@ function HeatCapacitor(; name, C=1.0, T0=293.15 + 20)
         T ~ port.T
         der_T ~ D(T)
         D(T) ~ port.Q_flow / C
-        ]
+    ]
     ODESystem(eqs, t, sts, [C]; systems=[port], name=name)
 end
 
 """
+    ThermalConductor(;name, G=1.0) 
+
 Lumped thermal element transporting heat without storing it.
 
 # Parameters:
@@ -35,11 +39,12 @@ function ThermalConductor(;name, G=1.0)
     eqs = [
         Q_flow ~ G * dT
     ]
-    
     extend(ODESystem(eqs, t, [], pars; name=name), element1d)
 end
 
 """
+    ThermalResistor(; name, R=1.0) 
+
 Lumped thermal element transporting heat without storing it.
 
 # Parameters:
@@ -57,6 +62,8 @@ function ThermalResistor(; name, R=1.0)
 end
 
 """
+    ConvectiveConductor(; name, G=1.0)
+
 Lumped thermal element for heat convection.
 
 # Parameters:
@@ -81,6 +88,8 @@ function ConvectiveConductor(; name, G=1.0)
 end
 
 """
+    ConvectiveResistor(; name, R=1.0)
+
 Lumped thermal element for heat convection.
 
 # Parameters:
@@ -105,13 +114,15 @@ function ConvectiveResistor(; name, R=1.0)
 end
 
 """
+    BodyRadiation(; name, G=1.0)
+
 Lumped thermal element for radiation heat transfer.
 
 # Parameters:
-- `G`:  [m^2] Net radiation conductance between two surfaces
+- `G`: [m^2] Net radiation conductance between two surfaces
 """
 function BodyRadiation(; name, G=1.0)
-    sigma = 5.6703744191844294e-8 # Stefan-Boltzmann constant
+    sigma = 5.6703744191844294e-8 # Stefan-Boltzmann constant TODO: extract into physical constants module or use existing one
 
     @named element1d = Element1D()
     @unpack Q_flow, dT = element1d
@@ -125,9 +136,13 @@ function BodyRadiation(; name, G=1.0)
 end
 
 """
+    ThermalCollector(; name, m=1)
+
 Collects m heat flows
 
 This is a model to collect the heat flows from `m` heatports to one single heatport.
+# Parameters:
+- `m`: Number of heat ports (e.g. m=2: `port_a1`, `port_a2`)
 """
 function ThermalCollector(; name, m=1)
     port_a = [HeatPort(name=Symbol(:port_a, i)) for i in 1:m]

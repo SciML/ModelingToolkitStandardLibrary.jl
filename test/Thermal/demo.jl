@@ -3,8 +3,8 @@ using ModelingToolkitStandardLibrary.Thermal, ModelingToolkit, OrdinaryDiffEq, T
 
 # Modelica example
 begin
-    @named mass1 = HeatCapacitor(C=15, T0=373.15)
-    @named mass2 = HeatCapacitor(C=15, T0=273.15)
+    @named mass1 = HeatCapacitor(C=15, T_start=373.15)
+    @named mass2 = HeatCapacitor(C=15, T_start=273.15)
     @named conduction = ThermalConductor(G=10)
     @named Tsensor1 = TemperatureSensor() 
     @named Tsensor2 = TemperatureSensor()
