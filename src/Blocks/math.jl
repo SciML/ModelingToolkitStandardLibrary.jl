@@ -1,5 +1,10 @@
 """
+    Gain(k=1; name)
+
 Output the product of a gain value with the input signal.
+
+# Parameters:
+- `k`: Gain
 """
 function Gain(k=1; name)
     @named siso = SISO()
@@ -12,7 +17,12 @@ function Gain(k=1; name)
 end
 
 """
+    MatrixGain(K::AbstractArray; name)
+
 Output the product of a gain matrix with the input signal vector.
+
+# Parameters:
+- `K`: Matrix gain
 """
 function MatrixGain(K::AbstractArray; name)
     nout, nin = size(K)
@@ -25,7 +35,12 @@ function MatrixGain(K::AbstractArray; name)
 end
 
 """
+    Sum(n::Int; name)
+
 Output the sum of the elements of the input vector.
+
+# Parameters:
+- `n`: Input vector dimension
 """
 function Sum(n::Int; name)
     @named input = RealInput(;nin=n)
@@ -50,7 +65,13 @@ function Feedback(;name)
 end
 
 """
-Output the sum of the two inputs.
+    Add(;name, k1=1, k2=1)
+
+Output the sum of the two scalar inputs.
+
+# Parameters:
+- `k1`: Gain for first input
+- `k2`: Gain for second input
 """
 function Add(;name, k1=1, k2=1)
     @named input1 = RealInput()
@@ -67,7 +88,14 @@ function Add(;name, k1=1, k2=1)
 end
 
 """
-Output the sum of the three inputs.
+    Add(;name, k1=1, k2=1,k3=1)
+
+Output the sum of the three scalar inputs.
+
+# Parameters:
+- `k1`: Gain for first input
+- `k2`: Gain for second input
+- `k3`: Gain for third input
 """
 function Add3(;name, k1=1, k2=1, k3=1)
     @named input1 = RealInput()
@@ -86,6 +114,8 @@ function Add3(;name, k1=1, k2=1, k3=1)
 end
 
 """
+    Product(;name)
+
 Output product of the two inputs.
 """
 function Product(;name)
@@ -99,6 +129,8 @@ function Product(;name)
 end
 
 """
+    Division(;name)
+
 Output first input divided by second input.
 """
 function Division(;name)
@@ -111,115 +143,89 @@ function Division(;name)
     return compose(ODESystem(eqs, t, [], []; name=name), input1, input2, output)
 end
 
+
 """
+    StaticNonLinearity(func ;name)
+
+Applies the given function to the input. 
+
+If the given function is not composed of simple core methods (e.g. sin, abs, ...), it has to be registered via `@register_symbolic func(u)`
+"""
+function StaticNonLinearity(func; name)
+    @named siso = SISO()
+    @unpack u, y = siso
+    eqs = [
+        y ~ func(u)
+    ]
+    extend(ODESystem(eqs, t, [], []; name=name), siso)
+end
+
+"""
+    Abs(;name)
+
 Output the absolute value of the input.
 """
-function Abs(;name)
-    @named siso = SISO()
-    @unpack u, y = siso
-    eqs = [
-        y ~ abs(u)
-    ]
-    extend(ODESystem(eqs, t, [], []; name=name), siso)
-end
+Abs(;name) = StaticNonLinearity(abs; name)
 
 """
+    Sign(;name)
+
 Output the sign of the input
 """
-function Sign(;name)
-    @named siso = SISO()
-    @unpack u, y = siso
-    eqs = [
-        y ~ sign(u)
-    ]
-    extend(ODESystem(eqs, t, [], []; name=name), siso)
-end
+Sign(;name) = StaticNonLinearity(sign; name)
 
 """
+    Sqrt(;name)
+
 Output the square root of the input (input >= 0 required).
 """
-function Sqrt(;name)
-    @named siso = SISO()
-    @unpack u, y = siso
-    eqs = [
-        y ~ sqrt(u)
-    ]
-    extend(ODESystem(eqs, t, [], []; name=name), siso)
-end
+Sqrt(;name) = StaticNonLinearity(sqrt; name)
 
 """
+    Sin(;name)
+
 Output the sine of the input.
 """
-function Sin(;name)
-    @named siso = SISO()
-    @unpack u, y = siso
-    eqs = [
-        y ~ sin(u)
-    ]
-    extend(ODESystem(eqs, t, [], []; name=name), siso)
-end
+Sin(;name) = StaticNonLinearity(sin; name)
 
 """
+    Cos(;name)
+
 Output the cosine of the input.
 """
-function Cos(;name)
-    @named siso = SISO()
-    @unpack u, y = siso
-    eqs = [
-        y ~ cos(u)
-    ]
-    extend(ODESystem(eqs, t, [], []; name=name), siso)
-end
+Cos(;name) = StaticNonLinearity(cos; name)
 
 """
+    Tan(;name)
+
 Output the tangent of the input.
 """
-function Tan(;name)
-    @named siso = SISO()
-    @unpack u, y = siso
-    eqs = [
-        y ~ tan(u)
-    ]
-    extend(ODESystem(eqs, t, [], []; name=name), siso)
-end
+Tan(;name) = StaticNonLinearity(tan; name)
 
 """
+    Asin(;name)
+
 Output the arc sine of the input.
 """
-function Asin(;name)
-    @named siso = SISO()
-    @unpack u, y = siso
-    eqs = [
-        y ~ asin(u)
-    ]
-    extend(ODESystem(eqs, t, [], []; name=name), siso)
-end
+Asin(;name) = StaticNonLinearity(asin; name)
 
 """
+    Acos(;name)
+
 Output the arc cosine of the input.
 """
-function Acos(;name)
-    @named siso = SISO()
-    @unpack u, y = siso
-    eqs = [
-        y ~ acos(u)
-    ]
-    extend(ODESystem(eqs, t, [], []; name=name), siso)
-end
+Acos(;name) = StaticNonLinearity(acos; name)
 
 """
+    Atan(;name)
+
 Output the arc tangent of the input.
 """
-function Atan(;name)
-    @named siso = SISO()
-    @unpack u, y = siso
-    eqs = [
-        y ~ atan(u)
-    ]
-    extend(ODESystem(eqs, t, [], []; name=name), siso)
-end
+Atan(;name) = StaticNonLinearity(atan; name)
 
 """
+    Atan2(;name)
+
 Output the arc tangent of the input.
 """
 function Atan2(;name)
@@ -233,73 +239,43 @@ function Atan2(;name)
 end
 
 """
+    Sinh(;name)
+
 Output the hyperbolic sine of the input.
 """
-function Sinh(;name)
-    @named siso = SISO()
-    @unpack u, y = siso
-    eqs = [
-        y ~ sinh(u)
-    ]
-    extend(ODESystem(eqs, t, [], []; name=name), siso)
-end
+Sinh(;name) = StaticNonLinearity(sinh; name)
 
 """
+    Cosh(;name)
+
 Output the hyperbolic cosine of the input.
 """
-function Cosh(;name)
-    @named siso = SISO()
-    @unpack u, y = siso
-    eqs = [
-        y ~ cosh(u)
-    ]
-    extend(ODESystem(eqs, t, [], []; name=name), siso)
-end
+Cosh(;name) = StaticNonLinearity(cosh; name)
 
 """
+    Tanh(;name)
+
 Output the hyperbolic tangent of the input.
 """
-function Tanh(;name)
-    @named siso = SISO()
-    @unpack u, y = siso
-    eqs = [
-        y ~ tanh(u)
-    ]
-    extend(ODESystem(eqs, t, [], []; name=name), siso)
-end
+Tanh(;name) = StaticNonLinearity(tanh; name)
 
 """
+    Exp(;name)
+
 Output the exponential (base e) of the input.
 """
-function Exp(;name)
-    @named siso = SISO()
-    @unpack u, y = siso
-    eqs = [
-        y ~ exp(u)
-    ]
-    extend(ODESystem(eqs, t, [], []; name=name), siso)
-end
+Exp(;name) = StaticNonLinearity(exp; name)
 
 """
+    Log(;name)
+
 Output the natural (base e) logarithm of the input.
 """
-function Log(;name)
-    @named siso = SISO()
-    @unpack u, y = siso
-    eqs = [
-        y ~ log(u)
-    ]
-    extend(ODESystem(eqs, t, [], []; name=name), siso)
-end
+Log(;name) = StaticNonLinearity(log; name)
 
 """
+    Log10(;name)
+
 Output the base 10 logarithm of the input.
 """
-function Log10(;name)
-    @named siso = SISO()
-    @unpack u, y = siso
-    eqs = [
-        y ~ log10(u)
-    ]
-    extend(ODESystem(eqs, t, [], []; name=name), siso)
-end
+Log10(;name) = StaticNonLinearity(log10; name)
