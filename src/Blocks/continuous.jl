@@ -287,7 +287,7 @@ function StateSpace(;A, B, C, D=nothing, x0=zeros(size(A,1)), name)
     if B isa AbstractVector
         B = reshape(B, length(B), 1)
     end
-    if isnothing(D)
+    if isnothing(D) || iszero(D)
         D = zeros(ny, nu)
     else
         size(D) == (ny,nu) || error("`D` has to be of dimension ($ny x $nu).")
