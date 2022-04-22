@@ -41,6 +41,8 @@ end
     Crossing(;name)
 
 Crossing of two branches.
+
+This is a simple crossing of two branches. The ports port_p1 and port_p2 are connected, as well as port_n1 and port_n2.
 """
 function Crossing(;name)
     @named port_p1 = PositiveMagneticPort()
@@ -94,6 +96,10 @@ end
     ElectroMagneticConverter(;name, N, Phi_start=0.0)
 
 Ideal electromagnetic energy conversion.
+
+The electromagnetic energy conversion is given by Ampere's law and Faraday's law respectively
+V_m = N * i
+N * dΦ/dt = -v
 
 # Parameters:
 - `N`: Number of turns
