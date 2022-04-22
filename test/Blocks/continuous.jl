@@ -116,8 +116,8 @@ end
         [
             connect(ref.output, fb.input1), 
             connect(plant.output, fb.input2),
-            connect(fb.output, pi_controller.e), 
-            connect(pi_controller.u, plant.input), 
+            connect(fb.output, pi_controller.err_input), 
+            connect(pi_controller.ctr_output, plant.input), 
         ], 
         t, 
         systems=[pi_controller, plant, ref, fb]
@@ -249,8 +249,8 @@ end
             [
                 connect(ref.output, fb.input1), 
                 connect(plant.output, fb.input2),
-                connect(fb.output, pi_controller.e), 
-                connect(pi_controller.u, sat.input), 
+                connect(fb.output, pi_controller.err_input), 
+                connect(pi_controller.ctr_output, sat.input), 
                 connect(sat.output, plant.input), 
             ], 
             t, 
@@ -267,8 +267,8 @@ end
             [
                 connect(ref.output, fb.input1), 
                 connect(plant.output, fb.input2),
-                connect(fb.output, pi_controller_lim.e), 
-                connect(pi_controller_lim.u, sat.input), 
+                connect(fb.output, pi_controller_lim.err_input), 
+                connect(pi_controller_lim.ctr_output, sat.input), 
                 connect(sat.output, plant.input), 
             ], 
             t, 
@@ -281,6 +281,9 @@ end
 
     @test sol[ref.output.u - plant.output.u][end] ≈ 0 atol=1e-3 # zero control error after 100s
     @test sol_lim[ref.output.u - plant.output.u][end] ≈ 0 atol=1e-3 # zero control error after 100s
+
+    # Plots.plot(sol; vars=[plant.output.u]) # without anti-windup measure
+    # Plots.plot!(sol_lim; vars=[plant.output.u]) # with anti-windup measure
 end
 
 @testset "LimPID" begin

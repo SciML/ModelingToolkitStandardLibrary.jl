@@ -29,8 +29,14 @@ T    2 ⎛    1⎞
 and a state-space realization is given by `ss(-1/T, 1/T, -k/T, k/T)`
 where `T` is the time constant of the filter.
 A smaller `T` leads to a more ideal approximation of the derivative.
+
+# Parameters:
+- `k`: Gain
+- `T`: [s] Time constants (T>0 required; T=0 is ideal derivative block)
+- `x_start`: Initial value of state
 """
 function Derivative(; name, k=1, T, x_start=0.0)
+    T > 0 || throw(ArgumentError("Time constant `T` has to be strictly positive"))
     @named siso = SISO()
     @unpack u, y = siso
     sts = @variables x(t)=x_start
@@ -52,8 +58,14 @@ is given by `Y(s)/U(s) = `
 ───────
 sT + 1
 ```
+
+# Parameters:
+- `k`: Gain
+- `T`: [s] Time constants (T>0 required)
+- `x_start`: Initial value of state
 """
 function FirstOrder(; name, k=1, T, x_start=0.0)
+    T > 0 || throw(ArgumentError("Time constant `T` has to be strictly positive"))
     @named siso = SISO()
     @unpack u, y = siso
     sts = @variables x(t)=x_start
@@ -77,6 +89,13 @@ s² + 2d*w*s + w^2
 ```
 Critical damping corresponds to `d=1`, which yields the fastest step response without overshoot, d < 1` results in an under-damped filter while `d > 1` results in an over-damped filter.
 `d = 1/√2` corresponds to a Butterworth filter of order 2 (maximally flat frequency response).
+
+# Parameters:
+- `k`: Gain
+- `w`: Angular frequency
+- `d`: Damping
+- `x_start`: Initial value of state (output)
+- `xd_start`: Initial value of derivative of state (output)
 """
 function SecondOrder(; name, k=1, w, d, x_start=0.0, xd_start=0.0)
     @named siso = SISO()
@@ -94,25 +113,43 @@ end
 """
     PI(;name, k=1, T, x_start=0.0)
 
-PI-controller without actuator saturation and anti-windup measure.
+Textbook version of a PI-controller without actuator saturation and anti-windup measure.
+
+# Parameters:
+- `k`: Gain
+- `T`: [s] Integrator time constant (T>0 required)
+- `x_start`: Initial value for the integrator
 """
 function PI(;name, k=1, T, x_start=0.0)
-    @named e = RealInput() # control error
-    @named u = RealOutput() # control signal
-    @variables x(t)=x_start
-    T > 0 || error("Time constant `T` has to be strictly positive")
-    pars = @parameters k=k T=T
+    T > 0 || throw(ArgumentError("Time constant `T` has to be strictly positive"))
+    @named err_input = RealInput() # control error
+    @named ctr_output = RealOutput() # control signal
+    @named gainPI = Gain(k)
+    @named addPI = Add()
+    @named int = Integrator(k=1/T, x_start=x_start)
+    sys = [err_input, ctr_output, gainPI, addPI, int]
     eqs = [
-        D(x) ~ 1 / T * e.u
-        u.u ~ k * (x + e.u)
+        connect(err_input, addPI.input1),
+        connect(addPI.output, gainPI.input),
+        connect(gainPI.output, ctr_output),
+        connect(err_input, int.input),
+        connect(int.output, addPI.input2),
     ]
-    compose(ODESystem(eqs, t, [x], pars; name=name), [e, u])
+    ODESystem(eqs, t, [], []; name=name, systems=sys)
 end
 
 """
     PID(;name, k=1, Ti=false, Td=false, Nd=10, xi_start=0, xd_start=0)
 
-Text-book version of a PID-controller.
+Text-book version of a PID-controller without actuator saturation and anti-windup measure.
+
+# Parameters:
+- `k`: Gain
+- `Ti`: [s] Integrator time constant (Ti>0 required). If set to false no integral action is used.
+- `Td`: [s] Derivative time constant (Td>0 required). If set to false no derivative action is used.
+- `Nd`: [s] Time constant for the derivative approximation (Nd>0 required; Nd=0 is ideal derivative).
+- `x_start`: Initial value for the integrator.
+- `xd_start`: Initial value for the derivative state.
 """
 function PID(;name, k=1, Ti=false, Td=false, Nd=10, xi_start=0, xd_start=0)
     with_I = !isequal(Ti, false)
@@ -171,22 +208,42 @@ end
 """
     LimPI(;name, k=1, T, u_max=1, u_min=-u_max, Ta)
 
-PI-controller with actuator saturation and anti-windup measure.
+Text-book version of a PI-controller with actuator saturation and anti-windup measure.
+
+# Parameters:
+- `k`: Gain
+- `T`: [s] Integrator time constant (T>0 required)
+- `Ta`: [s] Tracking time constant (Ta>0 required)
+- `x_start`: Initial value for the integrator
 """
-function LimPI(;name, k=1, T, u_max=1, u_min=-u_max, Ta)
-    @named e = RealInput() # control error
-    @named u = RealOutput() # control signal
-    @variables x(t)=0.0 u_star(t)=0.0
-    Ta > 0 || error("Time constant `Ta` has to be strictly positive")
-    T > 0 || error("Time constant `T` has to be strictly positive")
+function LimPI(;name, k=1, T, u_max=1, u_min=-u_max, Ta, x_start=0.0)
+    Ta > 0 || throw(ArgumentError("Time constant `Ta` has to be strictly positive"))
+    T > 0 || throw(ArgumentError("Time constant `T` has to be strictly positive"))
     u_max ≥ u_min || throw(ArgumentError("u_min must be smaller than u_max"))
-    pars = @parameters k=k T=T u_max=u_max u_min=u_min
+    @named err_input = RealInput() # control error
+    @named ctr_output = RealOutput() # control signal
+    @named gainPI = Gain(k)
+    @named addPI = Add()
+    @named addTrack = Add()
+    @named int = Integrator(k=1/T, x_start=x_start)
+    @named limiter = Limiter(y_max=u_max, y_min=u_min)
+    @named addSat = Add(k1=1, k2=-1)
+    @named gainTrack = Gain(1/Ta)
+    sys = [err_input, ctr_output, gainPI, addPI, int, addTrack, limiter, addSat, gainTrack]
     eqs = [
-        D(x) ~ e.u * k / T + 1 / Ta * (-u_star + u.u)
-        u.u ~ max(min(u_star, u_max), u_min)      
-        u_star ~ x + k * e.u
+        connect(err_input, addPI.input1),
+        connect(addPI.output, gainPI.input),
+        connect(gainPI.output, limiter.input),
+        connect(limiter.output, ctr_output),
+        connect(limiter.input, addSat.input2),
+        connect(limiter.output, addSat.input1),
+        connect(addSat.output, gainTrack.input),
+        connect(err_input, addTrack.input1),
+        connect(gainTrack.output, addTrack.input2),
+        connect(addTrack.output, int.input),
+        connect(int.output, addPI.input2),
     ]
-    compose(ODESystem(eqs, t, [x, u_star], pars; name=name), [e, u])
+    ODESystem(eqs, t, [], []; name=name, systems=sys)
 end
 
 """
