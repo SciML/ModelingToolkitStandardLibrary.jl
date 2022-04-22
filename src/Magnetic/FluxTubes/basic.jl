@@ -1,4 +1,6 @@
 """
+    Ground(;name)
+
 Zero magnetic potential.
 """
 function Ground(;name)
@@ -8,6 +10,8 @@ function Ground(;name)
 end
 
 """
+    Idle(;name)
+
 Idle running branch.
 """
 function Idle(;name)
@@ -20,6 +24,8 @@ function Idle(;name)
 end
 
 """
+    Short(;name)
+
 Short cut branch.
 """
 function Short(;name)
@@ -32,6 +38,8 @@ function Short(;name)
 end
 
 """
+    Crossing(;name)
+
 Crossing of two branches.
 """
 function Crossing(;name)
@@ -47,13 +55,14 @@ function Crossing(;name)
 end
 
 """
+    ConstantPermeance(;name, G_m=1.0)
+
 Constant permeance.
 
 # Parameters:
 - `G_m`: [H] Magnetic permeance
 """
 function ConstantPermeance(;name, G_m=1.0)
-    val = G_m
     @named two_port = TwoPort()
     @unpack V_m, Phi = two_port
     @parameters G_m=G_m
@@ -64,13 +73,14 @@ function ConstantPermeance(;name, G_m=1.0)
 end
 
 """
+    ConstantReluctance(;name, R_m=1.0)
+
 Constant reluctance.
 
 # Parameters:
 - `R_m`: [H^-1] Magnetic reluctance
 """
 function ConstantReluctance(;name, R_m=1.0)
-    val = R_m
     @named two_port = TwoPort()
     @unpack V_m, Phi = two_port
     @parameters R_m=R_m
@@ -81,18 +91,21 @@ function ConstantReluctance(;name, R_m=1.0)
 end
 
 """
+    ElectroMagneticConverter(;name, N, Phi_start=0.0)
+
 Ideal electromagnetic energy conversion.
 
 # Parameters:
 - `N`: Number of turns
+- `Phi_start`: [Wb] Initial magnetic flux flowing into the port_p
 """
-function ElectroMagneticConverter(;name, N)
+function ElectroMagneticConverter(;name, N, Phi_start=0.0)
     @named port_p = PositiveMagneticPort()
     @named port_n = NegativeMagneticPort()
     @named p = Pin()
     @named n = Pin()
 
-    sts = @variables v(t) i(t) V_m(t) Phi(t)
+    sts = @variables v(t) i(t) V_m(t) Phi(t)=Phi_start
     pars = @parameters N=N
     eqs = [
         v ~ p.v - n.v
@@ -109,15 +122,18 @@ function ElectroMagneticConverter(;name, N)
 end
 
 """
+    EddyCurrent(;name, rho=0.098e-6, l=1, A=1, Phi_start=0.0)
+
 For modelling of eddy current in a conductive magnetic flux tube.
 
 # Parameters:
-- `rho`: [Ohm * m] Resistivity of flux tube material (default: Iron at 20degC)
+- `rho`: [ohm * m] Resistivity of flux tube material (default: Iron at 20degC)
 - `l`: [m] Average length of eddy current path
 - `A`: [m^2] Cross sectional area of eddy current path
+- `Phi_start`: [Wb] Initial magnetic flux flowing into the port_p
 """
-function EddyCurrent(;name, rho=0.098e-6, l=1, A=1)
-    @named two_port = TwoPort()
+function EddyCurrent(;name, rho=0.098e-6, l=1, A=1, Phi_start=0.0)
+    @named two_port = TwoPort(Phi_start=Phi_start)
     @unpack V_m, Phi = two_port
     @parameters R = rho * l / A # Electrical resistance of eddy current path
     eqs = [

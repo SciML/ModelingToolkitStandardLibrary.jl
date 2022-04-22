@@ -1,6 +1,6 @@
 module FluxTubes
 using ModelingToolkit
-using ..Electrical: Pin
+using ...Electrical: Pin
 
 @parameters t
 D = Differential(t)
