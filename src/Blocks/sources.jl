@@ -24,7 +24,7 @@ Generate sine signal.
 - `start_time`: [s] Output `y = offset` for `t < start_time`
 """
 function Sine(;name, 
-    frequency=1, 
+    frequency, 
     amplitude=1,
     phase=0,
     offset=0,
@@ -49,7 +49,7 @@ Generate cosine signal.
 - `start_time`: [s] Output `y = offset` for `t < start_time`
 """
 function Cosine(;name, 
-    frequency=1, 
+    frequency, 
     amplitude=1,
     phase=0,
     offset=0,
@@ -70,10 +70,7 @@ Generate current time signal.
 - `offset`: Offset of output signal
 - `start_time`: [s] Output `y = offset` for `t < start_time`
 """
-function ContinuousClock(;name, 
-    offset=0, # Offset of output signal
-    start_time=0)
-
+function ContinuousClock(;name, offset=0, start_time=0)
     @named output = RealOutput()
     pars = @parameters offset=offset start_time=start_time
     eqs = [
@@ -114,11 +111,7 @@ Generate step signal.
 - `offset`: Offset of output signal
 - `start_time`: [s] Output `y = offset` for `t < start_time`
 """
-function Step(;name, 
-    offset=0, # Offset of output signal
-    height=1,
-    start_time=0)
-
+function Step(;name, offset=0, height=1, start_time=0)
     @named output = RealOutput()
     pars = @parameters offset=offset start_time=start_time height=height
     eqs = [
@@ -139,7 +132,7 @@ Generate exponentially damped sine signal.
 - `start_time`: [s] Output `y = offset` for `t < start_time`
 """
 function ExpSine(;name, 
-    frequency=1, 
+    frequency, 
     amplitude=1,
     damping=0.1,
     phase=0,
