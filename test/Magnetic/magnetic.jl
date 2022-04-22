@@ -3,7 +3,7 @@ using ModelingToolkitStandardLibrary.Magnetic, ModelingToolkit, OrdinaryDiffEq, 
 import ModelingToolkitStandardLibrary.Electrical
 import ModelingToolkitStandardLibrary.Magnetic
 using ModelingToolkit, OrdinaryDiffEq, Test
-using Plots
+# using Plots
 
 @testset "Inductor" begin
     mu_air = 1
