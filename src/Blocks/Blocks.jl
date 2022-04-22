@@ -16,7 +16,7 @@ export Abs, Sign, Sqrt, Sin, Cos, Tan, Asin, Acos, Atan, Atan2, Sinh, Cosh, Tanh
 export Log, Log10
 include("math.jl")
 
-export Constant, Sine, Cosine, Clock, Ramp, Step, ExpSine
+export Constant, Sine, Cosine, ContinuousClock, Ramp, Step, ExpSine
 include("sources.jl")
 
 export Limiter, DeadZone, SlewRateLimiter

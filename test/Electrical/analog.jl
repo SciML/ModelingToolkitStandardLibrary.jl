@@ -1,4 +1,5 @@
 using ModelingToolkitStandardLibrary.Electrical, ModelingToolkit, OrdinaryDiffEq, Test
+using ModelingToolkitStandardLibrary.Electrical: _step, _square_wave, _triangular_wave, _cos_wave, _damped_sine_wave, _ramp
 
 # using Plots
 
@@ -29,7 +30,7 @@ using ModelingToolkitStandardLibrary.Electrical, ModelingToolkit, OrdinaryDiffEq
     @named model = ODESystem(connections, t; systems=[resistor, capacitor, source, ground, voltage_sensor, current_sensor, power_sensor])
     sys = structural_simplify(model)
     prob = ODAEProblem(sys, Pair[], (0.0, 10.0))
-    @test_nowarn sol = solve(prob, Tsit5())
+    sol = solve(prob, Tsit5())
 
     # Plots.plot(sol; vars=[capacitor.v, voltage_sensor.v])
     # Plots.plot(sol; vars=[power_sensor.power, capacitor.i * capacitor.v])
@@ -130,6 +131,7 @@ end
         sys = structural_simplify(model)
         prob = ODAEProblem(sys, [capacitor.v => 0.0], (0.0, 10.0))
         @test_nowarn sol = solve(prob, Tsit5())
+        @test_nowarn sol = solve(prob, Rodas4())
 
         # Plots.plot(sol; vars=[source.v, capacitor.v])
     end
@@ -160,6 +162,7 @@ end
         sys = structural_simplify(model)
         prob = ODAEProblem(sys, [inductor.i => 0.0], (0.0, 10.0))
         @test_nowarn sol = solve(prob, Tsit5())
+        @test_nowarn sol = solve(prob, Rodas4())
 
         # Plots.plot(sol; vars=[source.i, inductor.i])
     end
@@ -190,6 +193,7 @@ end
         sys = structural_simplify(model)
         prob = ODAEProblem(sys, [capacitor.v => 0.0], (0.0, 10.0))
         @test_nowarn sol = solve(prob, Tsit5())
+        @test_nowarn sol = solve(prob, Rodas4())
 
         # Plots.plot(sol; vars=[source.v, capacitor.v])
     end
@@ -209,8 +213,8 @@ end
     
     connections = [
         connect(square.p, R1.p)
-        connect(R1.n, C1.p, R2.p, opamp.n1)
-        connect(opamp.p2, C1.n, R2.n)
+        connect(R1.n, C1.n, R2.p, opamp.n1)
+        connect(opamp.p2, C1.p, R2.n)
         connect(opamp.p1, ground.g, opamp.n2, square.n)
         connect(opamp.p2, sensor.p)
         connect(sensor.n, ground.g)
@@ -223,7 +227,7 @@ end
     ]
     prob = ODEProblem(sys, u0, (0, 100.0))
     sol = solve(prob, Rodas4())
-    @test sol[opamp.v2] == sol[-C1.v] # Not a great one however. Rely on the plot
+    @test sol[opamp.v2] == sol[C1.v] # Not a great one however. Rely on the plot
     @test sol[opamp.p2.v] == sol[sensor.v] 
 
     # plot(sol, vars=[sensor.v, square.v, C1.v])
