@@ -35,10 +35,10 @@ export #Interface
        #Analog Sources
        ConstantVoltage, SineVoltage, StepVoltage, RampVoltage,
        SquareVoltage, TriangularVoltage,
-       CosineVoltage, DampedSineVoltage,
+       CosineVoltage, ExpSineVoltage,
        ConstantCurrent, SineCurrent, StepCurrent, RampCurrent,
        SquareCurrent, TriangularCurrent,
-       CosineCurrent, DampedSineCurrent
+       CosineCurrent, ExpSineCurrent
        
 
        # # Digital Gates

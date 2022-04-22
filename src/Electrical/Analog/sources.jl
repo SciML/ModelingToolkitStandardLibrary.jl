@@ -155,6 +155,11 @@ function SineVoltage(;name, offset=0.0, amplitude=1.0, frequency=1.0, start_time
     extend(ODESystem(eqs, t, [], pars; name=name), oneport)
 end
 
+"""
+    SquareVoltage(; name, offset=0.0, amplitude=1.0, frequency=1.0, start_time=0.0)
+
+Generate square voltage.
+"""
 function SquareVoltage(; name, offset=0.0, amplitude=1.0, frequency=1.0, start_time=0.0)
     δ = 0.0001
 
@@ -164,10 +169,9 @@ function SquareVoltage(; name, offset=0.0, amplitude=1.0, frequency=1.0, start_t
         offset=offset
         amplitude=amplitude 
         start_time=start_time 
-        end_time=end_time
     end
     eqs = [
-        v ~ _square_wave(t, frequency, amplitude, start_time, phase) * _step(t, δ, 1.0, start_time) + offset
+        v ~ _square_wave(t, δ, frequency, amplitude, start_time) * _step(t, δ, 1.0, start_time) + offset
     ]
     
     extend(ODESystem(eqs, t, [], pars; name=name), oneport)
@@ -312,7 +316,7 @@ Generate ramp current.
 - `offset`: [A] Offset of output current
 - `start_time`: [s] Output `y = offset` for `t < start_time`
 """
-function RampCurrent(;name, offset=0.0, start_time=0.0, end_time=1.0, height=1.0)
+function RampCurrent(;name, offset=0.0, start_time=0.0, duration=1.0, height=1.0)
     δ = 0.00001
     @named oneport = OnePort()
     @unpack v, i = oneport
@@ -320,10 +324,10 @@ function RampCurrent(;name, offset=0.0, start_time=0.0, end_time=1.0, height=1.0
         offset=offset
         height=height 
         start_time=start_time 
-        end_time=end_time
+        duration=duration
     end
     eqs = [
-        i ~ _ramp(t, δ, 1.0, start_time, height) + offset
+        i ~ _ramp(t, δ, start_time, start_time + duration, height) + offset
     ]
     
     extend(ODESystem(eqs, t, [], pars; name=name), oneport)
@@ -371,7 +375,7 @@ function SquareCurrent(; name, offset=0.0, amplitude=1.0, frequency=1.0, start_t
         start_time=start_time 
     end
     eqs = [
-        i ~ _square_wave(t, frequency, amplitude, start_time, phase) * _step(t, δ, 1.0, start_time) + offset
+        i ~ _square_wave(t, δ, frequency, amplitude, start_time) * _step(t, δ, 1.0, start_time) + offset
     ]
     
     extend(ODESystem(eqs, t, [], pars; name=name), oneport)
