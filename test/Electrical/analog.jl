@@ -193,7 +193,7 @@ end
         sys = structural_simplify(model)
         prob = ODAEProblem(sys, [capacitor.v => 0.0], (0.0, 10.0))
         @test_nowarn sol = solve(prob, Tsit5())
-        @test_nowarn sol = solve(prob, Rodas4())
+        @test_broken sol = solve(prob, Rodas4())
 
         # Plots.plot(sol; vars=[source.v, capacitor.v])
     end
