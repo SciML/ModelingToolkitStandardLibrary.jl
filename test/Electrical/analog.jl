@@ -194,3 +194,36 @@ end
         # Plots.plot(sol; vars=[source.v, capacitor.v])
     end
 end
+@testset "Integrator" begin
+    R=1e3
+    f=1
+    Vin=5
+    @named ground = Ground()
+    @named R1 = Resistor(R=R)
+    @named R2 = Resistor(R=100*R)
+    @named C1 = Capacitor(C=1/(2 * pi * f * R))
+    @named opamp = IdealOpAmp()
+    @named square = SquareVoltage(amplitude=Vin)
+    @named sensor = VoltageSensor()
+    
+    connections = [
+        connect(square.p, R1.p)
+        connect(R1.n, C1.p, R2.p, opamp.n1)
+        connect(opamp.p2, C1.n, R2.n)
+        connect(opamp.p1, ground.g, opamp.n2, square.n)
+        connect(opamp.p2, sensor.p)
+        connect(sensor.n, ground.g)
+    ]
+    @named model = ODESystem(connections, t, systems = [R1, R2, opamp, square, C1, ground, sensor])
+    sys = structural_simplify(model)
+    u0 = [
+        C1.v => 0.0
+        R1.v => 0.0
+    ]
+    prob = ODEProblem(sys, u0, (0, 100.0))
+    sol = solve(prob, Rodas4())
+    @test sol[opamp.v2] == sol[-C1.v] # Not a great one however. Rely on the plot
+    @test sol[opamp.p2.v] == sol[sensor.v] 
+
+    # plot(sol, vars=[sensor.v, square.v, C1.v])
+end
