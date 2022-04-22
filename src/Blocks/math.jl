@@ -4,7 +4,7 @@
 Output the product of a gain value with the input signal.
 
 # Parameters:
-- `k`: Gain
+- `k`: Scalar gain
 """
 function Gain(k=1; name)
     @named siso = SISO()
@@ -37,10 +37,10 @@ end
 """
     Sum(n::Int; name)
 
-Output the sum of the elements of the input vector.
+Output the sum of the elements of the input port vector.
 
 # Parameters:
-- `n`: Input vector dimension
+- `n`: Input port dimension
 """
 function Sum(n::Int; name)
     @named input = RealInput(;nin=n)
@@ -52,7 +52,9 @@ function Sum(n::Int; name)
 end
     
 """
-Output difference between commanded and feedback input.
+    Feedback(;name)
+
+Output difference between reference input (input1) and feedback input (input2).
 """
 function Feedback(;name)
     @named input1 = RealInput()
@@ -154,9 +156,7 @@ If the given function is not composed of simple core methods (e.g. sin, abs, ...
 function StaticNonLinearity(func; name)
     @named siso = SISO()
     @unpack u, y = siso
-    eqs = [
-        y ~ func(u)
-    ]
+    eqs = [y ~ func(u)]
     extend(ODESystem(eqs, t, [], []; name=name), siso)
 end
 
