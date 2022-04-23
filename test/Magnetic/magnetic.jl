@@ -5,6 +5,8 @@ import ModelingToolkitStandardLibrary.Magnetic
 using ModelingToolkit, OrdinaryDiffEq, Test
 # using Plots
 
+@parameters t
+
 @testset "Inductor" begin
     mu_air = 1
     l_air = 0.0001
