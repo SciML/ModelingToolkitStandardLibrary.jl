@@ -28,9 +28,10 @@ makedocs(
         ],
 
         "API" => [
-            "Blocks" => "API/blocks.md",
+            "Basic Blocks" => "API/blocks.md",
             "Electrical Components" => "API/electrical.md",
             "Magnetic Components" => "API/magnetic.md",
+            "Mechanical Components" => "API/mechanical.md",
             "Thermal Components" => "API/thermal.md"
         ],
     ]
