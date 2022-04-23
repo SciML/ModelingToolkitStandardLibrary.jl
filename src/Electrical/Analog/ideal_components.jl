@@ -1,67 +1,88 @@
+"""
+    Ground(;name)
+
+Ground of an electrical circuit. The potential at the ground node is zero. Every circuit must have one ground node.
+"""
 function Ground(;name)
     @named g = Pin()
     eqs = [g.v ~ 0]
-    ODESystem(eqs, t, [], [], systems=[g], name=name)
+    ODESystem(eqs, t, [], []; systems=[g], name=name)
 end
 
-function Resistor(;name, R = 1.0)
-    val = R
-    
-    @named p = Pin()
-    @named n = Pin()
-    @parameters R
-    @variables v(t)
+"""
+    Resistor(;name, R=1.0)
 
+Ideal linear electrical resistor.
+
+# Parameters: 
+- `R`: [Ω] Resistance
+"""
+function Resistor(;name, R=1.0)
+    @named oneport = OnePort()
+    @unpack v, i = oneport
+    pars = @parameters R=R
     eqs = [
-           v ~ p.v - n.v
-           0 ~ p.i + n.i
-           v ~ p.i * R
-          ]
-    ODESystem(eqs, t, [v], [R], systems=[p, n], defaults=Dict(R => val), name=name)
+        v ~ i * R
+    ]
+    extend(ODESystem(eqs, t, [], pars; name=name), oneport)
 end
 
-function Capacitor(; name, C = 1.0)
-    val = C
+"""
+    Capacitor(;name, C=1.0, v_start=0.0) 
 
-    @named p = Pin()
-    @named n = Pin()
-    @parameters C
-    @variables v(t)
+Ideal linear electrical capacitor.
 
-    D = Differential(t)
+# Parameters:
+- `C`: [F] Capacity
+- `v_start`: [V] Initial voltage of capacitor
+"""
+function Capacitor(;name, C=1.0, v_start=0.0) 
+    @named oneport = OnePort(;v_start=v_start)
+    @unpack v, i = oneport
+    pars = @parameters C=C
     eqs = [
-           v ~ p.v - n.v
-           0 ~ p.i + n.i
-           D(v) ~ p.i / C
-          ]
-    ODESystem(eqs, t, [v], [C], systems=[p, n], defaults=Dict(C => val), name=name)
+        D(v) ~ i / C
+    ]
+    extend(ODESystem(eqs, t, [], pars; name=name), oneport)
 end
 
-function Inductor(; name, L = 1.0)
-    val = L
+"""
+    Inductor(;name, L=1.0e-6, i_start=0.0)
 
-    @named p = Pin()
-    @named n = Pin()
-    @parameters L
-    @variables v(t)
+Ideal linear electrical inductor.
 
-    D = Differential(t)
+# Parameters:
+- `L`: [H] Inductance
+- `i_start`: [A] Initial current through inductor
+"""
+function Inductor(;name, L=1.0e-6, i_start=0.0)
+    @named oneport = OnePort(;i_start=i_start)
+    @unpack v, i = oneport
+    pars = @parameters L=L
     eqs = [
-           v ~ p.v - n.v
-           0 ~ p.i + n.i
-           D(p.i) ~ v / L
-          ]
-    ODESystem(eqs, t, [v], [L], systems=[p, n], defaults=Dict(L => val), name=name)
+        D(i) ~ 1 / L * v
+    ]
+    extend(ODESystem(eqs, t, [], pars; name=name), oneport)
 end
 
-function IdealOpAmp(; name)
+"""
+    IdealOpAmp(;name)
+
+Ideal operational amplifier (norator-nullator pair).
+The ideal OpAmp is a two-port. The left port is fixed to v1=0 and i1=0 (nullator). 
+At the right port both any voltage v2 and any current i2 are possible (norator).
+"""
+function IdealOpAmp(;name)
     @named p1 = Pin()
     @named p2 = Pin()
     @named n1 = Pin()
     @named n2 = Pin()
-    @variables v1(t) v2(t) # u"v"
-    @variables i1(t) i2(t) # u"A"
-
+    sts = @variables begin
+        v1(t) 
+        v2(t) 
+        i1(t) 
+        i2(t)
+    end
     eqs = [
         v1 ~ p1.v - n1.v
         v2 ~ p2.v - n2.v
@@ -72,5 +93,5 @@ function IdealOpAmp(; name)
         v1 ~ 0
         i1 ~ 0
     ]
-    ODESystem(eqs, t, [i1, i2, v1, v2], [], systems=[p1, p2, n1, n2], name=name)
+    ODESystem(eqs, t, sts, [], systems=[p1, p2, n1, n2], name=name)
 end

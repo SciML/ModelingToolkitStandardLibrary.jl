@@ -1,3 +1,7 @@
+"""
+Library of electrical models.
+This library contains electrical components to build up analog circuits.
+"""
 module Electrical
 
 using ModelingToolkit, Symbolics, IfElse, OrdinaryDiffEq
@@ -10,12 +14,19 @@ include("utils.jl")
 include("Analog/ideal_components.jl")
 include("Analog/sensors.jl")
 include("Analog/sources.jl")
-include("Digital/components.jl")
-include("Digital/gates.jl")
-include("Digital/tables.jl")
-include("Digital/sources.jl")
+# include("Digital/components.jl")
+# include("Digital/gates.jl")
+# include("Digital/tables.jl")
+# include("Digital/sources.jl")
 
-export # Analog Components
+# TODO: 
+# - digital
+# - machines
+# - multi-phase
+
+export #Interface
+       Pin,
+       # Analog Components
        Capacitor, Ground, Inductor, Resistor,
        Short, IdealOpAmp,
        # Analog Sensors
@@ -24,17 +35,17 @@ export # Analog Components
        #Analog Sources
        ConstantVoltage, SineVoltage, StepVoltage, RampVoltage,
        SquareVoltage, TriangularVoltage,
-       CosineVoltage, DampedSineVoltage,
+       CosineVoltage, ExpSineVoltage,
        ConstantCurrent, SineCurrent, StepCurrent, RampCurrent,
        SquareCurrent, TriangularCurrent,
-       CosineCurrent, DampedSineCurrent,
-       connect, Pin
+       CosineCurrent, ExpSineCurrent
+       
 
-       # Digital Gates
-       And, Or, Not, Xor, Nand, Nor, Xnor,
-       # Digital components
-       HalfAdder, FullAdder, MUX, DEMUX, Encoder, Decoder,
-       # Digital Sources
-       DigitalPin, Pulse, PulseDiff
+       # # Digital Gates
+       # And, Or, Not, Xor, Nand, Nor, Xnor,
+       # # Digital components
+       # HalfAdder, FullAdder, MUX, DEMUX, Encoder, Decoder,
+       # # Digital Sources
+       # DigitalPin, Pulse, PulseDiff
 
 end

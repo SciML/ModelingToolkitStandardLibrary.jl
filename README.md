@@ -219,7 +219,7 @@ type the name twice. The same principle applies to the other thermal components.
 - `C`: heat capacity (zero or positive)
 
 **State**:
-- `T`: temperature (in Kelvin)
+- `T`: temperature (in kelvin)
 
 **Connectors**:
 - heat port
@@ -233,7 +233,7 @@ type the name twice. The same principle applies to the other thermal components.
 
 **States**:
 - `Q_flow`: heat flow rate
-- `T`: temperature (in Kelvin)
+- `T`: temperature (in kelvin)
 
 **Connectors**:
 - two heat ports
@@ -249,7 +249,7 @@ type the name twice. The same principle applies to the other thermal components.
 
 **States**:
 - `Q_flow`: heat flow rate
-- `T`: temperature (in Kelvin)
+- `T`: temperature (in kelvin)
 
 **Connectors**:
 - two heat ports
@@ -265,7 +265,7 @@ type the name twice. The same principle applies to the other thermal components.
 
 **States**:
 - `Q_flow`: heat flow rate
-- `dT`: temperature difference (in Kelvin)
+- `dT`: temperature difference (in kelvin)
 
 **Connectors**:
 - two heat ports (for modeling of the fluid flow over the solid)
@@ -281,7 +281,7 @@ type the name twice. The same principle applies to the other thermal components.
 
 **States**:
 - `Q_flow`: heat flow rate
-- `dT`: temperature difference (in Kelvin)
+- `dT`: temperature difference (in kelvin)
 
 **Connectors**:
 - two heat ports (for modeling of the fluid flow over the solid)
@@ -314,7 +314,7 @@ to a singular heatport.
 
 **States**:
 - `Q_flow`: heat flow rate
-- `T`: temperature (in Kelvin)
+- `T`: temperature (in kelvin)
 
 **Connectors**:
 - `hp1...hpN`: the respective heatports
@@ -328,10 +328,10 @@ to a singular heatport.
 
 **Function**: `TemperatureSensor(;name)`
 
-**Description**: Ideal absolute temperature sensor which outputs the temperature (in Kelvin) of the connected port.
+**Description**: Ideal absolute temperature sensor which outputs the temperature (in kelvin) of the connected port.
 
 **States**:
-- `T`: temperature (in Kelvin)
+- `T`: temperature (in kelvin)
 
 **Connectors**:
 - heat port
@@ -340,10 +340,10 @@ to a singular heatport.
 
 **Function**: `RelativeTemperatureSensor(;name)`
 
-**Description**: The output of the sensor is the relative temperature, i.e., the difference of the two ports, given in Kelvin.
+**Description**: The output of the sensor is the relative temperature, i.e., the difference of the two ports, given in kelvin.
 
 **States**:
-- `T`: temperature (in Kelvin)
+- `T`: temperature (in kelvin)
 
 **Connectors**:
 - two heat ports
@@ -380,10 +380,10 @@ to a singular heatport.
 
 **Function**: `FixedTemperature(;name, T = 0.0)`
 
-**Description**: The model defines a fixed temperature (in Kelvin) at a given port.
+**Description**: The model defines a fixed temperature (in kelvin) at a given port.
 
 **Observables**:
-- `T`: temperature (in Kelvin)
+- `T`: temperature (in kelvin)
 
 **Connectors**:
 - heat port

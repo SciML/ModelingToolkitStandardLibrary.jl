@@ -1,23 +1,46 @@
-function FixedHeatFlow(; name, Q_flow=1.0, T₀=293.15, α=0.0)
-    qflow, tem₀, alpha = Q_flow, T₀, α
-    
-    @parameters Q_flow T₀ α
-    @named hp = HeatPort()
+"""
+    FixedHeatFlow(; name, Q_flow=1.0, T_ref=293.15, alpha=0.0)
+
+Fixed heat flow boundary condition.
+
+This model allows a specified amount of heat flow rate to be "injected" into a thermal system at a given port.
+The constant amount of heat flow rate `Q_flow` is given as a parameter. The heat flows into the component to which
+the component FixedHeatFlow is connected, if parameter `Q_flow` is positive.
+
+# Parameters:
+- `Q_flow`: [W] Fixed heat flow rate at port
+- `T_ref`: [K] Reference temperature
+- `alpha`: [1/K] Temperature coefficient of heat flow rate
+"""
+function FixedHeatFlow(; name, Q_flow=1.0, T_ref=293.15, alpha=0.0)
+    pars = @parameters begin 
+        Q_flow=Q_flow 
+        T_ref=T_ref 
+        alpha=alpha
+    end
+    @named port = HeatPort()
     
     eqs = [
-        hp.Q_flow ~ -Q_flow * (1 + α*(hp.T - T₀))
+        port.Q_flow ~ -Q_flow * (1 + alpha * (port.T - T_ref))
     ]
-    ODESystem(eqs, t, [], [Q_flow, T₀, α], systems=[hp], defaults=Dict(zip((Q_flow, T₀, α), (qflow, tem₀, alpha))), name=name)
+    ODESystem(eqs, t, [], pars; systems=[port], name=name)
 end
 
+"""
+    FixedTemperature(; name, T=0.0)
+
+Fixed temperature boundary condition in kelvin.
+
+This model defines a fixed temperature T at its port in kelvin, i.e., it defines a fixed temperature as a boundary condition.
+
+# Parameters:
+- `T`: [K] Fixed temperature boundary condition
+"""
 function FixedTemperature(; name, T=0.0)
-    tem = T
-
-    @named hp = HeatPort()
-    @parameters T
-
+    @named port = HeatPort()
+    pars = @parameters T=T
     eqs = [
-        hp.T ~ T
+        port.T ~ T
     ]
-    ODESystem(eqs, t, [], [T], systems=[hp], defaults=Dict(T => tem), name=name)
+    ODESystem(eqs, t, [], pars; systems=[port], name=name)
 end
