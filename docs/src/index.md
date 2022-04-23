@@ -11,3 +11,16 @@ ModelingToolkitStandardLibrary.jl in the standard way:
 ```julia
 import Pkg; Pkg.add("ModelingToolkitStandardLibrary")
 ```
+
+## Tutorials 
+
+- [RC Circuit Tutorial](http://mtkstdlib.sciml.ai/dev/tutorials/rc_circuit/)
+
+## Libraries
+
+The following are the constituant libraries of the ModelingToolkit Standard Library.
+
+- [Basic Blocks](http://mtkstdlib.sciml.ai/dev/API/blocks/)
+- [Electrical Components](http://mtkstdlib.sciml.ai/dev/API/electrical/)
+- [Magnetic Components](http://mtkstdlib.sciml.ai/dev/API/magnetic/)
+- [Thermal Components](http://mtkstdlib.sciml.ai/dev/API/thermal/)
