@@ -13,7 +13,7 @@ makedocs(
     modules=[ModelingToolkitStandardLibrary,
              ModelingToolkitStandardLibrary.Blocks,
              ModelingToolkitStandardLibrary.Magnetic,
-              ModelingToolkitStandardLibrary.Magnetic.FluxTubes,
+             ModelingToolkitStandardLibrary.Magnetic.FluxTubes,
              ModelingToolkitStandardLibrary.Electrical,
              ModelingToolkitStandardLibrary.Thermal],
 
@@ -24,6 +24,7 @@ makedocs(
         "ModelingToolkitStandardLibrary.jl: A Standard Library for ModelingToolkit" => "index.md",
 
         "Tutorials" => [
+            "RC Circuit" => "tutorials/rc_circuit"
         ],
 
         "API" => [

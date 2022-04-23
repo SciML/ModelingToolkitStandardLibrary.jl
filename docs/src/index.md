@@ -3,7 +3,6 @@
 ModelingToolkitStandardLibrary.jl is a standard library for the 
 [ModelingToolkit](https://mtk.sciml.ai/dev/) acasual modeling system.
 
-
 ## Installation
 
 Assuming that you already have Julia correctly installed, it suffices to import
