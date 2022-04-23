@@ -1,6 +1,7 @@
 using Documenter, ModelingToolkitStandardLibrary
 using ModelingToolkitStandardLibrary.Blocks
 using ModelingToolkitStandardLibrary.Magnetic
+using ModelingToolkitStandardLibrary.Magnetic.FluxTubes
 using ModelingToolkitStandardLibrary.Electrical
 using ModelingToolkitStandardLibrary.Thermal
 
@@ -12,6 +13,7 @@ makedocs(
     modules=[ModelingToolkitStandardLibrary,
              ModelingToolkitStandardLibrary.Blocks,
              ModelingToolkitStandardLibrary.Magnetic,
+              ModelingToolkitStandardLibrary.Magnetic.FluxTubes,
              ModelingToolkitStandardLibrary.Electrical,
              ModelingToolkitStandardLibrary.Thermal],
 
