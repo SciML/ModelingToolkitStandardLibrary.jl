@@ -1,6 +1,8 @@
 # ModelingToolkitStandardLibrary.jl
 
 [![CI](https://github.com/SciML/ModelingToolkitStandardLibrary.jl/actions/workflows/CI.yml/badge.svg)](https://github.com/SciML/ModelingToolkitStandardLibrary.jl/actions/workflows/CI.yml)
+[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](http://mtkstdlib.sciml.ai/stable/)
+[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](http://mtkstdlib.sciml.ai/dev/)
 
 A standard library of components to model the world and beyond.
 
