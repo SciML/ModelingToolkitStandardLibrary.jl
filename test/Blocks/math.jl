@@ -180,7 +180,7 @@ end
 
 @testset "Math" begin
     for (block, func) in [(Abs, abs), (Sin, sin), (Cos, cos), (Tan, tan), (Asin, asin), (Acos, acos), (Atan, atan), (Sinh, sinh), (Cosh, cosh), (Tanh, tanh), (Exp, exp)]
-        @named source = Sine()
+        @named source = Sine(frequency=1)
         @named b = block()
         @named int = Integrator()
         @named model = ODESystem([connect(source.output, b.input), connect(b.output, int.input)], t, systems=[int, b, source])
@@ -194,7 +194,7 @@ end
 
     # input must be positive
     for (block, func) in [(Sqrt, sqrt), (Log, log), (Log10, log10)] 
-        @named source = Sine(; offset=2)
+        @named source = Sine(; frequency=1, offset=2)
         @named b = block()
         @named int = Integrator()
         @named model = ODESystem([connect(source.output, b.input), connect(b.output, int.input)], t, systems=[int, b, source])
