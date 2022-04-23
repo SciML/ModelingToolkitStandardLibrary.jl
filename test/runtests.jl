@@ -17,3 +17,6 @@ using SafeTestsets
 
 # Magnetic
 @safetestset "Magnetic" begin include("Magnetic/magnetic.jl") end
+
+# Mechanical
+@safetestset "Mechanical" begin include("Mechanical/rotational.jl") end

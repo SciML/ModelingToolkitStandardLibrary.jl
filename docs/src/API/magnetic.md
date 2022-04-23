@@ -1,6 +1,8 @@
 # ModelingToolkitStandardLibrary: Magnetic Components
 
-## Magnetic Utilities
+## Flux Tubes
+
+### Flux Tube Utilities
 
 ```@docs
 PositiveMagneticPort
@@ -8,7 +10,7 @@ NegativeMagneticPort
 TwoPort
 ```
 
-## Basic Magnetic Blocks
+### Basic Flux Tube Blocks
 
 ```@docs
 Ground
@@ -21,7 +23,7 @@ EddyCurrent
 ElectroMagneticConverter
 ```
 
-## Magnetic Sources
+### Flux Tube Sources
 
 ```@docs
 ConstantMagneticPotentialDifference
