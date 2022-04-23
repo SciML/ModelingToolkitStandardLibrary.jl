@@ -23,4 +23,5 @@ The following are the constituant libraries of the ModelingToolkit Standard Libr
 - [Basic Blocks](http://mtkstdlib.sciml.ai/dev/API/blocks/)
 - [Electrical Components](http://mtkstdlib.sciml.ai/dev/API/electrical/)
 - [Magnetic Components](http://mtkstdlib.sciml.ai/dev/API/magnetic/)
+- [Mechanical Components](http://mtkstdlib.sciml.ai/dev/API/mechanical/)
 - [Thermal Components](http://mtkstdlib.sciml.ai/dev/API/thermal/)
