@@ -1,4 +1,7 @@
 # ModelingToolkitStandardLibrary: Blocks
+```@meta
+CurrentModule = ModelingToolkitStandardLibrary.Blocks
+```
 
 ## Utility Blocks
 
@@ -12,13 +15,14 @@ SISO
 
 ```@docs
 Gain
-Sum
 MatrixGain
 Sum
 Feedback
 Add
+Add3
 Product
 Division
+StaticNonLinearity
 Abs
 Sign
 Sqrt

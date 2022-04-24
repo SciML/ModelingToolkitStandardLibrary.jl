@@ -4,7 +4,7 @@
 Flange fixed in housing at a given angle.
 
 # Parameters:
-- `phi0`: Fixed offset angle of housing
+- `phi0`: [rad] Fixed offset angle of housing
 """
 function Fixed(;name, phi0=0.0)
     @named flange = Flange()
@@ -19,15 +19,15 @@ end
 1D-rotational component with inertia.
 
 # Parameters:
-- `J`: [kg.m2] Moment of inertia 
+- `J`: [kg·m²] Moment of inertia 
 - `phi_start`: [rad] Initial value of absolute rotation angle of component 
 - `w_start`: [rad/s] Initial value of absolute angular velocity of component
-- `a_start`: [rad/s2] Initial value of absolute angular acceleration of component
+- `a_start`: [rad/s²] Initial value of absolute angular acceleration of component
 
 # States: 
 - `phi`: [rad] Absolute rotation angle of component 
 - `w`: [rad/s] Absolute angular velocity of component (= der(phi)) 
-- `a`: [rad/s2] Absolute angular acceleration of component (= der(w)) 
+- `a`: [rad/s²] Absolute angular acceleration of component (= der(w)) 
 """
 function Inertia(;name, J=1.0, phi_start=0.0, w_start=0.0, a_start=0.0)
     @named flange_a = Flange()
@@ -54,7 +54,7 @@ end
 Linear 1D rotational spring
 
 # Parameters:
-- `c`: Spring constant
+- `c`: [N.m/rad] Spring constant
 - `phi_rel0`: Unstretched spring angle
 """
 function Spring(;name, c=1.0e5, phi_rel0=0.0)
@@ -74,7 +74,7 @@ end
 Linear 1D rotational damper
 
 # Parameters:
-- `d`: Damping constant
+- `d`: [N.m.s/rad] Damping constant
 """
 function Damper(;name, d=0.0) 
     @named partial_comp = PartialCompliantWithRelativeStates()
@@ -85,7 +85,7 @@ function Damper(;name, d=0.0)
 end
 
 """
-    IdealGear(;name, ratio) 
+    IdealGear(;name, ratio, use_support=false) 
 
 Ideal gear without inertia.
 
@@ -93,6 +93,7 @@ This element characterizes any type of gear box which is fixed in the ground and
 
 # Parameters:
 - `ratio`: Transmission ratio (flange_a.phi/flange_b.phi)
+- `use_support`: If support flange enabled, otherwise implicitly grounded
 """
 function IdealGear(;name, ratio, use_support=false) 
     @named partial_element = PartialElementaryTwoFlangesAndSupport2(use_support=use_support)

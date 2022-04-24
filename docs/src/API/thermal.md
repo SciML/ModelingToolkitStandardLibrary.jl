@@ -1,9 +1,13 @@
 # ModelingToolkitStandardLibrary: Thermal Components
+```@meta
+CurrentModule = ModelingToolkitStandardLibrary.Thermal
+```
 
 ## Thermal Utilities
 
 ```@docs
 HeatPort
+Element1D
 ```
 
 ## Thermal Components
@@ -30,6 +34,5 @@ TemperatureSensor
 
 ```@docs
 FixedHeatFlow
-FixedTemperature
-ThermalGround 
+FixedTemperature 
 ```

@@ -1,9 +1,13 @@
 # ModelingToolkitStandardLibrary: Electrical Components
+```@meta
+CurrentModule = ModelingToolkitStandardLibrary.Electrical
+```
 
 ## Electrical Utilities
 
 ```@docs
 Pin
+OnePort
 ```
 
 ## Analog Components
@@ -13,7 +17,6 @@ Capacitor
 Ground
 Inductor
 Resistor
-Short
 IdealOpAmp
 ```
 

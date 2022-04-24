@@ -1,5 +1,7 @@
 using Documenter, ModelingToolkitStandardLibrary
 using ModelingToolkitStandardLibrary.Blocks
+using ModelingToolkitStandardLibrary.Mechanical
+using ModelingToolkitStandardLibrary.Mechanical.Rotational
 using ModelingToolkitStandardLibrary.Magnetic
 using ModelingToolkitStandardLibrary.Magnetic.FluxTubes
 using ModelingToolkitStandardLibrary.Electrical
@@ -12,6 +14,8 @@ makedocs(
     doctest=false,
     modules=[ModelingToolkitStandardLibrary,
              ModelingToolkitStandardLibrary.Blocks,
+             ModelingToolkitStandardLibrary.Mechanical,
+             ModelingToolkitStandardLibrary.Mechanical.Rotational,
              ModelingToolkitStandardLibrary.Magnetic,
              ModelingToolkitStandardLibrary.Magnetic.FluxTubes,
              ModelingToolkitStandardLibrary.Electrical,

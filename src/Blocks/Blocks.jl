@@ -11,7 +11,7 @@ D = Differential(t)
 export RealInput, RealOutput, SISO
 include("utils.jl")
 
-export Gain, Sum, MatrixGain, Sum, Feedback, Add, Product, Division
+export Gain, Sum, MatrixGain, Feedback, Add, Product, Division
 export Abs, Sign, Sqrt, Sin, Cos, Tan, Asin, Acos, Atan, Atan2, Sinh, Cosh, Tanh, Exp
 export Log, Log10
 include("math.jl")

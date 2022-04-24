@@ -1,6 +1,9 @@
 # ModelingToolkitStandardLibrary: Magnetic Components
 
 ## Flux Tubes
+```@meta
+CurrentModule = ModelingToolkitStandardLibrary.Magnetic.FluxTubes
+```
 
 ### Flux Tube Utilities
 
