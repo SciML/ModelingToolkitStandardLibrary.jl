@@ -6,13 +6,17 @@ Lumped thermal element storing heat
 # Parameters:
 - `C`: [J/K] Heat capacity of element (= cp*m)
 - `T_start`: Initial temperature of element
+
+# States:
+- `T`: [K] Temperature of element
+- `der_T`: [K/s] Time derivative of temperature
 """
 function HeatCapacitor(; name, C=1.0, T_start=293.15 + 20)    
     @named port = HeatPort()
     @parameters C=C
     sts = @variables begin
-        T(t)=T_start # Temperature of element
-        der_T(t) # "Time derivative of temperature
+        T(t)=T_start
+        der_T(t)
     end
 
     D = Differential(t)
@@ -68,16 +72,16 @@ Lumped thermal element for heat convection.
 
 # Parameters:
 - `G`: [W/K] Convective thermal conductance
+
+# States:
+- `dT`:  [K] Temperature difference across the component solid.T - fluid.T
+- `Q_flow`: [W] Heat flow rate from solid -> fluid
 """
 function ConvectiveConductor(; name, G=1.0)
     @named solid = HeatPort()
     @named fluid = HeatPort()
     @parameters G=G
-    sts = @variables begin
-        Q_flow(t) # [W] Heat flow rate from solid -> fluid
-        dT(t) # [K] Temperature difference solid.T - fluid.T
-    end
-
+    sts = @variables Q_flow(t) dT(t)
     eqs = [
         dT ~ solid.T - fluid.T
         solid.Q_flow ~ Q_flow
@@ -94,16 +98,16 @@ Lumped thermal element for heat convection.
 
 # Parameters:
 - `R`: [K/W] Constant thermal resistance of material
+
+# States:
+- `dT`:  [K] Temperature difference across the component solid.T - fluid.T
+- `Q_flow`: [W] Heat flow rate from solid -> fluid
 """
 function ConvectiveResistor(; name, R=1.0)
     @named solidport = HeatPort()
     @named fluidport = HeatPort()
     @parameters R=R
-    sts = @variables begin
-        Q_flow(t) # [W] Heat flow rate from solid -> fluid
-        dT(t) # [K] Temperature difference solid.T - fluid.T
-    end
-
+    sts = @variables Q_flow(t) dT(t) 
     eqs = [
         dT ~ solidport.T - fluidport.T
         solidport.Q_flow ~ Q_flow
