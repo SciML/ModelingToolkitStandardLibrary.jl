@@ -1,3 +1,6 @@
+_clamp(u, u_min, u_max) = max(min(u, u_max), u_min)
+_dead_zone(u, u_min, u_max) = ifelse(u > u_max, u - u_max, ifelse(u < u_min, u - u_min, 0))
+
 """
 Limit the range of a signal.
 
@@ -11,7 +14,7 @@ function Limiter(;name, y_max, y_min=y_max > 0 ? -y_max : -Inf)
     @unpack u, y = siso
     pars = @parameters y_max=y_max y_min=y_min
     eqs = [
-        y ~ max(min(u, y_max), y_min)
+        y ~ _clamp(u, y_min, y_max)
     ]
     extend(ODESystem(eqs, t, [], pars; name=name), siso)
 end
@@ -40,7 +43,7 @@ function DeadZone(; name, u_max, u_min=-u_max)
     @unpack u, y = siso
     pars = @parameters u_max=u_max u_min=u_min
     eqs = [
-        y ~ ifelse(u > u_max, u - u_max, ifelse(u < u_min, u - u_min, 0))
+        y ~ _dead_zone(u, u_min, u_max)
     ]
     extend(ODESystem(eqs, t, [], pars; name=name), siso)
 end
