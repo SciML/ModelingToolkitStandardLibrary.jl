@@ -8,15 +8,16 @@ CurrentModule = ModelingToolkitStandardLibrary.Electrical
 ```@docs
 Pin
 OnePort
+DigitalPin
 ```
 
 ## Analog Components
 
 ```@docs
-Capacitor
 Ground
-Inductor
 Resistor
+Capacitor
+Inductor
 IdealOpAmp
 ```
 
@@ -30,7 +31,7 @@ PowerSensor
 MultiSensor
 ```
 
-## Analogue Sources
+## Analog Sources
 
 ```@docs
 ConstantVoltage
@@ -49,4 +50,33 @@ SquareCurrent
 TriangularCurrent
 CosineCurrent
 ExpSineCurrent
+```
+
+## Digital Gates
+```@docs
+Not
+And
+Nand
+Or
+Nor
+Xor
+Xnor
+```
+
+## Digital Components
+```@docs
+HalfAdder
+FullAdder
+MUX
+DEMUX
+Encoder
+Decoder
+```
+
+## Digital Sources
+```@docs
+PulseDiff
+Set
+Reset
+Pulse
 ```
