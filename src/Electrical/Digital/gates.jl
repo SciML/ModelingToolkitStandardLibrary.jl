@@ -1,3 +1,16 @@
+"""
+```julia
+function Not(; name)
+```
+
+NOT gate in 9-level logic.
+
+# Connectors
+- `x`
+  Input [`DigitalPin`](@ref)
+- `y`
+  Output [`DigitalPin`](@ref)
+"""
 function Not(; name)
     @named x = DigitalPin()
     @named y = DigitalPin()
@@ -9,6 +22,19 @@ function Not(; name)
     ODESystem(eqs, t, [], [], systems=[x, y], name=name)
 end
 
+"""
+```julia
+function And(; name, N=2)
+```
+
+AND gate in 9-level logic, with `N` inputs
+
+# Connectors
+- `x1`, `x2`, ...
+  `N` input [`DigitalPin`](@ref)s
+- `y`
+  Output [`DigitalPin`](@ref)
+"""
 function And(; name, N=2)
     x = map(1:N) do i
         DigitalPin(name=Symbol(:x, i))
@@ -23,6 +49,19 @@ function And(; name, N=2)
     ODESystem(eqs, t, [], [], systems=[x..., y], name=name)
 end
 
+"""
+```julia
+function Nand(; name, N=2)
+```
+
+NAND gate in 9-level logic, with `N` inputs
+
+# Connectors
+- `x1`, `x2`, ...
+  `N` input [`DigitalPin`](@ref)s
+- `y`
+  Output [`DigitalPin`](@ref)
+"""
 function Nand(; name, N=2)
     x = map(1:N) do i
         DigitalPin(name=Symbol(:x, i))
@@ -37,6 +76,19 @@ function Nand(; name, N=2)
     ODESystem(eqs, t, [], [], systems=[x..., y], name=name)
 end
 
+"""
+```julia
+function Or(; name, N=2)
+```
+
+OR gate in 9-level logic, with `N` inputs
+
+# Connectors
+- `x1`, `x2`, ...
+  `N` input [`DigitalPin`](@ref)s
+- `y`
+  Output [`DigitalPin`](@ref)
+"""
 function Or(; name, N=2)
     x = map(1:N) do i
         DigitalPin(name=Symbol(:x, i))
@@ -51,6 +103,19 @@ function Or(; name, N=2)
     ODESystem(eqs, t, [], [], systems=[x..., y], name=name)
 end
 
+"""
+```julia
+function Nor(; name, N=2)
+```
+
+NOR gate in 9-level logic, with `N` inputs
+
+# Connectors
+- `x1`, `x2`, ...
+  `N` input [`DigitalPin`](@ref)s
+- `y`
+  Output [`DigitalPin`](@ref)
+"""
 function Nor(; name, N=2)
     x = map(1:N) do i
         DigitalPin(name=Symbol(:x, i))
@@ -65,6 +130,19 @@ function Nor(; name, N=2)
     ODESystem(eqs, t, [], [], systems=[x..., y], name=name)
 end
 
+"""
+```julia
+function Xor(; name, N=2)
+```
+
+XOR gate in 9-level logic, with `N` inputs
+
+# Connectors
+- `x1`, `x2`, ...
+  `N` input [`DigitalPin`](@ref)s
+- `y`
+  Output [`DigitalPin`](@ref)
+"""
 function Xor(; name, N=2)
     x = map(1:N) do i
         DigitalPin(name=Symbol(:x, i))
@@ -79,6 +157,19 @@ function Xor(; name, N=2)
     ODESystem(eqs, t, [], [], systems=[x..., y], name=name)
 end
 
+"""
+```julia
+function Xnor(; name, N=2)
+```
+
+XNOR gate in 9-level logic, with `N` inputs
+
+# Connectors
+- `x1`, `x2`, ...
+  `N` input [`DigitalPin`](@ref)s
+- `y`
+  Output [`DigitalPin`](@ref)
+"""
 function Xnor(; name, N=2)
     x = map(1:N) do i
         DigitalPin(name=Symbol(:x, i))

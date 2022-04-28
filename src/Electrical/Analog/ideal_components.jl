@@ -1,7 +1,13 @@
 """
-    Ground(;name)
+```julia
+function Ground(; name)
+```
 
-Ground of an electrical circuit. The potential at the ground node is zero. Every circuit must have one ground node.
+Ground node with the potential of zero and connector `g`. Every circuit must have one ground
+node.
+
+# Connectors
+- `g`
 """
 function Ground(;name)
     @named g = Pin()
@@ -10,12 +16,25 @@ function Ground(;name)
 end
 
 """
-    Resistor(;name, R=1.0)
+```julia
+function Resistor(; name, R = 1.0)
+```
 
-Ideal linear electrical resistor.
+Creates an ideal Resistor following Ohm's Law.
+
+# States
+- `v(t)`: [`V`]
+  The voltage across the resistor, given by `p.i * R`
+
+# Connectors
+- `p`
+  Positive pin
+- `n`
+  Negative pin
 
 # Parameters: 
-- `R`: [Ω] Resistance
+- `R`: [`Ω`]
+  Resistance
 """
 function Resistor(;name, R=1.0)
     @named oneport = OnePort()
@@ -28,13 +47,27 @@ function Resistor(;name, R=1.0)
 end
 
 """
-    Capacitor(;name, C=1.0, v_start=0.0) 
+```julia
+function Capacitor(; name, C = 1.0)
+```
 
-Ideal linear electrical capacitor.
+Creates an ideal Capacitor.
+
+# States
+- `v(t)`: [`V`]
+  The voltage across the capacitor, given by `D(v) ~ p.i / C`
+
+# Connectors
+- `p`
+  Positive pin
+- `n`
+  Negative pin
 
 # Parameters:
-- `C`: [F] Capacity
-- `v_start`: [V] Initial voltage of capacitor
+- `C`: [`F`]
+  Capacitance
+- `v_start`: [`V`]
+  Initial voltage of capacitor
 """
 function Capacitor(;name, C=1.0, v_start=0.0) 
     @named oneport = OnePort(;v_start=v_start)
@@ -47,13 +80,27 @@ function Capacitor(;name, C=1.0, v_start=0.0)
 end
 
 """
-    Inductor(;name, L=1.0e-6, i_start=0.0)
+```julia
+function Inductor(; name, L = 1.0)
+```
 
-Ideal linear electrical inductor.
+Creates an ideal Inductor.
+
+# States
+- `v(t)`: [`V`]
+  The voltage across the inductor, given by `D(p.i) ~ v / L`
+
+# Connectors
+- `p`
+  Positive pin
+- `n`
+  Negative pin
 
 # Parameters:
-- `L`: [H] Inductance
-- `i_start`: [A] Initial current through inductor
+- `L`: [`H`]
+  Inductance
+- `i_start`: [`A`]
+  Initial current through inductor
 """
 function Inductor(;name, L=1.0e-6, i_start=0.0)
     @named oneport = OnePort(;i_start=i_start)
@@ -66,11 +113,33 @@ function Inductor(;name, L=1.0e-6, i_start=0.0)
 end
 
 """
-    IdealOpAmp(;name)
+```julia
+function IdealOpAmp(; name)
+```
 
 Ideal operational amplifier (norator-nullator pair).
-The ideal OpAmp is a two-port. The left port is fixed to v1=0 and i1=0 (nullator). 
-At the right port both any voltage v2 and any current i2 are possible (norator).
+The ideal OpAmp is a two-port. The left port is fixed to `v1 = 0` and `i1 = 0` (nullator). 
+At the right port both any voltage `v2` and any current `i2` are possible (norator).
+
+# States
+- `v1(t)`: [`V`]
+  Voltage of left port
+- `v2(t)`: [`V`]
+  Voltage of right port
+- `i1(t)`: [`A`]
+  Current of left port
+- `i2(t)`: [`A`]
+  Current of right port
+
+# Connectors
+- `p1`
+  Positive pin (left port)
+- `p2`
+  Positive pin (right port)
+- `n1`
+  Negative pin (left port)
+- `n2`
+  Negative pin (right port)
 """
 function IdealOpAmp(;name)
     @named p1 = Pin()
