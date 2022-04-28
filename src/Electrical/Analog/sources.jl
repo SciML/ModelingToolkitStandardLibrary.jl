@@ -17,12 +17,25 @@ _xH(t, δ, tₒ) = (t-tₒ)*(1+((t-tₒ)/sqrt((t-tₒ)^2+δ^2)))/2
 @register_symbolic _triangular_wave(t, δ, f, A, st)
 
 """
-    ConstantVoltage(;name, V = 1.0)   
+```julia
+function ConstantVoltage(; name, V=1.0)
+```
 
-Source for constant voltage,
+The source for an ideal constant voltage.
+
+# States
+- `v(t)`: [`V`]
+  The voltage across this source, given by `p.v - n.v` and is always constant
+
+# Connectors
+- `p`
+  Positive pin
+- `n`
+  Negative pin
 
 # Parameters:
-- `V`: [V] Voltage
+- `V`: [`V`]
+  The constant voltage across the terminals of this source
 """
 function ConstantVoltage(;name, V = 1.0)   
     @named oneport = OnePort()
@@ -36,16 +49,35 @@ function ConstantVoltage(;name, V = 1.0)
 end
 
 """
-    CosineVoltage(;name, offset=0.0, amplitude=1.0, frequency=1.0, start_time=0.0, phase=0.0)
+```julia
+function CosineVoltage(; name, offset=0.0, amplitude=1.0, frequency=1.0, starttime=0.0, phase=0.0)
+```
 
-Generate cosine voltage.
+A source in which the voltage across its terminals is a cosine function of time.
 
-# Parameters:
-- `frequency`: [Hz] Frequency of sine wave
-- `amplitude`: [V] Amplitude of sine wave
-- `phase`: [rad] Phase of sine wave 
-- `offset`: [V] Offset of output voltage
-- `start_time`: [s] Output `y = offset` for `t < start_time`
+
+# States
+- `v(t)`: [`V`]
+  The voltage across this source, given by `p.v - n.v`
+
+# Connectors
+- `p`
+  Positive port
+- `n`
+  Negative port
+
+# Observables
+- `offset`: [`V`]
+  A constant offset added to the voltage output
+- `amplitude`: [`V`]
+  The amplitude of the cosine function
+- `frequency`: [`Hz`]
+  The frequency of the cosine function
+- `starttime`: [`s`]
+  The time at which the source starts functioning. Before this time, the voltage across
+  its terminals is 0.
+- `phase`: [`rad`]
+  The phase offset of the cosine function
 """
 function CosineVoltage(;name, offset=0.0, amplitude=1.0, frequency=1.0, start_time=0.0, phase=0.0)
     δ = 0.00001
@@ -67,15 +99,36 @@ function CosineVoltage(;name, offset=0.0, amplitude=1.0, frequency=1.0, start_ti
 end
 
 """
-Generate damped sine voltage.
+```julia
+function ExpSineVoltage(; name, offset=0.0, amplitude=1.0, frequency=1.0, start_time=0.0, phase=0.0, damping=0.0)
+```
 
-# Parameters:
-- `frequency`: [Hz] Frequency of sine wave
-- `amplitude`: [V] Amplitude of sine wave
-- `damping`: [1/s] Damping coefficient of sine wave
-- `phase`: [rad] Phase of sine wave 
-- `offset`: [V] Offset of output voltage
-- `start_time`: [s] Output `y = offset` for `t < start_time`
+A source in which the voltage across its terminals is a damped sine function of time.
+
+# States
+- `v(t)`: [`V`]
+  The voltage across this source, given by `p.v - n.v`
+
+# Connectors
+- `p`
+  Positive port
+- `n`
+  Negative port
+
+# Parameters
+- `offset`: [`V`]
+  A constant offset added to the voltage output
+- `amplitude`: [`V`]
+  The amplitude of the damped sine function
+- `frequency`: [`Hz`]
+  The frequency of the damped sine function
+- `start_time`: [`s`]
+  The time at which the source starts functioning. Before this time, the voltage across
+  its terminals is `offset`.
+- `phase`: [`rad`]
+  The phase offset of the damped sine function
+- `damping_coef`: [`1/s`]
+  Damping coefficient of the damped sine function
 """
 function ExpSineVoltage(;name, offset=0.0, amplitude=1.0, frequency=1.0, start_time=0.0, phase=0.0, damping=0.0)
     δ = 0.00001
@@ -97,15 +150,32 @@ function ExpSineVoltage(;name, offset=0.0, amplitude=1.0, frequency=1.0, start_t
 end
 
 """
-    RampVoltage(;name, offset=0.0, start_time=0.0, duration=1.0, height=1.0)
+```julia
+function RampVoltage(; name, offset=0.0, start_time=0.0, duration=1.0, height=1.0)
+```
 
-Generate ramp voltage.
+A source in which the voltage across grows linearly from `offset` to `offset+height` over
+the time interval `duration` starting at `start_time`
 
-# Parameters:
-- `height`: [V] Height of ramp
-- `duration`: [s] Duration of ramp (= 0.0 gives a Step)
-- `offset`: [V] Offset of output voltage
-- `start_time`: [s] Output `y = offset` for `t < start_time`
+# States
+- `v(t)`: [`V`]
+  The voltage across this source, given by `p.v - n.v`
+
+# Connectors
+- `p`
+  Positive port
+- `n`
+  Negative port
+
+# Parameters
+- `offset`: [`V`]
+  A constant offset added to the voltage output
+- `start_time`: [`s`]
+  The time at which the voltage starts growing
+- `duration`: [`s`]
+  The duration of the ramp (`0.0` gives a step)
+- `height`: [`V`]
+  The amount that the voltage grows in the time interval
 """
 function RampVoltage(;name, offset=0.0, start_time=0.0, duration=1.0, height=1.0)
     δ = 0.00001
@@ -125,16 +195,36 @@ function RampVoltage(;name, offset=0.0, start_time=0.0, duration=1.0, height=1.0
 end
 
 """
-    SineVoltage(;name, offset=0.0, amplitude=1.0, frequency=1.0, start_time=0.0, phase=0.0)
+```julia
+function SineVoltage(; name, offset=0.0, amplitude=1.0, frequency=1.0, start_time=0.0, phase=0.0)
+```
 
-Generate sine voltage.
+A source in which the voltage across its terminals is a sine function of time.
 
-# Parameters:
-- `frequency`: [Hz] Frequency of sine wave
-- `amplitude`: [V] Amplitude of sine wave
-- `phase`: [rad] Phase of sine wave 
-- `offset`: [V] Offset of output voltage
-- `start_time`: [s] Output `y = offset` for `t < start_time`
+
+
+# States
+- `v(t)`: [`V`]
+  The voltage across this source, given by `p.v - n.v`
+
+# Connectors
+- `p`
+  Positive port
+- `n`
+  Negative port
+
+# Parameters
+- `offset`: [`V`]
+  A constant offset added to the voltage output
+- `amplitude`: [`V`]
+  The amplitude of the sine function
+- `frequency`: [`Hz`]
+  The frequency of the sine function
+- `start_time`: [`s`]
+  The time at which the source starts functioning. Before this time, the voltage across
+  its terminals is `offset`.
+- `phase`: [`rad`]
+  The phase offset of the sine function
 """
 function SineVoltage(;name, offset=0.0, amplitude=1.0, frequency=1.0, start_time=0.0, phase=0.0)
     δ = 0.00001
@@ -156,9 +246,32 @@ function SineVoltage(;name, offset=0.0, amplitude=1.0, frequency=1.0, start_time
 end
 
 """
-    SquareVoltage(; name, offset=0.0, amplitude=1.0, frequency=1.0, start_time=0.0)
+```julia
+function SquareVoltage(; name, offset=0.0, amplitude=1.0, frequency=1.0, start_time=0.0)
+```
 
-Generate square voltage.
+A source in which the voltage across its terminals is a square function of time.
+
+# States
+- `v(t)`: [`V`]
+  The voltage across this source, given by `p.v - n.v`
+
+# Connectors
+- `p`
+  Positive port
+- `n`
+  Negative port
+
+# Parameters
+- `offset`: [`V`]
+  A constant offset added to the voltage output
+- `amplitude`: [`V`]
+  The amplitude of the square wave function
+- `frequency`: [`Hz`]
+  The frequency of the square wave function
+- `start_time`: [`s`]
+  The time at which the source starts functioning. Before this time, the voltage across
+  its terminals is `offset`.
 """
 function SquareVoltage(; name, offset=0.0, amplitude=1.0, frequency=1.0, start_time=0.0)
     δ = 0.0001
@@ -178,14 +291,30 @@ function SquareVoltage(; name, offset=0.0, amplitude=1.0, frequency=1.0, start_t
 end
 
 """
-    StepVoltage(;name, offset=0.0, start_time=0.0, height=1.0)
+```julia
+function StepVoltage(; name, offset=0.0, start_time=0.0, height=1.0)
+```
 
-Generate step voltage.
+A source in which the voltage across its terminals increases from `offset` to `offset+height` at
+`start_time`
 
-# Parameters:
-- `height`: [V] Height of step
-- `offset`: [V] Offset of output voltage
-- `start_time`: [s] Output `y = offset` for `t < start_time`
+# States
+- `v(t)`: [`V`]
+  The voltage across this source, given by `p.v - n.v`
+
+# Connectors
+- `p`
+  Positive port
+- `n`
+  Negative port
+
+# Observables
+- `offset`: [`V`]
+  A constant offset added to the voltage output
+- `start_time`: [`s`]
+  The time at which the source starts functioning, and the voltage jumps
+- `height`: [`V`]
+  Magnitude of increase in voltage
 """
 function StepVoltage(;name, offset=0.0, start_time=0.0, height=1.0)
     δ = 0.0001
@@ -204,6 +333,34 @@ function StepVoltage(;name, offset=0.0, start_time=0.0, height=1.0)
     extend(ODESystem(eqs, t, [], pars; name=name), oneport)
 end
 
+"""
+```julia
+function TriangularVoltage(; name, offset=0.0, amplitude=1.0, frequency=1.0, start_time=0.0)
+```
+
+A source in which the voltage across its terminals is a triangular function of time.
+
+# States
+- `v(t)`: [`V`]
+  The voltage across this source, given by `p.v - n.v`
+
+# Connectors
+- `p`
+  Positive port
+- `n`
+  Negative port
+
+# Observables
+- `offset`: [`V`]
+  A constant offset added to the voltage output
+- `amplitude`: [`V`]
+  Amplitude of the triangular wave function
+- `frequency`: [`Hz`]
+  Frequency of the triangular wave function
+- `start_time`: [`s`]
+  The time at which the source starts functioning. Before this, the output of the source is
+  `offset`
+"""
 function TriangularVoltage(; name, offset=0.0, amplitude=1.0, frequency=1.0, start_time=0.0)
     δ = 0.00001
 
@@ -224,12 +381,25 @@ end
 
 # Current Sources ######################################################################################################
 """
-    ConstantCurrent(;name, I = 1.0)   
+```julia
+function ConstantCurrent(; name, I = 1.0)
+```
 
-Source for constant current.
+The source for an ideal constant current.
+
+# States
+- `i(t)`: [`A`]
+  The current through this source, which is always constant
+
+# Connectors
+- `p`
+  Positive pin
+- `n`
+  Negative pin
 
 # Parameters:
-- `I`: [A] Current
+- `I`: [`A`]
+  The constant current through the terminals of this source
 """
 function ConstantCurrent(;name, I = 1.0)   
     @named oneport = OnePort()
@@ -243,16 +413,35 @@ function ConstantCurrent(;name, I = 1.0)
 end
 
 """
-    CosineCurrent(;name, offset=0.0, amplitude=1.0, frequency=1.0, start_time=0.0, phase=0.0)
+```julia
+function CosineCurrent(; name, offset=0.0, amplitude=1.0, frequency=1.0, starttime=0.0, phase=0.0)
+```
 
-Generate cosine current.
+A source in which the current through its terminals is a cosine function of time.
 
-# Parameters:
-- `frequency`: [Hz] Frequency of sine wave
-- `amplitude`: [A] Amplitude of sine wave
-- `phase`: [rad] Phase of sine wave 
-- `offset`: [A] Offset of output current
-- `start_time`: [s] Output `y = offset` for `t < start_time`
+
+# States
+- `i(t)`: [`A`]
+  The current through this source
+
+# Connectors
+- `p`
+  Positive port
+- `n`
+  Negative port
+
+# Observables
+- `offset`: [`A`]
+  A constant offset added to the current output
+- `amplitude`: [`A`]
+  The amplitude of the cosine function
+- `frequency`: [`Hz`]
+  The frequency of the cosine function
+- `starttime`: [`s`]
+  The time at which the source starts functioning. Before this time, the current through
+  its terminals is 0.
+- `phase`: [`rad`]
+  The phase offset of the cosine function
 """
 function CosineCurrent(;name, offset=0.0, amplitude=1.0, frequency=1.0, start_time=0.0, phase=0.0)
     δ = 0.00001
@@ -274,17 +463,36 @@ function CosineCurrent(;name, offset=0.0, amplitude=1.0, frequency=1.0, start_ti
 end
 
 """
-    ExpSineCurrent(;name, offset=0.0, amplitude=1.0, frequency=1.0, start_time=0.0, phase=0.0, damping=0.0)
+```julia
+function ExpSineCurrent(; name, offset=0.0, amplitude=1.0, frequency=1.0, start_time=0.0, phase=0.0, damping=0.0)
+```
 
-Generate damped sine current.
+A source in which the current through its terminals is a damped sine function of time.
 
-# Parameters:
-- `frequency`: [Hz] Frequency of sine wave
-- `amplitude`: [A] Amplitude of sine wave
-- `damping`: [1/s] Damping coefficient of sine wave
-- `phase`: [rad] Phase of sine wave 
-- `offset`: [A] Offset of output current
-- `start_time`: [s] Output `y = offset` for `t < start_time`
+# States
+- `i(t)`: [`A`]
+  The current through this source
+
+# Connectors
+- `p`
+  Positive port
+- `n`
+  Negative port
+
+# Parameters
+- `offset`: [`A`]
+  A constant offset added to the current output
+- `amplitude`: [`A`]
+  The amplitude of the damped sine function
+- `frequency`: [`Hz`]
+  The frequency of the damped sine function
+- `start_time`: [`s`]
+  The time at which the source starts functioning. Before this time, the current through
+  its terminals is `offset`.
+- `phase`: [`rad`]
+  The phase offset of the damped sine function
+- `damping_coef`: [`1/s`]
+  Damping coefficient of the damped sine function
 """
 function ExpSineCurrent(;name, offset=0.0, amplitude=1.0, frequency=1.0, start_time=0.0, phase=0.0, damping=0.0)
     δ = 0.00001
@@ -306,15 +514,32 @@ function ExpSineCurrent(;name, offset=0.0, amplitude=1.0, frequency=1.0, start_t
 end
 
 """
-    RampCurrent(;name, offset=0.0, start_time=0.0, duration=1.0, height=1.0)
+```julia
+function RampCurrent(; name, offset=0.0, start_time=0.0, duration=1.0, height=1.0)
+```
 
-Generate ramp current.
+A source in which the current grows linearly from `offset` to `offset+height` over
+the time interval `duration` starting at `start_time`
 
-# Parameters:
-- `height`: [A] Height of ramp
-- `duration`: [s] Duration of ramp (= 0.0 gives a Step)
-- `offset`: [A] Offset of output current
-- `start_time`: [s] Output `y = offset` for `t < start_time`
+# States
+- `i(t)`: [`A`]
+  The current through this source
+
+# Connectors
+- `p`
+  Positive port
+- `n`
+  Negative port
+
+# Parameters
+- `offset`: [`A`]
+  A constant offset added to the current output
+- `start_time`: [`s`]
+  The time at which the current starts growing
+- `duration`: [`s`]
+  The duration of the ramp (`0.0` gives a step)
+- `height`: [`A`]
+  The amount that the current grows in the time interval
 """
 function RampCurrent(;name, offset=0.0, start_time=0.0, duration=1.0, height=1.0)
     δ = 0.00001
@@ -334,16 +559,36 @@ function RampCurrent(;name, offset=0.0, start_time=0.0, duration=1.0, height=1.0
 end
 
 """
-    SineCurrent(;name, offset=0.0, amplitude=1.0, frequency=1.0, start_time=0.0, phase=0.0)
+```julia
+function SineCurrent(; name, offset=0.0, amplitude=1.0, frequency=1.0, start_time=0.0, phase=0.0)
+```
 
-Generate sine current.
+A source in which the current through its terminals is a sine function of time.
 
-# Parameters:
-- `frequency`: [Hz] Frequency of sine wave
-- `amplitude`: [A] Amplitude of sine wave
-- `phase`: [rad] Phase of sine wave 
-- `offset`: [A] Offset of output current
-- `start_time`: [s] Output `y = offset` for `t < start_time`
+
+
+# States
+- `i(t)`: [`A`]
+  The current through this source
+
+# Connectors
+- `p`
+  Positive port
+- `n`
+  Negative port
+
+# Parameters
+- `offset`: [`A`]
+  A constant offset added to the current output
+- `amplitude`: [`V`]
+  The amplitude of the sine function
+- `frequency`: [`Hz`]
+  The frequency of the sine function
+- `start_time`: [`s`]
+  The time at which the source starts functioning. Before this time, the current through
+  its terminals is `offset`.
+- `phase`: [`rad`]
+  The phase offset of the sine function
 """
 function SineCurrent(;name, offset=0.0, amplitude=1.0, frequency=1.0, start_time=0.0, phase=0.0)
     δ = 0.00001
@@ -364,6 +609,34 @@ function SineCurrent(;name, offset=0.0, amplitude=1.0, frequency=1.0, start_time
     extend(ODESystem(eqs, t, [], pars; name=name), oneport)
 end
 
+"""
+```julia
+function SquareCurrent(; name, offset=0.0, amplitude=1.0, frequency=1.0, start_time=0.0)
+```
+
+A source in which the current through its terminals is a square function of time.
+
+# States
+- `i(t)`: [`A`]
+  The current through this source
+
+# Connectors
+- `p`
+  Positive port
+- `n`
+  Negative port
+
+# Parameters
+- `offset`: [`A`]
+  A constant offset added to the current output
+- `amplitude`: [`A`]
+  The amplitude of the square wave function
+- `frequency`: [`Hz`]
+  The frequency of the square wave function
+- `start_time`: [`s`]
+  The time at which the source starts functioning. Before this time, the current through
+  its terminals is `offset`.
+"""
 function SquareCurrent(; name, offset=0.0, amplitude=1.0, frequency=1.0, start_time=0.0)
     δ = 0.0001
 
@@ -382,14 +655,30 @@ function SquareCurrent(; name, offset=0.0, amplitude=1.0, frequency=1.0, start_t
 end
 
 """
-    StepCurrent(;name, offset=0.0, start_time=0.0, height=1.0)
+```julia
+function StepCurrent(; name, offset=0.0, start_time=0.0, height=1.0)
+```
 
-Generate step current.
+A source in which the current through its terminals increases from `offset` to `offset+height` at
+`start_time`
 
-# Parameters:
-- `height`: [A] Height of step
-- `offset`: [A] Offset of output current
-- `start_time`: [s] Output `y = offset` for `t < start_time`
+# States
+- `i(t)`: [`A`]
+  The current through this source
+
+# Connectors
+- `p`
+  Positive port
+- `n`
+  Negative port
+
+# Observables
+- `offset`: [`A`]
+  A constant offset added to the current output
+- `start_time`: [`s`]
+  The time at which the source starts functioning, and the current jumps
+- `height`: [`A`]
+  Magnitude of increase in current
 """
 function StepCurrent(;name, offset=0.0, start_time=0.0, height=1.0)
     δ = 0.0001
@@ -408,6 +697,34 @@ function StepCurrent(;name, offset=0.0, start_time=0.0, height=1.0)
     extend(ODESystem(eqs, t, [], pars; name=name), oneport)
 end
 
+"""
+```julia
+function TriangularCurrent(; name, offset=0.0, amplitude=1.0, frequency=1.0, start_time=0.0)
+```
+
+A source in which the current through its terminals is a triangular function of time.
+
+# States
+- `i(t)`: [`A`]
+  The current through this source
+
+# Connectors
+- `p`
+  Positive port
+- `n`
+  Negative port
+
+# Observables
+- `offset`: [`A`]
+  A constant offset added to the current output
+- `amplitude`: [`A`]
+  Amplitude of the triangular wave function
+- `frequency`: [`Hz`]
+  Frequency of the triangular wave function
+- `start_time`: [`s`]
+  The time at which the source starts functioning. Before this, the output of the source is
+  `offset`
+"""
 function TriangularCurrent(; name, offset=0.0, amplitude=1.0, frequency=1.0, start_time=0.0)
     δ = 0.00001
 
