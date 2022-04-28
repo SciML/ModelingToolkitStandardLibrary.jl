@@ -1,31 +1,29 @@
-const ie = IfElse.ifelse
+_clamp(u, u_min, u_max) = max(min(u, u_max), u_min)
+_dead_zone(u, u_min, u_max) = ifelse(u > u_max, u - u_max, ifelse(u < u_min, u - u_min, 0))
 
 """
-    Saturation(; y_max, y_min=-y_max, name)
+Limit the range of a signal.
 
-The `Saturation` IO block limits the output between `y_min` and `y_max`, equivalent to
-`y ~ clamp(u, y_min, y_max)`.
-
-Keywords: limiter, sat, actuator model
+# Parameters:
+- `y_max`: Maximum of output signal
+- `y_min`: Minimum of output signal
 """
-function Saturation(; y_max, y_min=y_max > 0 ? -y_max : -Inf, name)
-    if !ModelingToolkit.isvariable(y_max)
-        y_max ≥ y_min || throw(ArgumentError("y_min must be smaller than y_max"))
-    end
-    @variables u(t)=0 [input=true] y(t)=0 [output=true]
-    @parameters y_max=y_max y_min=y_min
+function Limiter(;name, y_max, y_min=y_max > 0 ? -y_max : -Inf)
+    y_max ≥ y_min || throw(ArgumentError("`y_min` must be smaller than `y_max`"))
+    @named siso = SISO()
+    @unpack u, y = siso
+    pars = @parameters y_max=y_max y_min=y_min
     eqs = [
-        # The equation below is equivalent to y ~ clamp(u, y_min, y_max)
-        y ~ ie(u > y_max, y_max, ie( (y_min < u) & (u < y_max), u, y_min))
+        y ~ _clamp(u, y_min, y_max)
     ]
-    ODESystem(eqs, t, name=name)
+    extend(ODESystem(eqs, t, [], pars; name=name), siso)
 end
 
 """
     DeadZone(; u_max, u_min=-u_max, name)
 
-A dead zone is a band within which the output is zero.
-Outside of the dead zone, the output changes linearly starting from zero at the band edge.
+The DeadZone block defines a region of zero output.
+If the input is within uMin ... uMax, the output is zero. Outside of this zone, the output is a linear function of the input with a slope of 1.
 ```
        y▲
         │     /
@@ -37,14 +35,37 @@ Outside of the dead zone, the output changes linearly starting from zero at the 
   /     │
 ```
 """
-function DeadZone(; u_max, u_min=-u_max, name)
+function DeadZone(; name, u_max, u_min=-u_max)
     if !ModelingToolkit.isvariable(u_max)
-        u_max ≥ u_min || throw(ArgumentError("u_min must be smaller than u_max"))
+        u_max ≥ u_min || throw(ArgumentError("`u_min` must be smaller than `u_max`"))
     end
-    @variables u(t)=0 [input=true] y(t)=0 [output=true]
-    @parameters u_max=u_max u_min=u_min
+    @named siso = SISO()
+    @unpack u, y = siso
+    pars = @parameters u_max=u_max u_min=u_min
     eqs = [
-        y ~ ie(u > u_max, u-u_max, ie( u < u_min, u-u_min, 0))
+        y ~ _dead_zone(u, u_min, u_max)
     ]
-    ODESystem(eqs, t, name=name)
+    extend(ODESystem(eqs, t, [], pars; name=name), siso)
+end
+
+"""
+    SlewRateLimiter(;name, rising=1, falling=-rising, Td=0.001, y_start=0.0)
+    
+Limits the slew rate of a signal.
+
+# Parameters:
+- `Rising`: Maximum rising slew rate
+- `falling`: Maximum falling slew rate
+- `Td`: Derivative time constant
+"""
+function SlewRateLimiter(;name, rising=1, falling=-rising, Td=0.001, y_start=0.0)
+    rising ≥ falling || throw(ArgumentError("`rising` must be smaller than `falling`"))
+    Td > 0 || throw(ArgumentError("Time constant `Td` must be strictly positive"))
+    @named siso = SISO(y_start=y_start)
+    @unpack u, y = siso
+    pars = @parameters rising=rising falling=falling
+    eqs = [
+        D(y) ~ max(min((u-y) / Td, rising), falling)
+    ]
+    extend(ODESystem(eqs, t, [], pars; name=name), siso)
 end

@@ -15,29 +15,27 @@ using ModelingToolkitStandardLibrary.Thermal, ModelingToolkit, OrdinaryDiffEq, T
 
     @info "Building a single-body system..."
     eqs = [
-        connect(mass1.hp, th_conductor.hp1)
-        connect(th_conductor.hp2, reltem_sensor.hp1)
-        connect(reltem_sensor.hp2, tem_src.hp)
+        connect(mass1.port, th_conductor.port_a)
+        connect(th_conductor.port_b, reltem_sensor.port_a)
+        connect(reltem_sensor.port_b, tem_src.port)
     ]
     @named h1 = ODESystem(eqs, t, systems=[mass1, reltem_sensor, tem_src, th_conductor])
     sys = structural_simplify(h1)
 
     u0 = [
-        mass1.T        => 2.0
-        th_conductor.T => 10.0
+        mass1.T => 2.0
     ]
     prob = ODEProblem(sys, u0, (0, 2.0))
-    sol = solve(prob, Rosenbrock23())
+    sol = solve(prob, Rodas4())
     
-    temperatures = reduce(hcat, sol.u)
     # Check if Relative temperature sensor reads the temperature of heat capacitor
     # when connected to a thermal conductor and a fixed temperature source 
-    @test sol[reltem_sensor.T] == temperatures[1, :] - temperatures[2, :] - sol[tem_src.hp.T]
+    @test sol[reltem_sensor.T] + sol[tem_src.port.T] == sol[mass1.T] + sol[th_conductor.dT] 
     
     @info "Building a two-body system..."
     eqs = [
-        connect(T_sensor1.hp, mass1.hp, th_conductor.hp1)
-        connect(th_conductor.hp2, mass2.hp, T_sensor2.hp)
+        connect(T_sensor1.port, mass1.port, th_conductor.port_a)
+        connect(th_conductor.port_b, mass2.port, T_sensor2.port)
         final_T ~ (mass1.C * mass1.T + mass2.C * mass2.T) / 
         (mass1.C + mass2.C)
     ]
@@ -51,7 +49,7 @@ using ModelingToolkitStandardLibrary.Thermal, ModelingToolkit, OrdinaryDiffEq, T
         final_T => 12
     ]
     prob = ODEProblem(sys, u0, (0, 3.0))
-    sol = solve(prob, Rosenbrock23())
+    sol = solve(prob, Rodas4())
     
     m1, m2 = sol.u[end]
     @test m1 ≈ m2 atol=1e-1
@@ -60,22 +58,22 @@ using ModelingToolkitStandardLibrary.Thermal, ModelingToolkit, OrdinaryDiffEq, T
     @test sol[T_sensor2.T] == mass_T[2, :]
 end
 
-# Test HeatFlowSensor, FixedHeatFlow, ThermalResistor, ThermalConductor, ThermalGround
+# Test HeatFlowSensor, FixedHeatFlow, ThermalResistor, ThermalConductor
 @testset "Heat flow system" begin
     C, G, R = 10, 10, 10
-    @named flow_src     = FixedHeatFlow(Q_flow=50, α=100)
+    @named flow_src     = FixedHeatFlow(Q_flow=50, alpha=100)
     @named mass1        = HeatCapacitor(C=C)
     @named hf_sensor1   = HeatFlowSensor()
     @named hf_sensor2   = HeatFlowSensor()
     @named th_conductor = ThermalConductor(G=G)
     @named th_resistor  = ThermalResistor(R=R) 
-    @named th_ground    = ThermalGround()
+    @named th_ground    = FixedTemperature(T=0)
 
     @info "Building a heat-flow system..."
     eqs = [
-        connect(mass1.hp, th_resistor.hp1, th_conductor.hp1)
-        connect(th_conductor.hp2, flow_src.hp, hf_sensor1.hp1, hf_sensor2.hp1)
-        connect(th_resistor.hp2, hf_sensor1.hp2, hf_sensor2.hp2, th_ground.hp)
+        connect(mass1.port, th_resistor.port_a, th_conductor.port_a)
+        connect(th_conductor.port_b, flow_src.port, hf_sensor1.port_a, hf_sensor2.port_a)
+        connect(th_resistor.port_b, hf_sensor1.port_b, hf_sensor2.port_b, th_ground.port)
     ]
     @named h2 = ODESystem(eqs, t, 
                           systems=[mass1, hf_sensor1, hf_sensor2, 
@@ -87,13 +85,13 @@ end
         th_resistor.Q_flow => 1.0
     ]
     prob = ODEProblem(sys, u0, (0, 3.0))
-    sol  = solve(prob, Rosenbrock23())
+    sol  = solve(prob, Rodas4())
     
-    @test sol[th_conductor.T]*G == sol[th_conductor.Q_flow]
-    @test sol[th_conductor.Q_flow] ≈ sol[hf_sensor1.Q_flow] + sol[flow_src.hp.Q_flow]
+    @test sol[th_conductor.dT] .* G == sol[th_conductor.Q_flow]
+    @test sol[th_conductor.Q_flow] ≈ sol[hf_sensor1.Q_flow] + sol[flow_src.port.Q_flow]
 
-    @test sol[mass1.T] == sol[th_resistor.T]
-    @test sol[th_resistor.T]./R ≈ sol[th_resistor.Q_flow]
+    @test sol[mass1.T] == sol[th_resistor.port_a.T]
+    @test sol[th_resistor.dT] ./ R ≈ sol[th_resistor.Q_flow]
 
 end
 
@@ -110,10 +108,10 @@ end
 
     @info "Building a piston-cylinder..."
     eqs = [
-        connect(gas_tem.hp, gas.solidport)
-        connect(gas.fluidport, wall.hp1)
-        connect(wall.hp2, coolant.fluidport)
-        connect(coolant.solidport, coolant_tem.hp)
+        connect(gas_tem.port, gas.solidport)
+        connect(gas.fluidport, wall.port_a)
+        connect(wall.port_b, coolant.fluidport)
+        connect(coolant.solidport, coolant_tem.port)
     ]
     @named piston = ODESystem(eqs, t, systems=[gas_tem, wall, gas, coolant, coolant_tem])
     sys = structural_simplify(piston)
@@ -123,7 +121,7 @@ end
         wall.Q_flow => 10.0
     ]
     prob = ODEProblem(sys, u0, (0, 3.0))
-    sol = solve(prob, Rosenbrock23())
+    sol = solve(prob, Rodas4())
     
     # Heat-flow-rate is equal in magnitude 
     # and opposite in direction
@@ -141,56 +139,60 @@ end
     @named gas_tem     = FixedTemperature(T=Tᵧ)
     @named coolant_tem = FixedTemperature(T=Tᵪ)
     @named radiator    = BodyRadiation(G=G)
-    @named ground      = ThermalGround()
     @named dissipator  = ConvectiveConductor(G=10)
+    @named mass        = HeatCapacitor(C=10)
     
     @info "Building a radiator..."
     eqs = [
-        connect(gas_tem.hp, radiator.hp1, base.hp1, dissipator.solidport)
-        connect(base.hp2, radiator.hp2, coolant_tem.hp, dissipator.fluidport)
+        connect(gas_tem.port, radiator.port_a, base.port_a, dissipator.solid, mass.port)
+        connect(coolant_tem.port, base.port_b, radiator.port_b, dissipator.fluid)
     ]
-    @named rad = ODESystem(eqs, t, systems=[base, gas_tem, radiator, dissipator, coolant_tem])
+    @named rad = ODESystem(eqs, t, systems=[base, gas_tem, radiator, dissipator, coolant_tem, mass])
     sys = structural_simplify(rad)
 
     u0 = [
         base.Q_flow => 10
         dissipator.Q_flow => 10
+        mass.T => Tᵧ
     ]
     prob = ODEProblem(sys, u0, (0, 3.0))
-    sol = solve(prob, Rosenbrock23())
+    sol = solve(prob, Rodas4())
 
-    @test sol[dissipator.dT] == sol[radiator.hp1.T] - sol[radiator.hp2.T]
+    @test sol[dissipator.dT] == sol[radiator.port_a.T] - sol[radiator.port_b.T]
     rad_Q_flow = G*σ*(Tᵧ^4 - Tᵪ^4)
     @test sol[radiator.Q_flow] == fill(rad_Q_flow, length(sol[radiator.Q_flow]))
 end
 
 @testset "Thermal Collector" begin
-    @named flow_src    = FixedHeatFlow(Q_flow=50, α=100)
+    @named flow_src    = FixedHeatFlow(Q_flow=50, alpha=100)
     @named hf_sensor   = HeatFlowSensor()
-    @named th_ground   = ThermalGround()
-    @named collector   = ThermalCollector(N=2)
+    @named th_ground   = FixedTemperature(T=0)
+    @named collector   = ThermalCollector(m=2)
     @named th_resistor = ThermalResistor(R=10) 
     @named tem_src     = FixedTemperature(T=10)
+    @named mass        = HeatCapacitor(C=10)
 
     @info "Building a heat collector..."
     eqs = [
-        connect(flow_src.hp, collector.hp1, th_resistor.hp1)
-        connect(tem_src.hp, collector.hp2)
-        connect(hf_sensor.hp1, collector.collector_port)
-        connect(hf_sensor.hp2, th_ground.hp, th_resistor.hp2)
+        connect(flow_src.port, collector.port_a1, th_resistor.port_a)
+        connect(tem_src.port, collector.port_a2)
+        connect(hf_sensor.port_a, collector.port_b)
+        connect(hf_sensor.port_b, mass.port, th_resistor.port_b)
+        connect(mass.port, th_ground.port)
         ]
     @named coll = ODESystem(eqs, t, 
                             systems=[hf_sensor,flow_src, tem_src, 
-                            collector, th_resistor])
+                            collector, th_resistor, mass])
     sys = structural_simplify(coll)
 
     u0 = [
-        th_resistor.Q_flow => 1.0
+        th_resistor.Q_flow => 1.0,
+        mass.T => 0.0,
     ]
     prob = ODEProblem(sys, u0, (0, 3.0))
-    sol  = solve(prob, Rosenbrock23())
+    sol  = solve(prob, Rodas4())
 
-    @test sol[collector.collector_port.Q_flow] + sol[collector.hp1.Q_flow] + sol[collector.hp2.Q_flow] ==
-        zeros(length(sol[collector.collector_port.Q_flow]))
-    @test sol[collector.collector_port.T] == sol[collector.hp1.T] == sol[collector.hp2.T]
+    @test sol[collector.port_b.Q_flow] + sol[collector.port_a1.Q_flow] + sol[collector.port_a2.Q_flow] ==
+        zeros(length(sol[collector.port_b.Q_flow]))
+    @test sol[collector.port_b.T] == sol[collector.port_a1.T] == sol[collector.port_a2.T]
 end

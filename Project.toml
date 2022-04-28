@@ -1,7 +1,7 @@
 name = "ModelingToolkitStandardLibrary"
 uuid = "16a59e39-deab-5bd0-87e4-056b12336739"
 authors = ["Chris Rackauckas and Julia Computing"]
-version = "0.1.1"
+version = "1.2.0"
 
 [deps]
 IfElse = "615f187c-cbe4-4ef1-ba3b-2fcf58d6d173"
@@ -12,7 +12,7 @@ Symbolics = "0c5d862f-8b57-4792-8d23-62f2024744c7"
 
 [compat]
 IfElse = "0.1"
-ModelingToolkit = "5.26, 6, 7"
+ModelingToolkit = "8"
 OffsetArrays = "1"
 OrdinaryDiffEq = "5.56, 6"
 Symbolics = "4.2.2"

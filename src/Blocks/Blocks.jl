@@ -1,29 +1,29 @@
 """
 The module `Blocks` contains common input-output components, referred to as blocks.
-
-In general, input-output blocks follow the convention 
-```
-     ┌───────────┐
- u   │  ẋ=f(x,u) │  y
-────►│  y=g(x,u) ├────►
-     │           │
-     └───────────┘
-```
-where `u` are inputs, `x` are state variables and `y` are outputs. `x,u,y` are all implemented as `@variables` internally, `u` are marked as `[input=true]` and `y` are marked `[output=true]`.
 """
 module Blocks
 using ModelingToolkit, Symbolics, IfElse, OrdinaryDiffEq
+using IfElse: ifelse
 
 @parameters t
-Dₜ = Differential(t)
+D = Differential(t)
 
-export Gain, Sum
+export RealInput, RealOutput, SISO
+include("utils.jl")
+
+export Gain, Sum, MatrixGain, Feedback, Add, Product, Division
+export Abs, Sign, Sqrt, Sin, Cos, Tan, Asin, Acos, Atan, Atan2, Sinh, Cosh, Tanh, Exp
+export Log, Log10
 include("math.jl")
 
-export Saturation, DeadZone
+export Constant, Sine, Cosine, ContinuousClock, Ramp, Step, ExpSine
+include("sources.jl")
+
+export Limiter, DeadZone, SlewRateLimiter
 include("nonlinear.jl")
 
-export Constant, Integrator, Derivative, FirstOrder, SecondOrder, PID, StateSpace
+export Integrator, Derivative, FirstOrder, SecondOrder, StateSpace
+export PI, LimPI, PID, LimPID
 include("continuous.jl")
 
 end
