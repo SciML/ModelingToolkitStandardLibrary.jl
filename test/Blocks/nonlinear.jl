@@ -66,7 +66,7 @@ end
         prob = ODEProblem(sys, [int.x=>1.0], (0.0, 1.0))
         sol = solve(prob, Rodas4())
 
-        @test sol[int.output.u][end] ≈ 2
+        @test all(sol[int.output.u][end] .≈ 2)
     end
 
     @testset "Sine" begin
@@ -108,6 +108,8 @@ end
 
     prob = ODEProblem(sys, Pair[], (0.0, 10.0))
 
-    sol = solve(prob, Rodas4(), saveat=0.01, abstol=1e-10, reltol=1e-10)
+    tS = 0.01
+    sol = solve(prob, Rodas4(), saveat=tS, abstol=1e-10, reltol=1e-10)
     @test all(abs.(sol[rl.output.u]) .<= 0.51)
+    @test all(-1 - 1e-5 .<= diff(sol[rl.output.u]) ./ tS .<= 1 + 1e-5) # just an approximation
 end

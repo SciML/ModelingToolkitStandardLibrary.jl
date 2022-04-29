@@ -17,7 +17,7 @@ an integrator with a constant input is often used together with the system under
     sys = structural_simplify(iosys)
     prob = ODEProblem(sys, Pair[int.x=>1.0], (0.0, 1.0))
     sol = solve(prob, Rodas4())
-    @test sol[int.output.u][end] ≈ 2
+    @test all(sol[int.output.u] .≈ 2)
 end
 
 @testset "Derivative" begin
@@ -88,6 +88,9 @@ end
     sys = structural_simplify(model)
     prob = ODEProblem(sys, Pair[], (0.0, 100.0))
     sol = solve(prob, Rodas4())
+    # initial condition
+    @test sol[ss.x[1]][1] ≈ 0 atol=1e-3
+    @test sol[ss.x[2]][1] ≈ 0 atol=1e-3
     # equilibrium point is at [1, 0]
     @test sol[ss.x[1]][end] ≈ 1 atol=1e-3
     @test sol[ss.x[2]][end] ≈ 0 atol=1e-3
@@ -125,7 +128,8 @@ end
     sys = structural_simplify(model)
     prob = ODEProblem(sys, Pair[], (0.0, 100.0))
     sol = solve(prob, Rodas4())
-    @test sol[ref.output.u - plant.output.u][end] ≈ 0 atol=1e-3 # zero control error after 100s
+    @test isapprox.(sol[ref.output.u], 2, atol=1e-3)  # check reference
+    @test sol[plant.output.u][end] ≈ 2 atol=1e-3 # zero control error after 100s
 end
 
 @testset "PID" begin
@@ -146,7 +150,8 @@ end
     sys = structural_simplify(model)
     prob = ODEProblem(sys, Pair[], (0.0, 100.0))
     sol = solve(prob, Rodas4())
-    @test sol[ref.output.u - plant.output.u][end] ≈ 0 atol=1e-3 # zero control error after 100s
+    @test isapprox.(sol[ref.output.u], 2, atol=1e-3)  # check reference
+    @test sol[plant.output.u][end] ≈ 2 atol=1e-3 # zero control error after 100s
 end
 
 @test_skip begin 
@@ -279,8 +284,10 @@ end
         sol = solve(prob, Rodas4())
     end
 
-    @test sol[ref.output.u - plant.output.u][end] ≈ 0 atol=1e-3 # zero control error after 100s
-    @test sol_lim[ref.output.u - plant.output.u][end] ≈ 0 atol=1e-3 # zero control error after 100s
+    @test isapprox.(sol[ref.output.u], 1, atol=1e-3)  # check reference
+    @test isapprox.(sol_lim[ref.output.u], 1, atol=1e-3)  # check reference
+    @test sol[plant.output.u][end] ≈ 1 atol=1e-3 # zero control error after 100s
+    @test sol_lim[plant.output.u][end] ≈ 1 atol=1e-3 # zero control error after 100s
 
     # Plots.plot(sol; vars=[plant.output.u]) # without anti-windup measure
     # Plots.plot!(sol_lim; vars=[plant.output.u]) # with anti-windup measure
@@ -304,5 +311,6 @@ end
     sol = solve(prob, Rodas4())
 
     # Plots.plot(sol, vars=[plant.output.u, plant.input.u])
-    @test sol[ref.output.u - plant.output.u][end] ≈ 0 atol=1e-3 # zero control error after 100s
+    @test isapprox.(sol[ref.output.u], 1, atol=1e-3)  # check reference
+    @test sol[plant.output.u][end] ≈ 1 atol=1e-3 # zero control error after 100s
 end

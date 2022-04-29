@@ -15,7 +15,8 @@ using ModelingToolkit, OrdinaryDiffEq
 
     sol = solve(prob, Rodas4())
 
-    @test sol[int.output.u][end] ≈ 2
+    @test all(sol[c.output.u] .≈ 1)
+    @test sol[int.output.u][end] ≈ 2 # expected solution after 1s
 end
 
 @testset "Feedback loop" begin
@@ -38,12 +39,12 @@ end
     prob = ODEProblem(sys, Pair[int.x=>0.0], (0.0, 100.0))
 
     sol = solve(prob, Rodas4())
-    @test sol[int.output.u][end] ≈ 2
+    @test sol[int.output.u][end] ≈ 2 # expected solution after 1s
 end
 
 @testset "Add" begin
     @named c1 = Constant(; k=1)
-    @named c2 = Constant(; k=2)
+    @named c2 = Sine(; frequency=1)
     @named add = Add(;)
     @named int = Integrator(; k=1)
     @named model = ODESystem(
@@ -60,12 +61,36 @@ end
     prob = ODEProblem(sys, Pair[int.x=>0.0], (0.0, 1.0))
 
     sol = solve(prob, Rodas4())
-    @test sol[int.output.u][end] ≈ 3
+    @test sol[add.output.u] ≈ 1 .+ sin.(2*pi*sol.t)
+end
+
+@testset "Add3" begin
+    @named c1 = Constant(; k=1)
+    @named c2 = Sine(; frequency=1)
+    @named c3 = Sine(; frequency=2)
+    @named add = Add3(;)
+    @named int = Integrator(; k=1)
+    @named model = ODESystem(
+        [
+            connect(c1.output, add.input1), 
+            connect(c2.output, add.input2), 
+            connect(c3.output, add.input3), 
+            connect(add.output, int.input),
+        ], 
+        t, 
+        systems=[int, add, c1, c2]
+    )
+    sys = structural_simplify(model)
+
+    prob = ODEProblem(sys, Pair[int.x=>0.0], (0.0, 1.0))
+
+    sol = solve(prob, Rodas4())
+    @test sol[add.output.u] ≈ 1 + sin.(2*pi*sol.t) + sin.(2*pi*2*sol.t)
 end
 
 @testset "Product" begin
-    @named c1 = Constant(; k=1)
-    @named c2 = Constant(; k=2)
+    @named c1 = Constant(; k=2)
+    @named c2 = Sine(; frequency=1)
     @named prod = Product(;)
     @named int = Integrator(; k=1)
     @named model = ODESystem(
@@ -82,11 +107,11 @@ end
     prob = ODEProblem(sys, Pair[int.x=>0.0], (0.0, 1.0))
 
     sol = solve(prob, Rodas4())
-    @test sol[int.output.u][end] ≈ 2
+    @test sol[prod.output.u] ≈ 2 * sin.(2*pi*sol.t)
 end
 
 @testset "Division" begin
-    @named c1 = Constant(; k=1)
+    @named c1 = Sine(; frequency=1)
     @named c2 = Constant(; k=2)
     @named div = Division(;)
     @named int = Integrator(; k=1)
@@ -104,67 +129,27 @@ end
     prob = ODEProblem(sys, Pair[int.x=>0.0], (0.0, 1.0))
 
     sol = solve(prob, Rodas4())
-    @test sol[int.output.u][end] ≈ 1/2
+    @test sol[div.output.u] ≈ sin.(2*pi*sol.t) ./ 2
 end
 
 @testset "Abs" begin
-    @named c = Constant(; k=-1)
-    @named abs = Abs(;)
+    @named c = Sine(; frequency=1)
+    @named absb = Abs(;)
     @named int = Integrator(; k=1)
     @named model = ODESystem(
         [
-            connect(c.output, abs.input), 
-            connect(abs.output, int.input),
+            connect(c.output, absb.input), 
+            connect(absb.output, int.input),
         ], 
         t, 
-        systems=[int, abs, c]
+        systems=[int, absb, c]
     )
     sys = structural_simplify(model)
 
     prob = ODEProblem(sys, Pair[int.x=>0.0], (0.0, 1.0))
 
     sol = solve(prob, Rodas4())
-    @test sol[int.output.u][end] ≈ 1
-end
-
-@testset "Sqrt" begin
-    @named c = Constant(; k=4)
-    @named sqr = Sqrt(;)
-    @named int = Integrator(; k=1)
-    @named model = ODESystem(
-        [
-            connect(c.output, sqr.input), 
-            connect(sqr.output, int.input),
-        ], 
-        t, 
-        systems=[int, sqr, c]
-    )
-    sys = structural_simplify(model)
-
-    prob = ODEProblem(sys, Pair[int.x=>0.0], (0.0, 1.0))
-
-    sol = solve(prob, Rodas4())
-    @test sol[int.output.u][end] ≈ 2
-end
-
-@testset "Sign" begin
-    @named c = Constant(; k=3)
-    @named sig = Sign(;)
-    @named int = Integrator(; k=1)
-    @named model = ODESystem(
-        [
-            connect(c.output, sig.input), 
-            connect(sig.output, int.input),
-        ], 
-        t, 
-        systems=[int, sig, c]
-    )
-    sys = structural_simplify(model)
-
-    prob = ODEProblem(sys, Pair[int.x=>0.0], (0.0, 1.0))
-
-    sol = solve(prob, Rodas4())
-    @test sol[int.output.u][end] ≈ 1
+    @test sol[absb.output.u] ≈ abs.(sin.(2*pi*sol.t))
 end
 
 @testset "MatrixGain" begin
@@ -179,7 +164,7 @@ end
 end
 
 @testset "Math" begin
-    for (block, func) in [(Abs, abs), (Sin, sin), (Cos, cos), (Tan, tan), (Asin, asin), (Acos, acos), (Atan, atan), (Sinh, sinh), (Cosh, cosh), (Tanh, tanh), (Exp, exp)]
+    for (block, func) in [(Abs, abs), (Sign, sign), (Sin, sin), (Cos, cos), (Tan, tan), (Asin, asin), (Acos, acos), (Atan, atan), (Sinh, sinh), (Cosh, cosh), (Tanh, tanh), (Exp, exp)]
         @named source = Sine(frequency=1)
         @named b = block()
         @named int = Integrator()
