@@ -152,6 +152,44 @@ end
     sol = solve(prob, Rodas4())
     @test isapprox.(sol[ref.output.u], 2, atol=1e-3)  # check reference
     @test sol[plant.output.u][end] ≈ 2 atol=1e-3 # zero control error after 100s
+
+    @testset "PI" begin
+        @named pid_controller = PID(k=3, Ti=0.5, Td=false)
+        @named model = ODESystem(
+            [
+                connect(ref.output, fb.input1), 
+                connect(plant.output, fb.input2),
+                connect(fb.output, pid_controller.err_input), 
+                connect(pid_controller.ctr_output, plant.input), 
+            ], 
+            t, 
+            systems=[pid_controller, plant, ref, fb]
+        )
+        sys = structural_simplify(model)
+        prob = ODEProblem(sys, Pair[], (0.0, 100.0))
+        sol = solve(prob, Rodas4())
+        @test isapprox.(sol[ref.output.u], 2, atol=1e-3)  # check reference
+        @test sol[plant.output.u][end] ≈ 2 atol=1e-3 # zero control error after 100s
+    end
+
+    @testset "PD" begin
+        @named pid_controller = PID(k=3, Ti=false, Td=100)
+        @named model = ODESystem(
+            [
+                connect(ref.output, fb.input1), 
+                connect(plant.output, fb.input2),
+                connect(fb.output, pid_controller.err_input), 
+                connect(pid_controller.ctr_output, plant.input), 
+            ], 
+            t, 
+            systems=[pid_controller, plant, ref, fb]
+        )
+        sys = structural_simplify(model)
+        prob = ODEProblem(sys, Pair[], (0.0, 100.0))
+        sol = solve(prob, Rodas4())
+        @test isapprox.(sol[ref.output.u], 2, atol=1e-3)  # check reference
+        @test sol[plant.output.u][end] ≈ 2 atol=1e-3 # zero control error after 100s
+    end
 end
 
 @test_skip begin 
@@ -288,6 +326,7 @@ end
     @test isapprox.(sol_lim[ref.output.u], 1, atol=1e-3)  # check reference
     @test sol[plant.output.u][end] ≈ 1 atol=1e-3 # zero control error after 100s
     @test sol_lim[plant.output.u][end] ≈ 1 atol=1e-3 # zero control error after 100s
+    @test all(-1.5 .<= sol_lim[pi_controller_lim.ctr_output.u] .<= 1.5) # test limit
 
     # Plots.plot(sol; vars=[plant.output.u]) # without anti-windup measure
     # Plots.plot!(sol_lim; vars=[plant.output.u]) # with anti-windup measure
@@ -313,4 +352,46 @@ end
     # Plots.plot(sol, vars=[plant.output.u, plant.input.u])
     @test isapprox.(sol[ref.output.u], 1, atol=1e-3)  # check reference
     @test sol[plant.output.u][end] ≈ 1 atol=1e-3 # zero control error after 100s
+    @test all(-1.5 .<= sol[pi_controller_lim.ctr_output.u] .<= 1.5) # test limit
+
+    @testset "PI" begin
+        @named pid_controller = LimPID(k=3, Ti=0.5, Td=false, u_max=1.5, u_min=-1.5)
+        @named model = ODESystem(
+            [
+                connect(ref.output, pid_controller.reference), 
+                connect(plant.output, pid_controller.measurement),
+                connect(pid_controller.ctr_output, plant.input), 
+            ], 
+            t, 
+            systems=[pid_controller, plant, ref]
+        )
+        sys = structural_simplify(model)
+        prob = ODEProblem(sys, Pair[], (0.0, 100.0))
+        sol = solve(prob, Rodas4())
+
+        # Plots.plot(sol, vars=[plant.output.u, plant.input.u])
+        @test isapprox.(sol[ref.output.u], 1, atol=1e-3)  # check reference
+        @test sol[plant.output.u][end] ≈ 1 atol=1e-3 # zero control error after 100s
+        @test all(-1.5 .<= sol[pi_controller_lim.ctr_output.u] .<= 1.5) # test limit
+    end
+    @testset "PD" begin
+        @named pid_controller = LimPID(k=3, Ti=false, Td=100, u_max=1.5, u_min=-1.5)
+        @named model = ODESystem(
+            [
+                connect(ref.output, pid_controller.reference), 
+                connect(plant.output, pid_controller.measurement),
+                connect(pid_controller.ctr_output, plant.input), 
+            ], 
+            t, 
+            systems=[pid_controller, plant, ref]
+        )
+        sys = structural_simplify(model)
+        prob = ODEProblem(sys, Pair[], (0.0, 100.0))
+        sol = solve(prob, Rodas4())
+
+        # Plots.plot(sol, vars=[plant.output.u, plant.input.u])
+        @test isapprox.(sol[ref.output.u], 1, atol=1e-3)  # check reference
+        @test sol[plant.output.u][end] ≈ 1 atol=1e-3 # zero control error after 100s
+        @test all(-1.5 .<= sol[pi_controller_lim.ctr_output.u] .<= 1.5) # test limit
+    end
 end

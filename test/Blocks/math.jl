@@ -85,7 +85,7 @@ end
     prob = ODEProblem(sys, Pair[int.x=>0.0], (0.0, 1.0))
 
     sol = solve(prob, Rodas4())
-    @test sol[add.output.u] ≈ 1 + sin.(2*pi*sol.t) + sin.(2*pi*2*sol.t)
+    @test sol[add.output.u] ≈ 1 .+ sin.(2*pi*sol.t) .+ sin.(2*pi*2*sol.t)
 end
 
 @testset "Product" begin
