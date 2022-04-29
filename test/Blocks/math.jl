@@ -78,7 +78,7 @@ end
             connect(add.output, int.input),
         ], 
         t, 
-        systems=[int, add, c1, c2]
+        systems=[int, add, c1, c2, c3]
     )
     sys = structural_simplify(model)
 
