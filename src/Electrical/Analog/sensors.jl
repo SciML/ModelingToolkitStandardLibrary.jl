@@ -1,20 +1,15 @@
 """
-```julia
-function CurrentSensor(; name)
-```
+  CurrentSensor(; name)
 
 Creates a circuit component that measures the current flowing through it. Analogous to
 an ideal ammeter.
 
 # States
-- `i(t)`: [`A`]
-  Current through the sensor
+- `i(t)`: [`A`] Current through the sensor
 
 # Connectors
-- `p`
- Positive pin
-- `n`
-  Negative pin
+- `p` Positive pin
+- `n` Negative pin
 """
 function CurrentSensor(; name)
     @named p = Pin()
@@ -29,19 +24,15 @@ function CurrentSensor(; name)
 end
 
 """
-```julia
-function PotentialSensor(; name)
-```
+  PotentialSensor(; name)
 
 Creates a circuit component which measures the potential at a pin.
 
 # States
-- `phi(t)`: [`V`]
-  The potential at this point
+- `phi(t)`: [`V`] The measured potential at this point
 
 # Connectors
-- `p`
-  Pin at which potential is to be measured
+- `p` Pin at which potential is to be measured
 """
 function PotentialSensor(; name)
     @named p = Pin()
@@ -54,22 +45,16 @@ function PotentialSensor(; name)
 end
 
 """
-```julia
-function VoltageSensor(; name)
-```
+  VoltageSensor(; name)
 
-Creates a circuit component that measures the voltage across it. Analogous to
-an ideal voltmeter.
+Creates a circuit component that measures the voltage across it. Analogous to an ideal voltmeter.
 
 # States
-- `v(t)`: [`V`]
-  The voltage across this component
+- `v(t)`: [`V`] The voltage difference form positive to negative pin `p.v - n.v`
 
 # Connectors
-- `p`
-  Positive pin
-- `n`
-  Negative pin
+- `p` Positive pin
+- `n` Negative pin
 """
 function VoltageSensor(; name)
     @named p = Pin()
@@ -84,26 +69,21 @@ function VoltageSensor(; name)
 end
 
 """
-```julia
-function PowerSensor(; name)
-```
+  PowerSensor(; name)
 
 Combines a [`VoltageSensor`](@ref) and a [`CurrentSensor`](@ref) to measure the power being
 consumed by a circuit.
 
 # States
-- `power(t)`: [`W`]
-  The power being consumed, given by the product of voltage and current.
+- `power(t)`: [`W`] The power being consumed, given by the product of voltage and current.
+- See [VoltageSensor](@ref)
+- See [CurrentSensor](@ref)
 
 # Connectors
-- `pc`
-  Corresponds to the `p` pin of the [`CurrentSensor`](@ref)
-- `nc`
-  Corresponds to the `n` pin of the [`CurrentSensor`](@ref)
-- `pv`
-  Corresponds to the `p` pin of the [`VoltageSensor`](@ref)
-- `nv`
-  Corresponds to the `n` pin of the [`VoltageSensor`](@ref)
+- `pc` Corresponds to the `p` pin of the [`CurrentSensor`](@ref)
+- `nc` Corresponds to the `n` pin of the [`CurrentSensor`](@ref)
+- `pv` Corresponds to the `p` pin of the [`VoltageSensor`](@ref)
+- `nv` Corresponds to the `n` pin of the [`VoltageSensor`](@ref)
 """
 function PowerSensor(; name)
     @named pc = Pin()
@@ -124,27 +104,19 @@ function PowerSensor(; name)
 end
 
 """
-```julia
-function MultiSensor(; name)
-```
+  MultiSensor(; name)
 
 Combines a [`VoltageSensor`](@ref) and a [`CurrentSensor`](@ref).
 
 # States
-- `v(t)`: [`V`]
-  The voltage across the [`VoltageSensor`](@ref)
-- `i(t)`: [`A`]
-  The current across the [`CurrentSensor`](@ref)
+- `v(t)`: [`V`] The voltage across the [`VoltageSensor`](@ref)
+- `i(t)`: [`A`] The current across the [`CurrentSensor`](@ref)
 
 # Connectors
-- `pc`
-  Corresponds to the `p` pin of the [`CurrentSensor`](@ref)
-- `nc`
-  Corresponds to the `n` pin of the [`CurrentSensor`](@ref)
-- `pv`
-  Corresponds to the `p` pin of the [`VoltageSensor`](@ref)
-- `nv`
-  Corresponds to the `n` pin of the [`VoltageSensor`](@ref)
+- `pc` Corresponds to the `p` pin of the [`CurrentSensor`](@ref)
+- `nc` Corresponds to the `n` pin of the [`CurrentSensor`](@ref)
+- `pv` Corresponds to the `p` pin of the [`VoltageSensor`](@ref)
+- `nv` Corresponds to the `n` pin of the [`VoltageSensor`](@ref)
 """
 function MultiSensor(; name)
     @named pc = Pin()

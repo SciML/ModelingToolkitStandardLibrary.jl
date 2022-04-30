@@ -2,6 +2,10 @@
     Integrator(;name, k=1, x_start=0.0)
 
 Outputs `y = ∫k*u dt`, corresponding to the transfer function `1/s`.
+
+# Parameters:
+- `k`: Gain of integrator
+- `x_start`: Initial value of integrator
 """
 function Integrator(;name, k=1, x_start=0.0)
     @named siso = SISO()
