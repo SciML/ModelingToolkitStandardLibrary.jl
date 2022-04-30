@@ -192,14 +192,12 @@ function PID(;name, k=1, Ti=false, Td=false, Nd=10, xi_start=0, xd_start=0)
         push!(eqs, connect(err_input, int.input))
         push!(eqs, connect(int.output, addPID.input2))
     else
-        push!(eqs, connect(err_input, Izero.input))
         push!(eqs, connect(Izero.output, addPID.input2))
     end
     if with_D
         push!(eqs, connect(err_input, der.input))
         push!(eqs, connect(der.output, addPID.input3))
     else
-        push!(eqs, connect(err_input, Dzero.input))
         push!(eqs, connect(Dzero.output, addPID.input3))
     end
     ODESystem(eqs, t, [], []; name=name, systems=sys)
