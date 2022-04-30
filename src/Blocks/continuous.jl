@@ -300,10 +300,10 @@ function LimPID(; name, k=1, Ti=false, Td=false, wp=1, wd=1,
     @named addP = Add(k1=wp, k2=-1)
     @named gainPID = Gain(k)
     @named addPID = Add3()
+    @named limiter = Limiter(y_max=u_max, y_min=u_min)
     if with_I
         @named addI = Add3(k1=1, k2=-1, k3=1)
         @named int = Integrator(k=1/Ti, x_start=xi_start)
-        @named limiter = Limiter(y_max=u_max, y_min=u_min)
         @named addSat = Add(k1=1, k2=-1)
         @named gainTrack = Gain(1/(k * Ni))
     else
@@ -316,9 +316,9 @@ function LimPID(; name, k=1, Ti=false, Td=false, wp=1, wd=1,
         @named Dzero = Constant(k=0)
     end
 
-    sys = [reference, measurement, ctr_output, addP, gainPID, addPID]
+    sys = [reference, measurement, ctr_output, addP, gainPID, addPID, limiter]
     if with_I
-        push!(sys, [addI, int, limiter, addSat, gainTrack]...)
+        push!(sys, [addI, int, addSat, gainTrack]...)
     else
         push!(sys, Izero)
     end
@@ -333,12 +333,12 @@ function LimPID(; name, k=1, Ti=false, Td=false, wp=1, wd=1,
         connect(measurement, addP.input2),
         connect(addP.output, addPID.input1),
         connect(addPID.output, gainPID.input),
+        connect(gainPID.output, limiter.input),
+        connect(limiter.output, ctr_output),
     ]
     if with_I
         push!(eqs, connect(reference, addI.input1))
         push!(eqs, connect(measurement, addI.input2))
-        push!(eqs, connect(gainPID.output, limiter.input))
-        push!(eqs, connect(limiter.output, ctr_output))
         push!(eqs, connect(limiter.input, addSat.input2))
         push!(eqs, connect(limiter.output, addSat.input1))
         push!(eqs, connect(addSat.output, gainTrack.input))

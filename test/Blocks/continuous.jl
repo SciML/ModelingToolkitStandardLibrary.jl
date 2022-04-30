@@ -170,12 +170,12 @@ end
         sys = structural_simplify(model)
         prob = ODEProblem(sys, Pair[], (0.0, 100.0))
         sol = solve(prob, Rodas4())
-        @test isapprox.(sol[ref.output.u], re_val, atol=1e-3)  # check reference
+        @test all(isapprox.(sol[ref.output.u], re_val, atol=1e-3))  # check reference
         @test sol[plant.output.u][end] ≈ re_val atol=1e-3 # zero control error after 100s
     end
 
     @testset "PD" begin
-        @named pid_controller = PID(k=3, Ti=false, Td=100)
+        @named pid_controller = PID(k=10, Ti=false, Td=1)
         @named model = ODESystem(
             [
                 connect(ref.output, fb.input1), 
@@ -190,7 +190,7 @@ end
         prob = ODEProblem(sys, Pair[], (0.0, 100.0))
         sol = solve(prob, Rodas4())
         @test all(isapprox.(sol[ref.output.u], re_val, atol=1e-3))  # check reference
-        @test sol[plant.output.u][end] ≈ re_val atol=1e-3 # zero control error after 100s
+        @test sol[plant.output.u][end] > 1 # without I there will be a steady-state error
     end
 end
 
@@ -359,7 +359,7 @@ end
     @test all(-1.5 .<= sol[pid_controller.ctr_output.u] .<= 1.5) # test limit
 
     @testset "PI" begin
-        @named pid_controller = LimPID(k=3, Ti=0.5, Td=false, u_max=1.5, u_min=-1.5)
+        @named pid_controller = LimPID(k=3, Ti=0.5, Td=false, u_max=1.5, u_min=-1.5, Ni=0.1/0.5)
         @named model = ODESystem(
             [
                 connect(ref.output, pid_controller.reference), 
@@ -379,7 +379,7 @@ end
         @test all(-1.5 .<= sol[pid_controller.ctr_output.u] .<= 1.5) # test limit
     end
     @testset "PD" begin
-        @named pid_controller = LimPID(k=3, Ti=false, Td=100, u_max=1.5, u_min=-1.5)
+        @named pid_controller = LimPID(k=10, Ti=false, Td=1, u_max=1.5, u_min=-1.5)
         @named model = ODESystem(
             [
                 connect(ref.output, pid_controller.reference), 
@@ -395,7 +395,7 @@ end
 
         # Plots.plot(sol, vars=[plant.output.u, plant.input.u])
         @test all(isapprox.(sol[ref.output.u], re_val, atol=1e-3))  # check reference
-        @test sol[plant.output.u][end] ≈ re_val atol=1e-3 # zero control error after 100s
+        @test sol[plant.output.u][end] > 0.5 # without I there will be a steady-state error
         @test all(-1.5 .<= sol[pid_controller.ctr_output.u] .<= 1.5) # test limit
     end
 end
