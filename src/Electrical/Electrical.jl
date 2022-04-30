@@ -6,6 +6,8 @@ module Electrical
 
 using ModelingToolkit, Symbolics, IfElse, OrdinaryDiffEq
 using OffsetArrays
+using ..Thermal: HeatPort
+using ..Mechanical.Rotational: Flange, Support
 
 @parameters t
 D = Differential(t)

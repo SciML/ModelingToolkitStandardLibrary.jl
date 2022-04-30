@@ -37,13 +37,17 @@ Support/housing of a 1-dim. rotational shaft
 
 Partial model for the compliant connection of two rotational 1-dim. shaft flanges.
 
-# Parameters:
-- `phi_rel_start`: [rad] Initial relative rotation angle
-- `tau_start`: [N.m] Initial torque between flanges
-
 # States:
 - `phi_rel`: [rad] Relative rotation angle (= flange_b.phi - flange_a.phi)
 - `tau`: [N.m] Torque between flanges (= flange_b.tau)
+
+# Connectors:
+- `flange_a` Left flange
+- `flange_b` Right flange
+
+# Parameters:
+- `phi_rel_start`: [rad] Initial relative rotation angle
+- `tau_start`: [N.m] Initial torque between flanges
 """
 function PartialCompliant(;name, phi_rel_start=0.0, tau_start=0.0)
     @named flange_a = Flange()
@@ -65,17 +69,21 @@ end
 
 Partial model for the compliant connection of two rotational 1-dim. shaft flanges where the relative angle and speed are used as preferred states
 
-# Parameters:
-- `phi_rel_start`: [rad] Initial relative rotation angle
-- `w_rel_start`: [rad/s] Initial relative angular velocity (= der(phi_rel))
-- `a_rel_start`: [rad/s²] Initial relative angular acceleration (= der(w_rel))
-- `tau_start`: [N.m] Initial torque between flanges
-
 # States:
 - `phi_rel`: [rad] Relative rotation angle (= flange_b.phi - flange_a.phi)
 - `w_rel`: [rad/s] Relative angular velocity (= der(phi_rel))
 - `a_rel`: [rad/s²] Relative angular acceleration (= der(w_rel))
 - `tau`: [N.m] Torque between flanges (= flange_b.tau)
+
+# Connectors:
+- `flange_a` Left flange
+- `flange_b` Right flange
+
+# Parameters:
+- `phi_rel_start`: [rad] Initial relative rotation angle
+- `w_rel_start`: [rad/s] Initial relative angular velocity (= der(phi_rel))
+- `a_rel_start`: [rad/s²] Initial relative angular acceleration (= der(w_rel))
+- `tau_start`: [N.m] Initial torque between flanges
 """
 function PartialCompliantWithRelativeStates(;name, phi_rel_start=0.0, w_start=0.0, a_start=0.0, tau_start=0.0)
     @named flange_a = Flange()
@@ -101,11 +109,15 @@ end
 
 Partial model for a component with one rotational 1-dim. shaft flange and a support used for textual modeling, i.e., for elementary models
 
-# Parameters:
-- `use_support`: If support flange enabled, otherwise implicitly grounded
-
 # States:
 - `phi_support`: [rad] Absolute angle of support flange"
+
+# Connectors:
+- `flange`  
+- `support` if `use_support=true`
+
+# Parameters:
+- `use_support`: If support flange enabled, otherwise implicitly grounded
 """
 function PartialElementaryOneFlangeAndSupport2(;name, use_support=false)
     @named flange = Flange()
@@ -129,11 +141,16 @@ end
 
 Partial model for a component with two rotational 1-dim. shaft flanges and a support used for textual modeling, i.e., for elementary models
 
-# Parameters:
-- `use_support`: If support flange enabled, otherwise implicitly grounded
-
 # States:
 - `phi_support`: [rad] Absolute angle of support flange"
+
+# Connectors:
+- `flange_a` Left flange
+- `flange_b` Right flange
+- `support` if `use_support=true`
+
+# Parameters:
+- `use_support`: If support flange enabled, otherwise implicitly grounded
 """
 function PartialElementaryTwoFlangesAndSupport2(;name, use_support=false)
     @named flange_a = Flange()

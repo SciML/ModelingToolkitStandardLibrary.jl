@@ -2,6 +2,13 @@
     Torque(;name) 
 
 Input signal acting as external torque on a flange
+
+# States:
+- See [PartialElementaryOneFlangeAndSupport2](@ref)
+
+# Connectors:
+- See [PartialElementaryOneFlangeAndSupport2](@ref)
+- `tau` [RealInput](@ref) input for torque control signal
 """
 function Torque(;name, use_support=false) 
     @named partial_element = PartialElementaryOneFlangeAndSupport2(use_support=use_support)

@@ -10,10 +10,10 @@ using ...Blocks: RealInput, RealOutput
 @parameters t
 D = Differential(t)
 
-export Flange
+export Flange, Support
 include("utils.jl")
 
-export Fixed, Inertia, Spring, Damper, IdealGear
+export Fixed, Inertia, Spring, Damper, IdealGear, RotationalFriction
 include("components.jl")
 
 export Torque
