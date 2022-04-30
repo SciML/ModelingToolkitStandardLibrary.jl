@@ -283,6 +283,7 @@ function LimPID(; name, k=1, Ti=false, Td=false, wp=1, wd=1,
     )
     with_I = !isequal(Ti, false)
     with_D = !isequal(Td, false)
+    with_AWM = Ni != Inf
     if gains
         Ti = k / Ti
         Td = Td / k
@@ -302,10 +303,14 @@ function LimPID(; name, k=1, Ti=false, Td=false, wp=1, wd=1,
     @named addPID = Add3()
     @named limiter = Limiter(y_max=u_max, y_min=u_min)
     if with_I
-        @named addI = Add3(k1=1, k2=-1, k3=1)
+        if with_AWM
+            @named addI = Add3(k1=1, k2=-1, k3=1)
+            @named addSat = Add(k1=1, k2=-1)
+            @named gainTrack = Gain(1/(k * Ni))
+        else
+            @named addI = Add(k1=1, k2=-1)
+        end
         @named int = Integrator(k=1/Ti, x_start=xi_start)
-        @named addSat = Add(k1=1, k2=-1)
-        @named gainTrack = Gain(1/(k * Ni))
     else
         @named Izero = Constant(k=0)
     end
@@ -318,7 +323,10 @@ function LimPID(; name, k=1, Ti=false, Td=false, wp=1, wd=1,
 
     sys = [reference, measurement, ctr_output, addP, gainPID, addPID, limiter]
     if with_I
-        push!(sys, [addI, int, addSat, gainTrack]...)
+        if with_AWM
+            push!(sys, [addSat, gainTrack]...)
+        end
+        push!(sys, [addI, int]...)
     else
         push!(sys, Izero)
     end
@@ -339,10 +347,12 @@ function LimPID(; name, k=1, Ti=false, Td=false, wp=1, wd=1,
     if with_I
         push!(eqs, connect(reference, addI.input1))
         push!(eqs, connect(measurement, addI.input2))
-        push!(eqs, connect(limiter.input, addSat.input2))
-        push!(eqs, connect(limiter.output, addSat.input1))
-        push!(eqs, connect(addSat.output, gainTrack.input))
-        push!(eqs, connect(gainTrack.output, addI.input3))
+        if with_AWM
+            push!(eqs, connect(limiter.input, addSat.input2))
+            push!(eqs, connect(limiter.output, addSat.input1))
+            push!(eqs, connect(addSat.output, gainTrack.input))
+            push!(eqs, connect(gainTrack.output, addI.input3))
+        end
         push!(eqs, connect(addI.output, int.input))
         push!(eqs, connect(int.output, addPID.input3))
     else

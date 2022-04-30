@@ -442,4 +442,24 @@ end
             @test all(-1.5 .<= sol[pid_controller.ctr_output.u] .<= 1.5) # test limit
         end
     end
+    @testset "PI without AWM" begin
+        @named pid_controller = LimPID(k=3, Ti=0.5, Td=false, u_max=1.5, u_min=-1.5, Ni=Inf)
+        @named model = ODESystem(
+            [
+                connect(ref.output, pid_controller.reference), 
+                connect(plant.output, pid_controller.measurement),
+                connect(pid_controller.ctr_output, plant.input), 
+            ], 
+            t, 
+            systems=[pid_controller, plant, ref]
+        )
+        sys = structural_simplify(model)
+        prob = ODEProblem(sys, Pair[], (0.0, 100.0))
+        sol = solve(prob, Rodas4())
+
+        # Plots.plot(sol, vars=[plant.output.u, plant.input.u])
+        @test all(isapprox.(sol[ref.output.u], re_val, atol=1e-3))  # check reference
+        @test sol[plant.output.u][end] ≈ re_val atol=1e-3 # zero control error after 100s
+        @test all(-1.5 .<= sol[pid_controller.ctr_output.u] .<= 1.5) # test limit
+    end
 end
