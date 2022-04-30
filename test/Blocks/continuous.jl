@@ -17,7 +17,8 @@ an integrator with a constant input is often used together with the system under
     sys = structural_simplify(iosys)
     prob = ODEProblem(sys, Pair[int.x=>1.0], (0.0, 1.0))
     sol = solve(prob, Rodas4())
-    @test all(sol[int.output.u] .≈ 1)
+    @test all(sol[c.output.u] .≈ 1)
+    @test sol[int.output.u][end] .≈ 2 # expected solution 
 end
 
 @testset "Derivative" begin
