@@ -27,6 +27,7 @@ the documentation, which contains the unreleased features.
 The following are the constituant libraries of the ModelingToolkit Standard Library.
 
 - [Basic Blocks](http://mtkstdlib.sciml.ai/dev/API/blocks/)
+- [Mechanical Components](http://mtkstdlib.sciml.ai/dev/API/mechanical/)
 - [Electrical Components](http://mtkstdlib.sciml.ai/dev/API/electrical/)
 - [Magnetic Components](http://mtkstdlib.sciml.ai/dev/API/magnetic/)
 - [Thermal Components](http://mtkstdlib.sciml.ai/dev/API/thermal/)
