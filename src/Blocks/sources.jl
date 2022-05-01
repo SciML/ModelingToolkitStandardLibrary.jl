@@ -3,6 +3,9 @@ Generate constant signal.
 
 # Parameters:
 - `k`: Constant output value
+
+# Connectors:
+- `output`
 """
 function Constant(;name, k=1)
     @named output = RealOutput()
@@ -22,6 +25,9 @@ Generate sine signal.
 - `phase`: [rad] Phase of sine wave 
 - `offset`: Offset of output signal
 - `start_time`: [s] Output `y = offset` for `t < start_time`
+
+# Connectors:
+- `output`
 """
 function Sine(;name, 
     frequency, 
@@ -47,6 +53,9 @@ Generate cosine signal.
 - `phase`: [rad] Phase of sine wave 
 - `offset`: Offset of output signal
 - `start_time`: [s] Output `y = offset` for `t < start_time`
+
+# Connectors:
+- `output`
 """
 function Cosine(;name, 
     frequency, 
@@ -69,6 +78,9 @@ Generate current time signal.
 # Parameters: 
 - `offset`: Offset of output signal
 - `start_time`: [s] Output `y = offset` for `t < start_time`
+
+# Connectors:
+- `output`
 """
 function ContinuousClock(;name, offset=0, start_time=0)
     @named output = RealOutput()
@@ -87,6 +99,9 @@ Generate ramp signal.
 - `duration`: [s] Duration of ramp (= 0.0 gives a Step)
 - `offset`: Offset of output signal
 - `start_time`: [s] Output `y = offset` for `t < start_time`
+
+# Connectors:
+- `output`
 """
 function Ramp(;name, 
     offset=0,
@@ -110,6 +125,9 @@ Generate step signal.
 - `height`: Height of step
 - `offset`: Offset of output signal
 - `start_time`: [s] Output `y = offset` for `t < start_time`
+
+# Connectors:
+- `output`
 """
 function Step(;name, offset=0, height=1, start_time=0)
     @named output = RealOutput()
@@ -130,6 +148,9 @@ Generate exponentially damped sine signal.
 - `phase`: [rad] Phase of sine wave 
 - `offset`: Offset of output signal
 - `start_time`: [s] Output `y = offset` for `t < start_time`
+
+# Connectors:
+- `output`
 """
 function ExpSine(;name, 
     frequency, 

@@ -2,6 +2,10 @@
     Integrator(;name, k=1, x_start=0.0)
 
 Outputs `y = ∫k*u dt`, corresponding to the transfer function `1/s`.
+
+# Connectors:
+- `input`
+- `output`
 """
 function Integrator(;name, k=1, x_start=0.0)
     @named siso = SISO()
@@ -34,6 +38,10 @@ A smaller `T` leads to a more ideal approximation of the derivative.
 - `k`: Gain
 - `T`: [s] Time constants (T>0 required; T=0 is ideal derivative block)
 - `x_start`: Initial value of state
+
+# Connectors:
+- `input`
+- `output`
 """
 function Derivative(; name, k=1, T, x_start=0.0)
     T > 0 || throw(ArgumentError("Time constant `T` has to be strictly positive"))
@@ -63,6 +71,10 @@ sT + 1
 - `k`: Gain
 - `T`: [s] Time constants (T>0 required)
 - `x_start`: Initial value of state
+
+# Connectors:
+- `input`
+- `output`
 """
 function FirstOrder(; name, k=1, T, x_start=0.0)
     T > 0 || throw(ArgumentError("Time constant `T` has to be strictly positive"))
@@ -96,6 +108,10 @@ Critical damping corresponds to `d=1`, which yields the fastest step response wi
 - `d`: Damping
 - `x_start`: Initial value of state (output)
 - `xd_start`: Initial value of derivative of state (output)
+
+# Connectors:
+- `input`
+- `output`
 """
 function SecondOrder(; name, k=1, w, d, x_start=0.0, xd_start=0.0)
     @named siso = SISO()
@@ -119,6 +135,10 @@ Textbook version of a PI-controller without actuator saturation and anti-windup 
 - `k`: Gain
 - `T`: [s] Integrator time constant (T>0 required)
 - `x_start`: Initial value for the integrator
+
+# Connectors:
+- `err_input`
+- `ctr_output`
 """
 function PI(;name, k=1, T, x_start=0.0)
     T > 0 || throw(ArgumentError("Time constant `T` has to be strictly positive"))
@@ -150,6 +170,10 @@ Text-book version of a PID-controller without actuator saturation and anti-windu
 - `Nd`: [s] Time constant for the derivative approximation (Nd>0 required; Nd=0 is ideal derivative).
 - `x_start`: Initial value for the integrator.
 - `xd_start`: Initial value for the derivative state.
+
+# Connectors:
+- `err_input`
+- `ctr_output`
 """
 function PID(;name, k=1, Ti=false, Td=false, Nd=10, xi_start=0, xd_start=0)
     with_I = !isequal(Ti, false)
@@ -213,6 +237,10 @@ Text-book version of a PI-controller with actuator saturation and anti-windup me
 - `T`: [s] Integrator time constant (T>0 required)
 - `Ta`: [s] Tracking time constant (Ta>0 required)
 - `x_start`: Initial value for the integrator
+
+# Connectors:
+- `err_input`
+- `ctr_output`
 """
 function LimPI(;name, k=1, T, u_max=1, u_min=-u_max, Ta, x_start=0.0)
     Ta > 0 || throw(ArgumentError("Time constant `Ta` has to be strictly positive"))
@@ -249,11 +277,6 @@ end
 
 Proportional-Integral-Derivative (PID) controller with output saturation, set-point weighting and integrator anti-windup.
 
-This block has inputs
-- `u_r` reference/set point
-- `u_y` measurement signal
-and output `y` corresponding to the control signal.
-
 The equation for the control signal is roughly
 ```
 k(ep + 1/Ti * ∫e + 1/Td * d/dt(ed))
@@ -263,14 +286,20 @@ ed = wd*u_r - u_y
 ```
 where the transfer function for the derivative includes additional filtering, see `? Derivative` for more details.
 
+# Parameters:
 - `k`: Proportional gain
-- `Ti`: Integrator time constant. Set to `false` to turn off integral action.
-- `Td`: Derivative time constant. Set to `false` to turn off derivative action.
-- `wp`: Set-point weighting in the proportional part.
-- `wd`: Set-point weighting in the derivative part.
-- `Nd`: Derivative limit, limits the derivative gain to Nd/Td. Reasonable values are ∈ [8, 20]. A higher value gives a better approximation of an ideal derivative at the expense of higher noise amplification.
-- `Ni`: `Ni*Ti` controls the time constant `Tₜ` of anti-windup tracking. A common (default) choice is `Tₜ = √(Ti*Td)` which is realized by `Ni = √(Td / Ti)`. Anti-windup can be effectively turned off by setting `Ni = Inf`.
+- `Ti`: [s] Integrator time constant. Set to `false` to turn off integral action.
+- `Td`: [s] Derivative time constant. Set to `false` to turn off derivative action.
+- `wp`: [0,1] Set-point weighting in the proportional part.
+- `wd`: [0,1] Set-point weighting in the derivative part.
+- `Nd`: [1/s] Derivative limit, limits the derivative gain to Nd/Td. Reasonable values are ∈ [8, 20]. A higher value gives a better approximation of an ideal derivative at the expense of higher noise amplification.
+- `Ni`: `Ni*Ti` controls the time constant `Ta` of anti-windup tracking. A common (default) choice is `Ta = √(Ti*Td)` which is realized by `Ni = √(Td / Ti)`. Anti-windup can be effectively turned off by setting `Ni = Inf`.
 ` `gains`: If `gains = true`, `Ti` and `Td` will be interpreted as gains with a fundamental PID transfer function on parallel form `ki=Ti, kd=Td, k + ki/s + kd*s`
+
+# Connectors:
+- `reference`
+- `measurement`
+- `ctr_output`
 """
 function LimPID(; name, k=1, Ti=false, Td=false, wp=1, wd=1,
     Ni= Ti == 0 ? Inf : √(max(Td / Ti, 1e-6)),
