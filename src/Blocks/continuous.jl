@@ -438,3 +438,5 @@ function StateSpace(;A, B, C, D=nothing, x_start=zeros(size(A,1)), name)
     ]
     compose(ODESystem(eqs, t, vcat(x...), [], name=name), [input, output])
 end
+                
+StateSpace(A, B, C, D=nothing; kwargs...) = StateSpace(; A, B, C, D, kwargs...)
