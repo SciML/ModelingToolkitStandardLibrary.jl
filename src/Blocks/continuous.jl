@@ -75,6 +75,8 @@ sT + 1
 # Connectors:
 - `input`
 - `output`
+
+See also [`SecondOrder`](@ref)
 """
 function FirstOrder(; name, k=1, T, x_start=0.0)
     T > 0 || throw(ArgumentError("Time constant `T` has to be strictly positive"))
@@ -139,6 +141,8 @@ Textbook version of a PI-controller without actuator saturation and anti-windup 
 # Connectors:
 - `err_input`
 - `ctr_output`
+
+See also [`LimPI`](@ref)
 """
 function PI(;name, k=1, T, x_start=0.0)
     T > 0 || throw(ArgumentError("Time constant `T` has to be strictly positive"))
@@ -174,6 +178,8 @@ Text-book version of a PID-controller without actuator saturation and anti-windu
 # Connectors:
 - `err_input`
 - `ctr_output`
+
+See also [`LimPID`](@ref)
 """
 function PID(;name, k=1, Ti=false, Td=false, Nd=10, xi_start=0, xd_start=0)
     with_I = !isequal(Ti, false)
@@ -273,7 +279,7 @@ function LimPI(;name, k=1, T, u_max=1, u_min=-u_max, Ta, x_start=0.0)
 end
 
 """
-    PID(; k, Ti=false, Td=false, wp=1, wd=1, Ni, Nd=12, y_max=Inf, y_min=-y_max, gains = false, name)
+    LimPID(; k, Ti=false, Td=false, wp=1, wd=1, Ni, Nd=12, u_max=Inf, u_min=-u_max, gains = false, name)
 
 Proportional-Integral-Derivative (PID) controller with output saturation, set-point weighting and integrator anti-windup.
 
