@@ -30,7 +30,7 @@ export #Interface
        Pin,
        # Analog Components
        Capacitor, Ground, Inductor, Resistor,
-       # Short, IdealOpAmp,
+       IdealOpAmp, # Short
        # Analog Sensors
        CurrentSensor, PotentialSensor, VoltageSensor,
        PowerSensor, MultiSensor,
