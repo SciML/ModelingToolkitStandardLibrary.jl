@@ -10,6 +10,8 @@ using OffsetArrays
 @parameters t
 D = Differential(t)
 
+using ..Blocks: RealInput, RealOutput
+
 include("utils.jl")
 include("Analog/ideal_components.jl")
 include("Analog/sensors.jl")
@@ -28,17 +30,12 @@ export #Interface
        Pin,
        # Analog Components
        Capacitor, Ground, Inductor, Resistor,
-       Short, IdealOpAmp,
+       # Short, IdealOpAmp,
        # Analog Sensors
        CurrentSensor, PotentialSensor, VoltageSensor,
        PowerSensor, MultiSensor,
-       #Analog Sources
-       ConstantVoltage, SineVoltage, StepVoltage, RampVoltage,
-       SquareVoltage, TriangularVoltage,
-       CosineVoltage, ExpSineVoltage,
-       ConstantCurrent, SineCurrent, StepCurrent, RampCurrent,
-       SquareCurrent, TriangularCurrent,
-       CosineCurrent, ExpSineCurrent
+       # Analog Sources
+       Voltage, Current
        
 
        # # Digital Gates
