@@ -18,7 +18,7 @@ _xH(t, δ, tₒ) = (t-tₒ)*(1+((t-tₒ)/sqrt((t-tₒ)^2+δ^2)))/2
 
 """
 ```julia
-function ConstantVoltage(; name, V=1.0)
+function ConstantVoltage(; name, V)
 ```
 
 The source for an ideal constant voltage.
@@ -37,7 +37,7 @@ The source for an ideal constant voltage.
 - `V`: [`V`]
   The constant voltage across the terminals of this source
 """
-function ConstantVoltage(;name, V = 1.0)   
+function ConstantVoltage(;name, V)   
     @named oneport = OnePort()
     @unpack v, i = oneport
     pars = @parameters V=V

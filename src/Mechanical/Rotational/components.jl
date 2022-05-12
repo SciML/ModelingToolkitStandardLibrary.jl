@@ -14,7 +14,7 @@ function Fixed(;name, phi0=0.0)
 end
 
 """
-    Inertia(;name, J=1.0, phi_start=0.0, w_start=0.0, a_start=0.0)
+    Inertia(;name, J, phi_start=0.0, w_start=0.0, a_start=0.0)
 
 1D-rotational component with inertia.
 
@@ -29,7 +29,7 @@ end
 - `w`: [rad/s] Absolute angular velocity of component (= der(phi)) 
 - `a`: [rad/s²] Absolute angular acceleration of component (= der(w)) 
 """
-function Inertia(;name, J=1.0, phi_start=0.0, w_start=0.0, a_start=0.0)
+function Inertia(;name, J, phi_start=0.0, w_start=0.0, a_start=0.0)
     @named flange_a = Flange()
     @named flange_b = Flange()
     @parameters J=J
@@ -57,7 +57,7 @@ Linear 1D rotational spring
 - `c`: [N.m/rad] Spring constant
 - `phi_rel0`: Unstretched spring angle
 """
-function Spring(;name, c=1.0e5, phi_rel0=0.0)
+function Spring(;name, c, phi_rel0=0.0)
     @named partial_comp = PartialCompliant()
     @unpack phi_rel, tau = partial_comp
     pars = @parameters begin
@@ -69,14 +69,14 @@ function Spring(;name, c=1.0e5, phi_rel0=0.0)
 end
 
 """
-    Damper(;name, d=0.0) 
+    Damper(;name, d) 
 
 Linear 1D rotational damper
 
 # Parameters:
 - `d`: [N.m.s/rad] Damping constant
 """
-function Damper(;name, d=0.0) 
+function Damper(;name, d) 
     @named partial_comp = PartialCompliantWithRelativeStates()
     @unpack w_rel, tau = partial_comp
     pars = @parameters d=d 
