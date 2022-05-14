@@ -16,14 +16,14 @@ function HeatCapacitor(; name, C, T_start=293.15 + 20)
     @parameters C=C
     sts = @variables begin
         T(t)=T_start
-        der_T(t)
+        der_T(t)=0.0
     end
 
     D = Differential(t)
     eqs = [
         T ~ port.T
-        der_T ~ D(T)
-        D(T) ~ port.Q_flow / C
+        D(T) ~ der_T
+        der_T ~ port.Q_flow / C
     ]
     ODESystem(eqs, t, sts, [C]; systems=[port], name=name)
 end
@@ -81,7 +81,7 @@ function ConvectiveConductor(; name, G)
     @named solid = HeatPort()
     @named fluid = HeatPort()
     @parameters G=G
-    sts = @variables Q_flow(t) dT(t)
+    sts = @variables Q_flow(t)=0.0 dT(t)=0.0
     eqs = [
         dT ~ solid.T - fluid.T
         solid.Q_flow ~ Q_flow
@@ -107,7 +107,7 @@ function ConvectiveResistor(; name, R)
     @named solidport = HeatPort()
     @named fluidport = HeatPort()
     @parameters R=R
-    sts = @variables Q_flow(t) dT(t) 
+    sts = @variables Q_flow(t)=0.0 dT(t)=0.0
     eqs = [
         dT ~ solidport.T - fluidport.T
         solidport.Q_flow ~ Q_flow
