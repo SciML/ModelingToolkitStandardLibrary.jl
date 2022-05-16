@@ -1,5 +1,5 @@
 """
-    HeatCapacitor(; name, C=1.0, T_start=293.15 + 20)    
+    HeatCapacitor(; name, C, T_start=293.15 + 20)    
 
 Lumped thermal element storing heat
 
@@ -11,7 +11,7 @@ Lumped thermal element storing heat
 - `T`: [K] Temperature of element
 - `der_T`: [K/s] Time derivative of temperature
 """
-function HeatCapacitor(; name, C=1.0, T_start=293.15 + 20)    
+function HeatCapacitor(; name, C, T_start=293.15 + 20)    
     @named port = HeatPort()
     @parameters C=C
     sts = @variables begin
@@ -29,14 +29,14 @@ function HeatCapacitor(; name, C=1.0, T_start=293.15 + 20)
 end
 
 """
-    ThermalConductor(;name, G=1.0) 
+    ThermalConductor(;name, G) 
 
 Lumped thermal element transporting heat without storing it.
 
 # Parameters:
 - `G`: [W/K] Constant thermal conductance of material
 """
-function ThermalConductor(;name, G=1.0)   
+function ThermalConductor(;name, G)   
     @named element1d = Element1D()
     @unpack Q_flow, dT = element1d
     pars = @parameters G=G
@@ -47,14 +47,14 @@ function ThermalConductor(;name, G=1.0)
 end
 
 """
-    ThermalResistor(; name, R=1.0) 
+    ThermalResistor(; name, R) 
 
 Lumped thermal element transporting heat without storing it.
 
 # Parameters:
 - `R`: [K/W] Constant thermal resistance of material
 """
-function ThermalResistor(; name, R=1.0)   
+function ThermalResistor(; name, R)   
     @named element1d = Element1D()
     @unpack Q_flow, dT = element1d
     pars = @parameters R=R
@@ -66,7 +66,7 @@ function ThermalResistor(; name, R=1.0)
 end
 
 """
-    ConvectiveConductor(; name, G=1.0)
+    ConvectiveConductor(; name, G)
 
 Lumped thermal element for heat convection.
 
@@ -77,7 +77,7 @@ Lumped thermal element for heat convection.
 - `dT`:  [K] Temperature difference across the component solid.T - fluid.T
 - `Q_flow`: [W] Heat flow rate from solid -> fluid
 """
-function ConvectiveConductor(; name, G=1.0)
+function ConvectiveConductor(; name, G)
     @named solid = HeatPort()
     @named fluid = HeatPort()
     @parameters G=G
@@ -92,7 +92,7 @@ function ConvectiveConductor(; name, G=1.0)
 end
 
 """
-    ConvectiveResistor(; name, R=1.0)
+    ConvectiveResistor(; name, R)
 
 Lumped thermal element for heat convection.
 
@@ -103,7 +103,7 @@ Lumped thermal element for heat convection.
 - `dT`:  [K] Temperature difference across the component solid.T - fluid.T
 - `Q_flow`: [W] Heat flow rate from solid -> fluid
 """
-function ConvectiveResistor(; name, R=1.0)
+function ConvectiveResistor(; name, R)
     @named solidport = HeatPort()
     @named fluidport = HeatPort()
     @parameters R=R
@@ -118,14 +118,14 @@ function ConvectiveResistor(; name, R=1.0)
 end
 
 """
-    BodyRadiation(; name, G=1.0)
+    BodyRadiation(; name, G)
 
 Lumped thermal element for radiation heat transfer.
 
 # Parameters:
 - `G`: [m^2] Net radiation conductance between two surfaces
 """
-function BodyRadiation(; name, G=1.0)
+function BodyRadiation(; name, G)
     sigma = 5.6703744191844294e-8 # Stefan-Boltzmann constant TODO: extract into physical constants module or use existing one
 
     @named element1d = Element1D()
@@ -142,13 +142,13 @@ end
 """
     ThermalCollector(; name, m=1)
 
-Collects m heat flows
+Collects `m` heat flows
 
 This is a model to collect the heat flows from `m` heatports to one single heatport.
 # Parameters:
 - `m`: Number of heat ports (e.g. m=2: `port_a1`, `port_a2`)
 """
-function ThermalCollector(; name, m=1)
+function ThermalCollector(; name, m::Integer=1)
     port_a = [HeatPort(name=Symbol(:port_a, i)) for i in 1:m]
     @named port_b = HeatPort()
     eqs = [

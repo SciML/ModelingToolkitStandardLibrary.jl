@@ -17,7 +17,7 @@ end
 
 """
 ```julia
-function Resistor(; name, R = 1.0)
+function Resistor(; name, R)
 ```
 
 Creates an ideal Resistor following Ohm's Law.
@@ -36,7 +36,7 @@ Creates an ideal Resistor following Ohm's Law.
 - `R`: [`Ω`]
   Resistance
 """
-function Resistor(;name, R=1.0)
+function Resistor(;name, R)
     @named oneport = OnePort()
     @unpack v, i = oneport
     pars = @parameters R=R
@@ -48,7 +48,7 @@ end
 
 """
 ```julia
-function Capacitor(; name, C = 1.0)
+function Capacitor(; name, C)
 ```
 
 Creates an ideal Capacitor.
@@ -69,7 +69,7 @@ Creates an ideal Capacitor.
 - `v_start`: [`V`]
   Initial voltage of capacitor
 """
-function Capacitor(;name, C=1.0, v_start=0.0) 
+function Capacitor(;name, C, v_start=0.0) 
     @named oneport = OnePort(;v_start=v_start)
     @unpack v, i = oneport
     pars = @parameters C=C
@@ -81,7 +81,7 @@ end
 
 """
 ```julia
-function Inductor(; name, L = 1.0)
+function Inductor(; name, L)
 ```
 
 Creates an ideal Inductor.
@@ -102,7 +102,7 @@ Creates an ideal Inductor.
 - `i_start`: [`A`]
   Initial current through inductor
 """
-function Inductor(;name, L=1.0e-6, i_start=0.0)
+function Inductor(;name, L, i_start=0.0)
     @named oneport = OnePort(;i_start=i_start)
     @unpack v, i = oneport
     pars = @parameters L=L
