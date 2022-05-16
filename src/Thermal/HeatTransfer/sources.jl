@@ -27,7 +27,7 @@ function FixedHeatFlow(; name, Q_flow=1.0, T_ref=293.15, alpha=0.0)
 end
 
 """
-    FixedTemperature(; name, T=0.0)
+    FixedTemperature(; name, T)
 
 Fixed temperature boundary condition in kelvin.
 
@@ -36,7 +36,7 @@ This model defines a fixed temperature T at its port in kelvin, i.e., it defines
 # Parameters:
 - `T`: [K] Fixed temperature boundary condition
 """
-function FixedTemperature(; name, T=0.0)
+function FixedTemperature(; name, T)
     @named port = HeatPort()
     pars = @parameters T=T
     eqs = [

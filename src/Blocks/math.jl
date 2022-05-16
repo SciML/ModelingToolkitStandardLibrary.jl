@@ -1,5 +1,5 @@
 """
-    Gain(k=1; name)
+    Gain(k; name)
 
 Output the product of a gain value with the input signal.
 
@@ -10,7 +10,7 @@ Output the product of a gain value with the input signal.
 - `input`
 - `output`
 """
-function Gain(k=1; name)
+function Gain(k; name)
     @named siso = SISO()
     @unpack u, y = siso
     pars = @parameters k=k
