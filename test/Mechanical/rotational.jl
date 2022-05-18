@@ -29,9 +29,9 @@ import ModelingToolkitStandardLibrary.Blocks
 end
 
 @testset "two inertias with driving torque" begin
-    amplitude=10 # Amplitude of driving torque
-    frequency=5 # Frequency of driving torque
-    J_motor=0.1 # Motor inertia
+    amplitude = 10 # Amplitude of driving torque
+    frequency = 5 # Frequency of driving torque
+    J_motor = 0.1 # Motor inertia
 
     @named fixed = Fixed()
     @named torque = Torque(use_support=true)
@@ -62,12 +62,12 @@ end
 
 # see: https://doc.modelica.org/Modelica%204.0.0/Resources/helpWSM/Modelica/Modelica.Mechanics.Rotational.Examples.First.html
 @testset "first example" begin
-    amplitude=10 # Amplitude of driving torque
-    frequency=5 # Frequency of driving torque
-    J_motor=0.1 # Motor inertia
-    J_load=2 # Load inertia
-    ratio=10 # Gear ratio
-    damping=10 # Damping in bearing of gear
+    amplitude = 10 # Amplitude of driving torque
+    frequency = 5 # Frequency of driving torque
+    J_motor = 0.1 # Motor inertia
+    J_load = 2 # Load inertia
+    ratio = 10 # Gear ratio
+    damping = 10 # Damping in bearing of gear
 
     @named fixed = Fixed()
     @named torque = Torque(use_support=true)

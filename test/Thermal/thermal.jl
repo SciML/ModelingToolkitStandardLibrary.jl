@@ -5,13 +5,13 @@ using ModelingToolkitStandardLibrary.Thermal, ModelingToolkit, OrdinaryDiffEq, T
 @testset "Heat systems" begin
     T, C, G = 10.0, 10.0, 10.0
     @variables final_T(t)
-    @named mass1         = HeatCapacitor(C=C)
-    @named mass2         = HeatCapacitor(C=C)
-    @named th_conductor  = ThermalConductor(G=G)
+    @named mass1 = HeatCapacitor(C=C)
+    @named mass2 = HeatCapacitor(C=C)
+    @named th_conductor = ThermalConductor(G=G)
     @named reltem_sensor = RelativeTemperatureSensor()
-    @named T_sensor1     = TemperatureSensor()
-    @named T_sensor2     = TemperatureSensor()
-    @named tem_src       = FixedTemperature(T=T)
+    @named T_sensor1 = TemperatureSensor()
+    @named T_sensor2 = TemperatureSensor()
+    @named tem_src = FixedTemperature(T=T)
 
     @info "Building a single-body system..."
     eqs = [
@@ -61,13 +61,13 @@ end
 # Test HeatFlowSensor, FixedHeatFlow, ThermalResistor, ThermalConductor
 @testset "Heat flow system" begin
     C, G, R = 10, 10, 10
-    @named flow_src     = FixedHeatFlow(Q_flow=50, alpha=100)
-    @named mass1        = HeatCapacitor(C=C)
-    @named hf_sensor1   = HeatFlowSensor()
-    @named hf_sensor2   = HeatFlowSensor()
+    @named flow_src = FixedHeatFlow(Q_flow=50, alpha=100)
+    @named mass1 = HeatCapacitor(C=C)
+    @named hf_sensor1 = HeatFlowSensor()
+    @named hf_sensor2 = HeatFlowSensor()
     @named th_conductor = ThermalConductor(G=G)
-    @named th_resistor  = ThermalResistor(R=R) 
-    @named th_ground    = FixedTemperature(T=0)
+    @named th_resistor = ThermalResistor(R=R) 
+    @named th_ground = FixedTemperature(T=0)
 
     @info "Building a heat-flow system..."
     eqs = [
@@ -81,11 +81,11 @@ end
     sys = structural_simplify(h2)
 
     u0 = [
-        mass1.T            => 10.0
+        mass1.T => 10.0
         th_resistor.Q_flow => 1.0
     ]
     prob = ODEProblem(sys, u0, (0, 3.0))
-    sol  = solve(prob, Rodas4())
+    sol = solve(prob, Rodas4())
     
     @test sol[th_conductor.dT] .* G == sol[th_conductor.Q_flow]
     @test sol[th_conductor.Q_flow] ≈ sol[hf_sensor1.Q_flow] + sol[flow_src.port.Q_flow]
@@ -100,10 +100,10 @@ end
     Tᵧ, Tᵪ = 1000, 10 # ᵧ -> gas and ᵪ -> coolant
     Rᵧ, Rᵪ = 50e-4, 10e-4 # R = 1/h; h is convection co-efficient
     R_wall = 1.5e-4
-    @named coolant     = ConvectiveResistor(R=Rᵪ)
-    @named gas         = ConvectiveResistor(R=Rᵧ)
-    @named wall        = ThermalResistor(R=R_wall)
-    @named gas_tem     = FixedTemperature(T=Tᵧ)
+    @named coolant = ConvectiveResistor(R=Rᵪ)
+    @named gas = ConvectiveResistor(R=Rᵧ)
+    @named wall = ThermalResistor(R=R_wall)
+    @named gas_tem = FixedTemperature(T=Tᵧ)
     @named coolant_tem = FixedTemperature(T=Tᵪ)
 
     @info "Building a piston-cylinder..."
@@ -117,7 +117,7 @@ end
     sys = structural_simplify(piston)
 
     u0 = [
-        coolant.dT  => 5.0
+        coolant.dT => 5.0
         wall.Q_flow => 10.0
     ]
     prob = ODEProblem(sys, u0, (0, 3.0))
@@ -133,14 +133,14 @@ end
     Tᵧ, Tᵪ = 1000, 10 # ᵧ -> gas and ᵪ -> coolant
     R_wall = 10
     G = 0.04
-    σ   = 5.6703744191844294e-8 # Stefan-Boltzmann constant
+    σ = 5.6703744191844294e-8 # Stefan-Boltzmann constant
 
-    @named base        = ThermalResistor(R=R_wall)
-    @named gas_tem     = FixedTemperature(T=Tᵧ)
+    @named base = ThermalResistor(R=R_wall)
+    @named gas_tem = FixedTemperature(T=Tᵧ)
     @named coolant_tem = FixedTemperature(T=Tᵪ)
-    @named radiator    = BodyRadiation(G=G)
-    @named dissipator  = ConvectiveConductor(G=10)
-    @named mass        = HeatCapacitor(C=10)
+    @named radiator = BodyRadiation(G=G)
+    @named dissipator = ConvectiveConductor(G=10)
+    @named mass = HeatCapacitor(C=10)
     
     @info "Building a radiator..."
     eqs = [
@@ -164,13 +164,13 @@ end
 end
 
 @testset "Thermal Collector" begin
-    @named flow_src    = FixedHeatFlow(Q_flow=50, alpha=100)
-    @named hf_sensor   = HeatFlowSensor()
-    @named th_ground   = FixedTemperature(T=0)
-    @named collector   = ThermalCollector(m=2)
+    @named flow_src = FixedHeatFlow(Q_flow=50, alpha=100)
+    @named hf_sensor = HeatFlowSensor()
+    @named th_ground = FixedTemperature(T=0)
+    @named collector = ThermalCollector(m=2)
     @named th_resistor = ThermalResistor(R=10) 
-    @named tem_src     = FixedTemperature(T=10)
-    @named mass        = HeatCapacitor(C=10)
+    @named tem_src = FixedTemperature(T=10)
+    @named mass = HeatCapacitor(C=10)
 
     @info "Building a heat collector..."
     eqs = [
@@ -190,7 +190,7 @@ end
         mass.T => 0.0,
     ]
     prob = ODEProblem(sys, u0, (0, 3.0))
-    sol  = solve(prob, Rodas4())
+    sol = solve(prob, Rodas4())
 
     @test sol[collector.port_b.Q_flow] + sol[collector.port_a1.Q_flow] + sol[collector.port_a2.Q_flow] ==
         zeros(length(sol[collector.port_b.Q_flow]))
