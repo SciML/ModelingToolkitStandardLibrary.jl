@@ -88,7 +88,6 @@ end
         mass1.T            => 10.0
         th_resistor.Q_flow => 1.0
         mass1.der_T        => 1.0
-        mass2.der_T        => 1.0
     ]
     prob = DAEProblem(sys, D.(states(sys)) .=> 0.0, u0, (0, 3.0))
     sol  = solve(prob, DFBDF())
