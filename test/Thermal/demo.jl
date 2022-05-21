@@ -1,5 +1,6 @@
 using ModelingToolkitStandardLibrary.Thermal, ModelingToolkit, OrdinaryDiffEq, Test
 @parameters t
+D = Differential(t)
 
 # Modelica example
 begin
@@ -18,6 +19,6 @@ begin
 
     @named model = ODESystem(connections, t, systems=[mass1, mass2, conduction, Tsensor1, Tsensor2])
     sys = structural_simplify(model)
-    prob = ODEProblem(sys, Pair[], (0, 3.0))
-    sol = solve(prob, Rodas4())
+    prob = DAEProblem(sys, D.(states(sys)) .=> 0.0, [mass1.der_T => 1.0, mass2.der_T => 1.0], (0, 3.0))
+    sol = solve(prob, DFBDF())
 end
