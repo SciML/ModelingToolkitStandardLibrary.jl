@@ -29,6 +29,7 @@ makedocs(
 
         "Tutorials" => [
             "RC Circuit" => "tutorials/rc_circuit.md"
+            "Custom Components" => "tutorials/custom_component.md",
         ],
 
         "API" => [
