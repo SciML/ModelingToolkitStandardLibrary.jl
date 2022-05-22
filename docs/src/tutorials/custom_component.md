@@ -102,6 +102,9 @@ connections = [
 ```
 
 ## Simulating the Model
+Now the model can be simulated.
+First `structural_simplify` is called on the model and a `ODEProblem` is build from the result.
+Since the initial voltage of the first capacitor was already specified via `v_start`, no initial condition is given and an empty pair is supplied.
 ```julia
 sys = structural_simplify(model)
 prob = ODEProblem(sys, Pair[], (0, 5e4), saveat=0.01)
@@ -113,3 +116,7 @@ Plots.savefig("chua_phase_plane.png")
 Plots.plot(sol; vars=[C1.v, C2.v, L.i], labels=["C1 Voltage in V" "C1 Voltage in V" "Inductor Current in A"])
 Plots.savefig("chua.png")
 ```
+
+![Time series plot of C1.v, C2.v and L.i](https://user-images.githubusercontent.com/50108075/169712569-9ae5a074-ca1a-4801-b666-75a2f6e21bf5.png)
+
+![Phase plane plot of C1.v and C2.v](https://user-images.githubusercontent.com/50108075/169712578-b3f314f6-3310-4471-a31e-af7fac3c0fbc.png)
