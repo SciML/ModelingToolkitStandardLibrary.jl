@@ -28,7 +28,7 @@ makedocs(
         "ModelingToolkitStandardLibrary.jl: A Standard Library for ModelingToolkit" => "index.md",
 
         "Tutorials" => [
-            "RC Circuit" => "tutorials/rc_circuit.md"
+            "RC Circuit" => "tutorials/rc_circuit.md",
             "Custom Components" => "tutorials/custom_component.md",
         ],
 
