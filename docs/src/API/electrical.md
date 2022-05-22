@@ -16,6 +16,7 @@ DigitalPin
 ```@docs
 Ground
 Resistor
+Conductor
 Capacitor
 Inductor
 IdealOpAmp
