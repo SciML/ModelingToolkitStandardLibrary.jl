@@ -27,7 +27,7 @@ include("Analog/sources.jl")
 export #Interface
        Pin,
        # Analog Components
-       Capacitor, Ground, Inductor, Resistor,
+       Capacitor, Ground, Inductor, Resistor, Conductor,
        Short, IdealOpAmp,
        # Analog Sensors
        CurrentSensor, PotentialSensor, VoltageSensor,

@@ -47,6 +47,31 @@ function Resistor(;name, R)
 end
 
 """
+    Conductor(;name, G)
+
+Ideal linear electrical conductor.
+
+# States
+- see [`OnePort`](@ref)
+
+# Connectors
+- `p` Positive pin
+- `n` Negative pin
+
+# Parameters: 
+- `G`: [`S`] Conductance
+"""
+function Conductor(;name, G)
+    @named oneport = OnePort()
+    @unpack v, i = oneport
+    pars = @parameters G=G
+    eqs = [
+        i ~ v * G
+    ]
+    extend(ODESystem(eqs, t, [], pars; name=name), oneport)
+end
+
+"""
 ```julia
 function Capacitor(; name, C)
 ```
