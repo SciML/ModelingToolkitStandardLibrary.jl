@@ -134,7 +134,7 @@ end
     prob = ODAEProblem(sys, [capacitor.v => 0.0], (0.0, 10.0))
     sol = solve(prob, Tsit5())
     y(x, st) = (x .> st) .* abs.(collect(x) .- st)
-    @test sum(reduce(vcat, sol.u) .- y(sol.t, start_time)) ≈ 0 atol=1e-4 
+    @test sum(reduce(vcat, sol.u) .- y(sol.t, start_time)) ≈ 0 atol=1e-4
 
 end
 
@@ -150,7 +150,7 @@ end
 #     @named opamp = IdealOpAmp()
 #     @named square = SquareVoltage(amplitude=Vin)
 #     @named sensor = VoltageSensor()
-#     
+#
 #     connections = [
 #         connect(square.p, R1.p)
 #         connect(R1.n, C1.n, R2.p, opamp.n1)
@@ -168,8 +168,8 @@ end
 #     prob = ODEProblem(sys, u0, (0, 100.0))
 #     sol = solve(prob, Rodas4())
 #     @test sol[opamp.v2] == sol[C1.v] # Not a great one however. Rely on the plot
-#     @test sol[opamp.p2.v] == sol[sensor.v] 
-# 
+#     @test sol[opamp.p2.v] == sol[sensor.v]
+#
 #     # plot(sol, vars=[sensor.v, square.v, C1.v])
 # end
 
@@ -202,7 +202,7 @@ _damped_sine_wave(x, f, A, st, ϕ, d) = exp((st-x)*d)*A*sin(2*π*f*(x-st) + ϕ)
                                 o .+ (x .> st) .* _cos_wave.(x, f, A, st, ϕ),
                                 o .+ (x .> st) .* _sine_wave.(x, f, A, st, ϕ),
                                 o .+ (x .> st) .* _damped_sine_wave.(x, f, A, st, ϕ, d),
-                                o .+ _ramp.(x, st, et, h)], i)
+                                o .+ _ramp.(x, st, (et-st), h)], i)
                                 # o .+ (x .> st) .* _triangular_wave.(x, δ, f, A, st),
                                 # o .+ (x .> st) .* _square_wave.(x, δ, f, A, st),
                                 # o .+ (x .> st). * _sawtooth_wave.(x, δ, f, A, st),
@@ -223,11 +223,7 @@ _damped_sine_wave(x, f, A, st, ϕ, d) = exp((st-x)*d)*A*sin(2*π*f*(x-st) + ϕ)
         prob = ODAEProblem(vsys, u0, (0, 10.0))
         sol = solve(prob, dt=0.1, Tsit5())
 
-        if source == ramp
-            @test_broken sol[voltage.V.u] ≈ waveforms(i, sol.t) atol=1e-1
-        else
-            @test sol[voltage.V.u] ≈ waveforms(i, sol.t) atol=1e-1
-        end
+        @test sol[voltage.V.u] ≈ waveforms(i, sol.t) atol=1e-1
         @test sol[voltage.p.v] ≈ sol[voltage.V.u]
         # For visual inspection
         # plt = plot(sol; vars=[vsource.v])
