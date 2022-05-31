@@ -42,16 +42,6 @@ function triangular(x, f, amplitude, offset, start_time)
     offset + (x > start_time) * (4 * amplitude * f * abs(abs((x - p/4 - start_time) % p) - p/2) - amplitude)
 end
 
-@register_symbolic smooth_cos(x, δ, f, amplitude, ϕ, offset, start_time)
-@register_symbolic smooth_damped_sin(x, δ, f, amplitude, damping, ϕ, offset, start_time)
-@register_symbolic smooth_ramp(x, δ, height, duration, offset, start_time)
-@register_symbolic smooth_sin(x, δ, f, amplitude, ϕ, offset, start_time)
-@register_symbolic smooth_square(x, δ, f, amplitude, offset, start_time)
-@register_symbolic smooth_step(x, δ, height, offset, start_time)
-@register_symbolic smooth_triangular(x, δ, f, amplitude, offset, start_time)
-@register_symbolic triangular(x, f, amplitude, offset, start_time)
-@register_symbolic square(x, f, amplitude, offset, start_time)
-
 """
 Generate constant signal.
 
