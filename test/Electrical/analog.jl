@@ -1,5 +1,6 @@
 using ModelingToolkitStandardLibrary.Electrical, ModelingToolkit, OrdinaryDiffEq, Test
-using ModelingToolkitStandardLibrary.Blocks: Step, Constant, Sine, Cosine, ExpSine, Ramp
+using ModelingToolkitStandardLibrary.Blocks: Step, Constant, Sine, Cosine, ExpSine, Ramp, Square, Triangular
+using ModelingToolkitStandardLibrary.Blocks: square, triangular
 # using Plots
 
 @parameters t
@@ -134,44 +135,46 @@ end
     prob = ODAEProblem(sys, [capacitor.v => 0.0], (0.0, 10.0))
     sol = solve(prob, Tsit5())
     y(x, st) = (x .> st) .* abs.(collect(x) .- st)
-    @test sum(reduce(vcat, sol.u) .- y(sol.t, start_time)) ≈ 0 atol=1e-4
+    @test sum(reduce(vcat, sol.u) .- y(sol.t, start_time)) ≈ 0 atol=1e-2
 
 end
 
 # TODO: Once the Square() is back fix & re-enable this test
-# @testset "Integrator" begin
-#     R=1e3
-#     f=1
-#     Vin=5
-#     @named ground = Ground()
-#     @named R1 = Resistor(R=R)
-#     @named R2 = Resistor(R=100*R)
-#     @named C1 = Capacitor(C=1/(2 * pi * f * R))
-#     @named opamp = IdealOpAmp()
-#     @named square = SquareVoltage(amplitude=Vin)
-#     @named sensor = VoltageSensor()
-#
-#     connections = [
-#         connect(square.p, R1.p)
-#         connect(R1.n, C1.n, R2.p, opamp.n1)
-#         connect(opamp.p2, C1.p, R2.n)
-#         connect(opamp.p1, ground.g, opamp.n2, square.n)
-#         connect(opamp.p2, sensor.p)
-#         connect(sensor.n, ground.g)
-#     ]
-#     @named model = ODESystem(connections, t, systems = [R1, R2, opamp, square, C1, ground, sensor])
-#     sys = structural_simplify(model)
-#     u0 = [
-#         C1.v => 0.0
-#         R1.v => 0.0
-#     ]
-#     prob = ODEProblem(sys, u0, (0, 100.0))
-#     sol = solve(prob, Rodas4())
-#     @test sol[opamp.v2] == sol[C1.v] # Not a great one however. Rely on the plot
-#     @test sol[opamp.p2.v] == sol[sensor.v]
-#
-#     # plot(sol, vars=[sensor.v, square.v, C1.v])
-# end
+@testset "Integrator" begin
+    R=1e3
+    f=1
+    Vin=5
+    @named ground = Ground()
+    @named R1 = Resistor(R=R)
+    @named R2 = Resistor(R=100*R)
+    @named C1 = Capacitor(C=1/(2 * pi * f * R))
+    @named opamp = IdealOpAmp()
+    @named square = Square(amplitude=Vin)
+    @named voltage = Voltage()
+    @named sensor = VoltageSensor()
+
+    connections = [
+        connect(square.output, voltage.V)
+        connect(voltage.p, R1.p)
+        connect(R1.n, C1.n, R2.p, opamp.n1)
+        connect(opamp.p2, C1.p, R2.n)
+        connect(opamp.p1, ground.g, opamp.n2, voltage.n)
+        connect(opamp.p2, sensor.p)
+        connect(sensor.n, ground.g)
+    ]
+    @named model = ODESystem(connections, t, systems = [R1, R2, opamp, square, voltage, C1, ground, sensor])
+    sys = structural_simplify(model)
+    u0 = [
+        C1.v => 0.0
+        R1.v => 0.0
+    ]
+    prob = ODEProblem(sys, u0, (0, 100.0))
+    sol = solve(prob, Rodas4())
+    @test sol[opamp.v2] == sol[C1.v] # Not a great one however. Rely on the plot
+    @test sol[opamp.p2.v] == sol[sensor.v]
+
+    # plot(sol, vars=[sensor.v, square.v, C1.v])
+end
 
 _step(x, h, st) = ifelse(x < st, 0, h)
 _cos_wave(x, f, A, st, ϕ) = A*cos(2*π*f*(x-st) + ϕ)
@@ -193,22 +196,23 @@ _damped_sine_wave(x, f, A, st, ϕ, d) = exp((st-x)*d)*A*sin(2*π*f*(x-st) + ϕ)
     @named sine = Sine(offset=o, amplitude=A, frequency=f, start_time=st, phase=ϕ)
     @named damped_sine = ExpSine(offset=o, amplitude=A, frequency=f, start_time=st, phase=ϕ, damping=d)
     @named ramp   = Ramp(offset=o, start_time=st, duration=et-st, height=h)
-    # @named vsquare = Square(offset=o, start_time=st, amplitude=A, frequency=f)
-    # @named vtri = Triangular(offset=o, start_time=st, amplitude=A, frequency=f)
+    @named vsquare = Square(offset=o, start_time=st, amplitude=A, frequency=f)
+    @named tri = Triangular(offset=o, start_time=st, amplitude=A, frequency=f)
     # @named vsawtooth = SawTooth(amplitude=A, start_time=st, frequency=f, offset=o)
 
-    sources = [step, cosine, sine, damped_sine, ramp] #, vtri, vsquare, vdamped_sine]
+    sources = [step, cosine, sine, damped_sine, ramp, tri, vsquare] #, vsawtooth]
     waveforms(i, x) = getindex([o .+  _step.(x, h, st),
                                 o .+ (x .> st) .* _cos_wave.(x, f, A, st, ϕ),
                                 o .+ (x .> st) .* _sine_wave.(x, f, A, st, ϕ),
                                 o .+ (x .> st) .* _damped_sine_wave.(x, f, A, st, ϕ, d),
-                                o .+ _ramp.(x, st, (et-st), h)], i)
-                                # o .+ (x .> st) .* _triangular_wave.(x, δ, f, A, st),
-                                # o .+ (x .> st) .* _square_wave.(x, δ, f, A, st),
+                                o .+ _ramp.(x, st, (et-st), h),
+                                triangular.(x, f, A, o, st),
+                                square.(x, f, A, o, st)], i)
                                 # o .+ (x .> st). * _sawtooth_wave.(x, δ, f, A, st),
 
     for i in 1:length(sources)
         source = sources[i]
+        @info "Testing Voltage with $(source.name) source"
         eqs = [
             connect(source.output, voltage.V)
             connect(voltage.p, voltage_sensor.p, res.p)
@@ -244,22 +248,23 @@ end
     @named sine = Sine(offset=o, amplitude=A, frequency=f, start_time=st, phase=ϕ)
     @named damped_sine = ExpSine(offset=o, amplitude=A, frequency=f, start_time=st, phase=ϕ, damping=d)
     @named ramp = Ramp(offset=o, start_time=st, duration=et-st, height=h)
-    # @named isquare = Square(offset=o, start_time=st, amplitude=A, frequency=f)
-    # @named itri = Triangular(offset=o, start_time=st, amplitude=A, frequency=f)
+    @named vsquare = Square(offset=o, start_time=st, amplitude=A, frequency=f)
+    @named tri = Triangular(offset=o, start_time=st, amplitude=A, frequency=f)
     # @named isawtooth = SawTooth(amplitude=A, start_time=st, frequency=f, offset=o)
 
-    sources = [step, cosine, sine, damped_sine, ramp] #, itri, isquare, idamped_sine]
+    sources = [step, cosine, sine, damped_sine, ramp, tri, vsquare] #, idamped_sine]
     waveforms(i, x) = getindex([o .+  _step.(x, h, st),
                                 o .+ (x .> st) .* _cos_wave.(x, f, A, st, ϕ),
                                 o .+ (x .> st) .* _sine_wave.(x, f, A, st, ϕ),
                                 o .+ (x .> st) .* _damped_sine_wave.(x, f, A, st, ϕ, d),
-                                o .+ _ramp.(x, st, et, h)], i)
-                                # o .+ (x .> st) .* _triangular_wave.(x, δ, f, A, st),
-                                # o .+ (x .> st) .* _square_wave.(x, δ, f, A, st),
+                                o .+ _ramp.(x, st, (et-st), h),
+                                triangular.(x, f, A, o, st),
+                                square.(x, f, A, o, st)], i)
                                 # # o .+ (x .> st). * _sawtooth_wave.(x, δ, f, A, st)
 
     for i in 1:length(sources)
         source = sources[i]
+        @info "Testing Current with $(source.name) source"
         eqs = [
             connect(source.output, current.I)
             connect(current.p, current_sensor.n)
@@ -273,13 +278,9 @@ end
         u0 = []
 
         prob = ODAEProblem(isys, u0, (0, 10.0))
-        sol = solve(prob, Tsit5())
+        sol = solve(prob, dt=0.1, Tsit5())
 
-        if source == ramp
-            @test_broken sol[current.I.u] ≈ waveforms(i, sol.t) atol=1e-1
-        else
-            @test sol[current.I.u] ≈ waveforms(i, sol.t) atol=1e-1
-        end
+        @test sol[current.I.u] ≈ waveforms(i, sol.t) atol=1e-1
         @test sol[current.I.u] ≈ sol[current.p.i] atol=1e-1
         # For visual inspection
         # plt = plot(sol)
