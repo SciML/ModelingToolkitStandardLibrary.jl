@@ -325,10 +325,6 @@ Generate smooth triangular signal for frequencies less than or equal to 25 Hz
 function Triangular(; name, amplitude=1.0, frequency=1.0,
     offset=0.0, start_time=0.0, smooth=false)
 
-    if smooth
-        frequency > 25 && @warn "`frequency > 25` can lead to non-triangular wave pattern"
-    end
-
     @named output = RealOutput()
     pars = @parameters begin
         amplitude=amplitude
