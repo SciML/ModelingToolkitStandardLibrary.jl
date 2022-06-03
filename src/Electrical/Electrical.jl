@@ -21,7 +21,7 @@ include("Analog/sources.jl")
 # include("Digital/tables.jl")
 # include("Digital/sources.jl")
 
-# TODO: 
+# TODO:
 # - digital
 # - machines
 # - multi-phase
@@ -29,14 +29,14 @@ include("Analog/sources.jl")
 export #Interface
        Pin,
        # Analog Components
-       Capacitor, Ground, Inductor, Resistor,
-       IdealOpAmp, # Short
+       Capacitor, Ground, Inductor, Resistor, Conductor,
+       Short, IdealOpAmp,
        # Analog Sensors
        CurrentSensor, PotentialSensor, VoltageSensor,
        PowerSensor, MultiSensor,
        # Analog Sources
        Voltage, Current
-       
+
 
        # # Digital Gates
        # And, Or, Not, Xor, Nand, Nor, Xnor,

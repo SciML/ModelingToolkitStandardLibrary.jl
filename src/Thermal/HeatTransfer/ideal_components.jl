@@ -1,5 +1,5 @@
 """
-    HeatCapacitor(; name, C, T_start=293.15 + 20)    
+    HeatCapacitor(; name, C, T_start=273.15 + 20)    
 
 Lumped thermal element storing heat
 
@@ -11,7 +11,7 @@ Lumped thermal element storing heat
 - `T`: [K] Temperature of element
 - `der_T`: [K/s] Time derivative of temperature
 """
-function HeatCapacitor(; name, C, T_start=293.15 + 20)    
+function HeatCapacitor(; name, C, T_start=273.15 + 20)    
     @named port = HeatPort()
     @parameters C=C
     sts = @variables begin
