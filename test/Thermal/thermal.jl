@@ -32,7 +32,7 @@ D = Differential(t)
 
     # Check if Relative temperature sensor reads the temperature of heat capacitor
     # when connected to a thermal conductor and a fixed temperature source
-    @test_broken sol[reltem_sensor.T] + sol[tem_src.port.T] == sol[mass1.T] + sol[th_conductor.dT]
+    @test sol[reltem_sensor.T] + sol[tem_src.port.T] == sol[mass1.T] + sol[th_conductor.dT]
 
     @info "Building a two-body system..."
     eqs = [
@@ -58,8 +58,8 @@ D = Differential(t)
     m1, m2 = sol.u[end]
     @test m1 ≈ m2 atol=1e-1
     mass_T = reduce(hcat, sol.u)
-    @test_broken sol[T_sensor1.T] == mass_T[1, :]
-    @test_broken sol[T_sensor2.T] == mass_T[2, :]
+    @test sol[T_sensor1.T] == mass_T[1, :]
+    @test sol[T_sensor2.T] == mass_T[2, :]
 end
 
 # Test HeatFlowSensor, FixedHeatFlow, ThermalResistor, ThermalConductor
@@ -92,11 +92,11 @@ end
     prob = DAEProblem(sys, D.(states(sys)) .=> 0.0, u0, (0, 3.0))
     sol  = solve(prob, DFBDF())
 
-    @test_broken sol[th_conductor.dT] .* G == sol[th_conductor.Q_flow]
-    @test_broken sol[th_conductor.Q_flow] ≈ sol[hf_sensor1.Q_flow] + sol[flow_src.port.Q_flow]
+    @test sol[th_conductor.dT] .* G == sol[th_conductor.Q_flow]
+    @test sol[th_conductor.Q_flow] ≈ sol[hf_sensor1.Q_flow] + sol[flow_src.port.Q_flow]
 
-    @test_broken sol[mass1.T] == sol[th_resistor.port_a.T]
-    @test_broken sol[th_resistor.dT] ./ R ≈ sol[th_resistor.Q_flow]
+    @test sol[mass1.T] == sol[th_resistor.port_a.T]
+    @test sol[th_resistor.dT] ./ R ≈ sol[th_resistor.Q_flow]
 
 end
 
@@ -130,7 +130,7 @@ end
 
     # Heat-flow-rate is equal in magnitude
     # and opposite in direction
-    @test_broken sol[gas.Q_flow] + sol[coolant.Q_flow] == zeros(length(sol))
+    @test sol[gas.Q_flow] + sol[coolant.Q_flow] == zeros(length(sol))
 end
 
 # Test ConvectiveConductor, BodyRadiation
@@ -163,9 +163,9 @@ end
     prob = DAEProblem(sys, D.(states(sys)) .=> 0.0, u0, (0, 3.0))
     sol = solve(prob, DFBDF())
 
-    @test_broken sol[dissipator.dT] == sol[radiator.port_a.T] - sol[radiator.port_b.T]
+    @test sol[dissipator.dT] == sol[radiator.port_a.T] - sol[radiator.port_b.T]
     rad_Q_flow = G*σ*(Tᵧ^4 - Tᵪ^4)
-    @test_broken sol[radiator.Q_flow] == fill(rad_Q_flow, length(sol[radiator.Q_flow]))
+    @test sol[radiator.Q_flow] == fill(rad_Q_flow, length(sol[radiator.Q_flow]))
 end
 
 @testset "Thermal Collector" begin
@@ -197,7 +197,7 @@ end
     prob = DAEProblem(sys, D.(states(sys)) .=> 0.0, u0, (0, 3.0))
     sol  = solve(prob, DFBDF())
 
-    @test_broken sol[collector.port_b.Q_flow] + sol[collector.port_a1.Q_flow] + sol[collector.port_a2.Q_flow] ==
+    @test sol[collector.port_b.Q_flow] + sol[collector.port_a1.Q_flow] + sol[collector.port_a2.Q_flow] ==
         zeros(length(sol[collector.port_b.Q_flow]))
-    @test_broken sol[collector.port_b.T] == sol[collector.port_a1.T] == sol[collector.port_a2.T]
+    @test sol[collector.port_b.T] == sol[collector.port_a1.T] == sol[collector.port_a2.T]
 end
