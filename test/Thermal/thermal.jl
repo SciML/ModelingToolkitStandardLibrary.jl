@@ -89,8 +89,8 @@ end
         th_resistor.Q_flow => 1.0
         mass1.der_T        => 1.0
     ]
-    prob = ODEProblem(sys, u0, (0, 3.0))
-    sol = solve(prob, Rodas4())
+    prob = DAEProblem(sys, D.(states(sys)) .=> 0.0, u0, (0, 3.0))
+    sol  = solve(prob, DFBDF())
 
     @test sol[th_conductor.dT] .* G == sol[th_conductor.Q_flow]
     @test sol[th_conductor.Q_flow] ≈ sol[hf_sensor1.Q_flow] + sol[flow_src.port.Q_flow]
