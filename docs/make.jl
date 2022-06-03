@@ -24,22 +24,7 @@ makedocs(
     format=Documenter.HTML(assets=["assets/favicon.ico"],
                            canonical="https://mtkstdlib.sciml.ai/stable/"),
 
-    pages=[
-        "ModelingToolkitStandardLibrary.jl: A Standard Library for ModelingToolkit" => "index.md",
-
-        "Tutorials" => [
-            "RC Circuit" => "tutorials/rc_circuit.md",
-            "Custom Components" => "tutorials/custom_component.md",
-        ],
-
-        "API" => [
-            "Basic Blocks" => "API/blocks.md",
-            "Electrical Components" => "API/electrical.md",
-            "Magnetic Components" => "API/magnetic.md",
-            "Mechanical Components" => "API/mechanical.md",
-            "Thermal Components" => "API/thermal.md"
-        ],
-    ]
+    pages=pages
 )
 
 deploydocs(
