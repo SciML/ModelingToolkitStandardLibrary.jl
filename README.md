@@ -6,6 +6,8 @@
 
 The ModelingToolkit Standard Library is standard library of components to model the world and beyond.
 
+![](https://user-images.githubusercontent.com/1814174/172000112-3579f5cf-c370-48c2-8047-558fbc46aeb6.png)
+
 ## Installation
 
 Assuming that you already have Julia correctly installed, it suffices to import
