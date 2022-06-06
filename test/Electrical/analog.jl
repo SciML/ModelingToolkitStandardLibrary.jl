@@ -114,6 +114,40 @@ end
     @test sol[inductor.i][end] ≈ 10 atol=1e-3
 end
 
+@testset "RC with voltage sources" begin
+    R, C = 1, 1
+    @named voltage = Voltage()
+    @named source_const = Constant(k=10)
+    @named source_sin = Sine(offset=1, amplitude=10, frequency=2, start_time=0.5, phase=0)
+    @named source_step = Step(offset=1, height=10, start_time=0.5)
+    @named source_tri = Triangular(offset=1, start_time=0.5, amplitude=10, frequency=2)
+    @named source_dsin = ExpSine(offset=1, amplitude=10, frequency=2, start_time=0.5, phase=0, damping=0.5)
+    @named source_ramp = Ramp(offset=1, height=10, start_time=0.5, duration=1)
+    sources = [source_const, source_sin, source_step, source_tri, source_dsin, source_ramp]
+
+    @named resistor = Resistor(; R)
+    @named capacitor = Capacitor(; C)
+    @named ground = Ground()
+
+    for source in sources
+        connections = [
+            connect(source.output, voltage.V)
+            connect(voltage.p, resistor.p)
+            connect(resistor.n, capacitor.p)
+            connect(capacitor.n, voltage.n, ground.g)
+        ]
+
+        @named model = ODESystem(connections, t; systems=[resistor, capacitor, source, ground, voltage])
+        sys = structural_simplify(model)
+        prob = ODAEProblem(sys, [capacitor.v => 10.0], (0.0, 10.0))
+        @test_nowarn sol = solve(prob, Rodas5())
+        @test_nowarn sol = solve(prob, Tsit5())
+
+        # Plots.plot(sol; vars=[voltage.v, capacitor.v])
+    end
+end
+
+
 # RC with current sources
 @testset "RC with current sources" begin
     start_time = 2
@@ -139,7 +173,6 @@ end
 
 end
 
-# TODO: Once the Square() is back fix & re-enable this test
 @testset "Integrator" begin
     R=1e3
     f=1
@@ -230,8 +263,8 @@ _damped_sine_wave(x, f, A, st, ϕ, d) = exp((st-x)*d)*A*sin(2*π*f*(x-st) + ϕ)
         @test sol[voltage.V.u] ≈ waveforms(i, sol.t) atol=1e-1
         @test sol[voltage.p.v] ≈ sol[voltage.V.u]
         # For visual inspection
-        # plt = plot(sol; vars=[vsource.v])
-        # savefig(plt, "test_voltage_$(Symbolics.getname(vsource))")
+        # plt = plot(sol; vars=[voltage.v])
+        # savefig(plt, "test_voltage_$(source.name)")
     end
 end
 
@@ -284,6 +317,6 @@ end
         @test sol[current.I.u] ≈ sol[current.p.i] atol=1e-1
         # For visual inspection
         # plt = plot(sol)
-        # savefig(plt, "test_current_$(Symbolics.getname(isource))")
+        # savefig(plt, "test_current_$(source.name)")
     end
 end
