@@ -6,31 +6,31 @@
     ODESystem(Equation[], t, sts, [], name=name, defaults=Dict(v=>1.0, i=>1.0))
 end
 @doc """
-```julia
-@connector function Pin(; name)
-```
+    Pin(; name)
 
 A pin in an analog circuit.
 
-# States
-- `v(t)`: [`V`]
-  The voltage at this pin
-- `i(t)`: [`A`]
-  The current passing through this pin
+# States:
+- `v(t)`: [`V`] The voltage at this pin
+- `i(t)`: [`A`] The current passing through this pin
 """ Pin
 
 """
-```julia
     OnePort(; name, v_start=0.0, i_start=0.0)
-```
 
 Component with two electrical pins `p` and `n` and current `i` from `p` to `n`.
 
+# States:
+- `v(t)`: [`V`] The voltage across component `p.v - n.v`
+- `i(t)`: [`A`] The current passing through positive pin
+
 # Parameters:
-- `v_start`: [`V`]
-  Initial voltage across the component
-- `i_start`: [`A`]
-  Initial current through the component
+- `v_start`: [`V`] Initial voltage across the component
+- `i_start`: [`A`] Initial current through the component
+
+# Connectors:
+- `p` Positive pin
+- `n` Negative pin
 """
 function OnePort(;name, v_start=0.0, i_start=0.0)
     @named p = Pin()
@@ -56,16 +56,14 @@ end
     ODESystem(Equation[], t, [val, v, i], [], defaults=Dict(val=>0, i=>0), name=name)
 end
 @doc """
-```julia
-@connector function DigitalPin(; name)
-```
+    DigitalPin(; name)
 
 A pin in a digital circuit.
 
-# States
+# States:
 - `v(t)`: [`V`] The voltage at this pin
 - `i(t)`: [`A`] The current passing through this pin
-- `val(t)`: The binary value of the pin at this point. A voltage from `0V` to `0.8V` is a binary value
-  of `0`. A voltage in the range `2.0V` to `5.0V` is `1`. Any other value is `X`.
+- `val(t)`: The binary value of the pin at this point. A voltage from `0V` to `0.8V` is a binary value of `0`. 
+A voltage in the range `2.0V` to `5.0V` is `1`. Any other value is `X`.
 """ DigitalPin
 
