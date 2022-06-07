@@ -43,24 +43,29 @@ using ModelingToolkitStandardLibrary.Blocks: square, triangular
 end
 
 # simple voltage divider
-@testset "voltage divider" begin
+@testset "voltage divider with a short branch" begin
     @named source = Constant(k=10)
     @named voltage = Voltage()
+    @named R0 = Resistor(R=1e3)
     @named R1 = Resistor(R=1e3)
     @named R2 = Resistor(R=1e3)
     @named ground = Ground()
+    @named short = Short()
 
     connections = [
         connect(source.output, voltage.V)
         connect(voltage.p, R1.p)
-        connect(R1.n, R2.p)
+        connect(R1.n,short.p, R0.p)
+        connect(short.n, R0.n, R2.p)
         connect(R2.n, voltage.n, ground.g)
     ]
 
-    @named model = ODESystem(connections, t, systems=[R1, R2, source,voltage, ground])
+    @named model = ODESystem(connections, t, systems=[R0, R1, R2, source, short, voltage, ground])
     sys = structural_simplify(model)
     prob = ODEProblem(sys, Pair[], (0, 2.0))
     sol = solve(prob, Rodas4()) # has no state; does not work with Tsit5
+    @test sol[short.v] == sol[R0.v] == zeros(length(sol.t))
+    @test sol[R0.i] == zeros(length(sol.t))
     @test sol[R1.p.v][end] ≈ 10 atol=1e-3
     @test sol[R1.n.v][end] ≈ 5 atol=1e-3
     @test sol[R2.n.v][end] ≈ 0 atol=1e-3

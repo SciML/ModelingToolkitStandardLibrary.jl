@@ -143,3 +143,22 @@ function IdealOpAmp(;name)
     ]
     extend(ODESystem(eqs, t, [], [], name=name), twoport)
 end
+
+"""
+    Short(; name)
+
+Short is a simple short cut branch. That means the voltage drop between both pins is zero.
+
+# States:
+See [OnePort](@ref)
+
+# Connectors:
+- `p` Positive pin
+- `n` Negative pin
+"""
+function Short(; name)
+    @named oneport = OnePort()
+    @unpack v, i = oneport
+    eqs = [v ~ 0]
+    extend(ODESystem(eqs, t, [], []; name=name), oneport)
+end
