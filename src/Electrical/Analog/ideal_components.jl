@@ -39,9 +39,9 @@ function Resistor(;name, R)
 end
 
 """
-    Capacitor(; name, C)
+    Conductor(;name, G)
 
-Creates an ideal Capacitor.
+Creates an ideal conductor.
 
 # States:
 See [OnePort](@ref)
@@ -67,7 +67,7 @@ end
     Capacitor(; name, C)
 
 
-Creates an ideal Capacitor.
+Creates an ideal capacitor.
 
 # States:
 - `v(t)`: [`V`]
