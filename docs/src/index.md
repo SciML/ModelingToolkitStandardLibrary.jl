@@ -14,7 +14,8 @@ import Pkg; Pkg.add("ModelingToolkitStandardLibrary")
 
 ## Tutorials 
 
-- [RC Circuit Tutorial](http://mtkstdlib.sciml.ai/dev/tutorials/rc_circuit/)
+- [RC Circuit](http://mtkstdlib.sciml.ai/dev/tutorials/rc_circuit/)
+- [Custom Component](http://mtkstdlib.sciml.ai/dev/tutorials/custom_component/)
 
 ## Libraries
 
