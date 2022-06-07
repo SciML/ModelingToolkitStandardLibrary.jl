@@ -46,8 +46,8 @@ end
         u0 = []
         prob = ODEProblem(sys, u0, (0, 1.5))
         sol = solve(prob, Rosenbrock23())
-    @test sol.retcode == :Success
-    @test sol[and.y.val] == _and.(sol[one.d.val], sol[two.d.val])
+        @test sol.retcode == :Success
+        @test sol[and.y.val] == _and.(sol[one.d.val], sol[two.d.val])
 
         nand_eqs = [
             connect(one.d, nand.x1)
