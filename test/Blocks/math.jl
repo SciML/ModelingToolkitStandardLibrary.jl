@@ -15,6 +15,7 @@ using ModelingToolkit, OrdinaryDiffEq
 
     sol = solve(prob, Rodas4())
 
+    @test sol.retcode == :Success
     @test all(sol[c.output.u] .≈ 1)
     @test sol[int.output.u][end] ≈ 2 # expected solution after 1s
 end
@@ -39,6 +40,7 @@ end
     prob = ODEProblem(sys, Pair[int.x=>0.0], (0.0, 100.0))
 
     sol = solve(prob, Rodas4())
+    @test sol.retcode == :Success
     @test sol[int.output.u][end] ≈ 2 # expected solution after 1s
 end
 
@@ -59,6 +61,7 @@ end
     sys = structural_simplify(model)
     prob = ODEProblem(sys, Pair[int.x=>0.0], (0.0, 1.0))
     sol = solve(prob, Rodas4())
+    @test sol.retcode == :Success
     @test sol[add.output.u] ≈ 1 .+ sin.(2*pi*sol.t)
 
     @testset "weights" begin
@@ -77,6 +80,7 @@ end
         sys = structural_simplify(model)
         prob = ODEProblem(sys, Pair[int.x=>0.0], (0.0, 1.0))
         sol = solve(prob, Rodas4())
+        @test sol.retcode == :Success
         @test sol[add.output.u] ≈ k1 .* 1 .+ k2 .* sin.(2*pi*sol.t)
     end
 end
@@ -100,6 +104,7 @@ end
     sys = structural_simplify(model)
     prob = ODEProblem(sys, Pair[int.x=>0.0], (0.0, 1.0))
     sol = solve(prob, Rodas4())
+    @test sol.retcode == :Success
     @test sol[add.output.u] ≈ 1 .+ sin.(2*pi*sol.t) .+ sin.(2*pi*2*sol.t)
 
     @testset "weights" begin
@@ -120,6 +125,7 @@ end
         sys = structural_simplify(model)
         prob = ODEProblem(sys, Pair[int.x=>0.0], (0.0, 1.0))
         sol = solve(prob, Rodas4())
+        @test sol.retcode == :Success
         @test sol[add.output.u] ≈ k1 .* 1 .+ k2 .* sin.(2*pi*sol.t) .+ k3 .* sin.(2*pi*2*sol.t)
 
     end
@@ -142,6 +148,7 @@ end
     sys = structural_simplify(model)
     prob = ODEProblem(sys, Pair[int.x=>0.0], (0.0, 1.0))
     sol = solve(prob, Rodas4())
+    @test sol.retcode == :Success
     @test sol[prod.output.u] ≈ 2 * sin.(2*pi*sol.t)
 end
 
@@ -162,6 +169,7 @@ end
     sys = structural_simplify(model)
     prob = ODEProblem(sys, Pair[int.x=>0.0], (0.0, 1.0))
     sol = solve(prob, Rodas4())
+    @test sol.retcode == :Success
     @test sol[div.output.u] ≈ sin.(2*pi*sol.t) ./ 2
 end
 
@@ -180,6 +188,7 @@ end
     sys = structural_simplify(model)
     prob = ODEProblem(sys, Pair[int.x=>0.0], (0.0, 1.0))
     sol = solve(prob, Rodas4())
+    @test sol.retcode == :Success
     @test sol[absb.output.u] ≈ abs.(sin.(2*pi*sol.t))
 end
 
@@ -203,6 +212,7 @@ end
         sys = structural_simplify(model)
         prob = ODEProblem(sys, Pair[int.x=>0.0], (0.0, 1.0))
         sol = solve(prob, Rodas4())
+        @test sol.retcode == :Success
         @test sol[b.output.u] ≈ func.(sol[source.output.u])
     end
 
@@ -215,6 +225,7 @@ end
         sys = structural_simplify(model)
         prob = ODEProblem(sys, Pair[int.x=>0.0], (0.0, 1.0))
         sol = solve(prob, Rodas4())
+        @test sol.retcode == :Success
         @test sol[b.output.u] ≈ func.(sol[source.output.u])
     end
 end
@@ -236,5 +247,6 @@ end
     sys = structural_simplify(model)
     prob = ODEProblem(sys, Pair[int.x=>0.0], (0.0, 1.0))
     sol = solve(prob, Rodas4())
+    @test sol.retcode == :Success
     @test sol[int.output.u][end] ≈ atan(1, 2)
 end

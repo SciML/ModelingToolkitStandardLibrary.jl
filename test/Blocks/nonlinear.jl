@@ -20,6 +20,7 @@ using ModelingToolkitStandardLibrary.Blocks: _clamp, _dead_zone
         prob = ODEProblem(sys, [int.x=>1.0], (0.0, 1.0))
 
         sol = solve(prob, Rodas4())
+        @test sol.retcode == :Success
         @test sol[int.output.u][end] ≈ 2
         @test sol[sat.output.u][end] ≈ 0.8
     end
@@ -41,6 +42,7 @@ using ModelingToolkitStandardLibrary.Blocks: _clamp, _dead_zone
         prob = ODEProblem(sys, Pair[], (0.0, 10.0))
     
         sol = solve(prob, Rodas4())
+        @test sol.retcode == :Success
         @test all(abs.(sol[lim.output.u]) .<= 0.5)
         @test all(isapprox.(sol[lim.output.u], _clamp.(sol[source.output.u], y_min, y_max), atol=1e-2))
         
@@ -66,6 +68,7 @@ end
         prob = ODEProblem(sys, [int.x=>1.0], (0.0, 1.0))
         sol = solve(prob, Rodas4())
 
+        @test sol.retcode == :Success
         @test all(sol[int.output.u][end] .≈ 2)
     end
 
@@ -85,6 +88,7 @@ end
         prob = ODEProblem(sys, [int.x=>1.0], (0.0, 10.0))
         sol = solve(prob, Rodas4())
     
+        @test sol.retcode == :Success
         @test all(sol[dz.output.u] .<= 2)
         @test all(sol[dz.output.u] .>= -1)
         @test all(isapprox.(sol[dz.output.u], _dead_zone.(sol[source.output.u], u_min, u_max), atol=1e-2))
@@ -110,6 +114,7 @@ end
 
     tS = 0.01
     sol = solve(prob, Rodas4(), saveat=tS, abstol=1e-10, reltol=1e-10)
+    @test sol.retcode == :Success
     @test all(abs.(sol[rl.output.u]) .<= 0.51)
     @test all(-1 - 1e-5 .<= diff(sol[rl.output.u]) ./ tS .<= 1 + 1e-5) # just an approximation
 end

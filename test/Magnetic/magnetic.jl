@@ -45,6 +45,7 @@ using ModelingToolkit, OrdinaryDiffEq, Test
     # Plots.plot(sol; vars=[r.i])
     # Plots.plot(sol; vars=[r_mFe.V_m, r_mFe.Phi])
 
+    @test sol.retcode == :Success
     @test sol[r_mFe.Phi] == sol[r_mAirPar.Phi]
     @test all(sol[coil.port_p.Phi] + sol[r_mLeak.Phi] + sol[r_mAirPar.Phi] .== 0)
 end
