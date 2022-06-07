@@ -1,4 +1,5 @@
 using ModelingToolkitStandardLibrary.Electrical, ModelingToolkit, OrdinaryDiffEq #, Plots
+using ModelingToolkitStandardLibrary.Blocks: Constant
 using Test
 
 @testset "RC demo" begin
@@ -6,18 +7,20 @@ using Test
     C = 1.0
     V = 1.0
     @parameters t
-    @named resistor = Resistor(R=R)
+    @named resistor  = Resistor(R=R)
     @named capacitor = Capacitor(C=C)
-    @named source = ConstantVoltage(V=V)
-    @named ground = Ground()
+    @named voltage   = Voltage()
+    @named ground    = Ground()
+    @named source    = Constant()
 
     rc_eqs = [
-            connect(source.p, resistor.p)
+            connect(source.output, voltage.V)
+            connect(voltage.p, resistor.p)
             connect(resistor.n, capacitor.p)
-            connect(capacitor.n, source.n, ground.g)
+            connect(capacitor.n, voltage.n, ground.g)
             ]
 
-    @named rc_model = ODESystem(rc_eqs, t, systems=[resistor, capacitor, source, ground])
+    @named rc_model = ODESystem(rc_eqs, t, systems=[resistor, capacitor, source, voltage, ground])
     sys = structural_simplify(rc_model)
     prob = ODAEProblem(sys, Pair[], (0, 10.0))
     sol = solve(prob, Tsit5())

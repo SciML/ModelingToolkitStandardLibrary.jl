@@ -10,6 +10,8 @@ using OffsetArrays
 @parameters t
 D = Differential(t)
 
+using ..Blocks: RealInput, RealOutput
+
 include("utils.jl")
 include("Analog/ideal_components.jl")
 include("Analog/sensors.jl")
@@ -19,7 +21,7 @@ include("Analog/sources.jl")
 # include("Digital/tables.jl")
 # include("Digital/sources.jl")
 
-# TODO: 
+# TODO:
 # - digital
 # - machines
 # - multi-phase
@@ -32,14 +34,9 @@ export #Interface
        # Analog Sensors
        CurrentSensor, PotentialSensor, VoltageSensor,
        PowerSensor, MultiSensor,
-       #Analog Sources
-       ConstantVoltage, SineVoltage, StepVoltage, RampVoltage,
-       SquareVoltage, TriangularVoltage,
-       CosineVoltage, ExpSineVoltage,
-       ConstantCurrent, SineCurrent, StepCurrent, RampCurrent,
-       SquareCurrent, TriangularCurrent,
-       CosineCurrent, ExpSineCurrent
-       
+       # Analog Sources
+       Voltage, Current
+
 
        # # Digital Gates
        # And, Or, Not, Xor, Nand, Nor, Xnor,
