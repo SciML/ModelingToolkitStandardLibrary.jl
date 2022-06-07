@@ -25,7 +25,7 @@ See [OnePort](@ref)
 - `p` Positive pin
 - `n` Negative pin
 
-# Parameters: 
+# Parameters:
 - `R`: [`Ω`] Resistance
 """
 function Resistor(;name, R)
@@ -81,7 +81,7 @@ Creates an ideal capacitor.
 - `C`: [`F`] Capacitance
 - `v_start`: [`V`] Initial voltage of capacitor
 """
-function Capacitor(;name, C, v_start=0.0) 
+function Capacitor(;name, C, v_start=0.0)
     @named oneport = OnePort(;v_start=v_start)
     @unpack v, i = oneport
     pars = @parameters C=C
@@ -121,14 +121,11 @@ end
     IdealOpAmp(; name)
 
 Ideal operational amplifier (norator-nullator pair).
-The ideal OpAmp is a two-port. The left port is fixed to `v1 = 0` and `i1 = 0` (nullator). 
+The ideal OpAmp is a two-port. The left port is fixed to `v1 = 0` and `i1 = 0` (nullator).
 At the right port both any voltage `v2` and any current `i2` are possible (norator).
 
 # States:
-- `v1(t)`: [`V`] Voltage of left port
-- `v2(t)`: [`V`] Voltage of right port
-- `i1(t)`: [`A`] Current of left port
-- `i2(t)`: [`A`] Current of right port
+See [TwoPort](@ref)
 
 # Connectors:
 - `p1` Positive pin (left port)
@@ -137,25 +134,12 @@ At the right port both any voltage `v2` and any current `i2` are possible (norat
 - `n2` Negative pin (right port)
 """
 function IdealOpAmp(;name)
-    @named p1 = Pin()
-    @named p2 = Pin()
-    @named n1 = Pin()
-    @named n2 = Pin()
-    sts = @variables begin
-        v1(t) 
-        v2(t) 
-        i1(t) 
-        i2(t)
-    end
+    @named twoport = TwoPort()
+    @unpack v1, v2, i1, i2 = twoport
+
     eqs = [
-        v1 ~ p1.v - n1.v
-        v2 ~ p2.v - n2.v
-        0 ~ p1.i + n1.i
-        0 ~ p2.i + n2.i
-        i1 ~ p1.i
-        i2 ~ p2.i
         v1 ~ 0
         i1 ~ 0
     ]
-    ODESystem(eqs, t, sts, [], systems=[p1, p2, n1, n2], name=name)
+    extend(ODESystem(eqs, t, [], [], name=name), twoport)
 end
