@@ -32,6 +32,7 @@ D = Differential(t)
 
     # Check if Relative temperature sensor reads the temperature of heat capacitor
     # when connected to a thermal conductor and a fixed temperature source
+    @test sol.retcode == :Success
     @test sol[reltem_sensor.T] + sol[tem_src.port.T] == sol[mass1.T] + sol[th_conductor.dT]
 
     @info "Building a two-body system..."
@@ -55,6 +56,7 @@ D = Differential(t)
     prob = DAEProblem(sys, D.(states(sys)) .=> 0.0, u0, (0, 3.0))
     sol = solve(prob, DFBDF())
 
+    @test sol.retcode == :Success
     m1, m2 = sol.u[end]
     @test m1 ≈ m2 atol=1e-1
     mass_T = reduce(hcat, sol.u)
@@ -90,8 +92,9 @@ end
         mass1.der_T        => 1.0
     ]
     prob = DAEProblem(sys, D.(states(sys)) .=> 0.0, u0, (0, 3.0))
-    sol  = solve(prob, DFBDF())
+    sol = solve(prob, DFBDF())
 
+    @test sol.retcode == :Success
     @test sol[th_conductor.dT] .* G == sol[th_conductor.Q_flow]
     @test sol[th_conductor.Q_flow] ≈ sol[hf_sensor1.Q_flow] + sol[flow_src.port.Q_flow]
 
@@ -130,6 +133,7 @@ end
 
     # Heat-flow-rate is equal in magnitude
     # and opposite in direction
+    @test sol.retcode == :Success
     @test sol[gas.Q_flow] + sol[coolant.Q_flow] == zeros(length(sol))
 end
 
@@ -163,6 +167,7 @@ end
     prob = DAEProblem(sys, D.(states(sys)) .=> 0.0, u0, (0, 3.0))
     sol = solve(prob, DFBDF())
 
+    @test sol.retcode == :Success
     @test sol[dissipator.dT] == sol[radiator.port_a.T] - sol[radiator.port_b.T]
     rad_Q_flow = G*σ*(Tᵧ^4 - Tᵪ^4)
     @test sol[radiator.Q_flow] == fill(rad_Q_flow, length(sol[radiator.Q_flow]))
@@ -197,6 +202,7 @@ end
     prob = DAEProblem(sys, D.(states(sys)) .=> 0.0, u0, (0, 3.0))
     sol  = solve(prob, DFBDF())
 
+    @test sol.retcode == :Success
     @test sol[collector.port_b.Q_flow] + sol[collector.port_a1.Q_flow] + sol[collector.port_a2.Q_flow] ==
         zeros(length(sol[collector.port_b.Q_flow]))
     @test sol[collector.port_b.T] == sol[collector.port_a1.T] == sol[collector.port_a2.T]

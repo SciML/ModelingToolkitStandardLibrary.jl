@@ -21,4 +21,5 @@ begin
     sys = structural_simplify(model)
     prob = DAEProblem(sys, D.(states(sys)) .=> 0.0, [mass1.der_T => 1.0, mass2.der_T => 1.0], (0, 3.0))
     sol = solve(prob, DFBDF())
+    @test sol.retcode == :Success
 end
