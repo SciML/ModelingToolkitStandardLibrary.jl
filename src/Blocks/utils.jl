@@ -1,4 +1,4 @@
-@connector function RealInput(;name, nin=1, u_start=nin > 1 ? 0.0 : zeros(nin))
+@connector function RealInput(;name, nin=1, u_start=nin > 1 ? zeros(nin) : 0.0)
     if nin == 1
         @variables u(t) = u_start
     else
@@ -8,19 +8,19 @@
     ODESystem(Equation[], t, [u...], []; name=name)
 end
 @doc """
-    RealInput(;name, nin=1, u_start=nin > 1 ? 0.0 : zeros(nin))
+    RealInput(;name, nin, u_start)
 
 Connector with one input signal of type Real.
 
 # Parameters:
-- `nin`: Number of inputs
-- `u_start`: Initial value for `u`  
+- `nin=1`: Number of inputs
+- `u_start=0`: Initial value for `u`  
 
 # States:
 - `u`: Value of of the connector; if nin=1 this is a scalar
 """ RealInput
 
-@connector function RealOutput(;name, nout=1, u_start=nout > 1 ? 0.0 : zeros(nout))
+@connector function RealOutput(;name, nout=1, u_start=nout > 1 ? zeros(nout) : 0.0)
     if nout == 1
         @variables u(t) = u_start
     else
@@ -30,13 +30,13 @@ Connector with one input signal of type Real.
     ODESystem(Equation[], t, [u...], []; name=name)
 end
 @doc """
-    RealOutput(;name, nout=1, u_start=nout > 1 ? 0.0 : zeros(nout))
+    RealOutput(;name, nout, u_start)
 
 Connector with one output signal of type Real.
 
 # Parameters:
-- `nout`: Number of inputs
-- `u_start`: Initial value for `u`  
+- `nout=1`: Number of inputs
+- `u_start=0`: Initial value for `u`  
 
 # States:
 - `u`: Value of of the connector; if nout=1 this is a scalar
