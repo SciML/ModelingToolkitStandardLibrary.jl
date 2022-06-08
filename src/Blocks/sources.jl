@@ -237,26 +237,35 @@ function Square(; name, frequency=1.0, amplitude=1.0,
 end
 
 """
+    Step(;name, height=1, offset=0, start_time=0, duration=Inf, smooth=true)
+
 Generate step signal.
 
 # Parameters:
 - `height`: Height of step
 - `offset`: Offset of output signal
-- `start_time`: [s] Output `y = offset` for `t < start_time`
+- `start_time`: [s] Output `y = offset` for `t < start_time` and thereafter `offset+height`.
+- `duration`: [s] If `duration < Inf` is supplied, the output will revert to `offset` after `duration` seconds.
 - `smooth`:  If `true`, returns a smooth wave. Defaults to `false`
              It uses a smoothing factor of `δ=1e-5`
 
 # Connectors:
 - `output`
 """
-function Step(;name, height=1, offset=0, start_time=0, smooth=true)
+function Step(;name, height=1, offset=0, start_time=0, duration=Inf, smooth=true)
     @named output = RealOutput()
-    pars = @parameters offset=offset start_time=start_time height=height
-    equation = if smooth == false
-        offset + ifelse(t < start_time, zero(t), height)
+    duration_numeric = duration
+    pars = @parameters offset=offset start_time=start_time height=height duration=duration
+    equation = if !smooth
+        offset + ifelse((start_time < t) & (t < start_time+duration) , height, 0)
     else
         δ = 1e-5
-        smooth_step(t, δ, height, offset, start_time)
+        if duration_numeric == Inf
+            smooth_step(t, δ, height, offset, start_time)
+        else
+            smooth_step(t, δ, height, offset, start_time) -
+                smooth_step(t, δ, height, 0, start_time+duration)
+        end
     end
 
     eqs = [
