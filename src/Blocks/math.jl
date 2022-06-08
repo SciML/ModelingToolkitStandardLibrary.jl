@@ -33,7 +33,7 @@ Output the product of a gain matrix with the input signal vector.
 - `output`
 """
 function MatrixGain(K::AbstractArray; name)
-    nout, nin = size(K)
+    nout, nin = size(K,1), size(K,2)
     @named input = RealInput(;nin=nin)
     @named output = RealOutput(;nout=nout)
     eqs = [

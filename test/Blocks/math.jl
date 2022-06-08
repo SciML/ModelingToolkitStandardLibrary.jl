@@ -195,6 +195,8 @@ end
 @testset "MatrixGain" begin
     K = [1 2; 3 4]
     @named gain = MatrixGain(K;)
+    K = [1, 2]
+    @named gain = MatrixGain(K;)
     # TODO:
 end
 
