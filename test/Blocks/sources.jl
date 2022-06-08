@@ -188,7 +188,7 @@ end
     offset, height, start_time, δ = 1, 2, 5, 1e-5
     @named int = Integrator()
 
-    @named src = Step(offset=offset, height=height, start_time=start_time)
+    @named src = Step(offset=offset, height=height, start_time=start_time, smooth=false)
     @named iosys = ODESystem([
         connect(src.output, int.input),
         ],
@@ -203,7 +203,40 @@ end
     @test sol.retcode == :Success
     @test sol[src.output.u] ≈ step.(sol.t, offset, height, start_time) atol=1e-2
 
+    # test with duration
+    duration = 1.2
+    @named src = Step(offset=offset, height=height, start_time=start_time, duration=duration, smooth=false)
+    @named iosys = ODESystem([
+        connect(src.output, int.input),
+        ],
+        t,
+        systems=[int, src],
+    )
+
+    sys = structural_simplify(iosys)
+    prob = ODEProblem(sys, Pair[int.x=>0.0], (0.0, 10.0))
+    sol = solve(prob, Rodas4(), dtmax=0.1) # set dtmax to prevent the solver from overstepping the entire step disturbance
+
+    @test sol.retcode == :Success
+    @test sol[src.output.u] ≈ step.(sol.t, offset, height, start_time) - step.(sol.t, 0, height, start_time+duration) atol=1e-2
+
     @named smooth_src = Step(offset=offset, height=height, start_time=start_time, smooth=true)
+    @named smooth_iosys = ODESystem([
+        connect(smooth_src.output, int.input),
+        ],
+        t,
+        systems=[int, smooth_src],
+    )
+
+    smooth_sys = structural_simplify(smooth_iosys)
+    smooth_prob = ODEProblem(smooth_sys, Pair[int.x=>0.0], (0.0, 10.0))
+    smooth_sol = solve(smooth_prob, Rodas4(), dtmax=0.1) # set dtmax to prevent the solver from overstepping the entire step disturbance)
+
+    @test smooth_sol.retcode == :Success
+    @test smooth_sol[smooth_src.output.u] ≈ smooth_step.(smooth_sol.t, δ, height, offset, start_time)
+
+    # with duration
+    @named smooth_src = Step(offset=offset, height=height, start_time=start_time, smooth=true, duration=duration)
     @named smooth_iosys = ODESystem([
         connect(smooth_src.output, int.input),
         ],
@@ -216,7 +249,7 @@ end
     smooth_sol = solve(smooth_prob, Rodas4())
 
     @test smooth_sol.retcode == :Success
-    @test smooth_sol[smooth_src.output.u] ≈ smooth_step.(smooth_sol.t, δ, height, offset, start_time)
+    @test smooth_sol[smooth_src.output.u] ≈ smooth_step.(smooth_sol.t, δ, height, offset, start_time) - smooth_step.(smooth_sol.t, δ, height, 0, start_time+ duration)
 end
 
 @testset "Square" begin
