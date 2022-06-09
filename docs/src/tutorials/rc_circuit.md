@@ -6,7 +6,7 @@ In that tutorial, the full RC circuit is built from scratch. Here, we will use t
 components of the `Electrical` model in the ModelingToolkit Standard Library to simply
 connect pre-made components and simulate the model.
 
-```julia
+```@example
 using ModelingToolkit, OrdinaryDiffEq, Plots
 using ModelingToolkitStandardLibrary.Electrical
 
@@ -32,7 +32,7 @@ sol = solve(prob, Tsit5())
 plot(sol, vars = [capacitor.v,resistor.i],
      title = "RC Circuit Demonstration",
      labels = ["Capacitor Voltage" "Resistor Current"])
-savefig("plot.png")
+savefig("plot.png"); nothing # hide
 ```
 
-![](https://user-images.githubusercontent.com/1814174/164912983-c3f73628-0e19-4e42-b085-4f62ba6f23d1.png)
+![](plot.png)

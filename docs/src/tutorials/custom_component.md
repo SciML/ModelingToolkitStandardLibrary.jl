@@ -4,7 +4,7 @@ The circuit is a simple circuit that shows chaotic behaviour.
 Except for a non-linear resistor every other component already is part of `ModelingToolkitStandardLibrary.Electrical`.
 
 First we need to make some imports.
-```julia
+```@example components
 using ModelingToolkit
 using ModelingToolkitStandardLibrary.Electrical
 using ModelingToolkitStandardLibrary.Electrical: OnePort
@@ -27,7 +27,7 @@ equation
 end NonlinearResistor;
 ```
 this can almost be directly translate it to the syntax of `ModelingToolkit`.
-```julia
+```@example components
 @parameters t
 
 function NonlinearResistor(;name, Ga, Gb, Ve)
@@ -45,6 +45,7 @@ function NonlinearResistor(;name, Ga, Gb, Ve)
     ]
     extend(ODESystem(eqs, t, [], pars; name=name), oneport)
 end
+nothing # hide
 ```
 
 ### Explanation
@@ -74,7 +75,7 @@ extend(ODESystem(eqs, t, [], pars; name=name), oneport)
 
 ## Building the Model
 The final model can now be created with the components from the library and the new custom component.
-```julia
+```@example components
 @named L = Inductor(L=18)
 @named Ro = Resistor(R=12.5e-3)
 @named G = Conductor(G=0.565)
@@ -99,24 +100,27 @@ connections = [
 ]
 
 @named model = ODESystem(connections, t, systems=[L, Ro, G, C1, C2, Nr])
+nothing # hide
 ```
 
 ## Simulating the Model
 Now the model can be simulated.
 First `structural_simplify` is called on the model and a `ODEProblem` is build from the result.
 Since the initial voltage of the first capacitor was already specified via `v_start`, no initial condition is given and an empty pair is supplied.
-```julia
+```@example components
 sys = structural_simplify(model)
 prob = ODEProblem(sys, Pair[], (0, 5e4), saveat=0.01)
 sol = solve(prob, Rodas4())
 
 Plots.plot(sol[C1.v], sol[C2.v], title="Chaotic Attractor", label="", ylabel="C1 Voltage in V", xlabel="C2 Voltage in V")
 Plots.savefig("chua_phase_plane.png")
+nothing # hide
 
 Plots.plot(sol; vars=[C1.v, C2.v, L.i], labels=["C1 Voltage in V" "C1 Voltage in V" "Inductor Current in A"])
 Plots.savefig("chua.png")
+nothing # hide
 ```
 
-![Time series plot of C1.v, C2.v and L.i](https://user-images.githubusercontent.com/50108075/169712569-9ae5a074-ca1a-4801-b666-75a2f6e21bf5.png)
+![Time series plot of C1.v, C2.v and L.i](chua_phase_plane.png)
 
-![Phase plane plot of C1.v and C2.v](https://user-images.githubusercontent.com/50108075/169712578-b3f314f6-3310-4471-a31e-af7fac3c0fbc.png)
+![Phase plane plot of C1.v and C2.v](chua.png)
