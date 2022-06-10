@@ -19,7 +19,7 @@ begin
 
     @named model = ODESystem(connections, t, systems=[mass1, mass2, conduction, Tsensor1, Tsensor2])
     sys = structural_simplify(model)
-    prob = DAEProblem(sys, D.(states(sys)) .=> 0.0, [mass1.der_T => 1.0, mass2.der_T => 1.0], (0, 3.0))
-    sol = solve(prob, DFBDF())
+    prob = ODEProblem(sys, [mass1.der_T => 1.0, mass2.der_T => 1.0], (0, 3.0))
+    sol = solve(prob, Tsit5())
     @test sol.retcode == :Success
 end

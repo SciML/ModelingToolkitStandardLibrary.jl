@@ -27,8 +27,8 @@ D = Differential(t)
         mass1.T => 2.0
         mass1.der_T => 1.0
     ]
-    prob = DAEProblem(sys, D.(states(sys)) .=> 0, u0, (0, 2.0))
-    sol = solve(prob, DFBDF())
+    prob = ODEProblem(sys, u0, (0, 2.0))
+    sol = solve(prob, Tsit5())
 
     # Check if Relative temperature sensor reads the temperature of heat capacitor
     # when connected to a thermal conductor and a fixed temperature source
@@ -53,8 +53,8 @@ D = Differential(t)
         mass1.der_T => 1.0
         mass2.der_T => 1.0
     ]
-    prob = DAEProblem(sys, D.(states(sys)) .=> 0.0, u0, (0, 3.0))
-    sol = solve(prob, DFBDF())
+    prob = ODEProblem(sys, u0, (0, 3.0))
+    sol = solve(prob, Tsit5())
 
     @test sol.retcode == :Success
     m1, m2 = sol.u[end]
@@ -91,8 +91,8 @@ end
         th_resistor.Q_flow => 1.0
         mass1.der_T        => 1.0
     ]
-    prob = DAEProblem(sys, D.(states(sys)) .=> 0.0, u0, (0, 3.0))
-    sol = solve(prob, DFBDF())
+    prob = ODEProblem(sys, u0, (0, 3.0))
+    sol = solve(prob, Tsit5())
 
     @test sol.retcode == :Success
     @test sol[th_conductor.dT] .* G == sol[th_conductor.Q_flow]
@@ -116,10 +116,10 @@ end
 
     @info "Building a piston-cylinder..."
     eqs = [
-        connect(gas_tem.port, gas.solidport)
-        connect(gas.fluidport, wall.port_a)
-        connect(wall.port_b, coolant.fluidport)
-        connect(coolant.solidport, coolant_tem.port)
+        connect(gas_tem.port, gas.solid_port)
+        connect(gas.fluid_port, wall.port_a)
+        connect(wall.port_b, coolant.fluid_port)
+        connect(coolant.solid_port, coolant_tem.port)
     ]
     @named piston = ODESystem(eqs, t, systems=[gas_tem, wall, gas, coolant, coolant_tem])
     sys = structural_simplify(piston)
@@ -128,8 +128,8 @@ end
         coolant.dT => 5.0
         wall.Q_flow => 10.0
     ]
-    prob = DAEProblem(sys, D.(states(sys)) .=> 0.0, u0, (0, 3.0))
-    sol = solve(prob, DFBDF())
+    prob = ODEProblem(sys, u0, (0, 3.0))
+    sol = solve(prob, Tsit5())
 
     # Heat-flow-rate is equal in magnitude
     # and opposite in direction
@@ -139,22 +139,22 @@ end
 
 # Test ConvectiveConductor, BodyRadiation
 @testset "Radiator system" begin
-    Tᵧ, Tᵪ = 1000, 10 # ᵧ -> gas and ᵪ -> coolant
+    T_gas, T_coolant = 1000, 10
     R_wall = 10
     G = 0.04
     σ = 5.6703744191844294e-8 # Stefan-Boltzmann constant
 
     @named base = ThermalResistor(R=R_wall)
-    @named gas_tem = FixedTemperature(T=Tᵧ)
-    @named coolant_tem = FixedTemperature(T=Tᵪ)
+    @named gas_tem = FixedTemperature(T=T_gas)
+    @named coolant_tem = FixedTemperature(T=T_coolant)
     @named radiator = BodyRadiation(G=G)
     @named dissipator = ConvectiveConductor(G=10)
     @named mass = HeatCapacitor(C=10)
 
     @info "Building a radiator..."
     eqs = [
-        connect(gas_tem.port, radiator.port_a, base.port_a, dissipator.solid, mass.port)
-        connect(coolant_tem.port, base.port_b, radiator.port_b, dissipator.fluid)
+        connect(gas_tem.port, radiator.port_a, base.port_a, dissipator.solid_port, mass.port)
+        connect(coolant_tem.port, base.port_b, radiator.port_b, dissipator.fluid_port)
     ]
     @named rad = ODESystem(eqs, t, systems=[base, gas_tem, radiator, dissipator, coolant_tem, mass])
     sys = structural_simplify(rad)
@@ -162,14 +162,14 @@ end
     u0 = [
         base.Q_flow => 10
         dissipator.Q_flow => 10
-        mass.T => Tᵧ
+        mass.T => T_gas
     ]
-    prob = DAEProblem(sys, D.(states(sys)) .=> 0.0, u0, (0, 3.0))
-    sol = solve(prob, DFBDF())
+    prob = ODEProblem(sys, u0, (0, 3.0))
+    sol = solve(prob, Tsit5())
 
     @test sol.retcode == :Success
     @test sol[dissipator.dT] == sol[radiator.port_a.T] - sol[radiator.port_b.T]
-    rad_Q_flow = G*σ*(Tᵧ^4 - Tᵪ^4)
+    rad_Q_flow = G*σ*(T_gas^4 - T_coolant^4)
     @test sol[radiator.Q_flow] == fill(rad_Q_flow, length(sol[radiator.Q_flow]))
 end
 
@@ -199,8 +199,8 @@ end
         th_resistor.Q_flow => 1.0,
         mass.T => 0.0,
     ]
-    prob = DAEProblem(sys, D.(states(sys)) .=> 0.0, u0, (0, 3.0))
-    sol  = solve(prob, DFBDF())
+    prob = ODEProblem(sys, u0, (0, 3.0))
+    sol  = solve(prob, Tsit5())
 
     @test sol.retcode == :Success
     @test sol[collector.port_b.Q_flow] + sol[collector.port_a1.Q_flow] + sol[collector.port_a2.Q_flow] ==

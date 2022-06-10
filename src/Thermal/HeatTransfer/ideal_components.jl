@@ -22,8 +22,8 @@ function HeatCapacitor(; name, C, T_start=273.15 + 20)
     D = Differential(t)
     eqs = [
         T ~ port.T
-        der_T ~ D(T)
-        D(T) ~ port.Q_flow / C
+        der_T ~ port.Q_flow / C
+        D(T) ~ der_T
     ]
     ODESystem(eqs, t, sts, [C]; systems=[port], name=name)
 end
