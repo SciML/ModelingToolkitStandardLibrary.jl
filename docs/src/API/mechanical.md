@@ -1,5 +1,15 @@
 # ModelingToolkit Standard Library: Mechanical Components
 
+
+```@contents
+Pages = ["mechanical.md"]
+Depth = 3
+```
+## Index
+```@index
+Pages = ["mechanical.md"]
+```
+
 ## Rotational Components
 ```@meta
 CurrentModule = ModelingToolkitStandardLibrary.Mechanical.Rotational

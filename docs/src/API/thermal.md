@@ -3,6 +3,15 @@
 CurrentModule = ModelingToolkitStandardLibrary.Thermal
 ```
 
+
+```@contents
+Pages = ["thermal.md"]
+```
+## Index
+```@index
+Pages = ["thermal.md"]
+```
+
 ## Thermal Utilities
 
 ```@docs

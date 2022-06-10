@@ -3,6 +3,15 @@
 CurrentModule = ModelingToolkitStandardLibrary.Electrical
 ```
 
+
+```@contents
+Pages = ["electrical.md"]
+```
+## Index
+```@index
+Pages = ["electrical.md"]
+```
+
 ## Electrical Utilities
 
 ```@docs
