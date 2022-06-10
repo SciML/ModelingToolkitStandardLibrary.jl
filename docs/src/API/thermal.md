@@ -34,5 +34,7 @@ TemperatureSensor
 
 ```@docs
 FixedHeatFlow
-FixedTemperature 
+FixedTemperature
+PrescribedHeatFlow
+PrescribedTemperature  
 ```

@@ -4,6 +4,7 @@ pages = [
         "Tutorials" => [
             "RC Circuit" => "tutorials/rc_circuit.md",
             "Custom Components" => "tutorials/custom_component.md",
+            "Thermal Conduction Model" => "tutorials/thermal_model.md",
         ],
 
         "API" => [
