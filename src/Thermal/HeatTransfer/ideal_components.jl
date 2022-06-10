@@ -89,28 +89,28 @@ end
 Lumped thermal element for heat convection.
 
 # States:
-- `dT`:  [`K`] Temperature difference across the component solid_port.T - fluid_port.T
-- `Q_flow`: [`W`] Heat flow rate from `solid_port` -> `fluid_port`
+- `dT`:  [`K`] Temperature difference across the component solid.T - fluid.T
+- `Q_flow`: [`W`] Heat flow rate from `solid` -> `fluid`
 
 # Connectors:
-- `solid_port`
-- `fluid_port`
+- `solid`
+- `fluid`
 
 # Parameters:
 - `G`: [W/K] Convective thermal conductance
 """
 function ConvectiveConductor(; name, G)
-    @named solid_port = HeatPort()
-    @named fluid_port = HeatPort()
+    @named solid = HeatPort()
+    @named fluid = HeatPort()
     @parameters G=G
     sts = @variables Q_flow(t) dT(t)
     eqs = [
-        dT ~ solid_port.T - fluid_port.T
-        solid_port.Q_flow ~ Q_flow
-        fluid_port.Q_flow ~ -Q_flow
+        dT ~ solid.T - fluid.T
+        solid.Q_flow ~ Q_flow
+        fluid.Q_flow ~ -Q_flow
         dT ~ G*Q_flow
     ]
-    ODESystem(eqs, t, sts, [G]; systems=[solid_port, fluid_port], name=name)
+    ODESystem(eqs, t, sts, [G]; systems=[solid, fluid], name=name)
 end
 
 """
@@ -119,28 +119,28 @@ end
 Lumped thermal element for heat convection.
 
 # States:
-- `dT`:  [`K`] Temperature difference across the component solid_port.T - fluid_port.T
-- `Q_flow`: [`W`] Heat flow rate from `solid_port` -> `fluid_port`
+- `dT`:  [`K`] Temperature difference across the component solid.T - fluid.T
+- `Q_flow`: [`W`] Heat flow rate from `solid` -> `fluid`
 
 # Connectors:
-- `solid_port`
-- `fluid_port`
+- `solid`
+- `fluid`
 
 # Parameters:
 - `R`: [`K/W`] Constant thermal resistance of material
 """
 function ConvectiveResistor(; name, R)
-    @named solid_port = HeatPort()
-    @named fluid_port = HeatPort()
+    @named solid = HeatPort()
+    @named fluid = HeatPort()
     @parameters R=R
     sts = @variables Q_flow(t) dT(t) 
     eqs = [
-        dT ~ solid_port.T - fluid_port.T
-        solid_port.Q_flow ~ Q_flow
-        fluid_port.Q_flow ~ -Q_flow
+        dT ~ solid.T - fluid.T
+        solid.Q_flow ~ Q_flow
+        fluid.Q_flow ~ -Q_flow
         dT ~ R*Q_flow
     ]
-    ODESystem(eqs, t, sts, [R]; systems=[solid_port, fluid_port], name=name)
+    ODESystem(eqs, t, sts, [R]; systems=[solid, fluid], name=name)
 end
 
 """

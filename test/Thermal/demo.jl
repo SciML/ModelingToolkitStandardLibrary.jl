@@ -3,7 +3,7 @@ using ModelingToolkitStandardLibrary.Thermal, ModelingToolkit, OrdinaryDiffEq, T
 D = Differential(t)
 
 # Modelica example
-begin
+@testset "demo" begin
     @named mass1 = HeatCapacitor(C=15, T_start=373.15)
     @named mass2 = HeatCapacitor(C=15, T_start=273.15)
     @named conduction = ThermalConductor(G=10)

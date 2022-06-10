@@ -73,7 +73,6 @@ dependent losses (which are given an reference temperature T_ref).
 """
 function PrescribedHeatFlow(; name, T_ref=293.15, alpha=0.0)
     pars = @parameters begin 
-        Q_flow=Q_flow 
         T_ref=T_ref 
         alpha=alpha
     end
@@ -105,5 +104,5 @@ function PrescribedTemperature(; name)
     eqs = [
         port.T ~ T.u
     ]
-    ODESystem(eqs, t, [], pars; systems=[port, T], name=name)
+    ODESystem(eqs, t, [], []; systems=[port, T], name=name)
 end
