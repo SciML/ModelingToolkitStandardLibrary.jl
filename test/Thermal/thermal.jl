@@ -129,7 +129,7 @@ end
         wall.Q_flow => 10.0
     ]
     prob = ODEProblem(sys, u0, (0, 3.0))
-    sol = solve(prob, Tsit5())
+    sol = solve(prob, Rodas4())
 
     # Heat-flow-rate is equal in magnitude
     # and opposite in direction
@@ -165,7 +165,7 @@ end
         mass.T => T_gas
     ]
     prob = ODEProblem(sys, u0, (0, 3.0))
-    sol = solve(prob, Tsit5())
+    sol = solve(prob, Rodas4())
 
     @test sol.retcode == :Success
     @test sol[dissipator.dT] == sol[radiator.port_a.T] - sol[radiator.port_b.T]
@@ -200,7 +200,7 @@ end
         mass.T => 0.0,
     ]
     prob = ODEProblem(sys, u0, (0, 3.0))
-    sol  = solve(prob, Tsit5())
+    sol  = solve(prob, Rodas4())
 
     @test sol.retcode == :Success
     @test sol[collector.port_b.Q_flow] + sol[collector.port_a1.Q_flow] + sol[collector.port_a2.Q_flow] ==
