@@ -252,7 +252,7 @@ Text-book version of a PI-controller with actuator saturation and anti-windup me
 - `err_input`
 - `ctr_output`
 """
-function LimPI(;name, k=1, T, u_max=1, u_min=-u_max, Ta, x_start=0.0)
+function LimPI(;name, k=1, T, u_max, u_min=-u_max, Ta, x_start=0.0)
     Ta > 0 || throw(ArgumentError("Time constant `Ta` has to be strictly positive"))
     T > 0 || throw(ArgumentError("Time constant `T` has to be strictly positive"))
     u_max ≥ u_min || throw(ArgumentError("u_min must be smaller than u_max"))
