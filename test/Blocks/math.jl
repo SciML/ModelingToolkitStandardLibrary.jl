@@ -1,20 +1,21 @@
 using ModelingToolkitStandardLibrary.Blocks
-using ModelingToolkit, OrdinaryDiffEq
+using ModelingToolkit, OrdinaryDiffEq, Plots, Test
+using ModelingToolkitStandardLibrary.Blocks: _clamp, _dead_zone
+using ModelingToolkit: inputs, unbound_inputs, bound_inputs
 
 @parameters t
-
 
 @testset "Gain" begin
     @named c = Constant(; k=1)
     @named gain = Gain(1;)
     @named int = Integrator(; k=1)
     @named model = ODESystem([connect(c.output, gain.input), connect(gain.output, int.input)], t, systems=[int, gain, c])
+    
     sys = structural_simplify(model)
-
     prob = ODEProblem(sys, Pair[int.x=>1.0], (0.0, 1.0))
-
     sol = solve(prob, Rodas4())
 
+    @test isequal(unbound_inputs(sys), [])
     @test sol.retcode == :Success
     @test all(sol[c.output.u] .≈ 1)
     @test sol[int.output.u][end] ≈ 2 # expected solution after 1s
@@ -40,6 +41,7 @@ end
     prob = ODEProblem(sys, Pair[int.x=>0.0], (0.0, 100.0))
 
     sol = solve(prob, Rodas4())
+    @test isequal(unbound_inputs(sys), [])
     @test sol.retcode == :Success
     @test sol[int.output.u][end] ≈ 2 # expected solution after 1s
 end
@@ -61,6 +63,7 @@ end
     sys = structural_simplify(model)
     prob = ODEProblem(sys, Pair[int.x=>0.0], (0.0, 1.0))
     sol = solve(prob, Rodas4())
+    @test isequal(unbound_inputs(sys), [])
     @test sol.retcode == :Success
     @test sol[add.output.u] ≈ 1 .+ sin.(2*pi*sol.t)
 
@@ -80,6 +83,7 @@ end
         sys = structural_simplify(model)
         prob = ODEProblem(sys, Pair[int.x=>0.0], (0.0, 1.0))
         sol = solve(prob, Rodas4())
+        @test isequal(unbound_inputs(sys), [])
         @test sol.retcode == :Success
         @test sol[add.output.u] ≈ k1 .* 1 .+ k2 .* sin.(2*pi*sol.t)
     end
@@ -104,6 +108,7 @@ end
     sys = structural_simplify(model)
     prob = ODEProblem(sys, Pair[int.x=>0.0], (0.0, 1.0))
     sol = solve(prob, Rodas4())
+    @test isequal(unbound_inputs(sys), [])
     @test sol.retcode == :Success
     @test sol[add.output.u] ≈ 1 .+ sin.(2*pi*sol.t) .+ sin.(2*pi*2*sol.t)
 
@@ -125,6 +130,7 @@ end
         sys = structural_simplify(model)
         prob = ODEProblem(sys, Pair[int.x=>0.0], (0.0, 1.0))
         sol = solve(prob, Rodas4())
+        @test isequal(unbound_inputs(sys), [])
         @test sol.retcode == :Success
         @test sol[add.output.u] ≈ k1 .* 1 .+ k2 .* sin.(2*pi*sol.t) .+ k3 .* sin.(2*pi*2*sol.t)
 
@@ -148,6 +154,7 @@ end
     sys = structural_simplify(model)
     prob = ODEProblem(sys, Pair[int.x=>0.0], (0.0, 1.0))
     sol = solve(prob, Rodas4())
+    @test isequal(unbound_inputs(sys), [])
     @test sol.retcode == :Success
     @test sol[prod.output.u] ≈ 2 * sin.(2*pi*sol.t)
 end
@@ -169,6 +176,7 @@ end
     sys = structural_simplify(model)
     prob = ODEProblem(sys, Pair[int.x=>0.0], (0.0, 1.0))
     sol = solve(prob, Rodas4())
+    @test isequal(unbound_inputs(sys), [])
     @test sol.retcode == :Success
     @test sol[div.output.u] ≈ sin.(2*pi*sol.t) ./ 2
 end
@@ -188,6 +196,7 @@ end
     sys = structural_simplify(model)
     prob = ODEProblem(sys, Pair[int.x=>0.0], (0.0, 1.0))
     sol = solve(prob, Rodas4())
+    @test isequal(unbound_inputs(sys), [])
     @test sol.retcode == :Success
     @test sol[absb.output.u] ≈ abs.(sin.(2*pi*sol.t))
 end
@@ -207,6 +216,7 @@ end
 
 @testset "Math" begin
     for (block, func) in [(Abs, abs), (Sign, sign), (Sin, sin), (Cos, cos), (Tan, tan), (Asin, asin), (Acos, acos), (Atan, atan), (Sinh, sinh), (Cosh, cosh), (Tanh, tanh), (Exp, exp)]
+        @info "testing $block"
         @named source = Sine(frequency=1, amplitude=0.5)
         @named b = block()
         @named int = Integrator()
@@ -214,27 +224,30 @@ end
         sys = structural_simplify(model)
         prob = ODEProblem(sys, Pair[int.x=>0.0], (0.0, 1.0))
         sol = solve(prob, Rodas4())
+        @test isequal(unbound_inputs(sys), [])
         @test sol.retcode == :Success
         @test sol[b.output.u] ≈ func.(sol[source.output.u])
     end
 
     # input must be positive
-    for (block, func) in [(Sqrt, sqrt), (Log, log), (Log10, log10)] 
-        @named source = Sine(; frequency=1, offset=2)
+    for (block, func) in [(Sqrt, sqrt), (Log, log), (Log10, log10)]
+        @info "testing $block"
+        @named source = Sine(; frequency=1, offset=2, amplitude=0.5)
         @named b = block()
         @named int = Integrator()
         @named model = ODESystem([connect(source.output, b.input), connect(b.output, int.input)], t, systems=[int, b, source])
         sys = structural_simplify(model)
-        prob = ODEProblem(sys, Pair[int.x=>0.0], (0.0, 1.0))
+        prob = ODEProblem(sys, Pair[int.x=>0.0, b.input.u=>2.0], (0.0, 1.0))
         sol = solve(prob, Rodas4())
+        @test isequal(unbound_inputs(sys), [])
         @test sol.retcode == :Success
         @test sol[b.output.u] ≈ func.(sol[source.output.u])
     end
 end
 
 @testset "Atan2" begin
-    @named c1 = Constant(; k=1)
-    @named c2 = Constant(; k=2)
+    @named c1 = Sine(; frequency=1, offset=2)
+    @named c2 = Sine(; frequency=1, offset=1)
     @named b = Atan2(;)
     @named int = Integrator(; k=1)
     @named model = ODESystem(
@@ -246,9 +259,14 @@ end
         t, 
         systems=[int, b, c1, c2]
     )
+
     sys = structural_simplify(model)
-    prob = ODEProblem(sys, Pair[int.x=>0.0], (0.0, 1.0))
+    prob = ODEProblem(sys, Pair[int.x=>0.0, b.input1.u=>2, b.input2.u=>1], (0.0, 1.0))
     sol = solve(prob, Rodas4())
+
+    @test isequal(unbound_inputs(sys), [])
+    @test all(map(u->u in Set([b.input1.u, b.input2.u, int.input.u]), bound_inputs(sys)))
+    @test all(map(u->u in Set([b.input1.u, b.input2.u, int.input.u]), inputs(sys)))
     @test sol.retcode == :Success
-    @test sol[int.output.u][end] ≈ atan(1, 2)
+    @test sol[int.input.u] ≈ atan.(sol[c1.output.u], sol[c2.output.u])
 end
