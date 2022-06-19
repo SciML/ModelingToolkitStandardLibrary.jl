@@ -65,7 +65,7 @@ end
 
     @test sol.retcode == :Success
     @test all(isapprox.(sol[inertia1.w], -sol[inertia2.w]*2, atol=1)) # exact opposite oscillation with smaller amplitude J2 = 2*J1
-    @test all(sol[torque.flange.tau] .== -sol[sine.output.u]) # torque source is equal to negative sine
+    @test sol[torque.flange.tau] ≈ -sol[sine.output.u] # torque source is equal to negative sine
 
     # Plots.plot(sol; vars=[inertia1.w, -inertia2.w*2])
 end
