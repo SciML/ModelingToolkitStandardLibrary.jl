@@ -175,7 +175,7 @@ Output first input divided by second input.
 """
 function Division(;name)
     @named input1 = RealInput()
-    @named input2 = RealInput()
+    @named input2 = RealInput(u_start=1.0) # denominator can not be zero
     @named output = RealOutput()
     eqs= [
         output.u ~ input1.u / input2.u
