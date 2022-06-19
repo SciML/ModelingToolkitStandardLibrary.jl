@@ -4,18 +4,27 @@ This library contains electrical components to build up analog circuits.
 """
 module Electrical
 
-using ModelingToolkit, Symbolics, IfElse, OrdinaryDiffEq
+using ModelingToolkit, Symbolics, IfElse
 using OffsetArrays
+using ..Thermal: HeatPort
+using ..Mechanical.Rotational: Flange, Support
+using ..Blocks: RealInput, RealOutput
 
 @parameters t
 D = Differential(t)
 
-using ..Blocks: RealInput, RealOutput
-
+export Pin, OnePort
 include("utils.jl")
+
+export Capacitor, Ground, Inductor, Resistor, Short, IdealOpAmp, EMF
 include("Analog/ideal_components.jl")
+
+export CurrentSensor, PotentialSensor, VoltageSensor, PowerSensor, MultiSensor
 include("Analog/sensors.jl")
+
+export Voltage, Current
 include("Analog/sources.jl")
+
 # include("Digital/components.jl")
 # include("Digital/gates.jl")
 # include("Digital/tables.jl")
@@ -25,24 +34,5 @@ include("Analog/sources.jl")
 # - digital
 # - machines
 # - multi-phase
-
-export #Interface
-       Pin,
-       # Analog Components
-       Capacitor, Ground, Inductor, Resistor, Conductor,
-       Short, IdealOpAmp,
-       # Analog Sensors
-       CurrentSensor, PotentialSensor, VoltageSensor,
-       PowerSensor, MultiSensor,
-       # Analog Sources
-       Voltage, Current
-
-
-       # # Digital Gates
-       # And, Or, Not, Xor, Nand, Nor, Xnor,
-       # # Digital components
-       # HalfAdder, FullAdder, MUX, DEMUX, Encoder, Decoder,
-       # # Digital Sources
-       # DigitalPin, Pulse, PulseDiff
 
 end
