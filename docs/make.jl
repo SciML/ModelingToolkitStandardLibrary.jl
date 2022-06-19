@@ -14,6 +14,10 @@ makedocs(
     authors="Julia Computing",
     clean=true,
     doctest=false,
+    strict=[
+        :doctest,
+        :example_block,
+    ],
     modules=[ModelingToolkitStandardLibrary,
              ModelingToolkitStandardLibrary.Blocks,
              ModelingToolkitStandardLibrary.Mechanical,
