@@ -1,4 +1,5 @@
 using ModelingToolkitStandardLibrary.Thermal, ModelingToolkit, OrdinaryDiffEq, Test
+using ModelingToolkitStandardLibrary.Blocks: Constant, Step
 @parameters t
 D = Differential(t)
 
@@ -27,8 +28,8 @@ D = Differential(t)
         mass1.T => 2.0
         mass1.der_T => 1.0
     ]
-    prob = DAEProblem(sys, D.(states(sys)) .=> 0, u0, (0, 2.0))
-    sol = solve(prob, DFBDF())
+    prob = ODEProblem(sys, u0, (0, 2.0))
+    sol = solve(prob, Tsit5())
 
     # Check if Relative temperature sensor reads the temperature of heat capacitor
     # when connected to a thermal conductor and a fixed temperature source
@@ -40,10 +41,10 @@ D = Differential(t)
         connect(T_sensor1.port, mass1.port, th_conductor.port_a)
         connect(th_conductor.port_b, mass2.port, T_sensor2.port)
         final_T ~ (mass1.C * mass1.T + mass2.C * mass2.T) /
-        (mass1.C + mass2.C)
+                  (mass1.C + mass2.C)
     ]
     @named h2 = ODESystem(eqs, t, [final_T], [],
-                        systems=[mass1, mass2, T_sensor1, T_sensor2, th_conductor])
+        systems=[mass1, mass2, T_sensor1, T_sensor2, th_conductor])
     sys = structural_simplify(h2)
 
     u0 = [
@@ -53,12 +54,12 @@ D = Differential(t)
         mass1.der_T => 1.0
         mass2.der_T => 1.0
     ]
-    prob = DAEProblem(sys, D.(states(sys)) .=> 0.0, u0, (0, 3.0))
-    sol = solve(prob, DFBDF())
+    prob = ODEProblem(sys, u0, (0, 3.0))
+    sol = solve(prob, Tsit5())
 
     @test sol.retcode == :Success
     m1, m2 = sol.u[end]
-    @test m1 ≈ m2 atol=1e-1
+    @test m1 ≈ m2 atol = 1e-1
     mass_T = reduce(hcat, sol.u)
     @test sol[T_sensor1.T] == mass_T[1, :]
     @test sol[T_sensor2.T] == mass_T[2, :]
@@ -82,17 +83,17 @@ end
         connect(th_resistor.port_b, hf_sensor1.port_b, hf_sensor2.port_b, th_ground.port)
     ]
     @named h2 = ODESystem(eqs, t,
-                          systems=[mass1, hf_sensor1, hf_sensor2,
-                                   th_resistor, flow_src, th_ground, th_conductor])
+        systems=[mass1, hf_sensor1, hf_sensor2,
+            th_resistor, flow_src, th_ground, th_conductor])
     sys = structural_simplify(h2)
 
     u0 = [
         mass1.T => 10.0
         th_resistor.Q_flow => 1.0
-        mass1.der_T        => 1.0
+        mass1.der_T => 1.0
     ]
-    prob = DAEProblem(sys, D.(states(sys)) .=> 0.0, u0, (0, 3.0))
-    sol = solve(prob, DFBDF())
+    prob = ODEProblem(sys, u0, (0, 3.0))
+    sol = solve(prob, Tsit5())
 
     @test sol.retcode == :Success
     @test sol[th_conductor.dT] .* G == sol[th_conductor.Q_flow]
@@ -116,10 +117,10 @@ end
 
     @info "Building a piston-cylinder..."
     eqs = [
-        connect(gas_tem.port, gas.solidport)
-        connect(gas.fluidport, wall.port_a)
-        connect(wall.port_b, coolant.fluidport)
-        connect(coolant.solidport, coolant_tem.port)
+        connect(gas_tem.port, gas.solid)
+        connect(gas.fluid, wall.port_a)
+        connect(wall.port_b, coolant.fluid)
+        connect(coolant.solid, coolant_tem.port)
     ]
     @named piston = ODESystem(eqs, t, systems=[gas_tem, wall, gas, coolant, coolant_tem])
     sys = structural_simplify(piston)
@@ -128,8 +129,8 @@ end
         coolant.dT => 5.0
         wall.Q_flow => 10.0
     ]
-    prob = DAEProblem(sys, D.(states(sys)) .=> 0.0, u0, (0, 3.0))
-    sol = solve(prob, DFBDF())
+    prob = ODEProblem(sys, u0, (0, 3.0))
+    sol = solve(prob, Rodas4())
 
     # Heat-flow-rate is equal in magnitude
     # and opposite in direction
@@ -139,14 +140,14 @@ end
 
 # Test ConvectiveConductor, BodyRadiation
 @testset "Radiator system" begin
-    Tᵧ, Tᵪ = 1000, 10 # ᵧ -> gas and ᵪ -> coolant
+    T_gas, T_coolant = 1000, 10
     R_wall = 10
     G = 0.04
     σ = 5.6703744191844294e-8 # Stefan-Boltzmann constant
 
     @named base = ThermalResistor(R=R_wall)
-    @named gas_tem = FixedTemperature(T=Tᵧ)
-    @named coolant_tem = FixedTemperature(T=Tᵪ)
+    @named gas_tem = FixedTemperature(T=T_gas)
+    @named coolant_tem = FixedTemperature(T=T_coolant)
     @named radiator = BodyRadiation(G=G)
     @named dissipator = ConvectiveConductor(G=10)
     @named mass = HeatCapacitor(C=10)
@@ -162,14 +163,14 @@ end
     u0 = [
         base.Q_flow => 10
         dissipator.Q_flow => 10
-        mass.T => Tᵧ
+        mass.T => T_gas
     ]
-    prob = DAEProblem(sys, D.(states(sys)) .=> 0.0, u0, (0, 3.0))
-    sol = solve(prob, DFBDF())
+    prob = ODEProblem(sys, u0, (0, 3.0))
+    sol = solve(prob, Rodas4())
 
     @test sol.retcode == :Success
     @test sol[dissipator.dT] == sol[radiator.port_a.T] - sol[radiator.port_b.T]
-    rad_Q_flow = G*σ*(Tᵧ^4 - Tᵪ^4)
+    rad_Q_flow = G * σ * (T_gas^4 - T_coolant^4)
     @test sol[radiator.Q_flow] == fill(rad_Q_flow, length(sol[radiator.Q_flow]))
 end
 
@@ -189,21 +190,67 @@ end
         connect(hf_sensor.port_a, collector.port_b)
         connect(hf_sensor.port_b, mass.port, th_resistor.port_b)
         connect(mass.port, th_ground.port)
-        ]
+    ]
     @named coll = ODESystem(eqs, t,
-                            systems=[hf_sensor,flow_src, tem_src,
-                            collector, th_resistor, mass])
+        systems=[hf_sensor, flow_src, tem_src,
+            collector, th_resistor, mass])
     sys = structural_simplify(coll)
 
     u0 = [
         th_resistor.Q_flow => 1.0,
         mass.T => 0.0,
     ]
-    prob = DAEProblem(sys, D.(states(sys)) .=> 0.0, u0, (0, 3.0))
-    sol  = solve(prob, DFBDF())
+    prob = ODEProblem(sys, u0, (0, 3.0))
+    sol = solve(prob, Rodas4())
 
     @test sol.retcode == :Success
     @test sol[collector.port_b.Q_flow] + sol[collector.port_a1.Q_flow] + sol[collector.port_a2.Q_flow] ==
-        zeros(length(sol[collector.port_b.Q_flow]))
+          zeros(length(sol[collector.port_b.Q_flow]))
     @test sol[collector.port_b.T] == sol[collector.port_a1.T] == sol[collector.port_a2.T]
+end
+
+# https://doc.modelica.org/Modelica%204.0.0/Resources/helpWSM/Modelica/Modelica.Thermal.HeatTransfer.Examples.Motor.html
+@testset "demo" begin
+    k2c(T) = T - 273.15
+    T_amb = 293.15
+    @named windingLosses = PrescribedHeatFlow(T_ref=k2c(95), alpha=3.03e-3)
+    @named winding = HeatCapacitor(C=2500, T_start=T_amb)
+    @named T_winding = TemperatureSensor()
+    @named winding2core = ThermalConductor(G=10)
+    @named coreLosses = PrescribedHeatFlow()
+    @named core = HeatCapacitor(C=25000, T_start=T_amb)
+    @named T_core = TemperatureSensor()
+    @named convection = ConvectiveConductor(G=25)
+    @named environment = PrescribedTemperature()
+    @named amb = Constant(k=T_amb)
+    @named core_losses_const = Constant(k=500)
+    @named winding_losses = Step(height=900, offset=100, start_time=360, duration=Inf, smooth=false)
+    connections = [ 
+        connect(windingLosses.port, winding.port)
+        connect(coreLosses.port, core.port)
+        connect(winding.port, winding2core.port_a)
+        connect(winding2core.port_b, core.port)
+        connect(winding.port, T_winding.port)
+        connect(core.port, T_core.port)
+        connect(winding2core.port_b, convection.solid)
+        connect(convection.fluid, environment.port)
+        connect(amb.output, environment.T)
+        connect(winding_losses.output, windingLosses.Q_flow)
+        connect(core_losses_const.output, coreLosses.Q_flow)
+    ]
+
+    @named model = ODESystem(connections, t, systems=[
+        windingLosses, winding, T_winding, winding2core, coreLosses, core,
+        T_core, convection, environment, amb, core_losses_const, winding_losses])
+    sys = structural_simplify(model)
+    prob = ODEProblem(sys, Pair[], (0, 720.0))
+    sol = solve(prob, Rodas4())
+
+    # plot(sol; vars=[T_winding.T, T_core.T])
+    @test sol.retcode == :Success
+    @test sol[T_winding.T] == sol[winding.T]
+    @test sol[T_core.T] == sol[core.T]
+    @test sol[-core.port.Q_flow] == sol[coreLosses.port.Q_flow + convection.solid.Q_flow + winding2core.port_b.Q_flow]
+    @test sol[T_winding.T][end] >= 500 # not good but better than nothing
+    @test sol[T_core.T] <= sol[T_winding.T]
 end

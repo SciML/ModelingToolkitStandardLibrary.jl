@@ -3,7 +3,7 @@ using ModelingToolkitStandardLibrary.Thermal, ModelingToolkit, OrdinaryDiffEq, T
 D = Differential(t)
 
 # Modelica example
-begin
+@testset "demo" begin
     @named mass1 = HeatCapacitor(C=15, T_start=373.15)
     @named mass2 = HeatCapacitor(C=15, T_start=273.15)
     @named conduction = ThermalConductor(G=10)
@@ -19,7 +19,7 @@ begin
 
     @named model = ODESystem(connections, t, systems=[mass1, mass2, conduction, Tsensor1, Tsensor2])
     sys = structural_simplify(model)
-    prob = DAEProblem(sys, D.(states(sys)) .=> 0.0, [mass1.der_T => 1.0, mass2.der_T => 1.0], (0, 3.0))
-    sol = solve(prob, DFBDF())
+    prob = ODEProblem(sys, [mass1.der_T => 1.0, mass2.der_T => 1.0], (0, 3.0))
+    sol = solve(prob, Tsit5())
     @test sol.retcode == :Success
 end
