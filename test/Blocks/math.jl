@@ -1,5 +1,5 @@
 using ModelingToolkitStandardLibrary.Blocks
-using ModelingToolkit, OrdinaryDiffEq, Plots, Test
+using ModelingToolkit, OrdinaryDiffEq, Test
 using ModelingToolkitStandardLibrary.Blocks: _clamp, _dead_zone
 using ModelingToolkit: inputs, unbound_inputs, bound_inputs
 
