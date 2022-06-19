@@ -149,9 +149,9 @@ end
         @named model = ODESystem(connections, t; systems=[resistor, capacitor, source, ground, voltage])
         sys = structural_simplify(model)
         prob = ODAEProblem(sys, [capacitor.v => 10.0], (0.0, 10.0))
-        sol = solve(prob, Rodas5())
-        @test sol.retcode == :Success
         sol = solve(prob, Tsit5())
+        @test sol.retcode == :Success
+        sol = solve(prob, Rodas4())
         @test sol.retcode == :Success
 
         # Plots.plot(sol; vars=[voltage.v, capacitor.v])
@@ -272,7 +272,6 @@ _damped_sine_wave(x, f, A, st, ϕ, d) = exp((st-x)*d)*A*sin(2*π*f*(x-st) + ϕ)
 
         prob = ODAEProblem(vsys, u0, (0, 10.0))
         sol = solve(prob, dt=0.1, Tsit5())
-
         @test sol.retcode == :Success
         @test sol[voltage.V.u] ≈ waveforms(i, sol.t) atol=1e-1
         @test sol[voltage.p.v] ≈ sol[voltage.V.u]
@@ -326,7 +325,6 @@ end
 
         prob = ODAEProblem(isys, u0, (0, 10.0))
         sol = solve(prob, dt=0.1, Tsit5())
-
         @test sol.retcode == :Success
         @test sol[current.I.u] ≈ waveforms(i, sol.t) atol=1e-1
         @test sol[current.I.u] ≈ sol[current.p.i] atol=1e-1

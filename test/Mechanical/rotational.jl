@@ -1,6 +1,7 @@
 using ModelingToolkitStandardLibrary.Mechanical.Rotational, ModelingToolkit, OrdinaryDiffEq, Test
 import ModelingToolkitStandardLibrary.Blocks
 # using Plots
+using Sundials
 
 @parameters t
 D = Differential(t)

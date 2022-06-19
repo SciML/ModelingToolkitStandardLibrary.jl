@@ -2,7 +2,7 @@
 The module `Blocks` contains common input-output components, referred to as blocks.
 """
 module Blocks
-using ModelingToolkit, Symbolics, OrdinaryDiffEq
+using ModelingToolkit, Symbolics
 using IfElse: ifelse
 
 @parameters t

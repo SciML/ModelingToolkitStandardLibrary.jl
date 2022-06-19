@@ -1,5 +1,5 @@
 """
-    Torque(;name) 
+    Torque(; name, use_support=false) 
 
 Input signal acting as external torque on a flange
 
@@ -20,7 +20,6 @@ function Torque(;name, use_support=false)
     eqs = [flange.tau ~ -tau.u]
     return extend(ODESystem(eqs, t, [], []; name=name, systems=[tau]), partial_element)
 end
-
 
 
 """
