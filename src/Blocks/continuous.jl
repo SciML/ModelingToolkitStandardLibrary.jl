@@ -414,16 +414,29 @@ function LimPID(; name, k = 1, Ti = false, Td = false, wp = 1, wd = 1,
 end
 
 """
-    StateSpace(A, B, C, D=0; x_start=zeros(size(A,1)), name)
+    StateSpace(A, B, C, D=0; x_start=zeros(size(A,1)), u0=zeros(size(B,2)), y0=zeros(size(C,1)), name)
 
 A linear, time-invariant state-space system on the form.
-```
+```math
 ẋ = Ax + Bu
 y = Cx + Du
 ```
 Transfer functions can also be simulated by converting them to a StateSpace form.
+
+`y0` and `u0` can be used to set an operating point, providing them changes the dynamics to
+```math
+ẋ = Ax + B(u - u0)
+y = Cx + D(u - u0) + y0
+```
+For a nonlinear system
+```math
+ẋ = f(x, u)
+y = h(x, u)
+```
+linearized around the operating point `x₀, u₀`, we have `y0, u0 = h(x₀, u₀), u₀`.
 """
-function StateSpace(; A, B, C, D = nothing, x_start = zeros(size(A, 1)), name)
+function StateSpace(; A, B, C, D = nothing, x_start = zeros(size(A, 1)), name,
+                    u0 = zeros(size(B, 2)), y0 = zeros(size(C, 1)))
     nx, nu, ny = size(A, 1), size(B, 2), size(C, 1)
     size(A, 2) == nx || error("`A` has to be a square matrix.")
     size(B, 1) == nx || error("`B` has to be of dimension ($nx x $nu).")
@@ -442,9 +455,11 @@ function StateSpace(; A, B, C, D = nothing, x_start = zeros(size(A, 1)), name)
     # pars = @parameters A=A B=B C=C D=D # This is buggy
     eqs = [ # FIXME: if array equations work
         [Differential(t)(x[i]) ~ sum(A[i, k] * x[k] for k in 1:nx) +
-                                 sum(B[i, j] * input.u[j] for j in 1:nu) for i in 1:nx]..., # cannot use D here
+                                 sum(B[i, j] * (input.u[j] - u0[j]) for j in 1:nu)
+         for i in 1:nx]..., # cannot use D here
         [output.u[j] ~ sum(C[j, i] * x[i] for i in 1:nx) +
-                       sum(D[j, k] * input.u[k] for k in 1:nu) for j in 1:ny]...,
+                       sum(D[j, k] * (input.u[k] - u0[k]) for k in 1:nu) + y0[j]
+         for j in 1:ny]...,
     ]
     compose(ODESystem(eqs, t, vcat(x...), [], name = name), [input, output])
 end
