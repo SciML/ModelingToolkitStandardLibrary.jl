@@ -61,15 +61,22 @@ function Derivative(; name, k=1, T, x_start=0.0)
 end
 
 """
-    FirstOrder(; name, k=1, T, x_start=0.0)
+    FirstOrder(; name, k=1, T, x_start=0.0, lowpass=true)
 
-A first-order filter with a single real pole in `s = -T` and gain `k`. The transfer function
+A first-order filter with a single real pole in `s = -T` and gain `k`. If `lowpass=true` (default), the transfer function
 is given by `Y(s)/U(s) = `
 ```
    k   
 ───────
 sT + 1
 ```
+and if `lowpass=false`, by
+```
+sT + 1 - k   
+──────────
+  sT + 1
+```
+
 
 # Parameters:
 - `k`: Gain
@@ -82,7 +89,7 @@ sT + 1
 
 See also [`SecondOrder`](@ref)
 """
-function FirstOrder(; name, k=1, T, x_start=0.0)
+function FirstOrder(; name, k=1, T, x_start=0.0, lowpass=true)
     T > 0 || throw(ArgumentError("Time constant `T` has to be strictly positive"))
     @named siso = SISO()
     @unpack u, y = siso
@@ -90,7 +97,7 @@ function FirstOrder(; name, k=1, T, x_start=0.0)
     pars = @parameters T=T k=k
     eqs = [
         D(x) ~ (k*u - x) / T
-        y ~ x
+        lowpass ? y ~ x : y ~ k*u - x
     ]
     extend(ODESystem(eqs, t, sts, pars; name=name), siso)
 end

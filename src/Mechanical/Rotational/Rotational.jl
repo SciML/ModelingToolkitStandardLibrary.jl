@@ -4,7 +4,6 @@ Library to model 1-dimensional, rotational mechanical systems
 module Rotational
 
 using ModelingToolkit, Symbolics, IfElse, OrdinaryDiffEq
-using OffsetArrays
 using ...Blocks: RealInput, RealOutput
 
 @parameters t

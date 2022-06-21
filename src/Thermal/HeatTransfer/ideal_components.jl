@@ -3,27 +3,30 @@
 
 Lumped thermal element storing heat
 
-# Parameters:
-- `C`: [J/K] Heat capacity of element (= cp*m)
-- `T_start`: Initial temperature of element
-
 # States:
-- `T`: [K] Temperature of element
-- `der_T`: [K/s] Time derivative of temperature
+- `T`: [`K`] Temperature of element
+- `der_T`: [`K/s`] Time derivative of temperature
+
+# Connectors:
+- `port`
+
+# Parameters:
+- `C`: [`J/K`] Heat capacity of element (= cp*m)
+- `T_start`: [`K`] Initial temperature of element
 """
 function HeatCapacitor(; name, C, T_start=273.15 + 20)    
     @named port = HeatPort()
     @parameters C=C
     sts = @variables begin
         T(t)=T_start
-        der_T(t)
+        der_T(t)=0.0
     end
 
     D = Differential(t)
     eqs = [
         T ~ port.T
-        der_T ~ D(T)
-        D(T) ~ port.Q_flow / C
+        der_T ~ port.Q_flow / C
+        D(T) ~ der_T
     ]
     ODESystem(eqs, t, sts, [C]; systems=[port], name=name)
 end
@@ -33,8 +36,15 @@ end
 
 Lumped thermal element transporting heat without storing it.
 
+# States:
+see [`Element1D`](@ref)
+
+# Connectors:
+`port_a`
+`port_b`
+
 # Parameters:
-- `G`: [W/K] Constant thermal conductance of material
+- `G`: [`W/K`] Constant thermal conductance of material
 """
 function ThermalConductor(;name, G)   
     @named element1d = Element1D()
@@ -51,8 +61,16 @@ end
 
 Lumped thermal element transporting heat without storing it.
 
+# States:
+- `dT`:  [`K`] Temperature difference across the component a.T - b.T
+- `Q_flow`: [`W`] Heat flow rate from port a -> port b
+
+# Connectors:
+- `port_a`
+- `port_b`
+
 # Parameters:
-- `R`: [K/W] Constant thermal resistance of material
+- `R`: [`K/W`] Constant thermal resistance of material
 """
 function ThermalResistor(; name, R)   
     @named element1d = Element1D()
@@ -70,18 +88,22 @@ end
 
 Lumped thermal element for heat convection.
 
+# States:
+- `dT`:  [`K`] Temperature difference across the component solid.T - fluid.T
+- `Q_flow`: [`W`] Heat flow rate from `solid` -> `fluid`
+
+# Connectors:
+- `solid`
+- `fluid`
+
 # Parameters:
 - `G`: [W/K] Convective thermal conductance
-
-# States:
-- `dT`:  [K] Temperature difference across the component solid.T - fluid.T
-- `Q_flow`: [W] Heat flow rate from solid -> fluid
 """
 function ConvectiveConductor(; name, G)
     @named solid = HeatPort()
     @named fluid = HeatPort()
     @parameters G=G
-    sts = @variables Q_flow(t) dT(t)
+    sts = @variables Q_flow(t)=0.0 dT(t)=0.0
     eqs = [
         dT ~ solid.T - fluid.T
         solid.Q_flow ~ Q_flow
@@ -96,31 +118,43 @@ end
 
 Lumped thermal element for heat convection.
 
-# Parameters:
-- `R`: [K/W] Constant thermal resistance of material
-
 # States:
-- `dT`:  [K] Temperature difference across the component solid.T - fluid.T
-- `Q_flow`: [W] Heat flow rate from solid -> fluid
+- `dT`:  [`K`] Temperature difference across the component solid.T - fluid.T
+- `Q_flow`: [`W`] Heat flow rate from `solid` -> `fluid`
+
+# Connectors:
+- `solid`
+- `fluid`
+
+# Parameters:
+- `R`: [`K/W`] Constant thermal resistance of material
 """
 function ConvectiveResistor(; name, R)
-    @named solidport = HeatPort()
-    @named fluidport = HeatPort()
+    @named solid = HeatPort()
+    @named fluid = HeatPort()
     @parameters R=R
-    sts = @variables Q_flow(t) dT(t) 
+    sts = @variables Q_flow(t)=0.0 dT(t)=0.0
     eqs = [
-        dT ~ solidport.T - fluidport.T
-        solidport.Q_flow ~ Q_flow
-        fluidport.Q_flow ~ -Q_flow
+        dT ~ solid.T - fluid.T
+        solid.Q_flow ~ Q_flow
+        fluid.Q_flow ~ -Q_flow
         dT ~ R*Q_flow
     ]
-    ODESystem(eqs, t, sts, [R]; systems=[solidport, fluidport], name=name)
+    ODESystem(eqs, t, sts, [R]; systems=[solid, fluid], name=name)
 end
 
 """
     BodyRadiation(; name, G)
 
 Lumped thermal element for radiation heat transfer.
+
+# States:
+- `dT`:  [`K`] Temperature difference across the component a.T - b.T
+- `Q_flow`: [`W`] Heat flow rate from port a -> port b
+
+# Connectors:
+- `port_a`
+- `port_b`
 
 # Parameters:
 - `G`: [m^2] Net radiation conductance between two surfaces
@@ -145,6 +179,13 @@ end
 Collects `m` heat flows
 
 This is a model to collect the heat flows from `m` heatports to one single heatport.
+
+# States:
+
+# Connectors:
+- `port_a1` to `port_am`
+- `port_b`
+
 # Parameters:
 - `m`: Number of heat ports (e.g. m=2: `port_a1`, `port_a2`)
 """

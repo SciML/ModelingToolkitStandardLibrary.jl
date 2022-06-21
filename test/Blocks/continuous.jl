@@ -43,7 +43,7 @@ end
 @testset "PT1" begin
     pt1_func(t, k, T) = k * (1 - exp(-t / T)) # Known solution to first-order system
     
-    k, T = 1.0, 0.1
+    k, T = 1.2, 0.1
     @named c = Constant(; k=1)
     @named pt1 = FirstOrder(; k=k, T=T)
     @named iosys = ODESystem(connect(c.output, pt1.input), t, systems=[pt1, c])
@@ -52,6 +52,15 @@ end
     sol = solve(prob, Rodas4())
     @test sol.retcode == :Success
     @test sol[pt1.output.u] ≈ pt1_func.(sol.t, k, T) atol=1e-3
+
+    # Test highpass feature
+    @named pt1 = FirstOrder(; k=k, T=T, lowpass=false)
+    @named iosys = ODESystem(connect(c.output, pt1.input), t, systems=[pt1, c])
+    sys = structural_simplify(iosys)
+    prob = ODEProblem(sys, Pair[], (0.0, 100.0))
+    sol = solve(prob, Rodas4())
+    @test sol.retcode == :Success
+    @test sol[pt1.output.u] ≈ k .- pt1_func.(sol.t, k, T) atol=1e-3
 end
 
 @testset "PT2" begin
