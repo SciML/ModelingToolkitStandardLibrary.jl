@@ -1,5 +1,5 @@
 """
-Library to model 1-dimensional, translational mechanical systems
+Library to model 1-dimensional, translational mechanical components.
 """
 module Translational
 

@@ -8,11 +8,11 @@ end
 Base.@doc """
     Flange(;name)
 
-1-dim. translational flange of a shaft.
+1-dim. translational flange.
 
 # States:
 - `s`: [m] Absolute position of flange
-- `f`: [N] Cut force in the flange
+- `f`: [N] Cut force into the flange
 """ Flange
 
 @connector function Support(;name)
@@ -25,20 +25,20 @@ end
 Base.@doc """
     Support(;name)
 
-Support/housing of a 1-dim. translational shaft
+Support/housing 1-dim. translational flange.
 
 # States:
 - `s`: [m] Absolute position of the support/housing
-- `f`: [N] Reaction force in the support/housing
+- `f`: [N] Cut force into the flange
 """ Support
 
 """
     PartialCompliant(;name, s_rel_start=0.0, f_start=0.0)
 
-Partial model for the compliant connection of two translational 1-dim. shaft flanges.
+Partial model for the compliant connection of two translational 1-dim. flanges.
 
 # Parameters:
-- `s_rel_start`: [m] Initial relative distance
+- `s_rel_start`: [m] Initial relative distance between the flanges 
 - `f_start`: [N] Initial force between flanges
 
 # States:
@@ -63,7 +63,7 @@ end
 """
     PartialCompliantWithRelativeStates(;name, s_rel_start=0.0, v_rel_start=0.0, a_rel_start=0.0, f_start=0.0)
 
-Partial model for the compliant connection of two translational 1-dim. shaft flanges where the relative position and speed are used as preferred states
+Partial model for the compliant connection of two translational 1-dim. flanges.
 
 # Parameters:
 - `s_rel_start`: [m] Initial relative distance
@@ -127,7 +127,7 @@ end
 """
     PartialElementaryTwoFlangesAndSupport2(;name, use_support=false)
 
-Partial model for a component with two translational 1-dim. shaft flanges and a support used for textual modeling, i.e., for elementary models
+Partial model for a component with two translational 1-dim. flanges and a support used for textual modeling, i.e., for elementary models
 
 # Parameters:
 - `use_support`: If support flange enabled, otherwise implicitly grounded
