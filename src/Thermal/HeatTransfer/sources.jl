@@ -15,18 +15,18 @@ the component FixedHeatFlow is connected, if parameter `Q_flow` is positive.
 - `T_ref`: [K] Reference temperature
 - `alpha`: [1/K] Temperature coefficient of heat flow rate
 """
-function FixedHeatFlow(; name, Q_flow=1.0, T_ref=293.15, alpha=0.0)
-    pars = @parameters begin 
-        Q_flow=Q_flow 
-        T_ref=T_ref 
-        alpha=alpha
+function FixedHeatFlow(; name, Q_flow = 1.0, T_ref = 293.15, alpha = 0.0)
+    pars = @parameters begin
+        Q_flow = Q_flow
+        T_ref = T_ref
+        alpha = alpha
     end
     @named port = HeatPort()
-    
+
     eqs = [
-        port.Q_flow ~ -Q_flow * (1 + alpha * (port.T - T_ref))
+        port.Q_flow ~ -Q_flow * (1 + alpha * (port.T - T_ref)),
     ]
-    ODESystem(eqs, t, [], pars; systems=[port], name=name)
+    ODESystem(eqs, t, [], pars; systems = [port], name = name)
 end
 
 """
@@ -44,13 +44,12 @@ This model defines a fixed temperature `T` at its port in kelvin, i.e., it defin
 """
 function FixedTemperature(; name, T)
     @named port = HeatPort()
-    pars = @parameters T=T
+    pars = @parameters T = T
     eqs = [
-        port.T ~ T
+        port.T ~ T,
     ]
-    ODESystem(eqs, t, [], pars; systems=[port], name=name)
+    ODESystem(eqs, t, [], pars; systems = [port], name = name)
 end
-
 
 """
     PrescribedHeatFlow(; name, Q_flow=1.0, T_ref=293.15, alpha=0.0)
@@ -71,18 +70,18 @@ dependent losses (which are given an reference temperature T_ref).
 - `T_ref`: [K] Reference temperature
 - `alpha`: [1/K] Temperature coefficient of heat flow rate
 """
-function PrescribedHeatFlow(; name, T_ref=293.15, alpha=0.0)
-    pars = @parameters begin 
-        T_ref=T_ref 
-        alpha=alpha
+function PrescribedHeatFlow(; name, T_ref = 293.15, alpha = 0.0)
+    pars = @parameters begin
+        T_ref = T_ref
+        alpha = alpha
     end
     @named port = HeatPort()
     @named Q_flow = RealInput()
-    
+
     eqs = [
-        port.Q_flow ~ -Q_flow.u * (1 + alpha * (port.T - T_ref))
+        port.Q_flow ~ -Q_flow.u * (1 + alpha * (port.T - T_ref)),
     ]
-    ODESystem(eqs, t, [], pars; systems=[port, Q_flow], name=name)
+    ODESystem(eqs, t, [], pars; systems = [port, Q_flow], name = name)
 end
 
 """
@@ -102,7 +101,7 @@ function PrescribedTemperature(; name)
     @named port = HeatPort()
     @named T = RealInput()
     eqs = [
-        port.T ~ T.u
+        port.T ~ T.u,
     ]
-    ODESystem(eqs, t, [], []; systems=[port, T], name=name)
+    ODESystem(eqs, t, [], []; systems = [port, T], name = name)
 end

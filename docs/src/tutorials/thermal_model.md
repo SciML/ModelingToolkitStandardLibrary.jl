@@ -1,12 +1,12 @@
 # Heat Conduction Model
 
 This example demonstrates the thermal response of two masses connected by a conducting element. 
-The two masses have the same heat capacity but different initial temperatures (T1=100 [°C], T2=0 [°C]). 
+The two masses have the same heat capacity but different initial temperatures (`T1=100 [°C]`, `T2=0 [°C]`). 
 The mass with the higher temperature will cool off while the mass with the lower temperature heats up. 
 They will each asymptotically approach the calculated temperature T_final_K that results 
 from dividing the total initial energy in the system by the sum of the heat capacities of each element.
 
-```julia
+```@example
 using ModelingToolkitStandardLibrary.Thermal, ModelingToolkit, OrdinaryDiffEq, Plots
 
 @parameters t
@@ -36,6 +36,6 @@ T_final_K = sol[(mass1.T * C1 + mass2.T * C2) / (C1 + C2)]
 plot(title = "Thermal Conduction Demonstration")
 plot!(sol, vars = [mass1.T, mass2.T], labels = ["Mass 1 Temperature" "Mass 2 Temperature"])
 plot!(sol.t, T_final_K, label = "Steady-State Temperature")
-savefig("thermal_plot.png")
+savefig("thermal_plot.png"); nothing # hide
 ```
-![Plot of Temperatures](https://user-images.githubusercontent.com/50108075/173061172-4c7305f5-1193-4b17-9ca4-8f8dcbc0cae7.png)
+![Plot of Temperatures](thermal_plot.png)

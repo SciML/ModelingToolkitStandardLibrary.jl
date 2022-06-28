@@ -11,16 +11,14 @@ Outputs `y = ∫k*u dt`, corresponding to the transfer function `1/s`.
 - `k`: Gain of integrator
 - `x_start`: Initial value of integrator
 """
-function Integrator(;name, k=1, x_start=0.0)
+function Integrator(; name, k = 1, x_start = 0.0)
     @named siso = SISO()
     @unpack u, y = siso
-    sts = @variables x(t)=x_start
-    pars = @parameters k=k
-    eqs = [
-        D(x) ~ k * u
-        y ~ x
-    ]
-    extend(ODESystem(eqs, t, sts, pars; name=name), siso)
+    sts = @variables x(t) = x_start
+    pars = @parameters k = k
+    eqs = [D(x) ~ k * u
+           y ~ x]
+    extend(ODESystem(eqs, t, sts, pars; name = name), siso)
 end
 
 """
@@ -47,17 +45,15 @@ A smaller `T` leads to a more ideal approximation of the derivative.
 - `input`
 - `output`
 """
-function Derivative(; name, k=1, T, x_start=0.0)
+function Derivative(; name, k = 1, T, x_start = 0.0)
     T > 0 || throw(ArgumentError("Time constant `T` has to be strictly positive"))
     @named siso = SISO()
     @unpack u, y = siso
-    sts = @variables x(t)=x_start
+    sts = @variables x(t) = x_start
     pars = @parameters T=T k=k
-    eqs = [
-        D(x) ~ (u - x) / T
-        y ~ (k / T) * (u - x)
-    ]
-    extend(ODESystem(eqs, t, sts, pars; name=name), siso)
+    eqs = [D(x) ~ (u - x) / T
+           y ~ (k / T) * (u - x)]
+    extend(ODESystem(eqs, t, sts, pars; name = name), siso)
 end
 
 """
@@ -89,17 +85,15 @@ sT + 1 - k
 
 See also [`SecondOrder`](@ref)
 """
-function FirstOrder(; name, k=1, T, x_start=0.0, lowpass=true)
+function FirstOrder(; name, k = 1, T, x_start = 0.0, lowpass = true)
     T > 0 || throw(ArgumentError("Time constant `T` has to be strictly positive"))
     @named siso = SISO()
     @unpack u, y = siso
-    sts = @variables x(t)=x_start
+    sts = @variables x(t) = x_start
     pars = @parameters T=T k=k
-    eqs = [
-        D(x) ~ (k*u - x) / T
-        lowpass ? y ~ x : y ~ k*u - x
-    ]
-    extend(ODESystem(eqs, t, sts, pars; name=name), siso)
+    eqs = [D(x) ~ (k * u - x) / T
+           lowpass ? y ~ x : y ~ k * u - x]
+    extend(ODESystem(eqs, t, sts, pars; name = name), siso)
 end
 
 """
@@ -126,17 +120,15 @@ Critical damping corresponds to `d=1`, which yields the fastest step response wi
 - `input`
 - `output`
 """
-function SecondOrder(; name, k=1, w, d, x_start=0.0, xd_start=0.0)
+function SecondOrder(; name, k = 1, w, d, x_start = 0.0, xd_start = 0.0)
     @named siso = SISO()
     @unpack u, y = siso
     sts = @variables x(t)=x_start xd(t)=xd_start
     pars = @parameters k=k w=w d=d
-    eqs = [
-        D(x) ~ xd
-        D(xd) ~ w*(w*(k*u - x) - 2*d*xd)
-        y ~ x
-    ]
-    extend(ODESystem(eqs, t, sts, pars; name=name), siso)
+    eqs = [D(x) ~ xd
+           D(xd) ~ w * (w * (k * u - x) - 2 * d * xd)
+           y ~ x]
+    extend(ODESystem(eqs, t, sts, pars; name = name), siso)
 end
 
 """
@@ -155,13 +147,13 @@ Textbook version of a PI-controller without actuator saturation and anti-windup 
 
 See also [`LimPI`](@ref)
 """
-function PI(;name, k=1, T, x_start=0.0)
+function PI(; name, k = 1, T, x_start = 0.0)
     T > 0 || throw(ArgumentError("Time constant `T` has to be strictly positive"))
     @named err_input = RealInput() # control error
     @named ctr_output = RealOutput() # control signal
     @named gainPI = Gain(k)
     @named addPI = Add()
-    @named int = Integrator(k=1/T, x_start=x_start)
+    @named int = Integrator(k = 1 / T, x_start = x_start)
     sys = [err_input, ctr_output, gainPI, addPI, int]
     eqs = [
         connect(err_input, addPI.input1),
@@ -170,7 +162,7 @@ function PI(;name, k=1, T, x_start=0.0)
         connect(err_input, int.input),
         connect(int.output, addPI.input2),
     ]
-    ODESystem(eqs, t, [], []; name=name, systems=sys)
+    ODESystem(eqs, t, [], []; name = name, systems = sys)
 end
 
 """
@@ -192,26 +184,28 @@ Text-book version of a PID-controller without actuator saturation and anti-windu
 
 See also [`LimPID`](@ref)
 """
-function PID(;name, k=1, Ti=false, Td=false, Nd=10, xi_start=0, xd_start=0)
+function PID(; name, k = 1, Ti = false, Td = false, Nd = 10, xi_start = 0, xd_start = 0)
     with_I = !isequal(Ti, false)
     with_D = !isequal(Td, false)
     @named err_input = RealInput() # control error
     @named ctr_output = RealOutput() # control signal
-    !isequal(Ti, false) && (Ti ≥ 0 || throw(ArgumentError("Ti out of bounds, got $(Ti) but expected Ti ≥ 0")))
-    !isequal(Td, false) && (Td ≥ 0 || throw(ArgumentError("Td out of bounds, got $(Td) but expected Td ≥ 0")))
+    !isequal(Ti, false) &&
+        (Ti ≥ 0 || throw(ArgumentError("Ti out of bounds, got $(Ti) but expected Ti ≥ 0")))
+    !isequal(Td, false) &&
+        (Td ≥ 0 || throw(ArgumentError("Td out of bounds, got $(Td) but expected Td ≥ 0")))
     Nd > 0 || throw(ArgumentError("Nd out of bounds, got $(Nd) but expected Nd > 0"))
 
     @named gainPID = Gain(k)
     @named addPID = Add3()
     if with_I
-        @named int = Integrator(k=1/Ti, x_start=xi_start)
+        @named int = Integrator(k = 1 / Ti, x_start = xi_start)
     else
-        @named Izero = Constant(k=0)
+        @named Izero = Constant(k = 0)
     end
     if with_D
-        @named der = Derivative(k=1/Td, T=1/Nd, x_start=xd_start)
+        @named der = Derivative(k = 1 / Td, T = 1 / Nd, x_start = xd_start)
     else
-        @named Dzero = Constant(k=0)
+        @named Dzero = Constant(k = 0)
     end
     sys = [err_input, ctr_output, gainPID, addPID]
     if with_I
@@ -227,7 +221,7 @@ function PID(;name, k=1, Ti=false, Td=false, Nd=10, xi_start=0, xd_start=0)
     eqs = [
         connect(err_input, addPID.input1),
         connect(addPID.output, gainPID.input),
-        connect(gainPID.output, ctr_output)
+        connect(gainPID.output, ctr_output),
     ]
     if with_I
         push!(eqs, connect(err_input, int.input))
@@ -241,7 +235,7 @@ function PID(;name, k=1, Ti=false, Td=false, Nd=10, xi_start=0, xd_start=0)
     else
         push!(eqs, connect(Dzero.output, addPID.input3))
     end
-    ODESystem(eqs, t, [], []; name=name, systems=sys)
+    ODESystem(eqs, t, [], []; name = name, systems = sys)
 end
 
 """
@@ -259,7 +253,7 @@ Text-book version of a PI-controller with actuator saturation and anti-windup me
 - `err_input`
 - `ctr_output`
 """
-function LimPI(;name, k=1, T, u_max, u_min=-u_max, Ta, x_start=0.0)
+function LimPI(; name, k = 1, T, u_max, u_min = -u_max, Ta, x_start = 0.0)
     Ta > 0 || throw(ArgumentError("Time constant `Ta` has to be strictly positive"))
     T > 0 || throw(ArgumentError("Time constant `T` has to be strictly positive"))
     u_max ≥ u_min || throw(ArgumentError("u_min must be smaller than u_max"))
@@ -268,10 +262,10 @@ function LimPI(;name, k=1, T, u_max, u_min=-u_max, Ta, x_start=0.0)
     @named gainPI = Gain(k)
     @named addPI = Add()
     @named addTrack = Add()
-    @named int = Integrator(k=1/T, x_start=x_start)
-    @named limiter = Limiter(y_max=u_max, y_min=u_min)
-    @named addSat = Add(k1=1, k2=-1)
-    @named gainTrack = Gain(1/Ta)
+    @named int = Integrator(k = 1 / T, x_start = x_start)
+    @named limiter = Limiter(y_max = u_max, y_min = u_min)
+    @named addSat = Add(k1 = 1, k2 = -1)
+    @named gainTrack = Gain(1 / Ta)
     sys = [err_input, ctr_output, gainPI, addPI, int, addTrack, limiter, addSat, gainTrack]
     eqs = [
         connect(err_input, addPI.input1),
@@ -286,7 +280,7 @@ function LimPI(;name, k=1, T, u_max, u_min=-u_max, Ta, x_start=0.0)
         connect(addTrack.output, int.input),
         connect(int.output, addPI.input2),
     ]
-    ODESystem(eqs, t, [], []; name=name, systems=sys)
+    ODESystem(eqs, t, [], []; name = name, systems = sys)
 end
 
 """
@@ -318,15 +312,14 @@ where the transfer function for the derivative includes additional filtering, se
 - `measurement`
 - `ctr_output`
 """
-function LimPID(; name, k=1, Ti=false, Td=false, wp=1, wd=1,
-    Ni= Ti == 0 ? Inf : √(max(Td / Ti, 1e-6)),
-    Nd=10,
-    u_max=Inf,
-    u_min=u_max > 0 ? -u_max : -Inf,
-    gains=false,
-    xi_start=0.0,
-    xd_start=0.0,
-    )
+function LimPID(; name, k = 1, Ti = false, Td = false, wp = 1, wd = 1,
+                Ni = Ti == 0 ? Inf : √(max(Td / Ti, 1e-6)),
+                Nd = 10,
+                u_max = Inf,
+                u_min = u_max > 0 ? -u_max : -Inf,
+                gains = false,
+                xi_start = 0.0,
+                xd_start = 0.0)
     with_I = !isequal(Ti, false)
     with_D = !isequal(Td, false)
     with_AWM = Ni != Inf
@@ -334,37 +327,41 @@ function LimPID(; name, k=1, Ti=false, Td=false, wp=1, wd=1,
         Ti = k / Ti
         Td = Td / k
     end
-    0 ≤ wp ≤ 1 || throw(ArgumentError("wp out of bounds, got $(wp) but expected wp ∈ [0, 1]"))
-    0 ≤ wd ≤ 1 || throw(ArgumentError("wd out of bounds, got $(wd) but expected wd ∈ [0, 1]"))
-    !isequal(Ti, false) && (Ti ≥ 0 || throw(ArgumentError("Ti out of bounds, got $(Ti) but expected Ti ≥ 0")))
-    !isequal(Td, false) && (Td ≥ 0 || throw(ArgumentError("Td out of bounds, got $(Td) but expected Td ≥ 0")))
+    0 ≤ wp ≤ 1 ||
+        throw(ArgumentError("wp out of bounds, got $(wp) but expected wp ∈ [0, 1]"))
+    0 ≤ wd ≤ 1 ||
+        throw(ArgumentError("wd out of bounds, got $(wd) but expected wd ∈ [0, 1]"))
+    !isequal(Ti, false) &&
+        (Ti ≥ 0 || throw(ArgumentError("Ti out of bounds, got $(Ti) but expected Ti ≥ 0")))
+    !isequal(Td, false) &&
+        (Td ≥ 0 || throw(ArgumentError("Td out of bounds, got $(Td) but expected Td ≥ 0")))
     u_max ≥ u_min || throw(ArgumentError("u_min must be smaller than u_max"))
     Nd > 0 || throw(ArgumentError("Nd out of bounds, got $(Nd) but expected Nd > 0"))
-    
+
     @named reference = RealInput()
     @named measurement = RealInput()
     @named ctr_output = RealOutput() # control signal
-    @named addP = Add(k1=wp, k2=-1)
+    @named addP = Add(k1 = wp, k2 = -1)
     @named gainPID = Gain(k)
     @named addPID = Add3()
-    @named limiter = Limiter(y_max=u_max, y_min=u_min)
+    @named limiter = Limiter(y_max = u_max, y_min = u_min)
     if with_I
         if with_AWM
-            @named addI = Add3(k1=1, k2=-1, k3=1)
-            @named addSat = Add(k1=1, k2=-1)
-            @named gainTrack = Gain(1/(k * Ni))
+            @named addI = Add3(k1 = 1, k2 = -1, k3 = 1)
+            @named addSat = Add(k1 = 1, k2 = -1)
+            @named gainTrack = Gain(1 / (k * Ni))
         else
-            @named addI = Add(k1=1, k2=-1)
+            @named addI = Add(k1 = 1, k2 = -1)
         end
-        @named int = Integrator(k=1/Ti, x_start=xi_start)
+        @named int = Integrator(k = 1 / Ti, x_start = xi_start)
     else
-        @named Izero = Constant(k=0)
+        @named Izero = Constant(k = 0)
     end
     if with_D
-        @named der = Derivative(k=1/Td, T=1/Nd, x_start=xd_start)
-        @named addD = Add(k1=wd, k2=-1)
+        @named der = Derivative(k = 1 / Td, T = 1 / Nd, x_start = xd_start)
+        @named addD = Add(k1 = wd, k2 = -1)
     else
-        @named Dzero = Constant(k=0)
+        @named Dzero = Constant(k = 0)
     end
 
     sys = [reference, measurement, ctr_output, addP, gainPID, addPID, limiter]
@@ -412,8 +409,8 @@ function LimPID(; name, k=1, Ti=false, Td=false, wp=1, wd=1,
     else
         push!(eqs, connect(Dzero.output, addPID.input2))
     end
-    
-    ODESystem(eqs, t, [], []; name=name, systems=sys)
+
+    ODESystem(eqs, t, [], []; name = name, systems = sys)
 end
 
 """
@@ -426,28 +423,30 @@ y = Cx + Du
 ```
 Transfer functions can also be simulated by converting them to a StateSpace form.
 """
-function StateSpace(;A, B, C, D=nothing, x_start=zeros(size(A,1)), name)
-    nx, nu, ny = size(A,1), size(B,2), size(C,1)
-    size(A,2) == nx || error("`A` has to be a square matrix.")
-    size(B,1) == nx || error("`B` has to be of dimension ($nx x $nu).")
-    size(C,2) == nx || error("`C` has to be of dimension ($ny x $nx).")
+function StateSpace(; A, B, C, D = nothing, x_start = zeros(size(A, 1)), name)
+    nx, nu, ny = size(A, 1), size(B, 2), size(C, 1)
+    size(A, 2) == nx || error("`A` has to be a square matrix.")
+    size(B, 1) == nx || error("`B` has to be of dimension ($nx x $nu).")
+    size(C, 2) == nx || error("`C` has to be of dimension ($ny x $nx).")
     if B isa AbstractVector
         B = reshape(B, length(B), 1)
     end
     if isnothing(D) || iszero(D)
         D = zeros(ny, nu)
     else
-        size(D) == (ny,nu) || error("`D` has to be of dimension ($ny x $nu).")
+        size(D) == (ny, nu) || error("`D` has to be of dimension ($ny x $nu).")
     end
-    @named input = RealInput(nin=nu)
-    @named output = RealOutput(nout=ny)
-    @variables x[1:nx](t)=x_start
+    @named input = RealInput(nin = nu)
+    @named output = RealOutput(nout = ny)
+    @variables x[1:nx](t) = x_start
     # pars = @parameters A=A B=B C=C D=D # This is buggy
     eqs = [ # FIXME: if array equations work
-        [Differential(t)(x[i]) ~ sum(A[i,k] * x[k] for k in 1:nx) + sum(B[i,j] * input.u[j] for j in 1:nu) for i in 1:nx]..., # cannot use D here
-        [output.u[j] ~ sum(C[j,i] * x[i] for i in 1:nx) + sum(D[j,k] * input.u[k] for k in 1:nu) for j in 1:ny]...,
+        [Differential(t)(x[i]) ~ sum(A[i, k] * x[k] for k in 1:nx) +
+                                 sum(B[i, j] * input.u[j] for j in 1:nu) for i in 1:nx]..., # cannot use D here
+        [output.u[j] ~ sum(C[j, i] * x[i] for i in 1:nx) +
+                       sum(D[j, k] * input.u[k] for k in 1:nu) for j in 1:ny]...,
     ]
-    compose(ODESystem(eqs, t, vcat(x...), [], name=name), [input, output])
+    compose(ODESystem(eqs, t, vcat(x...), [], name = name), [input, output])
 end
-                
-StateSpace(A, B, C, D=nothing; kwargs...) = StateSpace(; A, B, C, D, kwargs...)
+
+StateSpace(A, B, C, D = nothing; kwargs...) = StateSpace(; A, B, C, D, kwargs...)
