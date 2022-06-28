@@ -119,16 +119,16 @@ end
                                  damper,
                                  sine,
                              ])
-    sys = structural_simplify(model)
-
-    @test_throws Any prob=ODAEProblem(sys, Pair[], (0, 1.0))
 
     sys = structural_simplify(model) # returns unbalanced system
+    @test_throws Any prob=ODAEProblem(sys, Pair[], (0, 1.0))
     @test_broken prob = DAEProblem(sys, D.(states(model)) .=> 0.0, Pair[], (0, 10.0))
+    
     sys = alias_elimination(expand_connections(model))
     prob = DAEProblem(sys, vcat(D.(states(sys)) .=> 0.0), [D(idealGear.phi_a) => 0.0],
                       (0, 10.0))
-    sol = solve(prob, DFBDF())
+    # sol = solve(prob, DFBDF())
+    sol = solve(prob, DImplicitEuler())
     @test sol.retcode == :Success
 
     # Plots.plot(sol; vars=[inertia2.w, inertia3.w])
