@@ -28,21 +28,20 @@ include("Analog/sources.jl")
 
 export #Interface
        Pin,
-       # Analog Components
+# Analog Components
        Capacitor, Ground, Inductor, Resistor, Conductor,
        Short, IdealOpAmp,
-       # Analog Sensors
+# Analog Sensors
        CurrentSensor, PotentialSensor, VoltageSensor,
        PowerSensor, MultiSensor,
-       # Analog Sources
+# Analog Sources
        Voltage, Current
 
-
-       # # Digital Gates
-       # And, Or, Not, Xor, Nand, Nor, Xnor,
-       # # Digital components
-       # HalfAdder, FullAdder, MUX, DEMUX, Encoder, Decoder,
-       # # Digital Sources
-       # DigitalPin, Pulse, PulseDiff
+# # Digital Gates
+# And, Or, Not, Xor, Nand, Nor, Xnor,
+# # Digital components
+# HalfAdder, FullAdder, MUX, DEMUX, Encoder, Decoder,
+# # Digital Sources
+# DigitalPin, Pulse, PulseDiff
 
 end

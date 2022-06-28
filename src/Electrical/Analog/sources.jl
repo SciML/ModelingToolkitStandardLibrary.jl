@@ -11,15 +11,15 @@ See [OnePort](@ref)
 - `n` Negative pin
 - `V` [RealInput](@ref) Input for the voltage control signal, i.e. `V ~ p.v - n.v`
 """
-function Voltage(;name)   
+function Voltage(; name)
     @named oneport = OnePort()
     @unpack v, i = oneport
     @named V = RealInput()
     eqs = [
-        v ~ V.u
+        v ~ V.u,
     ]
-    
-    extend(ODESystem(eqs, t, [], []; name=name, systems=[V]), oneport)
+
+    extend(ODESystem(eqs, t, [], []; name = name, systems = [V]), oneport)
 end
 
 """
@@ -35,13 +35,13 @@ See [OnePort](@ref)
 - `n` Negative pin
 - `I` [RealInput](@ref) Input for the current control signal, i.e. `I ~ p.i
 """
-function Current(;name)   
+function Current(; name)
     @named oneport = OnePort()
     @unpack v, i = oneport
     @named I = RealInput()
     eqs = [
-        i ~ I.u
+        i ~ I.u,
     ]
-    
-    extend(ODESystem(eqs, t, [], []; name=name, systems=[I]), oneport)
+
+    extend(ODESystem(eqs, t, [], []; name = name, systems = [I]), oneport)
 end

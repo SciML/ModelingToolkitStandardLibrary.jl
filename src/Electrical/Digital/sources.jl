@@ -11,17 +11,15 @@ function PulseDiff(; name, Val=1, dt=0.1)
 - `d`
   Output [`DigitalPin`](@ref)
 """
-function PulseDiff(; name, Val=1, dt=0.1)
+function PulseDiff(; name, Val = 1, dt = 0.1)
     @named d = DigitalPin()
     @variables val(t)
-    D = ModelingToolkit.Difference(t; dt=dt)
-    
-    eqs = [
-        D(val) ~ Val
-        val ~ d.val
-    ]
+    D = ModelingToolkit.Difference(t; dt = dt)
 
-    ODESystem(eqs, t, [val], [], systems=[d], defaults=Dict(Val=>0), name=name)
+    eqs = [D(val) ~ Val
+           val ~ d.val]
+
+    ODESystem(eqs, t, [val], [], systems = [d], defaults = Dict(Val => 0), name = name)
 end
 
 """
@@ -39,9 +37,9 @@ function Set(; name)
     @named d = DigitalPin()
 
     eqs = [
-        d.val ~ 1
+        d.val ~ 1,
     ]
-    ODESystem(eqs, t, [], [], systems=[d],  name=name)
+    ODESystem(eqs, t, [], [], systems = [d], name = name)
 end
 
 """
@@ -59,9 +57,9 @@ function Reset(; name)
     @named d = DigitalPin()
 
     eqs = [
-        d.val ~ 0
+        d.val ~ 0,
     ]
-    ODESystem(eqs, t, [], [], systems=[d], name=name)
+    ODESystem(eqs, t, [], [], systems = [d], name = name)
 end
 
 """
@@ -75,11 +73,11 @@ Pulse output with specified `duty_cycle` and time period (`T`)
 - `d`
   Output [`DigitalPin`](@ref)
 """
-function Pulse(; name, duty_cycle=0.5, T=1.0)
+function Pulse(; name, duty_cycle = 0.5, T = 1.0)
     @named d = DigitalPin()
 
     eqs = [
-        d.val ~ IfElse.ifelse(t%T > duty_cycle*T, 1, 0)
+        d.val ~ IfElse.ifelse(t % T > duty_cycle * T, 1, 0),
     ]
-    ODESystem(eqs, t, [], [], systems=[d], name=name)
+    ODESystem(eqs, t, [], [], systems = [d], name = name)
 end

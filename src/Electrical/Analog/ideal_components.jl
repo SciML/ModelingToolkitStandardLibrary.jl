@@ -7,10 +7,10 @@ node.
 # Connectors:
 - `g`
 """
-function Ground(;name)
+function Ground(; name)
     @named g = Pin()
     eqs = [g.v ~ 0]
-    ODESystem(eqs, t, [], []; systems=[g], name=name)
+    ODESystem(eqs, t, [], []; systems = [g], name = name)
 end
 
 """
@@ -28,14 +28,14 @@ See [OnePort](@ref)
 # Parameters:
 - `R`: [`Ω`] Resistance
 """
-function Resistor(;name, R)
+function Resistor(; name, R)
     @named oneport = OnePort()
     @unpack v, i = oneport
-    pars = @parameters R=R
+    pars = @parameters R = R
     eqs = [
-        v ~ i * R
+        v ~ i * R,
     ]
-    extend(ODESystem(eqs, t, [], pars; name=name), oneport)
+    extend(ODESystem(eqs, t, [], pars; name = name), oneport)
 end
 
 """
@@ -53,14 +53,14 @@ See [OnePort](@ref)
 # Parameters:
 - `G`: [`S`] Conductance
 """
-function Conductor(;name, G)
+function Conductor(; name, G)
     @named oneport = OnePort()
     @unpack v, i = oneport
-    pars = @parameters G=G
+    pars = @parameters G = G
     eqs = [
-        i ~ v * G
+        i ~ v * G,
     ]
-    extend(ODESystem(eqs, t, [], pars; name=name), oneport)
+    extend(ODESystem(eqs, t, [], pars; name = name), oneport)
 end
 
 """
@@ -81,14 +81,14 @@ Creates an ideal capacitor.
 - `C`: [`F`] Capacitance
 - `v_start`: [`V`] Initial voltage of capacitor
 """
-function Capacitor(;name, C, v_start=0.0)
-    @named oneport = OnePort(;v_start=v_start)
+function Capacitor(; name, C, v_start = 0.0)
+    @named oneport = OnePort(; v_start = v_start)
     @unpack v, i = oneport
-    pars = @parameters C=C
+    pars = @parameters C = C
     eqs = [
-        D(v) ~ i / C
+        D(v) ~ i / C,
     ]
-    extend(ODESystem(eqs, t, [], pars; name=name), oneport)
+    extend(ODESystem(eqs, t, [], pars; name = name), oneport)
 end
 
 """
@@ -107,14 +107,14 @@ See [OnePort](@ref)
 - `L`: [`H`] Inductance
 - `i_start`: [`A`] Initial current through inductor
 """
-function Inductor(;name, L, i_start=0.0)
-    @named oneport = OnePort(;i_start=i_start)
+function Inductor(; name, L, i_start = 0.0)
+    @named oneport = OnePort(; i_start = i_start)
     @unpack v, i = oneport
-    pars = @parameters L=L
+    pars = @parameters L = L
     eqs = [
-        D(i) ~ 1 / L * v
+        D(i) ~ 1 / L * v,
     ]
-    extend(ODESystem(eqs, t, [], pars; name=name), oneport)
+    extend(ODESystem(eqs, t, [], pars; name = name), oneport)
 end
 
 """
@@ -133,15 +133,13 @@ See [TwoPort](@ref)
 - `n1` Negative pin (left port)
 - `n2` Negative pin (right port)
 """
-function IdealOpAmp(;name)
+function IdealOpAmp(; name)
     @named twoport = TwoPort()
     @unpack v1, v2, i1, i2 = twoport
 
-    eqs = [
-        v1 ~ 0
-        i1 ~ 0
-    ]
-    extend(ODESystem(eqs, t, [], [], name=name), twoport)
+    eqs = [v1 ~ 0
+           i1 ~ 0]
+    extend(ODESystem(eqs, t, [], [], name = name), twoport)
 end
 
 """
@@ -160,5 +158,5 @@ function Short(; name)
     @named oneport = OnePort()
     @unpack v, i = oneport
     eqs = [v ~ 0]
-    extend(ODESystem(eqs, t, [], []; name=name), oneport)
+    extend(ODESystem(eqs, t, [], []; name = name), oneport)
 end

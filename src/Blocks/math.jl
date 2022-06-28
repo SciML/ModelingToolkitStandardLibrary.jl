@@ -13,11 +13,11 @@ Output the product of a gain value with the input signal.
 function Gain(k; name)
     @named siso = SISO()
     @unpack u, y = siso
-    pars = @parameters k=k
+    pars = @parameters k = k
     eqs = [
-        y ~ k * u
+        y ~ k * u,
     ]
-    extend(ODESystem(eqs, t, [], pars; name=name), siso)
+    extend(ODESystem(eqs, t, [], pars; name = name), siso)
 end
 
 """
@@ -33,13 +33,11 @@ Output the product of a gain matrix with the input signal vector.
 - `output`
 """
 function MatrixGain(K::AbstractArray; name)
-    nout, nin = size(K,1), size(K,2)
-    @named input = RealInput(;nin=nin)
-    @named output = RealOutput(;nout=nout)
-    eqs = [
-        output.u[i] ~ sum(K[i,j] * input.u[j] for j in 1:nin) for i in 1:nout # FIXME: if array equations work
-    ]
-    compose(ODESystem(eqs, t, [], []; name=name), [input, output])
+    nout, nin = size(K, 1), size(K, 2)
+    @named input = RealInput(; nin = nin)
+    @named output = RealOutput(; nout = nout)
+    eqs = [output.u[i] ~ sum(K[i, j] * input.u[j] for j in 1:nin) for i in 1:nout]
+    compose(ODESystem(eqs, t, [], []; name = name), [input, output])
 end
 
 """
@@ -55,14 +53,14 @@ Output the sum of the elements of the input port vector.
 - `output`
 """
 function Sum(n::Int; name)
-    @named input = RealInput(;nin=n)
+    @named input = RealInput(; nin = n)
     @named output = RealOutput()
     eqs = [
-        output.u ~ sum(input.u)
+        output.u ~ sum(input.u),
     ]
-    compose(ODESystem(eqs, t, [], []; name=name), [input, output])
+    compose(ODESystem(eqs, t, [], []; name = name), [input, output])
 end
-    
+
 """
     Feedback(;name)
 
@@ -73,14 +71,14 @@ Output difference between reference input (input1) and feedback input (input2).
 - `input2`
 - `output`
 """
-function Feedback(;name)
+function Feedback(; name)
     @named input1 = RealInput()
     @named input2 = RealInput()
     @named output = RealOutput()
-    eqs= [
-        output.u ~ input1.u - input2.u
+    eqs = [
+        output.u ~ input1.u - input2.u,
     ]
-    return compose(ODESystem(eqs, t, [], []; name=name), input1, input2, output)
+    return compose(ODESystem(eqs, t, [], []; name = name), input1, input2, output)
 end
 
 """
@@ -97,18 +95,18 @@ Output the sum of the two scalar inputs.
 - `input2`
 - `output`
 """
-function Add(;name, k1=1, k2=1)
+function Add(; name, k1 = 1, k2 = 1)
     @named input1 = RealInput()
     @named input2 = RealInput()
     @named output = RealOutput()
     pars = @parameters begin
-        k1=k1
-        k2=k2
+        k1 = k1
+        k2 = k2
     end
-    eqs= [
-        output.u ~ k1 * input1.u + k2 * input2.u
+    eqs = [
+        output.u ~ k1 * input1.u + k2 * input2.u,
     ]
-    return compose(ODESystem(eqs, t, [], pars; name=name), input1, input2, output)
+    return compose(ODESystem(eqs, t, [], pars; name = name), input1, input2, output)
 end
 
 """
@@ -127,20 +125,20 @@ Output the sum of the three scalar inputs.
 - `input3`
 - `output`
 """
-function Add3(;name, k1=1, k2=1, k3=1)
+function Add3(; name, k1 = 1, k2 = 1, k3 = 1)
     @named input1 = RealInput()
     @named input2 = RealInput()
     @named input3 = RealInput()
     @named output = RealOutput()
     pars = @parameters begin
-        k1=k1
-        k2=k2
-        k3=k3
+        k1 = k1
+        k2 = k2
+        k3 = k3
     end
-    eqs= [
-        output.u ~ k1 * input1.u + k2 * input2.u + k3 * input3.u
+    eqs = [
+        output.u ~ k1 * input1.u + k2 * input2.u + k3 * input3.u,
     ]
-    return compose(ODESystem(eqs, t, [], pars; name=name), input1, input2, input3, output)
+    return compose(ODESystem(eqs, t, [], pars; name = name), input1, input2, input3, output)
 end
 
 """
@@ -153,14 +151,14 @@ Output product of the two inputs.
 - `input2`
 - `output`
 """
-function Product(;name)
+function Product(; name)
     @named input1 = RealInput()
     @named input2 = RealInput()
     @named output = RealOutput()
-    eqs= [
-        output.u ~ input1.u * input2.u
+    eqs = [
+        output.u ~ input1.u * input2.u,
     ]
-    return compose(ODESystem(eqs, t, [], []; name=name), input1, input2, output)
+    return compose(ODESystem(eqs, t, [], []; name = name), input1, input2, output)
 end
 
 """
@@ -173,16 +171,15 @@ Output first input divided by second input.
 - `input2`
 - `output`
 """
-function Division(;name)
+function Division(; name)
     @named input1 = RealInput()
-    @named input2 = RealInput(u_start=1.0) # denominator can not be zero
+    @named input2 = RealInput(u_start = 1.0) # denominator can not be zero
     @named output = RealOutput()
-    eqs= [
-        output.u ~ input1.u / input2.u
+    eqs = [
+        output.u ~ input1.u / input2.u,
     ]
-    return compose(ODESystem(eqs, t, [], []; name=name), input1, input2, output)
+    return compose(ODESystem(eqs, t, [], []; name = name), input1, input2, output)
 end
-
 
 """
     StaticNonLinearity(func ;name)
@@ -199,7 +196,7 @@ function StaticNonLinearity(func; name)
     @named siso = SISO()
     @unpack u, y = siso
     eqs = [y ~ func(u)]
-    extend(ODESystem(eqs, t, [], []; name=name), siso)
+    extend(ODESystem(eqs, t, [], []; name = name), siso)
 end
 
 """
@@ -210,7 +207,7 @@ Output the absolute value of the input.
 # Connectors:
 See [`StaticNonLinearity`](@ref)
 """
-Abs(;name) = StaticNonLinearity(abs; name)
+Abs(; name) = StaticNonLinearity(abs; name)
 
 """
     Sign(;name)
@@ -220,7 +217,7 @@ Output the sign of the input
 # Connectors:
 See [`StaticNonLinearity`](@ref)
 """
-Sign(;name) = StaticNonLinearity(sign; name)
+Sign(; name) = StaticNonLinearity(sign; name)
 
 """
     Sqrt(;name)
@@ -230,7 +227,7 @@ Output the square root of the input (input >= 0 required).
 # Connectors:
 See [`StaticNonLinearity`](@ref)
 """
-Sqrt(;name) = StaticNonLinearity(sqrt; name)
+Sqrt(; name) = StaticNonLinearity(sqrt; name)
 
 """
     Sin(;name)
@@ -240,7 +237,7 @@ Output the sine of the input.
 # Connectors:
 See [`StaticNonLinearity`](@ref)
 """
-Sin(;name) = StaticNonLinearity(sin; name)
+Sin(; name) = StaticNonLinearity(sin; name)
 
 """
     Cos(;name)
@@ -250,7 +247,7 @@ Output the cosine of the input.
 # Connectors:
 See [`StaticNonLinearity`](@ref)
 """
-Cos(;name) = StaticNonLinearity(cos; name)
+Cos(; name) = StaticNonLinearity(cos; name)
 
 """
     Tan(;name)
@@ -260,7 +257,7 @@ Output the tangent of the input.
 # Connectors:
 See [`StaticNonLinearity`](@ref)
 """
-Tan(;name) = StaticNonLinearity(tan; name)
+Tan(; name) = StaticNonLinearity(tan; name)
 
 """
     Asin(;name)
@@ -270,7 +267,7 @@ Output the arc sine of the input.
 # Connectors:
 See [`StaticNonLinearity`](@ref)
 """
-Asin(;name) = StaticNonLinearity(asin; name)
+Asin(; name) = StaticNonLinearity(asin; name)
 
 """
     Acos(;name)
@@ -280,7 +277,7 @@ Output the arc cosine of the input.
 # Connectors:
 See [`StaticNonLinearity`](@ref)
 """
-Acos(;name) = StaticNonLinearity(acos; name)
+Acos(; name) = StaticNonLinearity(acos; name)
 
 """
     Atan(;name)
@@ -290,7 +287,7 @@ Output the arc tangent of the input.
 # Connectors:
 See [`StaticNonLinearity`](@ref)
 """
-Atan(;name) = StaticNonLinearity(atan; name)
+Atan(; name) = StaticNonLinearity(atan; name)
 
 """
     Atan2(;name)
@@ -302,14 +299,14 @@ Output the arc tangent of the input.
 - `input2`
 - `output`
 """
-function Atan2(;name)
+function Atan2(; name)
     @named input1 = RealInput()
     @named input2 = RealInput()
     @named output = RealOutput()
     eqs = [
-        output.u ~ atan(input1.u, input2.u)
+        output.u ~ atan(input1.u, input2.u),
     ]
-    compose(ODESystem(eqs, t, [], []; name=name), [input1, input2, output])
+    compose(ODESystem(eqs, t, [], []; name = name), [input1, input2, output])
 end
 
 """
@@ -320,7 +317,7 @@ Output the hyperbolic sine of the input.
 # Connectors:
 See [`StaticNonLinearity`](@ref)
 """
-Sinh(;name) = StaticNonLinearity(sinh; name)
+Sinh(; name) = StaticNonLinearity(sinh; name)
 
 """
     Cosh(;name)
@@ -330,7 +327,7 @@ Output the hyperbolic cosine of the input.
 # Connectors:
 See [`StaticNonLinearity`](@ref)
 """
-Cosh(;name) = StaticNonLinearity(cosh; name)
+Cosh(; name) = StaticNonLinearity(cosh; name)
 
 """
     Tanh(;name)
@@ -340,7 +337,7 @@ Output the hyperbolic tangent of the input.
 # Connectors:
 See [`StaticNonLinearity`](@ref)
 """
-Tanh(;name) = StaticNonLinearity(tanh; name)
+Tanh(; name) = StaticNonLinearity(tanh; name)
 
 """
     Exp(;name)
@@ -350,7 +347,7 @@ Output the exponential (base e) of the input.
 # Connectors:
 See [`StaticNonLinearity`](@ref)
 """
-Exp(;name) = StaticNonLinearity(exp; name)
+Exp(; name) = StaticNonLinearity(exp; name)
 
 """
     Log(;name)
@@ -360,7 +357,7 @@ Output the natural (base e) logarithm of the input.
 # Connectors:
 See [`StaticNonLinearity`](@ref)
 """
-Log(;name) = StaticNonLinearity(log; name)
+Log(; name) = StaticNonLinearity(log; name)
 
 """
     Log10(;name)
@@ -370,4 +367,4 @@ Output the base 10 logarithm of the input.
 # Connectors:
 See [`StaticNonLinearity`](@ref)
 """
-Log10(;name) = StaticNonLinearity(log10; name)
+Log10(; name) = StaticNonLinearity(log10; name)
