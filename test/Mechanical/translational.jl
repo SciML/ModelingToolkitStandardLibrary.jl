@@ -1,7 +1,5 @@
+using Modelingtoolkitstandardlibrary.Mechanical.Translational, ModelingToolkit, OrdinaryDiffEq, Test
 import ModelingToolkitStandardLibrary.Blocks
-include(pwd() * "/src/Mechanical/Translational/Translational.jl")
-using .Translational, ModelingToolkit, OrdinaryDiffEq, Test
-using CSV, DataFrames, Statisticss
 
 @parameters t
 D = Differential(t)
