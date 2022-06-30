@@ -5,6 +5,9 @@ Flange fixed in housing at a given position.
 
 # Parameters:
 - `s0`: [m] Fixed offset position of housing
+
+# Connectors:
+- `flange: 1-dim. translational flange`
 """
 function Fixed(; name, s0=0.0)
     @named flange = Flange()
@@ -27,7 +30,11 @@ Sliding mass with inertia
 # States: 
 - `s`: [m] Absolute position of sliding mass
 - `v`: [m/s] Absolute linear velocity of sliding mass (= der(s)) 
-- `a`: [m/s²] Absolute linear acceleration of sliding mass (= der(v)) 
+- `a`: [m/s²] Absolute linear acceleration of sliding mass (= der(v))
+
+# Connectors:
+- `flange_a: 1-dim. translational flange on one side of mass`
+- `flange_b: 1-dim. translational flange on opposite side of mass`
 """
 function Mass(; name, m, s_start=0.0, v_start=0.0, a_start=0.0)
     @named flange_a = Flange()
@@ -56,6 +63,10 @@ Linear 1D translational spring
 # Parameters:
 - `c`: [N/m] Spring constant
 - `s_rel0`: Unstretched spring length
+
+# Connectors:
+- `flange_a: 1-dim. translational flange on one side of spring`
+- `flange_b: 1-dim. translational flange on opposite side of spring`
 """
 function Spring(; name, c, s_rel0=0.0)
     @named partial_comp = PartialCompliant()
@@ -75,6 +86,10 @@ Linear 1D translational damper
 
 # Parameters:
 - `d`: [N.s/m] Damping constant
+
+# Connectors:
+- `flange_a: 1-dim. translational flange on one side of damper`
+- `flange_b: 1-dim. translational flange on opposite side of damper`
 """
 function Damper(; name, d)
     @named partial_comp = PartialCompliantWithRelativeStates()
