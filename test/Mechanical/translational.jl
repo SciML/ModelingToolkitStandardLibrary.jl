@@ -32,9 +32,9 @@ D = Differential(t)
     v_start = 10 # initial value of absolute linear velocity of sliding mass
     d = 25 # damping constant
 
-    @named fixed = Fixed(s0=s0)
-    @named mass = Mass(m=m, s_start=s_start, v_start=v_start)
-    @named damper = Damper(d=d)
+    @named fixed = Fixed(; s0)
+    @named mass = Mass(; m, s_start, v_start)
+    @named damper = Damper(; d)
 
     connections = [
         connect(mass.flange_b, damper.flange_a)
@@ -64,9 +64,6 @@ end
 @testset "underdamped mass spring damper" begin
 
     mass_s_modelica = [0.100000000000000 3.93584712686420;
-    0.440000000000000 5.52045823200301;
-    0.720000000000000 4.74101434838378;
-    0.200000000000000 4.69431855031930;
     0.860000000000000 3.91785659408340;
     1.04000000000000 2.79892156799871;
     1.46000000000000 1.47481226130478;
@@ -89,13 +86,13 @@ end
     s_start = 3
     v_start = 10
     c = 10 # spring constant
-    s_rel0 = 1 # unstretched spring length
+    s_rel0 = 1.5 # unstretched spring length
     d = 1
 
-    @named fixed = Fixed(s0=s0)
-    @named mass = Mass(m=m, s_start=s_start, v_start=v_start)
-    @named damper = Damper(d=d)
-    @named spring = Spring(c=c, s_rel0=s_rel0)
+    @named fixed = Fixed(; s0)
+    @named mass = Mass(; m, s_start, v_start)
+    @named damper = Damper(; d)
+    @named spring = Spring(; c, s_rel0)
     
     connections = [
         connect(mass.flange_b, damper.flange_a, spring.flange_a)
@@ -113,6 +110,6 @@ end
 
     @test sol.retcode == :Success
     @test mass_v_julia[end] ≈ 0 atol = 1e-3 # all energy has dissipated
-    @test mean(broadcast(abs, (mass_s_julia_subset - mass_s_modelica[:, 2]))) ≈ 0 atol = 1e-0 # jl and modelica s vs. t results are approx equal
+    @test mean(broadcast(abs, (mass_s_julia_subset - mass_s_modelica[:, 2]))) ≈ 0 atol = 1e-5 # jl and modelica s vs. t results are approx equal
 
 end

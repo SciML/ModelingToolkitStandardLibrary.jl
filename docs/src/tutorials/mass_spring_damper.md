@@ -15,17 +15,17 @@ Now let's initialize our system state and define our components and connections.
 D = Differential(t)
 
 s0 = 4.5
-s_rel0 = 1
+s_rel0 = 1.5
 s_start = 3
 v_start = 10
 m = 1
 c = 10
 d = 1
 
-@named fixed = Fixed(s0=s0)
-@named mass = Mass(m=m, s_start=s_start, v_start=v_start)
-@named damper = Damper(d=d)
-@named spring = Spring(c=c, s_rel0=s_rel0)
+@named fixed = Fixed(; s0)
+@named mass = Mass(; m, s_start, v_start)
+@named damper = Damper(; d)
+@named spring = Spring(; c, s_rel0)
 
 connections = [
     connect(mass.flange_b, damper.flange_a, spring.flange_a)
@@ -61,9 +61,9 @@ We'll now demonstrate a mass-spring-damper system that is overdamped. For such s
 ```
 m, c, d = 1, 1, 10
 
-@named mass = Mass(m=m, s_start=s_start, v_start=v_start)
-@named damper = Damper(d=d)
-@named spring = Spring(c=c, s_rel0=s_rel0)
+@named mass = Mass(; m, s_start, v_start)
+@named damper = Damper(; d)
+@named spring = Spring(; c, s_rel0)
 
 connections = [
     connect(mass.flange_b, damper.flange_a, spring.flange_a)
@@ -100,9 +100,9 @@ Our last demonstration will be of a mass-spring-damper system that is critically
 m, c = 1, 1
 d = sqrt(4 * m * c)
 
-@named mass = Mass(m=m, s_start=s_start, v_start=v_start)
-@named damper = Damper(d=d)
-@named spring = Spring(c=c, s_rel0=s_rel0)
+@named mass = Mass(; m, s_start, v_start)
+@named damper = Damper(; d)
+@named spring = Spring(; c, s_rel0)
 
 connections = [
     connect(mass.flange_b, damper.flange_a, spring.flange_a)
