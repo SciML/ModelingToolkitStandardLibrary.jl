@@ -9,16 +9,15 @@ using ModelingToolkitStandardLibrary.Thermal
 
 include("pages.jl")
 
-makedocs(
-    sitename="ModelingToolkitStandardLibrary.jl",
-    authors="Julia Computing",
-    clean=true,
-    doctest=false,
-    strict=[
-        :doctest,
-        :example_block,
-    ],
-    modules=[ModelingToolkitStandardLibrary,
+makedocs(sitename = "ModelingToolkitStandardLibrary.jl",
+         authors = "Julia Computing",
+         clean = true,
+         doctest = false,
+         strict = [
+             :doctest,
+             :example_block,
+         ],
+         modules = [ModelingToolkitStandardLibrary,
              ModelingToolkitStandardLibrary.Blocks,
              ModelingToolkitStandardLibrary.Mechanical,
              ModelingToolkitStandardLibrary.Mechanical.Rotational,
@@ -26,14 +25,9 @@ makedocs(
              ModelingToolkitStandardLibrary.Magnetic.FluxTubes,
              ModelingToolkitStandardLibrary.Electrical,
              ModelingToolkitStandardLibrary.Thermal],
+         format = Documenter.HTML(assets = ["assets/favicon.ico"],
+                                  canonical = "https://mtkstdlib.sciml.ai/stable/"),
+         pages = pages)
 
-    format=Documenter.HTML(assets=["assets/favicon.ico"],
-                           canonical="https://mtkstdlib.sciml.ai/stable/"),
-
-    pages=pages
-)
-
-deploydocs(
-    repo="github.com/SciML/ModelingToolkitStandardLibrary.jl";
-    push_preview=true
-)
+deploydocs(repo = "github.com/SciML/ModelingToolkitStandardLibrary.jl";
+           push_preview = true)

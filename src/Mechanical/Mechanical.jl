@@ -9,4 +9,3 @@ include("Rotational/Rotational.jl")
 include("Translational/Translational.jl")
 
 end
-

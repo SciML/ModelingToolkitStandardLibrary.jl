@@ -1,7 +1,7 @@
-@connector function HeatPort(; name, T_start=273.15 + 20.0, Q_flow_start=0.0)
-    @variables T(t)=T_start
+@connector function HeatPort(; name, T_start = 273.15 + 20.0, Q_flow_start = 0.0)
+    @variables T(t) = T_start
     @variables Q_flow(t)=Q_flow_start [connect = Flow]
-    ODESystem(Equation[], t, [T, Q_flow], [], name=name)
+    ODESystem(Equation[], t, [T, Q_flow], [], name = name)
 end
 Base.@doc """
     HeatPort(; name, T_start=273.15 + 20.0, Q_flow_start=0.0)
@@ -36,18 +36,16 @@ flow rate through the element from `port_a` to `port_b`, `Q_flow`.
 - `dT_start`:  [K] Initial temperature difference across the component a.T - b.T
 - `Q_flow_start`: [W] Initial heat flow rate from port a -> port b
 """
-function Element1D(;name, dT_start=0.0, Q_flow_start=0.0)
+function Element1D(; name, dT_start = 0.0, Q_flow_start = 0.0)
     @named port_a = HeatPort()
     @named port_b = HeatPort()
     sts = @variables begin
-        dT(t)=dT_start
-        Q_flow(t)=Q_flow_start
+        dT(t) = dT_start
+        Q_flow(t) = Q_flow_start
     end
-    eqs = [
-        dT ~ port_a.T - port_b.T
-        port_a.Q_flow ~ Q_flow
-        port_a.Q_flow + port_b.Q_flow ~ 0
-    ]
-    
-    return compose(ODESystem(eqs, t, sts, []; name=name), port_a, port_b)
+    eqs = [dT ~ port_a.T - port_b.T
+           port_a.Q_flow ~ Q_flow
+           port_a.Q_flow + port_b.Q_flow ~ 0]
+
+    return compose(ODESystem(eqs, t, sts, []; name = name), port_a, port_b)
 end
