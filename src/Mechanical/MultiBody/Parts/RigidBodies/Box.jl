@@ -43,3 +43,9 @@ end
     R[2] = y.args[1]
     return normalize([R[1], R[2]])
 end
+
+@inline function translate_vector(vector::Vector{Float64}, point::Vector{Float64})
+    P = [0.0, 0.0] + point
+    Q = vector + point
+    return P, Q
+end
