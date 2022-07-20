@@ -1,3 +1,5 @@
+using LinearAlgebra, SymPy
+
 """
 2D rigid body with rectangular shape. The parameters `P` and `Q` are two points in 2D space. Together with the parameter `width`, the vector drawn between points `P` and `Q` defines the spatial extents of our rigid body. This "two-point" vector implementation differs from Modelica's implementation of the same component. In the Modelica 
 implementation, one point is used to define the position of the origin of a new frame of reference, and a second point is used to create a vector from the origin of this new frame.
@@ -10,21 +12,19 @@ implementation, one point is used to define the position of the origin of a new 
 - `width`: [m] Width of our rigid body
 - `ρ`: [kg/m³] Material density of our rigid body
 """
-using LinearAlgebra, SymPy
-
 struct Box
-    P::Vector{Float64} = [0.0, 0.0]
-    Q::Vector{Float64} = [1.0, 1.0]
-    ω::Float64 = 0.0
-    α::Float64 = 0.0
-    width::Float64 = 1.0
-    ρ::Float64 = 2710.0
+    P::Vector{Float64} -> [0.0, 0.0]
+    Q::Vector{Float64} -> [1.0, 1.0]
+    ω::Float64 -> 0.0
+    α::Float64 -> 0.0
+    width::Float64 -> 1.0
+    ρ::Float64 -> 2710.0
 
     @parameters t ρ = ρ
     @parameters length = norm(P-Q)
     @parameters COM = [P[1] + Q[1] / 2, P[2] + Q[2] / 2]
     @parameters mass = ρ * length * width
-
+    
     D = Differential(t)
 
     sts = @variables begin
