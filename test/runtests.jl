@@ -20,3 +20,6 @@ using SafeTestsets
 
 # Mechanical
 @safetestset "Mechanical" begin include("Mechanical/rotational.jl") end
+
+# Hydraulic
+@safetestset "Hydraulic" begin include("Hydraulic/hydraulic.jl") end
