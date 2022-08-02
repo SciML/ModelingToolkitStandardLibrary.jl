@@ -108,6 +108,25 @@ end
     # equilibrium point is at [1, 0]
     @test sol[ss.x[1]][end]≈1 atol=1e-3
     @test sol[ss.x[2]][end]≈0 atol=1e-3
+
+    # non-zero operating point
+    u0 = [1] # This causes no effective input to the system since c.k = 1
+    y0 = [2]
+    @named ss = StateSpace(; A, B, C, D, x_start = zeros(2), u0, y0)
+    @named model = ODESystem([
+                                 connect(c.output, ss.input),
+                             ],
+                             t,
+                             systems = [ss, c])
+    sys = structural_simplify(model)
+    prob = ODEProblem(sys, Pair[], (0.0, 100.0))
+    sol = solve(prob, Rodas4())
+    @test sol.retcode == :Success
+
+    @test sol[ss.x[1]][end ÷ 2]≈0 atol=1e-3 # Test that x did not move
+    @test sol[ss.x[1]][end]≈0 atol=1e-3 # Test that x did not move
+    @test sol[ss.x[2]][end]≈0 atol=1e-3
+    @test sol[ss.output.u[1]][end]≈y0[] atol=1e-3 # Test that the output equals the operating point
 end
 
 """Second order demo plant"""
