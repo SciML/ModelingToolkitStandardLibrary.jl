@@ -5,7 +5,7 @@ This tutorial demonstrates the response of a mass-spring-damper system. Rather t
 Let's start by importing what we need.
 
 ```@example
-using ModelingToolkitStandardLibrary.Mechanical.Translational, ModelingToolkit, OrdinaryDiffEq, ControlSystems, Plots
+using ModelingToolkitStandardLibrary.Mechanical.Translational, ModelingToolkit, OrdinaryDiffEq, Plots
 import ModelingToolkitStandardLibrary.Blocks
 ```
 
