@@ -1,9 +1,9 @@
-@connector function Flange(;name)
+@connector function Flange(; name)
     sts = @variables begin
         s(t)
-        f(t), [connect=Flow]
+        f(t), [connect = Flow]
     end
-    ODESystem(Equation[], t, sts, [], name=name, defaults=Dict(s=>0.0, f=>0.0))
+    ODESystem(Equation[], t, sts, [], name = name, defaults = Dict(s => 0.0, f => 0.0))
 end
 Base.@doc """
     Flange(;name)
@@ -15,12 +15,12 @@ Base.@doc """
 - `f`: [N] Cut force into the flange
 """ Flange
 
-@connector function Support(;name)
+@connector function Support(; name)
     sts = @variables begin
         s(t)
-        f(t), [connect=Flow]
+        f(t), [connect = Flow]
     end
-    ODESystem(Equation[], t, sts, [], name=name, defaults=Dict(s=>0.0, f=>0.0))
+    ODESystem(Equation[], t, sts, [], name = name, defaults = Dict(s => 0.0, f => 0.0))
 end
 Base.@doc """
     Support(;name)
@@ -45,19 +45,17 @@ Partial model for the compliant connection of two translational 1-dim. flanges.
 - `s_rel`: [m] Relative distance (= flange_b.s - flange_a.s)
 - `f`: [N] Force between flanges (= flange_b.f)
 """
-function PartialCompliant(;name, s_rel_start=0.0, f_start=0.0)
+function PartialCompliant(; name, s_rel_start = 0.0, f_start = 0.0)
     @named flange_a = Flange()
     @named flange_b = Flange()
     sts = @variables begin
-        s_rel(t)=s_rel_start
-        f(t)=f_start
+        s_rel(t) = s_rel_start
+        f(t) = f_start
     end
-    eqs = [
-        s_rel ~ flange_b.s - flange_a.s
-        flange_b.f ~ f
-        flange_a.f ~ -f
-    ]
-    return compose(ODESystem(eqs, t, sts, []; name=name), flange_a, flange_b)
+    eqs = [s_rel ~ flange_b.s - flange_a.s
+           flange_b.f ~ f
+           flange_a.f ~ -f]
+    return compose(ODESystem(eqs, t, sts, []; name = name), flange_a, flange_b)
 end
 
 """
@@ -77,23 +75,22 @@ Partial model for the compliant connection of two translational 1-dim. flanges.
 - `a_rel`: [m/s²] Relative linear acceleration (= der(v_rel))
 - `f`: [N] Force between flanges (= flange_b.f)
 """
-function PartialCompliantWithRelativeStates(;name, s_rel_start=0.0, v_rel_start=0.0, a_rel_start=0.0, f_start=0.0)
+function PartialCompliantWithRelativeStates(; name, s_rel_start = 0.0, v_rel_start = 0.0,
+                                            a_rel_start = 0.0, f_start = 0.0)
     @named flange_a = Flange()
     @named flange_b = Flange()
     sts = @variables begin
-        s_rel(t)=s_rel_start
-        v_rel(t)=v_rel_start
-        a_rel(t)=a_rel_start
-        f(t)=f_start
+        s_rel(t) = s_rel_start
+        v_rel(t) = v_rel_start
+        a_rel(t) = a_rel_start
+        f(t) = f_start
     end
-    eqs = [
-        s_rel ~ flange_b.s - flange_a.s
-        D(s_rel) ~ v_rel
-        D(v_rel) ~ a_rel
-        flange_b.f ~ f
-        flange_a.f ~ -f
-    ]
-    return compose(ODESystem(eqs, t, sts, []; name=name), flange_a, flange_b)
+    eqs = [s_rel ~ flange_b.s - flange_a.s
+           D(s_rel) ~ v_rel
+           D(v_rel) ~ a_rel
+           flange_b.f ~ f
+           flange_a.f ~ -f]
+    return compose(ODESystem(eqs, t, sts, []; name = name), flange_a, flange_b)
 end
 
 """
@@ -107,21 +104,19 @@ Partial model for a component with one translational 1-dim. shaft flange and a s
 # States:
 - `s_support`: [m] Absolute position of support flange"
 """
-function PartialElementaryOneFlangeAndSupport2(;name, use_support=false)
+function PartialElementaryOneFlangeAndSupport2(; name, use_support = false)
     @named flange = Flange()
     sys = [flange]
     @variables s_support(t)
     if use_support
         @named support = Support()
-        eqs = [
-            support.s ~ s_support
-            support.f ~ -flange.f
-        ]
+        eqs = [support.s ~ s_support
+               support.f ~ -flange.f]
         push!(sys, support)
     else
         eqs = [s_support ~ 0]
     end
-    return compose(ODESystem(eqs, t, [s_support], []; name=name), sys)
+    return compose(ODESystem(eqs, t, [s_support], []; name = name), sys)
 end
 
 """
@@ -135,20 +130,18 @@ Partial model for a component with two translational 1-dim. flanges and a suppor
 # States:
 - `s_support`: [m] Absolute position of support flange"
 """
-function PartialElementaryTwoFlangesAndSupport2(;name, use_support=false)
+function PartialElementaryTwoFlangesAndSupport2(; name, use_support = false)
     @named flange_a = Flange()
     @named flange_b = Flange()
     sys = [flange_a, flange_b]
-    @variables s_support(t)=0.0
+    @variables s_support(t) = 0.0
     if use_support
         @named support = Support()
-        eqs = [
-            support.s ~ s_support
-            support.f ~ -flange_a.f - flange_b.f
-        ]
+        eqs = [support.s ~ s_support
+               support.f ~ -flange_a.f - flange_b.f]
         push!(sys, support)
     else
         eqs = [s_support ~ 0]
     end
-    return compose(ODESystem(eqs, t, [s_support], []; name=name), sys)
+    return compose(ODESystem(eqs, t, [s_support], []; name = name), sys)
 end
