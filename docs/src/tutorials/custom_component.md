@@ -99,7 +99,7 @@ connections = [
     connect(Ro.n, Gnd.g)
 ]
 
-@named model = ODESystem(connections, t, systems=[L, Ro, G, C1, C2, Nr])
+@named model = ODESystem(connections, t, systems=[L, Ro, G, C1, C2, Nr, Gnd])
 nothing # hide
 ```
 
