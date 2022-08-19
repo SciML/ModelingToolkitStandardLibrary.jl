@@ -60,7 +60,8 @@ end
                                  sine,
                              ])
     sys = structural_simplify(model)
-    prob = DAEProblem(sys, D.(states(sys)) .=> 0.0, [D(D(inertia2.phi)) => 1.0; D.(states(model)) .=> 0.0], (0, 10.0))
+    prob = DAEProblem(sys, D.(states(sys)) .=> 0.0,
+                      [D(D(inertia2.phi)) => 1.0; D.(states(model)) .=> 0.0], (0, 10.0))
     sol = solve(prob, DFBDF())
 
     # Plots.plot(sol; vars=[inertia1.w, -inertia2.w*2])
