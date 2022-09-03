@@ -3,7 +3,7 @@ Library to model 1-dimensional, rotational mechanical systems
 """
 module Rotational
 
-using ModelingToolkit, Symbolics
+using ModelingToolkit, Symbolics, IfElse
 using ...Blocks: RealInput, RealOutput
 
 @parameters t
