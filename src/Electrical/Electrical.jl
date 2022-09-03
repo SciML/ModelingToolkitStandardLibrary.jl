@@ -4,7 +4,7 @@ This library contains electrical components to build up analog circuits.
 """
 module Electrical
 
-using ModelingToolkit, Symbolics, IfElse, OrdinaryDiffEq
+using ModelingToolkit, Symbolics, IfElse
 using OffsetArrays
 
 @parameters t
