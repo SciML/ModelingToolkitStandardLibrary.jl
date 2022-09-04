@@ -21,12 +21,16 @@ D = Differential(t)
                              systems = [fixed, inertia1, inertia2, spring, damper])
     sys = structural_simplify(model)
 
-    @test_throws Any prob=ODEProblem(sys, Pair[], (0, 10.0))
-    @test_throws Any prob=ODAEProblem(sys, Pair[], (0, 10.0))
+    prob = ODEProblem(sys, Pair[], (0, 10.0))
+    sol = solve(prob, Rodas4())
+    @test sol.retcode == :Success
+
+    prob = ODAEProblem(sys, Pair[], (0, 10.0))
+    sol = solve(prob, Rodas4())
+    @test sol.retcode == :Success
 
     prob = DAEProblem(sys, D.(states(sys)) .=> 0.0, Pair[], (0, 10.0))
     sol = solve(prob, DFBDF())
-
     @test sol.retcode == :Success
     @test all(sol[inertia1.w] .== 0)
     @test sol[inertia2.w][end]≈0 atol=1e-3 # all energy has dissipated
@@ -67,8 +71,11 @@ end
     prob = DAEProblem(sys, D.(states(sys)) .=> 0.0,
                       [D(D(inertia2.phi)) => 1.0; D.(states(model)) .=> 0.0], (0, 10.0))
     sol = solve(prob, DFBDF())
+    @test sol.retcode == :Success
 
-    @test_throws Any prob=ODAEProblem(sys, Pair[], (0, 1.0))
+    prob = ODAEProblem(sys, Pair[], (0, 1.0))
+    sol = solve(prob, Rodas4())
+    @test sol.retcode == :Success
 
     @test_skip begin
         @test sol.retcode == :Success
@@ -120,8 +127,8 @@ end
                                  sine,
                              ])
     sys = structural_simplify(model)
-    @test_broken prob = ODAEProblem(sys, Pair[], (0, 1.0))
-    # sol = solve(prob, Rodas4())
-    # @test sol.retcode == :Success
+    prob = ODAEProblem(sys, Pair[], (0, 1.0))
+    sol = solve(prob, Rodas4())
+    @test sol.retcode == :Success
     # Plots.plot(sol; vars=[inertia2.w, inertia3.w])
 end
