@@ -111,7 +111,7 @@ Critical damping corresponds to `d=1`, which yields the fastest step response wi
 
 # Parameters:
 - `k`: Gain
-- `w`: Angular frequency
+- `w`: [`rad/s`] Angular frequency
 - `d`: Damping
 - `x_start`: Initial value of state (output)
 - `xd_start`: Initial value of derivative of state (output)
