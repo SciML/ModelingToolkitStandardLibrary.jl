@@ -209,11 +209,17 @@ end
     )
     sys = structural_simplify(model)
 
-    @test_throws Any prob = ODEProblem(sys, Pair[], (0, 10.0))
+    prob = ODEProblem(sys, Pair[], (0, 10.0))
+    sol = solve(prob, Rodas4())
+    @test sol.retcode == :Success
+    @test all(sol[inertia1.w] .== 0)
+    @test all(sol[inertia1.w] .== sol[speed_sensor.w.u])
+    @test sol[inertia2.w][end] ≈ 0 atol = 1e-3 # all energy has dissipated
+    @test all(sol[rel_speed_sensor.w_rel.u] .== sol[speed_sensor.w.u])
+    @test all(sol[torque_sensor.tau.u] .== -sol[inertia1.flange_b.tau])
 
     prob = DAEProblem(sys, D.(states(sys)) .=> 0.0, Pair[], (0, 10.0))
     sol = solve(prob, DFBDF())
-
     @test sol.retcode == :Success
     @test all(sol[inertia1.w] .== 0)
     @test all(sol[inertia1.w] .== sol[speed_sensor.w.u])
