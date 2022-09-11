@@ -34,10 +34,22 @@ Inertia
 Spring
 Damper
 IdealGear
+RotationalFriction
+ViscousFriction
 ```
 
 ### Rotational Sources
 
 ```@docs
 Torque
+Speed
+```
+
+### Rotational Sensors
+
+```@docs
+AngleSensor
+SpeedSensor
+TorqueSensor
+RelSpeedSensor
 ```
