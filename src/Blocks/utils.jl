@@ -45,7 +45,7 @@ Connector with one output signal of type Real.
 """
     SISO(;name, u_start=0.0, y_start=0.0)
 
-Single Input Single Output continuous control block.
+Single input single output (SISO) continuous system block.
 
 # Parameters:
 - `u_start`: Initial value for the input
@@ -66,7 +66,7 @@ end
 """
     MIMO(;name, nin=1, nout=1, u_start=zeros(nin), y_start=zeros(nout))
 
-Base class for a multiple Input multiple Output continuous control block.
+Base class for a multiple input multiple output (MIMO) continuous system block.
 
 # Parameters:
 - `nin`: Input dimension
