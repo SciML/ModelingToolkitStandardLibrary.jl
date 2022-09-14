@@ -20,4 +20,6 @@ using SafeTestsets
 @safetestset "Magnetic" begin include("Magnetic/magnetic.jl") end
 
 # Mechanical
-@safetestset "Mechanical" begin include("Mechanical/rotational.jl") end
+@safetestset "Mechanical Rotation" begin include("Mechanical/rotational.jl") end
+@safetestset "Mechanical Translation" begin include("Mechanical/translational.jl") end
+
