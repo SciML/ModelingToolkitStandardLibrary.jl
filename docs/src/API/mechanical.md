@@ -35,7 +35,6 @@ Spring
 Damper
 IdealGear
 RotationalFriction
-ViscousFriction
 ```
 
 ### Rotational Sources
