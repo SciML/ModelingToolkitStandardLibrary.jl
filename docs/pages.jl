@@ -4,6 +4,7 @@ pages = [
         "RC Circuit" => "tutorials/rc_circuit.md",
         "Custom Components" => "tutorials/custom_component.md",
         "Thermal Conduction Model" => "tutorials/thermal_model.md",
+        "DC Motor with Speed Controller" => "tutorials/dc_motor_pi.md",
     ],
     "API" => [
         "Basic Blocks" => "API/blocks.md",

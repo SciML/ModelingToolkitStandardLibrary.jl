@@ -39,6 +39,7 @@ end
 function Inertia(; name, J, phi_start = 0.0, w_start = 0.0, a_start = 0.0)
     @named flange_a = Flange()
     @named flange_b = Flange()
+    J > 0 || throw(ArgumentError("Expected `J` to be positive"))
     @parameters J = J
     sts = @variables begin
         phi(t) = phi_start
@@ -73,6 +74,7 @@ Linear 1D rotational spring
 function Spring(; name, c, phi_rel0 = 0.0)
     @named partial_comp = PartialCompliant()
     @unpack phi_rel, tau = partial_comp
+    c > 0 || throw(ArgumentError("Expected `c` to be positive"))
     pars = @parameters begin
         c = c
         phi_rel0 = phi_rel0
@@ -102,6 +104,7 @@ Linear 1D rotational damper
 function Damper(; name, d)
     @named partial_comp = PartialCompliantWithRelativeStates()
     @unpack w_rel, tau = partial_comp
+    d > 0 || throw(ArgumentError("Expected `d` to be positive"))
     pars = @parameters d = d
     eqs = [tau ~ d * w_rel]
     extend(ODESystem(eqs, t, [], pars; name = name), partial_comp)
@@ -130,6 +133,7 @@ This element characterizes any type of gear box which is fixed in the ground and
 function IdealGear(; name, ratio, use_support = false)
     @named partial_element = PartialElementaryTwoFlangesAndSupport2(use_support = use_support)
     @unpack phi_support, flange_a, flange_b = partial_element
+    ratio > 0 || throw(ArgumentError("Expected `ratio` to be positive"))
     @parameters ratio = ratio
     sts = @variables phi_a(t)=0.0 phi_b(t)=0.0
     eqs = [phi_a ~ flange_a.phi - phi_support

@@ -22,3 +22,5 @@ using SafeTestsets
 
 # Mechanical
 @safetestset "Mechanical" begin include("Mechanical/rotational.jl") end
+
+@safetestset "Multi-Domain" begin include("multi_domain.jl") end

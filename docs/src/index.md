@@ -17,6 +17,7 @@ import Pkg; Pkg.add("ModelingToolkitStandardLibrary")
 - [RC Circuit](http://mtkstdlib.sciml.ai/dev/tutorials/rc_circuit/)
 - [Custom Component](http://mtkstdlib.sciml.ai/dev/tutorials/custom_component/)
 - [Thermal Model](http://mtkstdlib.sciml.ai/dev/tutorials/thermal_model/)
+- [DC Motor with PI-controller](http://mtkstdlib.sciml.ai/dev/tutorials/dc_motor_pi/)
 
 ## Libraries
 
