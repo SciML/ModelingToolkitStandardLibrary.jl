@@ -11,7 +11,7 @@ D = Differential(t)
 export Port
 include("utils.jl")
 
-export Body, Spring, Damper
+export Body, Spring, Damper, Fixed
 include("components.jl")
 
 #export Torque
