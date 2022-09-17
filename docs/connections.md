@@ -62,6 +62,15 @@ sys = structural_simplify(model)
 equations(sys)
 ```
 
+```
+1-element Vector{Equation}:
+ Differential(t)(capacitor₊v(t)) ~ capacitor₊i(t) / capacitor₊C
+```
+
+
+
+
+
 The solution shows what we would expect, a non-linear disipation of voltage and releated decrease in current flow...
 
 ```julia
@@ -79,6 +88,10 @@ axislegend(ax)
 
 fig
 ```
+
+![](figures/connections_2_1.png)
+
+
 # Translational Domain Example (Across Variable = velocity)
 Now using the Translational library based on velocity, we can see the same relationship with a system reduced to a single equation, using the components:
 
@@ -111,6 +124,15 @@ sys = TranslationalVelocity.sys
 full_equations(sys)
 ```
 
+```
+1-element Vector{Equation}:
+ Differential(t)(body₊v(t)) ~ (-damping₊d*body₊v(t)) / body₊m
+```
+
+
+
+
+
 As expected we have a similar solution...
 ```julia
 prob = ODEProblem(sys, [1.0], (0, 10.0), [])
@@ -127,6 +149,10 @@ axislegend(ax)
 
 fig
 ```
+
+![](figures/connections_4_1.png)
+
+
 
 # Translational Domain Example (Across Variable = position)
 
@@ -176,6 +202,16 @@ sys = TranslationalPosition.sys
 full_equations(sys)
 ```
 
+```
+2-element Vector{Equation}:
+ Differential(t)(body₊flange₊s(t)) ~ body₊v(t)
+ Differential(t)(body₊v(t)) ~ -((damping₊d*body₊v(t)) / body₊m)
+```
+
+
+
+
+
 As can be seen, we get exactly the same result.  The only difference here is that we are solving an extra equation, which allows us to plot the body position as well.
 
 ```julia
@@ -200,4 +236,4 @@ axislegend(ax)
 fig
 ```
 
-
+![](figures/connections_6_1.png)
