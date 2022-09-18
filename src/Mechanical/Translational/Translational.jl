@@ -14,7 +14,7 @@ include("utils.jl")
 export Body, Spring, Damper, Fixed
 include("components.jl")
 
-#export Torque
-#include("sources.jl")
+export PositionSensor
+include("sensors.jl")
 
 end

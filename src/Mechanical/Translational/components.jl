@@ -4,7 +4,7 @@ function Fixed(; name)
     return compose(ODESystem(eqs, t, [], []; name = name), port)
 end
 
-function Body(; name, v0 = 0.0, m = 1.0)
+function Body(; name, v0 = 0.0, m = 1.0, s0=nothing, g=nothing)
     @named port = Port(v0 = v0)
     pars = @parameters m=m
     vars = @variables begin
@@ -15,8 +15,27 @@ function Body(; name, v0 = 0.0, m = 1.0)
     eqs = [
         port.v ~ v
         port.f ~ f
-        D(v) ~ f/m
     ]
+
+    # gravity option
+    if !isnothing(g)
+        @parameters g=g
+        push!(pars, g)
+        push!(eqs, D(v) ~ f/m+g)
+    else
+        push!(eqs, D(v) ~ f/m)
+    end
+
+    # position option
+    if !isnothing(s0)
+        @parameters s0=s0
+        push!(pars, s0)
+
+        @variables s(t)=s0
+        push!(vars, s)
+        
+        push!(eqs, D(s) ~ v)
+    end
     
     return compose(ODESystem(eqs, t, vars, pars; name = name), port)
 end
