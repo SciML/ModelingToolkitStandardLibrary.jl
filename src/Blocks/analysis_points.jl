@@ -21,7 +21,7 @@ connect(in, :ap_name, out)
 - `out`: A connector of type [`RealInput`](@ref).
 - `name`: The name of the analysis point.
 
-See also [`get_sensitivity`](@ref), [`get_comp_sensitivity`](@ref)
+See also [`get_sensitivity`](@ref), [`get_comp_sensitivity`](@ref), [`get_looptransfer`](@ref)
 
 # Example
 ```julia
@@ -138,11 +138,11 @@ Compute the sensitivity function in analysis point `ap`. The sensitivity functio
 # Arguments:
 - `kwargs`: Are sent to `ModelingToolkit.linearize`
 
-See also [`get_comp_sensitivity`](@ref).
+See also [`get_comp_sensitivity`](@ref), [`get_looptransfer`](@ref).
 """
 function get_sensitivity(sys, ap::AnalysisPoint; kwargs...)
     t = get_iv(sys)
-    @variables d(t) = 0 # Perturbantion serving as input to sensivity transfer function
+    @variables d(t) = 0 # Perturbation serving as input to sensivity transfer function
     new_eqs = map(get_eqs(sys)) do eq
         eq.rhs == ap || (return eq)
         ap.out.u ~ ap.in.u + d # This assumes that the connector as an internal vaiable named u
@@ -161,11 +161,11 @@ Compute the complementary sensitivity function in analysis point `ap`. The compl
 # Arguments:
 - `kwargs`: Are sent to `ModelingToolkit.linearize`
 
-See also [`get_sensitivity`](@ref).
+See also [`get_sensitivity`](@ref), [`get_looptransfer`](@ref).
 """
 function get_comp_sensitivity(sys, ap::AnalysisPoint; kwargs...)
     t = get_iv(sys)
-    @variables d(t) = 0 # Perturbantion serving as input to sensivity transfer function
+    @variables d(t) = 0 # Perturbation serving as input to sensivity transfer function
     new_eqs = map(get_eqs(sys)) do eq
         eq.rhs == ap || (return eq)
         ap.out.u + d ~ ap.in.u # This assumes that the connector as an internal vaiable named u
@@ -175,8 +175,31 @@ function get_comp_sensitivity(sys, ap::AnalysisPoint; kwargs...)
     ModelingToolkit.linearize(sys, [d], [ap.in.u]; kwargs...)
 end
 
+"""
+    get_looptransfer(sys, ap::AnalysisPoint; kwargs)
+    get_looptransfer(sys, ap_name::Symbol; kwargs)
+
+Compute the (linearized) loop-transfer function in analysis point `ap`, from `ap.out` to `ap.in`.
+
+# Arguments:
+- `kwargs`: Are sent to `ModelingToolkit.linearize`
+
+See also [`get_sensitivity`](@ref), [`get_comp_sensitivity`](@ref).
+"""
+function get_looptransfer(sys, ap::AnalysisPoint; kwargs...)
+    t = get_iv(sys)
+    @variables u(t) = 0
+    @variables y(t) = 0
+    new_eqs = map(get_eqs(sys)) do eq
+        eq.rhs == ap || (return eq)
+        0 ~ 0 # we just want to open the connection
+    end
+    @set! sys.eqs = new_eqs
+    ModelingToolkit.linearize(sys, [ap.out.u], [ap.in.u]; kwargs...)
+end
+
 # Add a method to get_sensitivity that accepts the name of an AnalysisPoint 
-for f in [:get_sensitivity, :get_comp_sensitivity]
+for f in [:get_sensitivity, :get_comp_sensitivity, :get_looptransfer]
     @eval function $f(sys, ap_name::Symbol, args...; kwargs...)
         $f(sys, find_analysis_point(sys, ap_name), args...; kwargs...)
     end

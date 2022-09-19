@@ -53,3 +53,17 @@ matrices, _ = get_comp_sensitivity(sys, :plant_input)
 @test matrices.A[] == -2
 @test matrices.B[] * matrices.C[] == 1 # both positive
 @test matrices.D[] == 0
+
+## get_looptransfer
+
+matrices, _ = Blocks.get_looptransfer(sys, :plant_input)
+@test matrices.A[] == -1
+@test matrices.B[] * matrices.C[] == -1 # either one negative
+@test matrices.D[] == 0
+#=
+# Equivalent code using ControlSystems. This can be used to verify the expected results tested for above.
+using ControlSystemsBase
+P = tf(1.0, [1, 1])
+C = -1
+L = P*C
+=#
