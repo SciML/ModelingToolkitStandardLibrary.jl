@@ -149,6 +149,7 @@ function get_sensitivity(sys, ap::AnalysisPoint; kwargs...)
     end
     @set! sys.eqs = new_eqs
     @set! sys.states = [states(sys); d]
+    sys = expand_analysis_points(sys)
     ModelingToolkit.linearize(sys, [d], [ap.out.u]; kwargs...)
 end
 
@@ -172,6 +173,7 @@ function get_comp_sensitivity(sys, ap::AnalysisPoint; kwargs...)
     end
     @set! sys.eqs = new_eqs
     @set! sys.states = [states(sys); d]
+    sys = expand_analysis_points(sys)
     ModelingToolkit.linearize(sys, [d], [ap.in.u]; kwargs...)
 end
 
@@ -193,6 +195,7 @@ function get_looptransfer(sys, ap::AnalysisPoint; kwargs...)
         0 ~ 0 # we just want to open the connection
     end
     @set! sys.eqs = new_eqs
+    sys = expand_analysis_points(sys)
     ModelingToolkit.linearize(sys, [ap.out.u], [ap.in.u]; kwargs...)
 end
 

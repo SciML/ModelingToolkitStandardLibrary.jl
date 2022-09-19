@@ -77,3 +77,13 @@ matrices, _ = linearize(open_sys, [u], [y])
 @test matrices.A[] == -1
 @test matrices.B[] * matrices.C[] == -1 # either one negative
 @test matrices.D[] == 0
+
+# Test with more than one AnalysisPoint
+eqs = [connect(P.output, :plant_output, C.input)
+       connect(C.output, :plant_input, P.input)]
+sys = ODESystem(eqs, t, systems = [P, C], name = :hej)
+
+matrices, _ = get_sensitivity(sys, :plant_input)
+@test matrices.A[] == -2
+@test matrices.B[] * matrices.C[] == -1 # either one negative
+@test matrices.D[] == 1
