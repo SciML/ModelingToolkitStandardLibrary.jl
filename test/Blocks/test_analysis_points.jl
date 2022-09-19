@@ -67,3 +67,13 @@ P = tf(1.0, [1, 1])
 C = -1
 L = P*C
 =#
+
+# Open loop
+open_sys = Blocks.open_loop(sys, :plant_input)
+@unpack u, y = open_sys
+
+# Linearizing the open-loop system should yield the same system as get_looptransfer
+matrices, _ = linearize(open_sys, [u], [y])
+@test matrices.A[] == -1
+@test matrices.B[] * matrices.C[] == -1 # either one negative
+@test matrices.D[] == 0

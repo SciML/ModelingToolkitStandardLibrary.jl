@@ -11,7 +11,7 @@ end
     AnalysisPoint(in, out; name::Symbol)
     AnalysisPoint(name::Symbol)
 
-Create an AnalysisPoint for linear analysis. Analysis points can also e created automatically by calling 
+Create an AnalysisPoint for linear analysis. Analysis points can also be created automatically by calling 
 ```
 connect(in, :ap_name, out)
 ```
@@ -21,7 +21,7 @@ connect(in, :ap_name, out)
 - `out`: A connector of type [`RealInput`](@ref).
 - `name`: The name of the analysis point.
 
-See also [`get_sensitivity`](@ref), [`get_comp_sensitivity`](@ref), [`get_looptransfer`](@ref)
+See also [`get_sensitivity`](@ref), [`get_comp_sensitivity`](@ref), [`get_looptransfer`](@ref), [`open_loop`](@ref)
 
 # Example
 ```julia
@@ -184,12 +184,10 @@ Compute the (linearized) loop-transfer function in analysis point `ap`, from `ap
 # Arguments:
 - `kwargs`: Are sent to `ModelingToolkit.linearize`
 
-See also [`get_sensitivity`](@ref), [`get_comp_sensitivity`](@ref).
+See also [`get_sensitivity`](@ref), [`get_comp_sensitivity`](@ref), [`open_loop`](@ref).
 """
 function get_looptransfer(sys, ap::AnalysisPoint; kwargs...)
     t = get_iv(sys)
-    @variables u(t) = 0
-    @variables y(t) = 0
     new_eqs = map(get_eqs(sys)) do eq
         eq.rhs == ap || (return eq)
         0 ~ 0 # we just want to open the connection
@@ -198,8 +196,36 @@ function get_looptransfer(sys, ap::AnalysisPoint; kwargs...)
     ModelingToolkit.linearize(sys, [ap.out.u], [ap.in.u]; kwargs...)
 end
 
+"""
+    open_sys = open_loop(sys, ap::AnalysisPoint; kwargs)
+    open_sys = open_loop(sys, ap_name::Symbol; kwargs)
+
+Open the loop at analysis point `ap` by breaking the connection through `ap`.
+
+`open_sys` will have `ap.out` as input and `ap.in` as output.
+
+# Arguments:
+- `kwargs`: Are sent to `ModelingToolkit.linearize`
+
+See also [`get_sensitivity`](@ref), [`get_comp_sensitivity`](@ref), [`get_looptransfer`](@ref).
+"""
+function open_loop(sys, ap::AnalysisPoint; kwargs...)
+    t = get_iv(sys)
+    @variables u(t)=0 [input = true]
+    @variables y(t)=0 [output = true]
+    new_eqs = map(get_eqs(sys)) do eq
+        eq.rhs == ap || (return [eq])
+        [ap.out.u ~ u
+         ap.in.u ~ y]
+    end
+    new_eqs = reduce(vcat, new_eqs)
+    @set! sys.eqs = new_eqs
+    @set! sys.states = [states(sys); u; y]
+    sys
+end
+
 # Add a method to get_sensitivity that accepts the name of an AnalysisPoint 
-for f in [:get_sensitivity, :get_comp_sensitivity, :get_looptransfer]
+for f in [:get_sensitivity, :get_comp_sensitivity, :get_looptransfer, :open_loop]
     @eval function $f(sys, ap_name::Symbol, args...; kwargs...)
         $f(sys, find_analysis_point(sys, ap_name), args...; kwargs...)
     end
