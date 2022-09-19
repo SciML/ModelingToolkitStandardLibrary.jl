@@ -227,9 +227,45 @@ function open_loop(sys, ap::AnalysisPoint; kwargs...)
     sys
 end
 
+"""
+    ModelingToolkit.linearize(sys, input::AnalysisPoint, output::AnalysisPoint)
+
+Linearize a system between two analysis points.
+All parts of the model that do not appear between `input` and `output` will be neglected.
+"""
+function ModelingToolkit.linearize(sys, input::AnalysisPoint, output::AnalysisPoint;
+                                   kwargs...)
+    t = get_iv(sys)
+    @variables u(t)=0 [input = true]
+    @variables y(t)=0 [output = true]
+    new_eqs = map(get_eqs(sys)) do eq
+        if eq.rhs == input
+            [input.out.u ~ u]
+            #input.in.u ~ 0] # We only need to ground one of the ends, hence not including this equation
+        elseif eq.rhs == output
+            [output.in.u ~ y
+             output.out.u ~ 0]
+        else
+            return [eq]
+        end
+    end
+    new_eqs = reduce(vcat, new_eqs)
+    @set! sys.eqs = new_eqs
+    @set! sys.states = [states(sys); u; y]
+    sys = expand_analysis_points(sys)
+    ModelingToolkit.linearize(sys, [u], [y]; kwargs...)
+end
+
 # Add a method to get_sensitivity that accepts the name of an AnalysisPoint 
 for f in [:get_sensitivity, :get_comp_sensitivity, :get_looptransfer, :open_loop]
     @eval function $f(sys, ap_name::Symbol, args...; kwargs...)
         $f(sys, find_analysis_point(sys, ap_name), args...; kwargs...)
     end
+end
+
+function ModelingToolkit.linearize(sys, input_name::Symbol, output_name::Symbol;
+                                   kwargs...)
+    input = find_analysis_point(sys, input_name)
+    output = find_analysis_point(sys, output_name)
+    ModelingToolkit.linearize(sys, input, output; kwargs...)
 end

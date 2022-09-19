@@ -87,3 +87,9 @@ matrices, _ = get_sensitivity(sys, :plant_input)
 @test matrices.A[] == -2
 @test matrices.B[] * matrices.C[] == -1 # either one negative
 @test matrices.D[] == 1
+
+## Test linearize between analysis points
+matrices, _ = linearize(sys, :plant_input, :plant_output)
+@test matrices.A[] == -1
+@test matrices.B[] * matrices.C[] == 1 # both positive
+@test matrices.D[] == 0
