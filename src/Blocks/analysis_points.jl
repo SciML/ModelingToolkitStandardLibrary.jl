@@ -108,7 +108,9 @@ end
 Find and return the analysis point in `sys` with the specified `name`. If no matching [`AnalysisPoint`](@ref) is found, `nothing` is returned.
 """
 function find_analysis_point(sys, name)
-    for eq in equations(sys)
+    sys = ModelingToolkit.flatten(sys)
+    eqs = equations(sys)
+    for eq in eqs
         eq.rhs isa AnalysisPoint && eq.rhs.name == name && (return eq.rhs)
     end
     nothing
@@ -120,6 +122,7 @@ end
 Replace analysis points with the identity connection connect(ap.in, ap.out). This is called before a system containing analysis points is simulated, in which case analysis points have no effect.
 """
 function expand_analysis_points(sys)
+    sys = ModelingToolkit.flatten(sys) # TODO: this does not namespace variables in connect statements properly https://github.com/SciML/ModelingToolkit.jl/issues/1826
     new_eqs = map(get_eqs(sys)) do eq
         eq.rhs isa AnalysisPoint || (return eq)
         ap = eq.rhs
@@ -127,6 +130,17 @@ function expand_analysis_points(sys)
     end
     @set! sys.eqs = new_eqs
     sys
+end
+
+function ModelingToolkit.namespace_expr(ap::AnalysisPoint, sys, n = nameof(sys)) where {T}
+    in = ModelingToolkit.renamespace(n, ap.in)
+    out = ModelingToolkit.renamespace(n, ap.out)
+    name = Symbol(n, :_, ap.name)
+    AnalysisPoint(in, out, name)
+end
+
+function Base.:(==)(ap1::AnalysisPoint, ap2::AnalysisPoint)
+    return ap1.in == ap2.in && ap1.out == ap2.out # Name doesn't really matter if inputs and outputs are the same
 end
 
 """
@@ -141,15 +155,20 @@ Compute the sensitivity function in analysis point `ap`. The sensitivity functio
 See also [`get_comp_sensitivity`](@ref), [`get_looptransfer`](@ref).
 """
 function get_sensitivity(sys, ap::AnalysisPoint; kwargs...)
+    sys = ModelingToolkit.flatten(sys) # To get namespacing right
     t = get_iv(sys)
     @variables d(t) = 0 # Perturbation serving as input to sensivity transfer function
-    new_eqs = map(get_eqs(sys)) do eq
+    found = false
+    new_eqs = map(equations(sys)) do eq
         eq.rhs == ap || (return eq)
-        ap.out.u ~ ap.in.u + d # This assumes that the connector as an internal vaiable named u
+        found = true
+        ap.out.u ~ ap.in.u + d # This assumes that the connector has an internal vaiable named u
     end
+    found || error("Did not find analysis point $ap")
     @set! sys.eqs = new_eqs
     @set! sys.states = [states(sys); d]
-    sys = expand_analysis_points(sys)
+    @set! sys.defaults = merge(ModelingToolkit.defaults(sys), Dict(d => 0))
+    sys = expand_analysis_points(sys) # Any remaining analysis points are removed by this
     ModelingToolkit.linearize(sys, [d], [ap.out.u]; kwargs...)
 end
 
@@ -165,15 +184,21 @@ Compute the complementary sensitivity function in analysis point `ap`. The compl
 See also [`get_sensitivity`](@ref), [`get_looptransfer`](@ref).
 """
 function get_comp_sensitivity(sys, ap::AnalysisPoint; kwargs...)
+    sys = ModelingToolkit.flatten(sys) # To get namespacing right
     t = get_iv(sys)
     @variables d(t) = 0 # Perturbation serving as input to sensivity transfer function
-    new_eqs = map(get_eqs(sys)) do eq
+    found = false
+    new_eqs = map(equations(sys)) do eq
         eq.rhs == ap || (return eq)
-        ap.out.u + d ~ ap.in.u # This assumes that the connector as an internal vaiable named u
+        found = true
+        ap.out.u + d ~ ap.in.u # This assumes that the connector has an internal vaiable named u
     end
+    found || error("Did not find analysis point $ap")
     @set! sys.eqs = new_eqs
     @set! sys.states = [states(sys); d]
-    sys = expand_analysis_points(sys)
+    @set! sys.defaults = merge(ModelingToolkit.defaults(sys), Dict(d => 0))
+
+    sys = expand_analysis_points(sys) # Any remaining analysis points are removed by this
     ModelingToolkit.linearize(sys, [d], [ap.in.u]; kwargs...)
 end
 
@@ -189,13 +214,17 @@ Compute the (linearized) loop-transfer function in analysis point `ap`, from `ap
 See also [`get_sensitivity`](@ref), [`get_comp_sensitivity`](@ref), [`open_loop`](@ref).
 """
 function get_looptransfer(sys, ap::AnalysisPoint; kwargs...)
+    sys = ModelingToolkit.flatten(sys) # To get namespacing right
     t = get_iv(sys)
-    new_eqs = map(get_eqs(sys)) do eq
+    found = false
+    new_eqs = map(equations(sys)) do eq
         eq.rhs == ap || (return eq)
-        0 ~ 0 # we just want to open the connection
+        found = true
+        0 ~ 0 # This assumes that the connector has an internal vaiable named u
     end
+    found || error("Did not find analysis point $ap")
     @set! sys.eqs = new_eqs
-    sys = expand_analysis_points(sys)
+    sys = expand_analysis_points(sys) # Any remaining analysis points are removed by this
     ModelingToolkit.linearize(sys, [ap.out.u], [ap.in.u]; kwargs...)
 end
 
@@ -205,7 +234,7 @@ end
 
 Open the loop at analysis point `ap` by breaking the connection through `ap`.
 
-`open_sys` will have `ap.out` as input and `ap.in` as output.
+`open_sys` will have `u ~ ap.out` as input and `y ~ ap.in` as output.
 
 # Arguments:
 - `kwargs`: Are sent to `ModelingToolkit.linearize`
@@ -213,17 +242,22 @@ Open the loop at analysis point `ap` by breaking the connection through `ap`.
 See also [`get_sensitivity`](@ref), [`get_comp_sensitivity`](@ref), [`get_looptransfer`](@ref).
 """
 function open_loop(sys, ap::AnalysisPoint; kwargs...)
+    sys = ModelingToolkit.flatten(sys) # To get namespacing right
     t = get_iv(sys)
     @variables u(t)=0 [input = true]
     @variables y(t)=0 [output = true]
-    new_eqs = map(get_eqs(sys)) do eq
+    found = false
+    new_eqs = map(equations(sys)) do eq
         eq.rhs == ap || (return [eq])
+        found = true
         [ap.out.u ~ u
          ap.in.u ~ y]
     end
+    found || error("Did not find analysis point $ap")
     new_eqs = reduce(vcat, new_eqs)
     @set! sys.eqs = new_eqs
     @set! sys.states = [states(sys); u; y]
+    @set! sys.defaults = merge(ModelingToolkit.defaults(sys), Dict(u => 0, y => 0))
     sys
 end
 
@@ -235,10 +269,11 @@ All parts of the model that do not appear between `input` and `output` will be n
 """
 function ModelingToolkit.linearize(sys, input::AnalysisPoint, output::AnalysisPoint;
                                    kwargs...)
+    sys = ModelingToolkit.flatten(sys) # To get namespacing right
     t = get_iv(sys)
     @variables u(t)=0 [input = true]
     @variables y(t)=0 [output = true]
-    new_eqs = map(get_eqs(sys)) do eq
+    new_eqs = map(equations(sys)) do eq
         if eq.rhs == input
             [input.out.u ~ u]
             #input.in.u ~ 0] # We only need to ground one of the ends, hence not including this equation
@@ -252,6 +287,7 @@ function ModelingToolkit.linearize(sys, input::AnalysisPoint, output::AnalysisPo
     new_eqs = reduce(vcat, new_eqs)
     @set! sys.eqs = new_eqs
     @set! sys.states = [states(sys); u; y]
+    @set! sys.defaults = merge(ModelingToolkit.defaults(sys), Dict(u => 0, y => 0))
     sys = expand_analysis_points(sys)
     ModelingToolkit.linearize(sys, [u], [y]; kwargs...)
 end
@@ -259,13 +295,17 @@ end
 # Add a method to get_sensitivity that accepts the name of an AnalysisPoint 
 for f in [:get_sensitivity, :get_comp_sensitivity, :get_looptransfer, :open_loop]
     @eval function $f(sys, ap_name::Symbol, args...; kwargs...)
-        $f(sys, find_analysis_point(sys, ap_name), args...; kwargs...)
+        ap = find_analysis_point(sys, ap_name)
+        ap === nothing && error("Failed to find an analysis point named $ap_name")
+        $f(sys, ap, args...; kwargs...)
     end
 end
 
 function ModelingToolkit.linearize(sys, input_name::Symbol, output_name::Symbol;
                                    kwargs...)
     input = find_analysis_point(sys, input_name)
+    input === nothing && error("Failed to find an analysis point named $input_name")
     output = find_analysis_point(sys, output_name)
+    output === nothing && error("Failed to find an analysis point named $output_name")
     ModelingToolkit.linearize(sys, input, output; kwargs...)
 end
