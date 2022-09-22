@@ -22,4 +22,3 @@ using SafeTestsets
 # Mechanical
 @safetestset "Mechanical Rotation" begin include("Mechanical/rotational.jl") end
 @safetestset "Mechanical Translation" begin include("Mechanical/translational.jl") end
-

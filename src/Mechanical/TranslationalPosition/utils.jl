@@ -1,9 +1,9 @@
 @connector function Flange(; name)
-    sts = @variables begin
+    vars = @variables begin
         s(t)
         f(t), [connect = Flow]
     end
-    ODESystem(Equation[], t, sts, [], name = name, defaults = Dict(s => 0.0, f => 0.0))
+    ODESystem(Equation[], t, vars, [], name = name, defaults = Dict(f => 0.0))
 end
 Base.@doc """
     Flange(;name)
@@ -49,11 +49,15 @@ function PartialCompliant(; name, s_rel_start = 0.0, f_start = 0.0)
     @named flange_a = Flange()
     @named flange_b = Flange()
     sts = @variables begin
+        v_a(t) = 0
+        v_b(t) = 0
         s_rel(t) = s_rel_start
         f(t) = f_start
     end
-    eqs = [s_rel ~ flange_b.s - flange_a.s
-           flange_b.f ~ f
+    eqs = [D(flange_a.s) ~ v_a
+           D(flange_b.s) ~ v_b
+           D(s_rel) ~ v_b - v_a
+           flange_b.f ~ +f
            flange_a.f ~ -f]
     return compose(ODESystem(eqs, t, sts, []; name = name), flange_a, flange_b)
 end
@@ -75,22 +79,17 @@ Partial model for the compliant connection of two translational 1-dim. flanges.
 - `a_rel`: [m/s²] Relative linear acceleration (= der(v_rel))
 - `f`: [N] Force between flanges (= flange_b.f)
 """
-function PartialCompliantWithRelativeStates(; name, s_rel_start = 0.0, v_rel_start = 0.0,
-                                            a_rel_start = 0.0, f_start = 0.0)
-    @named flange_a = Flange()
-    @named flange_b = Flange()
+function PartialCompliantWithRelativeStates(; name, Δs0 = 0.0)
+    @named T1 = Flange()
+    @named T2 = Flange()
     sts = @variables begin
-        s_rel(t) = s_rel_start
-        v_rel(t) = v_rel_start
-        a_rel(t) = a_rel_start
-        f(t) = f_start
+        Δs(t) = Δs0
+        f(t) = 0
     end
-    eqs = [s_rel ~ flange_b.s - flange_a.s
-           D(s_rel) ~ v_rel
-           D(v_rel) ~ a_rel
-           flange_b.f ~ f
-           flange_a.f ~ -f]
-    return compose(ODESystem(eqs, t, sts, []; name = name), flange_a, flange_b)
+    eqs = [Δs ~ T1.s - T2.s
+           T1.f ~ +f
+           T2.f ~ -f]
+    return compose(ODESystem(eqs, t, sts, []; name = name), T1, T2)
 end
 
 """

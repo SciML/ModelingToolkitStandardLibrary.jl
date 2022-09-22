@@ -5,6 +5,7 @@ pages = [
         "Custom Components" => "tutorials/custom_component.md",
         "Thermal Conduction Model" => "tutorials/thermal_model.md",
     ],
+    "About Acausal Connections" => "connectors/connections.md",
     "API" => [
         "Basic Blocks" => "API/blocks.md",
         "Electrical Components" => "API/electrical.md",

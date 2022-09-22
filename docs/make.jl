@@ -1,11 +1,4 @@
-using Documenter, ModelingToolkitStandardLibrary
-using ModelingToolkitStandardLibrary.Blocks
-using ModelingToolkitStandardLibrary.Mechanical
-using ModelingToolkitStandardLibrary.Mechanical.Rotational
-using ModelingToolkitStandardLibrary.Magnetic
-using ModelingToolkitStandardLibrary.Magnetic.FluxTubes
-using ModelingToolkitStandardLibrary.Electrical
-using ModelingToolkitStandardLibrary.Thermal
+using Documenter
 
 include("pages.jl")
 
@@ -13,10 +6,17 @@ makedocs(sitename = "ModelingToolkitStandardLibrary.jl",
          authors = "Julia Computing",
          clean = true,
          doctest = false,
-         strict = [
-             :doctest,
-             :example_block,
-         ],
+         strict = false,
+         format = Documenter.HTML(assets = ["assets/favicon.ico"],
+                                  canonical = "https://mtkstdlib.sciml.ai/stable/",
+                                  prettyurls = false),
+         pages = pages)
+
+makedocs(sitename = "ModelingToolkitStandardLibrary.jl",
+         authors = "Julia Computing",
+         clean = true,
+         doctest = false,
+         strict = false,
          modules = [ModelingToolkitStandardLibrary,
              ModelingToolkitStandardLibrary.Blocks,
              ModelingToolkitStandardLibrary.Mechanical,
@@ -25,8 +25,7 @@ makedocs(sitename = "ModelingToolkitStandardLibrary.jl",
              ModelingToolkitStandardLibrary.Magnetic.FluxTubes,
              ModelingToolkitStandardLibrary.Electrical,
              ModelingToolkitStandardLibrary.Thermal],
-         format = Documenter.HTML(assets = ["assets/favicon.ico"],
-                                  canonical = "https://mtkstdlib.sciml.ai/stable/"),
+         format = Documenter.LaTeX(),
          pages = pages)
 
 deploydocs(repo = "github.com/SciML/ModelingToolkitStandardLibrary.jl";

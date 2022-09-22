@@ -10,10 +10,10 @@ Flange fixed in housing at a given position.
 - `flange: 1-dim. translational flange`
 """
 function Fixed(; name, s0 = 0.0)
-    @named flange = Flange()
+    @named T = Flange()
     @parameters s0 = s0
-    eqs = [flange.s ~ s0]
-    return compose(ODESystem(eqs, t, [], [s0]; name = name), flange)
+    eqs = [T.s ~ s0]
+    return compose(ODESystem(eqs, t, [], [s0]; name = name), T)
 end
 
 """
@@ -36,21 +36,19 @@ Sliding mass with inertia
 - `flange_a: 1-dim. translational flange on one side of mass`
 - `flange_b: 1-dim. translational flange on opposite side of mass`
 """
-function Mass(; name, m, s_start = 0.0, v_start = 0.0, a_start = 0.0)
-    @named flange_a = Flange()
-    @named flange_b = Flange()
-    @parameters m = m
-    sts = @variables begin
-        s(t) = s_start
-        v(t) = v_start
-        a(t) = a_start
+function Mass(; name, m, s0 = 0.0, v0 = 0.0)
+    @named T = Flange()
+    pars = @parameters m = m
+    vars = @variables begin
+        s(t) = s0
+        v(t) = v0
+        f(t) = 0
     end
-    eqs = [s ~ flange_a.s
-           s ~ flange_b.s
+    eqs = [T.s ~ s
+           T.f ~ f
            D(s) ~ v
-           D(v) ~ a
-           m * a ~ flange_a.f + flange_b.f]
-    return compose(ODESystem(eqs, t, sts, [m]; name = name), flange_a, flange_b)
+           D(v) ~ f / m]
+    return compose(ODESystem(eqs, t, vars, pars; name = name), T)
 end
 
 """
@@ -66,15 +64,46 @@ Linear 1D translational spring
 - `flange_a: 1-dim. translational flange on one side of spring`
 - `flange_b: 1-dim. translational flange on opposite side of spring`
 """
-function Spring(; name, c, s_rel0 = 0.0)
-    @named partial_comp = PartialCompliant()
-    @unpack s_rel, f = partial_comp
-    pars = @parameters begin
-        c = c
-        s_rel0 = s_rel0
+const REL = Val(:relative)
+function Spring(::Val{:relative}; name, k, Δs0 = 0.0)
+    pars = @parameters k=k Δs0=Δs0
+    vars = @variables begin
+        v1(t) = 0
+        v2(t) = 0
+        Δs(t) = Δs0
+        f(t) = 0
     end
-    eqs = [f ~ c * (s_rel - s_rel0)]
-    extend(ODESystem(eqs, t, [], pars; name = name), partial_comp)
+
+    @named T1 = Flange()
+    @named T2 = Flange()
+
+    eqs = [D(T1.s) ~ v1
+           D(T2.s) ~ v2
+           D(Δs) ~ v1 - v2
+           f ~ k * Δs
+           T1.f ~ +f
+           T2.f ~ -f]
+    return compose(ODESystem(eqs, t, vars, pars; name = name), T1, T2)
+end
+
+const ABS = Val(:absolute)
+Spring(; name, k, s1₀ = 0, s2₀ = 0) = Spring(ABS; name, k, s1₀, s2₀) #default function
+function Spring(::Val{:absolute}; name, k, s1₀ = 0, s2₀ = 0)
+    pars = @parameters k=k s1=s1₀ s2=s2₀
+    vars = @variables begin
+    # Δs(t) = s1 - s2
+    f(t) = 0 end
+
+    @named T1 = Flange()
+    @named T2 = Flange()
+
+    eqs = [
+           #    Δs ~ T1.s - T2.s
+           f ~ k * (T1.s - T2.s) #Δs
+           T1.f ~ +f
+           T2.f ~ -f]
+    return compose(ODESystem(eqs, t, vars, pars; name = name,
+                             defaults = [T1.s => s1, T2.s => s2]), T1, T2)
 end
 
 """
@@ -90,9 +119,21 @@ Linear 1D translational damper
 - `flange_b: 1-dim. translational flange on opposite side of damper`
 """
 function Damper(; name, d)
-    @named partial_comp = PartialCompliantWithRelativeStates()
-    @unpack v_rel, f = partial_comp
     pars = @parameters d = d
-    eqs = [f ~ d * v_rel]
-    extend(ODESystem(eqs, t, [], pars; name = name), partial_comp)
+    vars = @variables begin
+        v1(t) = 0
+        v2(t) = 0
+        f(t) = 0
+    end
+
+    @named T1 = Flange()
+    @named T2 = Flange()
+
+    eqs = [D(T1.s) ~ v1
+           D(T2.s) ~ v2
+           f ~ (v1 - v2) * d
+           T1.f ~ +f
+           T2.f ~ -f]
+    return compose(ODESystem(eqs, t, vars, pars; name = name,
+                             defaults = [T1.s => 0, T2.s => 0]), T1, T2)
 end

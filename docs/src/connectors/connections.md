@@ -10,27 +10,64 @@ However, the standard libraries differ on the selection of the Across variable f
 ### General
 The idea behind the selection of the **through** variable is that it should be a time derivative of some conserved quantity. The conserved quantity should be expressed by the **across** variable.  In general terms the physical system is given by
 
-- Energy Dissipation: $ \partial \color{blue}{across} / \partial t \cdot c_1 = \color{green}{through} $
-- Flow: $ \color{green}{through} \cdot c_2 = \color{blue}{across} $
+- Energy Dissipation & Flow: 
+
+```math
+\begin{aligned}
+    \partial {\color{blue}{across}} / \partial t \cdot c_1 = {\color{green}{through}} 
+    {\color{green}{through}} \cdot c_2 = {\color{blue}{across}} 
+\end{aligned}
+```
+
+
 
 ### Electrical
 So for the Electrical domain the across variable is *voltage* and the through variable *current*.  Therefore 
 
-- Energy Dissipation: $ \partial \color{blue}{voltage} / \partial t \cdot capacitance = \color{green}{current} $
-- Flow: $ \color{green}{current} \cdot resistance = \color{blue}{voltage} $
+- Energy Dissipation: 
+```math
+\partial {\color{blue}{voltage}} / \partial t \cdot capacitance = {\color{green}{current}} 
+```
+
+- Flow: 
+```math
+\color{green}{current} \cdot resistance = \color{blue}{voltage}
+```
 
 ### Translational
 And for the translation domain, choosing *velocity* for the across variable and *force* for the through gives
 
-- Energy Dissipation: $ \partial \color{blue}{velocity} / \partial t \cdot mass = \color{green}{force} $
-- Flow: $ \color{green}{force} \cdot (1/damping) = \color{blue}{velocity} $
+- Energy Dissipation: 
+```math  
+\partial {\color{blue}{velocity}} / \partial t \cdot mass = {\color{green}{force}} 
+```
+
+- Flow: 
+```math 
+{\color{green}{force}} \cdot (1/damping) = {\color{blue}{velocity}} 
+```
 
 The diagram here shows the similarity of problems in different physical domains.  
 
 ![Through and Across Variables](through_across.png)
 
+### Translational using Position Across Variable
+Now, if we choose *position* for the across variable, a similar relationship can be established, but the patern must be broken.
 
-# Electrical Domain Example
+- Energy Dissipation: 
+```math  
+\partial^2 {\color{blue}{position}} / \partial t^2 \cdot mass = {\color{green}{force}} 
+```
+
+- Flow: 
+```math 
+{\color{green}{force}} \cdot (1/damping) = \partial {\color{blue}{position}} / \partial t 
+```
+
+As can be seen, we must now establish a higher order derivative to define the Energy Dissipation and Flow equations, requiring an extra equation, as will be shown in the example below.
+
+# Examples
+### Electrical Domain
 We can generate the above relationship with ModelingToolkit and the ModelingToolkitStandardLibrary using 3 blocks:
 
 - Capacitor: for energy storage with initial voltage = 1V
@@ -39,10 +76,9 @@ We can generate the above relationship with ModelingToolkit and the ModelingTool
 
 As can be seen, this will give a 1 equation model matching our energy dissipation relationship
 
-```julia
-using ModelingToolkitStandardLibrary
+```@example connections
 using ModelingToolkitStandardLibrary.Electrical, ModelingToolkit, OrdinaryDiffEq
-using CairoMakie
+using Plots
 
 @parameters t
 
@@ -51,55 +87,41 @@ using CairoMakie
 @named ground = Ground()
 
 eqs = [
-    connect(capacitor.n, resistor.p)
-    connect(resistor.n, ground.g, capacitor.p)
+    connect(capacitor.p, resistor.n)
+    connect(resistor.p, ground.g, capacitor.n)
     ]
 
 @named model = ODESystem(eqs, t; systems=[resistor, capacitor, ground])
 
 sys = structural_simplify(model)
 
-equations(sys)
+println.(equations(sys))
+nothing # hide
 ```
-
-```
-1-element Vector{Equation}:
- Differential(t)(capacitor₊v(t)) ~ capacitor₊i(t) / capacitor₊C
-```
-
-
-
-
 
 The solution shows what we would expect, a non-linear disipation of voltage and releated decrease in current flow...
 
-```julia
+```@example connections
 prob = ODEProblem(sys, [1.0], (0, 10.0), [])
 sol = solve(prob, ImplicitMidpoint(); dt=0.01)
 
-fig = Figure()
-ax = Axis(fig[1,1], ylabel="voltage [V]")
-lines!(ax, sol.t, sol[capacitor.v], label="sol[capacitor.v]")
-axislegend(ax)
-
-ax = Axis(fig[2,1], xlabel="time [s]", ylabel="current [A]")
-lines!(ax, sol.t, -sol[resistor.i], label="sol[resistor.i]")
-axislegend(ax)
-
-fig
+p1=plot(sol, idxs=[capacitor.v])
+p2=plot(sol, idxs=[resistor.i])
+plot(p1,p2)
+savefig("electrical.png"); nothing # hide
 ```
 
-![](figures/connections_2_1.png)
+![Plot of Electrical Example](electrical.png)
 
-
-# Translational Domain Example (Across Variable = velocity)
+### Mechanical Translational Domain 
+#### Across Variable = velocity
 Now using the Translational library based on velocity, we can see the same relationship with a system reduced to a single equation, using the components:
 
 - Body (i.e. moving mass): for kinetic energy storage with an initial velocity = 1m/s
 - Damper: for energy flow
 - Fixed: for energy sink
 
-```julia
+```@example connections
 module TranslationalVelocity
     using ModelingToolkit
     using ModelingToolkitStandardLibrary.Mechanical.Translational
@@ -121,44 +143,28 @@ module TranslationalVelocity
 end
 
 sys = TranslationalVelocity.sys
-full_equations(sys)
+println.(full_equations(sys))
+nothing # hide
 ```
-
-```
-1-element Vector{Equation}:
- Differential(t)(body₊v(t)) ~ (-damping₊d*body₊v(t)) / body₊m
-```
-
-
-
-
 
 As expected we have a similar solution...
-```julia
+```@example connections
 prob = ODEProblem(sys, [1.0], (0, 10.0), [])
 sol_v = solve(prob, ImplicitMidpoint(); dt=0.01)
 
-fig = Figure()
-ax = Axis(fig[1,1], ylabel="velocity [m/s]")
-lines!(ax, sol_v.t, sol_v[TranslationalVelocity.body.v], label="sol[body.v]")
-axislegend(ax)
-
-ax = Axis(fig[2,1], xlabel="time [s]", ylabel="force [N]")
-lines!(ax, sol_v.t, -sol_v[TranslationalVelocity.body.f], label="sol[body.f]")
-axislegend(ax)
-
-fig
+p1=plot(sol_v, idxs=[TranslationalVelocity.body.v])
+p2=plot(sol_v, idxs=[TranslationalVelocity.damping.f])
+plot(p1,p2)
+savefig("mechanical_velocity.png"); nothing # hide
 ```
 
-![](figures/connections_4_1.png)
+![Plot of Mechanical (Velocity Based) Example](mechanical_velocity.png)
 
 
-
-# Translational Domain Example (Across Variable = position)
-
+#### Across Variable = position
 Now, let's consider the position based approach.  We can build the same model with the same components.  As can be seen, we now end of up with 2 equations, because we need to relate the lower derivative (position) to force (with acceleration).  
 
-```julia
+```@example connections
 module TranslationalPosition
     using ModelingToolkit
     using ModelingToolkitStandardLibrary.Mechanical.TranslationalPosition
@@ -188,8 +194,8 @@ module TranslationalPosition
     @named ground = Fixed()
 
     eqs = [
-        connect(damping.flange_a, body.flange)
-        connect(ground.flange, damping.flange_b)
+        connect(damping.flange_b, body.flange)
+        connect(ground.flange, damping.flange_a)
         ]
 
     @named model = ODESystem(eqs, t; systems=[damping, body, ground])
@@ -199,41 +205,82 @@ end
 
 sys = TranslationalPosition.sys
 
-full_equations(sys)
+println.(full_equations(sys))
+nothing # hide
 ```
-
-```
-2-element Vector{Equation}:
- Differential(t)(body₊flange₊s(t)) ~ body₊v(t)
- Differential(t)(body₊v(t)) ~ -((damping₊d*body₊v(t)) / body₊m)
-```
-
-
-
-
 
 As can be seen, we get exactly the same result.  The only difference here is that we are solving an extra equation, which allows us to plot the body position as well.
 
-```julia
+```@example connections
 prob = ODEProblem(sys, [0.0, 1.0], (0, 10.0), [])
 sol_p = solve(prob, ImplicitMidpoint(); dt=0.01)
 
-fig = Figure()
-ax = Axis(fig[1,1], ylabel="velocity [m/s]")
-lines!(ax, sol_p.t, sol_p[TranslationalPosition.body.v], label="sol[body.v] (position based)")
-lines!(ax, sol_v.t, sol_v[TranslationalVelocity.body.v], label="sol[body.v] (velocity based)", linestyle=:dash)
-axislegend(ax)
+p1=plot(sol_p, idxs=[TranslationalPosition.body.v])
+p2=plot(sol_p, idxs=[TranslationalPosition.damping.f])
+p3=plot(sol_p, idxs=[TranslationalPosition.body.flange.s])
 
-ax = Axis(fig[2,1], ylabel="force [N]")
-lines!(ax, sol_p.t, -sol_p[TranslationalVelocity.body.f], label="sol[body.f] (position based)")
-lines!(ax, sol_v.t, -sol_v[TranslationalVelocity.body.f], label="sol[body.f] (velocity based)", linestyle=:dash)
-axislegend(ax)
-
-ax = Axis(fig[3,1], xlabel="time [s]", ylabel="position [m]")
-lines!(ax, sol_p.t, sol_p[TranslationalPosition.body.flange.s], label="sol[body.flange.s]")
-axislegend(ax)
-
-fig
+plot(p1,p2,p3)
+savefig("mechanical_position.png"); nothing # hide
 ```
 
-![](figures/connections_6_1.png)
+![Plot of Mechanical (Velocity Based) Example](mechanical_position.png)
+
+The question then arises, can the position be plotted when using the Mechanical Translational Domain based on the Velocity Across variable?  Yes, we can!  There are 2 solutions:
+
+1. the `Body` component will add the position variable when the `s0` parameter is used to set an initial position.  Otherwise the position is not tracked by the component.
+
+```julia
+@named body = Body(m = 1, v0=1, s0=0)
+```
+
+2. implement a `PositionSensor`
+
+```julia
+@named damping = Damper(d = 1)
+@named body = Body(m = 1, v0=1)
+@named ground = Fixed()
+@named sensor = PositionSensor(s0=0)
+
+eqs = [
+    connect(damping.port_a, body.port, sensor.port)
+    connect(ground.port, damping.port_b)
+    ]
+```
+
+Either option will produce the same result as shown for the Mechanical Translational Domain based on the Position Across variable.  If the same result is given, why are both options included in the Standard Library, what are the differences?  These differences will be discussed next so that an informed decision can be made about which domain is best for your model.
+
+# Differences
+## Initialization
+
+```julia
+module TranslationalVelocity
+    using ModelingToolkit
+    using ModelingToolkitStandardLibrary.Mechanical.Translational
+
+    @parameters t
+
+    @named damping = Damper(d=1)
+    @named spring = Spring(k=1)
+    @named body = Body(m = 1, v0=1)
+    @named ground = Fixed()
+
+    eqs = [
+        connect(damping.port_a, spring.port_a, body.port)
+        connect(ground.port, damping.port_b, spring.port_b)
+        ]
+
+    @named model = ODESystem(eqs, t; systems=[damping, body, ground, spring])
+
+    sys = structural_simplify(model)
+end
+sys = TranslationalVelocity.sys
+prob = ODEProblem(sys, [1.0, 0.0], (0, 10.0), [])
+sol = solve(prob, ImplicitMidpoint(); dt=0.01)
+```
+
+## Acuracy
+
+
+
+
+
