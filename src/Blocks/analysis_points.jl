@@ -16,6 +16,9 @@ Create an AnalysisPoint for linear analysis. Analysis points can also be created
 connect(in, :ap_name, out)
 ```
 
+!!! danger "Experimental"
+    The analysis-point interface is currently experimental and at any time subject to breaking changes not respecting semantic versioning. 
+
 # Arguments:
 - `in`: A connector of type [`RealOutput`](@ref).
 - `out`: A connector of type [`RealInput`](@ref).
@@ -149,6 +152,9 @@ end
 
 Compute the sensitivity function in analysis point `ap`. The sensitivity function is obtained by introducing an infinitesimal perturbation `d` at the input of `ap`, linearizing the system and computing the transfer function between `d` and the output of `ap`.
 
+!!! danger "Experimental"
+    The analysis-point interface is currently experimental and at any time subject to breaking changes not respecting semantic versioning. 
+
 # Arguments:
 - `kwargs`: Are sent to `ModelingToolkit.linearize`
 
@@ -177,6 +183,9 @@ end
     get_comp_sensitivity(sys, ap_name::Symbol; kwargs)
 
 Compute the complementary sensitivity function in analysis point `ap`. The complementary sensitivity function is obtained by introducing an infinitesimal perturbation `d` at the output of `ap`, linearizing the system and computing the transfer function between `d` and the input of `ap`.
+
+!!! danger "Experimental"
+    The analysis-point interface is currently experimental and at any time subject to breaking changes not respecting semantic versioning. 
 
 # Arguments:
 - `kwargs`: Are sent to `ModelingToolkit.linearize`
@@ -208,6 +217,9 @@ end
 
 Compute the (linearized) loop-transfer function in analysis point `ap`, from `ap.out` to `ap.in`.
 
+!!! danger "Experimental"
+    The analysis-point interface is currently experimental and at any time subject to breaking changes not respecting semantic versioning. 
+
 # Arguments:
 - `kwargs`: Are sent to `ModelingToolkit.linearize`
 
@@ -235,6 +247,9 @@ end
 Open the loop at analysis point `ap` by breaking the connection through `ap`.
 
 `open_sys` will have `u ~ ap.out` as input and `y ~ ap.in` as output.
+
+!!! danger "Experimental"
+    The analysis-point interface is currently experimental and at any time subject to breaking changes not respecting semantic versioning. 
 
 # Arguments:
 - `kwargs`: Are sent to `ModelingToolkit.linearize`

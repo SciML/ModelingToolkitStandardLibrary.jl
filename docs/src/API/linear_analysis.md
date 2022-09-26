@@ -1,11 +1,14 @@
 # Linear Analysis
 
-Linear analysis refers to the process of linearizing a nonlinear model and analysing the resulting linear dynamical system. To facilitate linear analysis, ModelingToolkitStandardLibrary provides the concept of an [`AnalysisPoint`](@ref), which can be inserted inbetween two causal blocks (such as those from the Blocks sub module). Once a model containing analysis points is built, several operations are available:
+!!! danger "Experimental"
+    The interface described here is currently experimental and at any time subject to breaking changes not respecting semantic versioning. 
+
+Linear analysis refers to the process of linearizing a nonlinear model and analysing the resulting linear dynamical system. To facilitate linear analysis, ModelingToolkitStandardLibrary provides the concept of an [`AnalysisPoint`](@ref), which can be inserted in-between two causal blocks (such as those from the `Blocks` sub module). Once a model containing analysis points is built, several operations are available:
 
 - [`get_sensitivity`](@ref) get the [sensitivity function (wiki)](https://en.wikipedia.org/wiki/Sensitivity_(control_systems)), $S(s)$, as defined in the field of control theory.
-- [`get_comp_sensitivity`](@ref) get the complementary sensitivy function $T(s) : S(s)+T(s)=1$.
+- [`get_comp_sensitivity`](@ref) get the complementary sensitivity function $T(s) : S(s)+T(s)=1$.
 - [`get_looptransfer`](@ref) get the (open) loop-transfer function where the loop starts and ends in the analysis point.
-- [`linearize`](@ref) can be called with two analysis points denoting the input and output of the linearied system. Parts of the model not appearing between the input and output will be removed.
+- [`linearize`](@ref) can be called with two analysis points denoting the input and output of the linearized system. Parts of the model not appearing between the input and output will be removed.
 - [`open_loop`](@ref) return a new (nonlinear) system where the loop has been broken in the analysis point, i.e., the connection the analysis point usually implies has been removed.
 
 An analysis point can be created explicitly using the constructor [`AnalysisPoint`](@ref), or automatically when connecting two causal components using `connect`:
