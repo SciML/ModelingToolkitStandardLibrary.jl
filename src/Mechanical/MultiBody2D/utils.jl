@@ -15,3 +15,11 @@ Base.@doc """
 - `v`: [m/s] velocity of the node
 - `f`: [N] force entering the node
 """ Port
+
+@connector function Flange(; name)
+    vars = @variables begin
+        s(t)
+        f(t), [connect = Flow]
+    end
+    ODESystem(Equation[], t, vars, [], name = name, defaults = Dict(f => 0.0))
+end
