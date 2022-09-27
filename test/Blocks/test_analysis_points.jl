@@ -1,3 +1,4 @@
+using Test, LinearAlgebra
 using ModelingToolkit
 using ModelingToolkitStandardLibrary.Blocks
 using OrdinaryDiffEq
@@ -119,8 +120,8 @@ eqs = [connect(r.output, F.input)
 sys_outer = ODESystem(eqs, t, systems = [F, sys_inner, r], name = :outer)
 
 # test first that the structural_simplify ∘ expand_analysis_points works correctly
-ssys = structural_simplify(expand_analysis_points(sys_outer))
-# ssys = structural_simplify((sys_outer))
+#ssys = structural_simplify(expand_analysis_points(sys_outer))
+ssys = structural_simplify(sys_outer)
 prob = ODEProblem(ssys, [P.x => 1], (0, 10))
 # sol = solve(prob, Rodas5())
 # plot(sol)
