@@ -91,6 +91,7 @@ matrices, _ = get_sensitivity(sys, :plant_input)
 
 ## Test linearize between analysis points
 matrices, _ = linearize(sys, :plant_input, :plant_output)
+# Result should be the same as feedpack(P, 1), i.e., the closed-loop transfer function from plant input to plant output
 @test matrices.A[] == -2
 @test matrices.B[] * matrices.C[] == 1 # both positive
 @test matrices.D[] == 0

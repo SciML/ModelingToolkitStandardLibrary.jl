@@ -127,22 +127,6 @@ function find_analysis_point(sys, name)
     nothing
 end
 
-"""
-    expand_analysis_points(sys)
-
-Replace analysis points with the identity connection connect(ap.in, ap.out). This is called before a system containing analysis points is simulated, in which case analysis points have no effect.
-"""
-function expand_analysis_points(sys)
-    sys = ModelingToolkit.flatten(sys) # TODO: this does not namespace variables in connect statements properly https://github.com/SciML/ModelingToolkit.jl/issues/1826
-    new_eqs = map(get_eqs(sys)) do eq
-        eq.rhs isa AnalysisPoint || (return eq)
-        ap = eq.rhs
-        connect(ap.in, ap.out)
-    end
-    @set! sys.eqs = new_eqs
-    sys
-end
-
 function Base.:(==)(ap1::AnalysisPoint, ap2::AnalysisPoint)
     return ap1.in == ap2.in && ap1.out == ap2.out # Name doesn't really matter if inputs and outputs are the same
 end
