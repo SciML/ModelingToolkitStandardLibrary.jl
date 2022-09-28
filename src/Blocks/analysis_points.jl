@@ -85,15 +85,24 @@ function Base.show(io::IO, ::MIME"text/plain", ap::AnalysisPoint)
 end
 
 """
-    connect(in, ap::AnalysisPoint, out)
-    connect(in, ap_name::Symbol, out)
+    connect(output_connector, ap_name::Symbol, input_connector)
+    connect(output_connector, ap::AnalysisPoint, input_connector)
 
-Connect `in` and `out` with an [`AnalysisPoint`](@ref) inbetween.
-The incoming connection `in` is expected to be of type [`RealOutput`](@ref), and vice versa.
+Connect `output_connector` and `input_connector` with an [`AnalysisPoint`](@ref) inbetween.
+The incoming connection `output_connector` is expected to be of type [`RealOutput`](@ref), and vice versa.
+NOTE: The connection is assumed to be *causal*, meaning that
+```
+connect(C.output, :plant_input, P.input)
+```
+is correct, whereas
+```
+connect(P.input, :plant_input, C.output)
+```
+typically is not (unless the model is an inverse model).
 
 # Arguments:
-- `in`: A connector of type [`RealOutput`](@ref)
-- `out`: A connector of type [`RealInput`](@ref)
+- `output_connector`: A connector of type [`RealOutput`](@ref)
+- `input_connector`: A connector of type [`RealInput`](@ref)
 - `ap`: An explicitly created [`AnalysisPoint`](@ref)
 - `ap_name`: If a name is given, an [`AnalysisPoint`](@ref) with the given name will be created automatically.
 """

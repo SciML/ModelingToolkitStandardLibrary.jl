@@ -139,7 +139,6 @@ matrices_So, _ = get_sensitivity(sys_outer, :inner_plant_output)
 lsyso = sminreal(ss(matrices_So...))
 @test lsys == lsyso || lsys == -1 * lsyso * (-1) # Output and input sensitivites are equal for SISO systems
 
-
 ## A more complicated test case
 using ModelingToolkit, OrdinaryDiffEq, Plots, LinearAlgebra
 using ModelingToolkitStandardLibrary.Mechanical.Rotational
@@ -156,45 +155,48 @@ c = 10   # Damping coefficient
 @named damper = Damper(; d = c)
 @named torque = Torque()
 
-function SystemModel(u=nothing; name=:model)
-    eqs = [
-        connect(torque.flange, inertia1.flange_a)
-        connect(inertia1.flange_b, spring.flange_a, damper.flange_a)
-        connect(inertia2.flange_a, spring.flange_b, damper.flange_b)
-    ]
-    if u !== nothing 
+function SystemModel(u = nothing; name = :model)
+    eqs = [connect(torque.flange, inertia1.flange_a)
+           connect(inertia1.flange_b, spring.flange_a, damper.flange_a)
+           connect(inertia2.flange_a, spring.flange_b, damper.flange_b)]
+    if u !== nothing
         push!(eqs, connect(torque.tau, u.output))
-        return @named model = ODESystem(eqs, t; systems = [torque, inertia1, inertia2, spring, damper, u])
+        return @named model = ODESystem(eqs, t;
+                                        systems = [
+                                            torque,
+                                            inertia1,
+                                            inertia2,
+                                            spring,
+                                            damper,
+                                            u,
+                                        ])
     end
     ODESystem(eqs, t; systems = [torque, inertia1, inertia2, spring, damper], name)
 end
-function AngleSensor(;name)
+function AngleSensor(; name)
     @named flange = Flange()
     @named phi = RealOutput()
-    eqs = [
-        phi.u ~ flange.phi
-        flange.tau ~ 0
-    ]
-    return ODESystem(eqs, t, [], []; name=name, systems=[flange, phi])
+    eqs = [phi.u ~ flange.phi
+           flange.tau ~ 0]
+    return ODESystem(eqs, t, [], []; name = name, systems = [flange, phi])
 end
 
-@named r = Step(start_time=0)
+@named r = Step(start_time = 0)
 model = SystemModel()
 @named pid = PID(k = 100, Ti = 0.5, Td = 1)
 @named filt = SecondOrder(d = 0.9, w = 10)
 @named sensor = AngleSensor()
-@named er = Add(k2=-1)
+@named er = Add(k2 = -1)
 
-connections = [
-    connect(r.output, :r, filt.input)
-    connect(filt.output, er.input1)
-    connect(pid.ctr_output, model.torque.tau)
-    connect(model.inertia2.flange_b, sensor.flange)
-    connect(er.input2, :y, sensor.phi)
-    connect(er.output, :e, pid.err_input)
-]
+connections = [connect(r.output, :r, filt.input)
+               connect(filt.output, er.input1)
+               connect(pid.ctr_output, :u, model.torque.tau)
+               connect(model.inertia2.flange_b, sensor.flange)
+               connect(sensor.phi, :y, er.input2)
+               connect(er.output, :e, pid.err_input)]
 
-closed_loop = ODESystem(connections, t, systems = [model, pid, filt, sensor, r, er], name = :closed_loop)
+closed_loop = ODESystem(connections, t, systems = [model, pid, filt, sensor, r, er],
+                        name = :closed_loop)
 
 prob = ODEProblem(structural_simplify(closed_loop), Pair[], (0.0, 4.0))
 sol = solve(prob, Rodas4())
@@ -204,13 +206,20 @@ sol = solve(prob, Rodas4())
 #     legend = :bottomright,
 # )
 
-
 matrices, ssys = linearize(closed_loop, :r, :y)
 lsys = ss(matrices...) |> sminreal
 @test lsys.nx == 8
 
 stepres = ControlSystemsBase.step(c2d(lsys, 0.001), 4)
-@test stepres.y[:] ≈ sol(0:0.001:4, idxs=model.inertia2.phi) rtol=1e-4
+@test stepres.y[:]≈sol(0:0.001:4, idxs = model.inertia2.phi) rtol=1e-4
 
 # plot(stepres, plotx=true, ploty=true, size=(800, 1200), leftmargin=5Plots.mm)
 # plot!(sol, vars = [model.inertia2.phi], sp=1, l=:dash)
+
+matrices, ssys = get_sensitivity(closed_loop, :y)
+So = ss(matrices...)
+
+matrices, ssys = get_sensitivity(closed_loop, :u)
+Si = ss(matrices...)
+
+@test tf(So) ≈ tf(Si)
