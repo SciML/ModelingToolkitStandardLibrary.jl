@@ -143,15 +143,6 @@ function expand_analysis_points(sys)
     sys
 end
 
-#=
-function ModelingToolkit.namespace_expr(ap::AnalysisPoint, sys, n = nameof(sys)) where {T}
-    in = ap.in === nothing ? ap.in : ModelingToolkit.renamespace(n, ap.in)
-    out = ap.out === nothing ? ap.out : ModelingToolkit.renamespace(n, ap.out)
-    name = Symbol(n, :_, ap.name)
-    AnalysisPoint(in, out, name)
-end
-=#
-
 function Base.:(==)(ap1::AnalysisPoint, ap2::AnalysisPoint)
     return ap1.in == ap2.in && ap1.out == ap2.out # Name doesn't really matter if inputs and outputs are the same
 end
@@ -194,11 +185,9 @@ function get_sensitivity(sys, ap_name::Symbol; kwargs...)
     (ap = apr[]) === nothing && error("Did not find analysis point $ap")
     u = ap.out.u
     if (ns = namespace[]) !== nothing
-        @show ns
-        @show d = ModelingToolkit.renamespace(ns, d)
-        @show u = ModelingToolkit.renamespace(ns, u)
+        d = ModelingToolkit.renamespace(ns, d)
+        u = ModelingToolkit.renamespace(ns, u)
     end
-    @show u, d
     ModelingToolkit.linearize(sys, [d], [u]; kwargs...)
 end
 
