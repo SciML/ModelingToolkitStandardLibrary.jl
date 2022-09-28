@@ -328,8 +328,7 @@ end
 """
     ModelingToolkit.linearize(sys, input_name::Symbol, output_name::Symbol)
 
-Linearize a system between two analysis points.
-All parts of the model that do not appear between `input` and `output` will be neglected.
+Linearize a system between two analysis points. To get a loop-transfer function, see [`get_looptransfer`](@ref)
 """
 function ModelingToolkit.linearize(sys, input_name::Symbol, output_name::Symbol;
                                    kwargs...)
@@ -351,11 +350,11 @@ function ModelingToolkit.linearize(sys, input_name::Symbol, output_name::Symbol;
             namespace[] = ns # Save the namespace to make it available for renamespace below
             apr[] = ap
             if nameof(ap) === input_name
-                [ap.out.u ~ u], u
+                [ap.out.u ~ ap.in.u + u], u
                 #input.in.u ~ 0] # We only need to ground one of the ends, hence not including this equation
             elseif nameof(ap) === output_name
                 [ap.in.u ~ y
-                 ap.out.u ~ 0], y
+                 ap.out.u ~ ap.in.u], y
             else
                 error("This should never happen")
             end
