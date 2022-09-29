@@ -14,7 +14,7 @@ eqs = [connect(P.output, C.input)
        connect(C.output, ap, P.input)]
 sys = ODESystem(eqs, t, systems = [P, C], name = :hej)
 
-ssys = structural_simplify(expand_analysis_points(sys))
+ssys = structural_simplify(sys)
 prob = ODEProblem(ssys, [P.x => 1], (0, 10))
 sol = solve(prob, Rodas5())
 @test norm(sol[1]) >= 1
@@ -120,8 +120,7 @@ eqs = [connect(r.output, F.input)
        connect(F.output, sys_inner.add.input1)]
 sys_outer = ODESystem(eqs, t, systems = [F, sys_inner, r], name = :outer)
 
-# test first that the structural_simplify ∘ expand_analysis_points works correctly
-#ssys = structural_simplify(expand_analysis_points(sys_outer))
+# test first that the structural_simplify works correctly
 ssys = structural_simplify(sys_outer)
 prob = ODEProblem(ssys, [P.x => 1], (0, 10))
 # sol = solve(prob, Rodas5())
@@ -140,7 +139,7 @@ lsyso = sminreal(ss(matrices_So...))
 @test lsys == lsyso || lsys == -1 * lsyso * (-1) # Output and input sensitivites are equal for SISO systems
 
 ## A more complicated test case
-using ModelingToolkit, OrdinaryDiffEq, Plots, LinearAlgebra
+using ModelingToolkit, OrdinaryDiffEq, LinearAlgebra
 using ModelingToolkitStandardLibrary.Mechanical.Rotational
 using ModelingToolkitStandardLibrary.Blocks: t, Sine, PID, SecondOrder, Step, RealOutput
 using ModelingToolkit: connect

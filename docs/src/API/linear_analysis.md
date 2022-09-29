@@ -7,8 +7,8 @@ Linear analysis refers to the process of linearizing a nonlinear model and analy
 
 - [`get_sensitivity`](@ref) get the [sensitivity function (wiki)](https://en.wikipedia.org/wiki/Sensitivity_(control_systems)), $S(s)$, as defined in the field of control theory.
 - [`get_comp_sensitivity`](@ref) get the complementary sensitivity function $T(s) : S(s)+T(s)=1$.
-- [`get_looptransfer`](@ref) get the (open) loop-transfer function where the loop starts and ends in the analysis point.
-- [`linearize`](@ref) can be called with two analysis points denoting the input and output of the linearized system. Parts of the model not appearing between the input and output will be removed.
+- [`get_looptransfer`](@ref) get the (open) loop-transfer function where the loop starts and ends in the analysis point. For a typical simple feedback connection with a plant $P(s)$ and a controller $C(s)$, the loop-transfer function at the plant output is $P(s)C(s)$.
+- [`linearize`](@ref) can be called with two analysis points denoting the input and output of the linearized system.
 - [`open_loop`](@ref) return a new (nonlinear) system where the loop has been broken in the analysis point, i.e., the connection the analysis point usually implies has been removed.
 
 An analysis point can be created explicitly using the constructor [`AnalysisPoint`](@ref), or automatically when connecting two causal components using `connect`:
@@ -52,7 +52,7 @@ We create `ControlSystemsBase.StateSpace` objects using
 using ControlSystemsBase, Plots
 S = ss(matrices_S...)
 T = ss(matrices_T...)
-bodeplot([S, T], lab=["S" "" "T" ""])
+bodeplot([S, T], lab=["S" "" "T" ""], plot_title="Bode plot of sensitivity functions", margin=5Plots.mm)
 ```
 
 The sensitivity functions obtained this way should be equivalent to the ones obtained with the code below
@@ -79,14 +79,28 @@ L = P*(-C) # Add the minus sign to build the negative feedback into the controll
 
 To obtain the transfer function between two analysis points, we call `linearize`
 ```@example LINEAR_ANALYSIS
-matrices_P = linearize(sys, :plant_input, :plant_output)[1]
+matrices_PS = linearize(sys, :plant_input, :plant_output)[1]
 ```
-this particular transfer function should be equivalent to the linear system `P`, i.e., equivalent to this call
-```@example LINEAR_ANALYSIS
-@unpack input, output = P # To get the correct namespace
-linearize(P, [input.u], [output.u])[1]
+this particular transfer function should be equivalent to the linear system `P(s)S(s)`, i.e., equivalent to
+```@example LINEAR_ANALYSIS_CS
+feedback(P, C)
 ```
 
+### Obtaining transfer functions
+A statespace system from [ControlSystemsBase](https://juliacontrol.github.io/ControlSystems.jl/latest/man/creating_systems/) can be converted to a transfer function using the function `tf`:
+```@example LINEAR_ANALYSIS_CS
+tf(S)
+```
+
+## Gain and phase margins
+Further linear analysis can be performed using the [analysis methods from ControlSystemsBase](https://juliacontrol.github.io/ControlSystems.jl/latest/lib/analysis/). For example, calculating the gain and phase margins of a system can be done using
+```@example LINEAR_ANALYSIS_CS
+margin(P)
+```
+(they are infinite for this system). A Nyquist plot can be produced using 
+```@example LINEAR_ANALYSIS_CS
+nyquistplot(P)
+```
 ## Index
 ```@index
 Pages = ["linear_analysis.md"]
