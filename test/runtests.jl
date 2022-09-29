@@ -5,6 +5,7 @@ using SafeTestsets
 @safetestset "Blocks: nonlinear" begin include("Blocks/nonlinear.jl") end
 @safetestset "Blocks: continuous" begin include("Blocks/continuous.jl") end
 @safetestset "Blocks: sources" begin include("Blocks/sources.jl") end
+@safetestset "Blocks: analysis points" begin include("Blocks/test_analysis_points.jl") end
 
 # Electrical
 @safetestset "Analog Circuits" begin include("Electrical/analog.jl") end
