@@ -73,8 +73,7 @@ function Link(; name, m, l, I, g)
         ]
     =#
 
-    eqs = [
-           m * ((D^2)(x_1) + (D^2)(x_2)) / 2 ~ fx1 - fx2
+    eqs = [m * ((D^2)(x_1) + (D^2)(x_2)) / 2 ~ fx1 - fx2
            m * ((D^2)(y_1) + (D^2)(y_2)) / 2 ~ fy1 - fy2 + m * g
            I * (D^2)(A) ~ -fy2 * (x_2 - x_1) + fx2 * (y_2 - y_1) + m * g * (x_2 - x_1) / 2
            x_2 ~ x_1 + l * cos(A)
@@ -86,8 +85,7 @@ function Link(; name, m, l, I, g)
            fx1 ~ TX1.f
            fy1 ~ TY1.f
            fx2 ~ -TX2.f
-           fy2 ~ -TY2.f
-        ]
+           fy2 ~ -TY2.f]
 
     return ODESystem(eqs, t, vars, pars; name = name, systems = [TX1, TX2, TY1, TY2])
 end

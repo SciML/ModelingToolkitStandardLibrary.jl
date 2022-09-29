@@ -33,10 +33,9 @@ Sliding mass with inertia
 - `T: 1-dim. translational port`
 """
 function Mass(; name, v₀ = 0.0, m, s₀ = nothing, g = nothing)
-    
     pars = @parameters begin
         m = m
-        v₀=v₀
+        v₀ = v₀
     end
     vars = @variables begin
         v(t) = v₀
@@ -45,10 +44,8 @@ function Mass(; name, v₀ = 0.0, m, s₀ = nothing, g = nothing)
 
     @named T = Port()
 
-    eqs = [
-        T.v ~ v
-        T.f ~ f
-        ]
+    eqs = [T.v ~ v
+           T.f ~ f]
 
     # gravity option
     if !isnothing(g)
@@ -90,15 +87,14 @@ Linear 1D translational spring
 - `T1: 1-dim. translational port on one side of spring`
 - `T2: 1-dim. translational port on opposite side of spring`
 """
-Spring(; name, k, Δs₀ = 0.0,  v1₀=0.0, v2₀=0.0) = Spring(REL; name, k, Δs₀,  v1₀, v2₀) # default 
+Spring(; name, k, Δs₀ = 0.0, v1₀ = 0.0, v2₀ = 0.0) = Spring(REL; name, k, Δs₀, v1₀, v2₀) # default 
 
-
-function Spring(::Val{:relative}; name, k, Δs₀ = 0.0, v1₀=0.0, v2₀=0.0)
+function Spring(::Val{:relative}; name, k, Δs₀ = 0.0, v1₀ = 0.0, v2₀ = 0.0)
     pars = @parameters begin
-        k=k 
-        Δs₀=Δs₀
-        v1₀=v1₀
-        v2₀=v2₀
+        k = k
+        Δs₀ = Δs₀
+        v1₀ = v1₀
+        v2₀ = v2₀
     end
     vars = @variables begin
         Δs(t) = Δs₀
@@ -112,36 +108,36 @@ function Spring(::Val{:relative}; name, k, Δs₀ = 0.0, v1₀=0.0, v2₀=0.0)
            f ~ k * Δs
            T1.f ~ +f
            T2.f ~ -f]
-    return compose(ODESystem(eqs, t, vars, pars; name = name, defaults=[T1.v => v1₀, T2.v => v2₀]), T1, T2) #T1.f => +k*Δs₀, T2.f => -k*Δs₀
+    return compose(ODESystem(eqs, t, vars, pars; name = name,
+                             defaults = [T1.v => v1₀, T2.v => v2₀]), T1, T2) #T1.f => +k*Δs₀, T2.f => -k*Δs₀
 end
 
 const ABS = Val(:absolute)
-function Spring(::Val{:absolute}; name, k, s1₀ = 0, s2₀ = 0, v1₀=0.0, v2₀=0.0, l=0)
+function Spring(::Val{:absolute}; name, k, s1₀ = 0, s2₀ = 0, v1₀ = 0.0, v2₀ = 0.0, l = 0)
     pars = @parameters begin
-        k=k 
-        s1₀=s1₀ 
-        s2₀=s2₀
-        v1₀=v1₀
-        v2₀=v2₀
-        l=l
-    end 
+        k = k
+        s1₀ = s1₀
+        s2₀ = s2₀
+        v1₀ = v1₀
+        v2₀ = v2₀
+        l = l
+    end
     vars = @variables begin
         s1(t) = s1₀
         s2(t) = s2₀
-        f(t) = 0 
+        f(t) = 0
     end
 
     @named T1 = Port()
     @named T2 = Port()
 
-    eqs = [
-            D(s1) ~ T1.v
-            D(s2) ~ T2.v
-           
+    eqs = [D(s1) ~ T1.v
+           D(s2) ~ T2.v
            f ~ k * (s1 - s2 - l) #Δs
            T1.f ~ +f
            T2.f ~ -f]
-    return compose(ODESystem(eqs, t, vars, pars; name = name, defaults=[T1.v => v1₀, T2.v => v2₀]), T1, T2) #, T1.f => k * (s1₀ - s2₀ - l)
+    return compose(ODESystem(eqs, t, vars, pars; name = name,
+                             defaults = [T1.v => v1₀, T2.v => v2₀]), T1, T2) #, T1.f => k * (s1₀ - s2₀ - l)
 end
 
 """
@@ -158,16 +154,16 @@ Linear 1D translational damper
 - `T1: 1-dim. translational port on one side of damper`
 - `T2: 1-dim. translational port on opposite side of damper`
 """
-function Damper(; name, d, v1₀=0.0, v2₀=0.0)
+function Damper(; name, d, v1₀ = 0.0, v2₀ = 0.0)
     pars = @parameters begin
         d = d
-        v1₀=v1₀
-        v2₀=v2₀ 
+        v1₀ = v1₀
+        v2₀ = v2₀
     end
     vars = @variables begin
-        v(t)=v1₀ - v2₀
-        f(t)=0.0
-    end 
+        v(t) = v1₀ - v2₀
+        f(t) = 0.0
+    end
 
     @named T1 = Port()
     @named T2 = Port()
@@ -176,5 +172,6 @@ function Damper(; name, d, v1₀=0.0, v2₀=0.0)
            f ~ v * d
            T1.f ~ +f
            T2.f ~ -f]
-    return compose(ODESystem(eqs, t, vars, pars; name = name, defaults=[T1.v => v1₀, T2.v => v2₀]), T1, T2) #T1.f => +(v1₀ - v2₀)*d, T2.f => -(v1₀ - v2₀)*d
+    return compose(ODESystem(eqs, t, vars, pars; name = name,
+                             defaults = [T1.v => v1₀, T2.v => v2₀]), T1, T2) #T1.f => +(v1₀ - v2₀)*d, T2.f => -(v1₀ - v2₀)*d
 end
