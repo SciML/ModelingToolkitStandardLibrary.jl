@@ -8,6 +8,8 @@ using ModelingToolkit: get_eqs, vars, @set!, get_iv
 @named C = Gain(-1)
 t = ModelingToolkit.get_iv(P)
 
+@test_logs (:warn,) (:warn,) connect(P.input, :bad_connection, C.output)
+
 # Test with explicitly created AnalysisPoint
 ap = AnalysisPoint(:plant_input)
 eqs = [connect(P.output, C.input)

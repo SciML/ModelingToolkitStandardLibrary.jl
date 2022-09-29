@@ -84,9 +84,15 @@ function Base.show(io::IO, ::MIME"text/plain", ap::AnalysisPoint)
     end
 end
 
+_isinput(x) = x isa ODESystem && endswith(string(nameof(x)), "input")
+_isoutput(x) = x isa ODESystem && endswith(string(nameof(x)), "output")
+function ap_warning(n)
+    @warn "The $(n == 1 ? "first" : "third") argument to a connection with an analysis point was a $(n == 1 ? "RealInput" : "RealOutput"). This is supported in order to handle inverse models, but may not be what you intended. If you are building a forward model (causal), you may want to swap the first and the third arguments to connect. Learn more about the causality of analysis points in the docstring for AnalysisPoint. Silence this message by connect(out, :name, in; verbose = false)"
+end
+
 """
-    connect(output_connector, ap_name::Symbol, input_connector)
-    connect(output_connector, ap::AnalysisPoint, input_connector)
+    connect(output_connector, ap_name::Symbol, input_connector; verbose = true)
+    connect(output_connector, ap::AnalysisPoint, input_connector; verbose = true)
 
 Connect `output_connector` and `input_connector` with an [`AnalysisPoint`](@ref) inbetween.
 The incoming connection `output_connector` is expected to be of type [`RealOutput`](@ref), and vice versa.
@@ -105,18 +111,24 @@ typically is not (unless the model is an inverse model).
 - `input_connector`: A connector of type [`RealInput`](@ref)
 - `ap`: An explicitly created [`AnalysisPoint`](@ref)
 - `ap_name`: If a name is given, an [`AnalysisPoint`](@ref) with the given name will be created automatically.
+- `verbose`: Causes a warning to be displayed if an input is connected to an output (reverse causality). Silence this warning if you are analysing an inverse model.
 """
-function ModelingToolkit.connect(in, ap::AnalysisPoint, out)
+function ModelingToolkit.connect(in, ap::AnalysisPoint, out; verbose = true)
+    verbose && _isinput(in) && ap_warning(1)
+    verbose && _isoutput(out) && ap_warning(2)
     ap.in = in
     ap.out = out
     return AnalysisPoint() ~ ap
 end
 
-ModelingToolkit.get_systems(ap::AnalysisPoint) = (ap.in, ap.out)
-function ModelingToolkit.connect(in, ap_name::Symbol, out)
+function ModelingToolkit.connect(in, ap_name::Symbol, out; verbose = true)
+    verbose && _isinput(in) && ap_warning(1)
+    verbose && _isoutput(out) && ap_warning(2)
     ap = AnalysisPoint(in, out, ap_name)
     return AnalysisPoint() ~ ap
 end
+
+ModelingToolkit.get_systems(ap::AnalysisPoint) = (ap.in, ap.out)
 
 function ModelingToolkit.vars(ap::AnalysisPoint; op = Differential)
     vars(connect(ap.in, ap.out); op)
