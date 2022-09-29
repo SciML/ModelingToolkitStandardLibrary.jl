@@ -14,7 +14,7 @@ The idea behind the selection of the **through** variable is that it should be a
 
 ```math
 \begin{aligned}
-    \partial {\color{blue}{across}} / \partial t \cdot c_1 = {\color{green}{through}} 
+    \partial {\color{blue}{across}} / \partial t \cdot c_1 = {\color{green}{through}}  \\
     {\color{green}{through}} \cdot c_2 = {\color{blue}{across}} 
 \end{aligned}
 ```
@@ -31,7 +31,7 @@ So for the Electrical domain the across variable is *voltage* and the through va
 
 - Flow: 
 ```math
-\color{green}{current} \cdot resistance = \color{blue}{voltage}
+{\color{green}{current}} \cdot resistance = {\color{blue}{voltage}}
 ```
 
 ### Translational
@@ -87,8 +87,8 @@ using Plots
 @named ground = Ground()
 
 eqs = [
-    connect(capacitor.p, resistor.n)
-    connect(resistor.p, ground.g, capacitor.n)
+    connect(capacitor.p, resistor.p)
+    connect(resistor.n, ground.g, capacitor.n)
     ]
 
 @named model = ODESystem(eqs, t; systems=[resistor, capacitor, ground])
@@ -122,27 +122,22 @@ Now using the Translational library based on velocity, we can see the same relat
 - Fixed: for energy sink
 
 ```@example connections
-module TranslationalVelocity
-    using ModelingToolkit
-    using ModelingToolkitStandardLibrary.Mechanical.Translational
+using ModelingToolkitStandardLibrary
+const TV = ModelingToolkitStandardLibrary.Mechanical.Translational
 
-    @parameters t
+@named damping = TV.Damper(d=1, v1₀=1)
+@named body = TV.Mass(m=1, v₀=1)
+@named ground = TV.Fixed()
 
-    @named damping = Damper(d = 1)
-    @named body = Body(m = 1, v0=1)
-    @named ground = Fixed()
+eqs = [
+    connect(damping.T1, body.T)
+    connect(ground.T, damping.T2)
+    ]
 
-    eqs = [
-        connect(damping.port_a, body.port)
-        connect(ground.port, damping.port_b)
-        ]
+@named model = ODESystem(eqs, t; systems=[damping, body, ground])
 
-    @named model = ODESystem(eqs, t; systems=[damping, body, ground])
+sys = structural_simplify(model)
 
-    sys = structural_simplify(model)
-end
-
-sys = TranslationalVelocity.sys
 println.(full_equations(sys))
 nothing # hide
 ```
@@ -152,8 +147,8 @@ As expected we have a similar solution...
 prob = ODEProblem(sys, [1.0], (0, 10.0), [])
 sol_v = solve(prob, ImplicitMidpoint(); dt=0.01)
 
-p1=plot(sol_v, idxs=[TranslationalVelocity.body.v])
-p2=plot(sol_v, idxs=[TranslationalVelocity.damping.f])
+p1=plot(sol_v, idxs=[body.v])
+p2=plot(sol_v, idxs=[damping.f])
 plot(p1,p2)
 savefig("mechanical_velocity.png"); nothing # hide
 ```
@@ -165,59 +160,33 @@ savefig("mechanical_velocity.png"); nothing # hide
 Now, let's consider the position based approach.  We can build the same model with the same components.  As can be seen, we now end of up with 2 equations, because we need to relate the lower derivative (position) to force (with acceleration).  
 
 ```@example connections
-module TranslationalPosition
-    using ModelingToolkit
-    using ModelingToolkitStandardLibrary.Mechanical.TranslationalPosition
+const TP = ModelingToolkitStandardLibrary.Mechanical.TranslationalPosition
 
-    @parameters t
-    D = Differential(t)
-
-    # Let's define a simple body that only tracks the across and through variables...
-    function Body(; name, m, v0 = 0.0)
-        @named flange = Flange()
-        pars = @parameters m=m v0=v0
-        vars = @variables begin
-            v(t) = v0
-            f(t) = m*v0
-        end
-        eqs = [
-            D(flange.s) ~ v
-            flange.f ~ f
-
-            D(v) ~ f/m
-            ]
-        return compose(ODESystem(eqs, t, vars, pars; name = name), flange)
-    end
-
-    @named damping = Damper(d = 1)
-    @named body = Body(m = 1, v0=1)
-    @named ground = Fixed()
+@named damping = TP.Damper(d=1, v1₀=1)
+@named body =    TP.Mass(m=1, v₀=1)
+@named ground =  TP.Fixed()
 
     eqs = [
-        connect(damping.flange_b, body.flange)
-        connect(ground.flange, damping.flange_a)
+        connect(damping.T1, body.T)
+        connect(ground.T, damping.T2)
         ]
 
-    @named model = ODESystem(eqs, t; systems=[damping, body, ground])
+@named model = ODESystem(eqs, t; systems=[damping, body, ground])
 
-    sys = structural_simplify(model)
-end
-
-sys = TranslationalPosition.sys
+sys = structural_simplify(model)
 
 println.(full_equations(sys))
 nothing # hide
 ```
-
 As can be seen, we get exactly the same result.  The only difference here is that we are solving an extra equation, which allows us to plot the body position as well.
 
 ```@example connections
 prob = ODEProblem(sys, [0.0, 1.0], (0, 10.0), [])
 sol_p = solve(prob, ImplicitMidpoint(); dt=0.01)
 
-p1=plot(sol_p, idxs=[TranslationalPosition.body.v])
-p2=plot(sol_p, idxs=[TranslationalPosition.damping.f])
-p3=plot(sol_p, idxs=[TranslationalPosition.body.flange.s])
+p1=plot(sol_p, idxs=[body.v])
+p2=plot(sol_p, idxs=[damping.f])
+p3=plot(sol_p, idxs=[body.s])
 
 plot(p1,p2,p3)
 savefig("mechanical_position.png"); nothing # hide
@@ -227,60 +196,159 @@ savefig("mechanical_position.png"); nothing # hide
 
 The question then arises, can the position be plotted when using the Mechanical Translational Domain based on the Velocity Across variable?  Yes, we can!  There are 2 solutions:
 
-1. the `Body` component will add the position variable when the `s0` parameter is used to set an initial position.  Otherwise the position is not tracked by the component.
+1. the `Mass` component will add the position variable when the `s₀` parameter is used to set an initial position.  Otherwise the position is not tracked by the component.
 
 ```julia
-@named body = Body(m = 1, v0=1, s0=0)
+@named body = TV.Mass(m=1,  v₀=1,  s₀=0)
 ```
 
 2. implement a `PositionSensor`
+TODO: Implement Translation Sensors
 
-```julia
-@named damping = Damper(d = 1)
-@named body = Body(m = 1, v0=1)
-@named ground = Fixed()
-@named sensor = PositionSensor(s0=0)
 
-eqs = [
-    connect(damping.port_a, body.port, sensor.port)
-    connect(ground.port, damping.port_b)
-    ]
-```
-
-Either option will produce the same result as shown for the Mechanical Translational Domain based on the Position Across variable.  If the same result is given, why are both options included in the Standard Library, what are the differences?  These differences will be discussed next so that an informed decision can be made about which domain is best for your model.
+Either option will produce the same result regardless of which across variable is used.  If the same result is given, why are both options included in the Standard Library, what are the differences?  These differences will be discussed next so that an informed decision can be made about which domain is best for your model.
 
 # Differences
 ## Initialization
+The main difference between `ModelingToolkitStandardLibrary.Mechanical.Translational` and `ModelingToolkitStandardLibrary.Mechanical.TranslationalPosition` is how they are initialized.  In the `ModelingToolkitStandardLibrary` initialization parameters are defined at the component level, so we simply need to be careful to set the correct initial conditions for the domain that it used.  Let's use the following example problem to explain the differences.  
 
-```julia
-module TranslationalVelocity
-    using ModelingToolkit
-    using ModelingToolkitStandardLibrary.Mechanical.Translational
+![Example Mechanical Model](model.png)
 
-    @parameters t
+In this problem we have a mass, spring, and damper which are connected to a fixed point.  Let's see how each component is defined.
 
-    @named damping = Damper(d=1)
-    @named spring = Spring(k=1)
-    @named body = Body(m = 1, v0=1)
-    @named ground = Fixed()
+#### Damper
+The damper will connect the flange/port 1 (`T1`) to the mass, and flange/port 2 (`T2`) to the fixed point.  For both position and velocity based domains, we set the damping constant `d=1` and `v1₀=1` and leave the default for `v2₀` at 0.  For the position domain we also need to set the initial positions for `T1` and `T2`.
 
-    eqs = [
-        connect(damping.port_a, spring.port_a, body.port)
-        connect(ground.port, damping.port_b, spring.port_b)
-        ]
-
-    @named model = ODESystem(eqs, t; systems=[damping, body, ground, spring])
-
-    sys = structural_simplify(model)
-end
-sys = TranslationalVelocity.sys
-prob = ODEProblem(sys, [1.0, 0.0], (0, 10.0), [])
-sol = solve(prob, ImplicitMidpoint(); dt=0.01)
+```@example connections
+@named dv = TV.Damper(d=1, v1₀=1)
+@named dp = TP.Damper(d=1, v1₀=1, s1₀=3, s2₀=1)
+nothing # hide
 ```
 
+#### Spring
+The spring will connect the flange/port 1 (`T1`) to the mass, and flange/port 2 (`T2`) to the fixed point.  For both position and velocity based domains, we set the spring constant `k=1`.  The velocity domain then requires the initial velocity `v1₀` and initial spring stretch `Δs₀`.  The position domain instead needs the initial positions for `T1` and `T2` and the natural spring length `l`.  
+
+```@example connections
+@named sv = TV.Spring(k=1, v1₀=1, Δs₀=1)
+@named sp = TP.Spring(k=1, s1₀=3, s2₀=1, l=1)
+nothing # hide
+```
+
+#### Mass
+For both position and velocity based domains, we set the mass `m=1` and initial velocity `v₀=1`. Like the damper, the position domain requires the position initial conditions set as well.  
+
+```@example connections
+@named bv = TV.Mass(m=1, v₀=1)
+@named bp = TP.Mass(m=1, v₀=1, s₀=3)
+nothing # hide
+```
+
+#### Fixed
+Here the velocity domain requires no initial condition, but for our model to work as defined we must set the position domain component to the correct intital position.
+
+```@example connections
+@named gv =  TV.Fixed()
+@named gp =  TP.Fixed(s₀=1)
+nothing # hide
+```
+
+### Comparison
+As can be seen, the position based domain requires more initial condition information to be properly defined since the absolute position information is required.  Thereore based on the model being described, it may be more natural to choose one domain over the other.  
+
+Let's define a quick function to simplify and solve the 2 different systems.
+
+```@example connections
+function simplify_and_solve(damping, spring, body, ground)
+
+       eqs = [connect(spring.T1, body.T, damping.T1)
+              connect(spring.T2, damping.T2, ground.T)
+              ]
+
+       @named model = ODESystem(eqs, t; systems = [ground, body, spring, damping])
+
+       sys = structural_simplify(model)
+
+       println.(full_equations(sys))
+
+       prob = ODEProblem(sys, [], (0, 10.0), [])
+       sol = solve(prob, ImplicitMidpoint(), dt=0.01)
+
+       return sol,sys
+end
+nothing # hide
+```
+
+Now let's solve the velocity domain model
+
+```@example connections
+solv,sysv=simplify_and_solve(dv, sv, bv, gv);
+nothing # hide
+```
+
+And the position domain model
+
+```@example connections
+solp,sysp=simplify_and_solve(dp, sp, bp, gp);
+nothing # hide
+```
+
+Now we can plot the comparison of the 2 models and see they give the same result.  
+```@example connections
+plot(ylabel="mass velocity [m/s]")
+plot!(solv, idxs=[bv.v])
+plot!(solp, idxs=[bp.v])
+savefig("mass_velocity.png"); nothing # hide
+```
+
+![Mass Velocity Comparison](mass_velocity.png)
+
+
+But, what if we wanted to plot the mass position?  This is easy for the position based domain, we have the state `bp₊s(t)`, but for the velocity based domain we have `sv₊Δs(t)` which is the spring stretch.  To get the absolute position we add the spring natrual length (1m) and the fixed position (1m).  As can be seen, we then get the same result.
+
+```@example connections
+plot(ylabel="mass position [m]")
+plot!(solv.t, solv[sv.Δs] .+ 1 .+ 1, label="sv.Δs(t) + 1 + 1")
+plot!(solp, idxs=[bp.s])
+savefig("mass_position.png"); nothing # hide
+```
+
+![Mass Position Comparison](mass_position.png)
+
+So in conclusion, the position based domain gives easier access to absolute position information, but requires more initial condition information.  
+
+
 ## Acuracy
+One may ask then what is the trade off in terms of numerical acuracy?  When we look at the simplified equations, we can see that actually both systems solve the same equations.  The differential equations of the velocity domain are
 
+```math
+\begin{aligned}
+m \cdot \dot{v} +  d \cdot v + k \cdot Δs = 0  \\
+\dot{Δs} = v
+\end{aligned}
+```
 
+And for the position domain are
 
+```math
+\begin{aligned}
+m \cdot \dot{v} +  d \cdot v + k \cdot (s - s2₀ - l) = 0   \\
+\dot{s} = v
+\end{aligned}
+```
 
+By definition the spring stretch is
+
+```math
+Δs = s - s2₀ - l
+```
+
+Which means both systems are actually solving the same exact system.  We can plot the numerical difference between the 2 systems and see the result is negligible.
+
+```@example connections
+plot(title="numerical difference: vel. vs. pos. domain", xlabel="time [s]", ylabel="solv[bv.v] .- solp[bp.v]")
+plot!(solv.t, solv[bv.v] .- solp[bp.v], label="")
+savefig("err.png"); nothing # hide
+```
+
+![Accuracy Comparison](err.png)
 

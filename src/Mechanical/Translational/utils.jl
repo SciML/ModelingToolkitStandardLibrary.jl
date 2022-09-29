@@ -1,13 +1,13 @@
-@connector function Port(; name, v0 = 0.0)
-    pars = @parameters v0 = v0
+@connector function Port(; name)
+    pars = []
     vars = @variables begin
         v(t)
         f(t), [connect = Flow]
     end
-    ODESystem(Equation[], t, vars, pars, name = name, defaults = Dict(v => v0, f => 0))
+    ODESystem(Equation[], t, vars, pars, name = name, defaults = [f => 0])
 end
 Base.@doc """
-    Port(;name, v0=0.0, f0=0.0)
+    Port(;name)
 
 1-dim. rotational flange of a shaft.
 
