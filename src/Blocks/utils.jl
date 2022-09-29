@@ -2,7 +2,7 @@
     if nin == 1
         @variables u(t)=u_start [input = true]
     else
-        @variables u[1:nin](t)=u_start [input = true]
+        @variables u(t)[1:nin]=u_start [input = true]
         u = collect(u)
     end
     ODESystem(Equation[], t, [u...], []; name = name)
@@ -24,7 +24,7 @@ Connector with one input signal of type Real.
     if nout == 1
         @variables u(t)=u_start [output = true]
     else
-        @variables u[1:nout](t)=u_start [output = true]
+        @variables u(t)[1:nout]=u_start [output = true]
         u = collect(u)
     end
     ODESystem(Equation[], t, [u...], []; name = name)
@@ -45,7 +45,7 @@ Connector with one output signal of type Real.
 """
     SISO(;name, u_start=0.0, y_start=0.0)
 
-Single Input Single Output continuous control block.
+Single input single output (SISO) continuous system block.
 
 # Parameters:
 - `u_start`: Initial value for the input
@@ -66,7 +66,7 @@ end
 """
     MIMO(;name, nin=1, nout=1, u_start=zeros(nin), y_start=zeros(nout))
 
-Base class for a multiple Input multiple Output continuous control block.
+Base class for a multiple input multiple output (MIMO) continuous system block.
 
 # Parameters:
 - `nin`: Input dimension
@@ -78,8 +78,8 @@ function MIMO(; name, nin = 1, nout = 1, u_start = zeros(nin), y_start = zeros(n
     @named input = RealInput(nin = nin, u_start = u_start)
     @named output = RealOutput(nout = nout, u_start = y_start)
     @variables begin
-        u[1:nin](t) = u_start
-        y[1:nout](t) = y_start
+        u(t)[1:nin] = u_start
+        y(t)[1:nout] = y_start
     end
     eqs = [
         [u[i] ~ input.u[i] for i in 1:nin]...,

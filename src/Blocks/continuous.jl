@@ -111,7 +111,7 @@ Critical damping corresponds to `d=1`, which yields the fastest step response wi
 
 # Parameters:
 - `k`: Gain
-- `w`: Angular frequency
+- `w`: [`rad/s`] Angular frequency
 - `d`: Damping
 - `x_start`: Initial value of state (output)
 - `xd_start`: Initial value of derivative of state (output)
@@ -438,7 +438,7 @@ function StateSpace(; A, B, C, D = nothing, x_start = zeros(size(A, 1)), name)
     end
     @named input = RealInput(nin = nu)
     @named output = RealOutput(nout = ny)
-    @variables x[1:nx](t) = x_start
+    @variables x(t)[1:nx] = x_start
     # pars = @parameters A=A B=B C=C D=D # This is buggy
     eqs = [ # FIXME: if array equations work
         [Differential(t)(x[i]) ~ sum(A[i, k] * x[k] for k in 1:nx) +
