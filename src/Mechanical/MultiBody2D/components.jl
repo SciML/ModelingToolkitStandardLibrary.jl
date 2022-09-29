@@ -6,7 +6,7 @@ function Link(; name, m, l, I, g)
         g = g
     end
     vars = @variables begin
-        A(t) = 0
+        (A(t) = 0), [state_priority = 10]
 
         x_1(t) = 0
         y_1(t) = 0
