@@ -17,7 +17,8 @@ function Fixed(; name, s_0 = 0.0)
 
     eqs = [port.s ~ s_0]
 
-    return compose(ODESystem(eqs, t, vars, pars; name = name, defaults = [port.s => s_0]), port)
+    return compose(ODESystem(eqs, t, vars, pars; name = name, defaults = [port.s => s_0]),
+                   port)
 end
 
 """
@@ -53,11 +54,13 @@ function Mass(; name, m, s_0 = 0.0, v_0 = 0.0)
            port.f ~ f
            D(s) ~ v
            D(v) ~ f / m]
-    return compose(ODESystem(eqs, t, vars, pars; name = name, defaults = [port.s => s_0]), port)
+    return compose(ODESystem(eqs, t, vars, pars; name = name, defaults = [port.s => s_0]),
+                   port)
 end
 
 const REL = Val(:relative)
-function Spring(::Val{:relative}; name, k, v1_0 = 0.0, v2_0 = 0.0, delta_s0 = 0, s1_0 = 0, s2_0 = 0)
+function Spring(::Val{:relative}; name, k, v1_0 = 0.0, v2_0 = 0.0, delta_s0 = 0, s1_0 = 0,
+                s2_0 = 0)
     pars = @parameters begin
         k = k
         v1_0 = v1_0
