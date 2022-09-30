@@ -79,17 +79,17 @@ Partial model for the compliant connection of two translational 1-dim. flanges.
 - `a_rel`: [m/s²] Relative linear acceleration (= der(v_rel))
 - `f`: [N] Force between flanges (= flange_b.f)
 """
-function PartialCompliantWithRelativeStates(; name, Δs0 = 0.0)
-    @named T1 = Flange()
-    @named T2 = Flange()
+function PartialCompliantWithRelativeStates(; name, delta_s0 = 0.0)
+    @named port_a = Flange()
+    @named port_b = Flange()
     sts = @variables begin
-        Δs(t) = Δs0
+        delta_s(t) = delta_s0
         f(t) = 0
     end
-    eqs = [Δs ~ T1.s - T2.s
-           T1.f ~ +f
-           T2.f ~ -f]
-    return compose(ODESystem(eqs, t, sts, []; name = name), T1, T2)
+    eqs = [delta_s ~ port_a.s - port_b.s
+           port_a.f ~ +f
+           port_b.f ~ -f]
+    return compose(ODESystem(eqs, t, sts, []; name = name), port_a, port_b)
 end
 
 """

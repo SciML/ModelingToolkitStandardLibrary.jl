@@ -125,13 +125,13 @@ Now using the Translational library based on velocity, we can see the same relat
 using ModelingToolkitStandardLibrary
 const TV = ModelingToolkitStandardLibrary.Mechanical.Translational
 
-@named damping = TV.Damper(d=1, v1₀=1)
-@named body = TV.Mass(m=1, v₀=1)
+@named damping = TV.Damper(d=1, v1_0=1)
+@named body = TV.Mass(m=1, v_0=1)
 @named ground = TV.Fixed()
 
 eqs = [
-    connect(damping.T1, body.T)
-    connect(ground.T, damping.T2)
+    connect(damping.port_a, body.port)
+    connect(ground.port, damping.port_b)
     ]
 
 @named model = ODESystem(eqs, t; systems=[damping, body, ground])
@@ -144,7 +144,7 @@ nothing # hide
 
 As expected we have a similar solution...
 ```@example connections
-prob = ODEProblem(sys, [1.0], (0, 10.0), [])
+prob = ODEProblem(sys, [], (0, 10.0), [])
 sol_v = solve(prob, ImplicitMidpoint(); dt=0.01)
 
 p1=plot(sol_v, idxs=[body.v])
@@ -162,13 +162,13 @@ Now, let's consider the position based approach.  We can build the same model wi
 ```@example connections
 const TP = ModelingToolkitStandardLibrary.Mechanical.TranslationalPosition
 
-@named damping = TP.Damper(d=1, v1₀=1)
-@named body =    TP.Mass(m=1, v₀=1)
-@named ground =  TP.Fixed()
+@named damping = TP.Damper(d=1, v1_0=1)
+@named body =    TP.Mass(m=1, v_0=1)
+@named ground =  TP.Fixed(s_0=0)
 
     eqs = [
-        connect(damping.T1, body.T)
-        connect(ground.T, damping.T2)
+        connect(damping.port_a, body.port)
+        connect(ground.port, damping.port_b)
         ]
 
 @named model = ODESystem(eqs, t; systems=[damping, body, ground])
@@ -181,7 +181,7 @@ nothing # hide
 As can be seen, we get exactly the same result.  The only difference here is that we are solving an extra equation, which allows us to plot the body position as well.
 
 ```@example connections
-prob = ODEProblem(sys, [0.0, 1.0], (0, 10.0), [])
+prob = ODEProblem(sys, [], (0, 10.0), [])
 sol_p = solve(prob, ImplicitMidpoint(); dt=0.01)
 
 p1=plot(sol_p, idxs=[body.v])
@@ -196,10 +196,10 @@ savefig("mechanical_position.png"); nothing # hide
 
 The question then arises, can the position be plotted when using the Mechanical Translational Domain based on the Velocity Across variable?  Yes, we can!  There are 2 solutions:
 
-1. the `Mass` component will add the position variable when the `s₀` parameter is used to set an initial position.  Otherwise the position is not tracked by the component.
+1. the `Mass` component will add the position variable when the `s_0` parameter is used to set an initial position.  Otherwise the position is not tracked by the component.
 
 ```julia
-@named body = TV.Mass(m=1,  v₀=1,  s₀=0)
+@named body = TV.Mass(m=1,  v_0=1,  s_0=0)
 ```
 
 2. implement a `PositionSensor`
@@ -217,29 +217,29 @@ The main difference between `ModelingToolkitStandardLibrary.Mechanical.Translati
 In this problem we have a mass, spring, and damper which are connected to a fixed point.  Let's see how each component is defined.
 
 #### Damper
-The damper will connect the flange/port 1 (`T1`) to the mass, and flange/port 2 (`T2`) to the fixed point.  For both position and velocity based domains, we set the damping constant `d=1` and `v1₀=1` and leave the default for `v2₀` at 0.  For the position domain we also need to set the initial positions for `T1` and `T2`.
+The damper will connect the flange/port 1 (`port_a`) to the mass, and flange/port 2 (`port_b`) to the fixed point.  For both position and velocity based domains, we set the damping constant `d=1` and `v1_0=1` and leave the default for `v2_0` at 0.  For the position domain we also need to set the initial positions for `port_a` and `port_b`.
 
 ```@example connections
-@named dv = TV.Damper(d=1, v1₀=1)
-@named dp = TP.Damper(d=1, v1₀=1, s1₀=3, s2₀=1)
+@named dv = TV.Damper(d=1, v1_0=1)
+@named dp = TP.Damper(d=1, v1_0=1, s1_0=3, s2_0=1)
 nothing # hide
 ```
 
 #### Spring
-The spring will connect the flange/port 1 (`T1`) to the mass, and flange/port 2 (`T2`) to the fixed point.  For both position and velocity based domains, we set the spring constant `k=1`.  The velocity domain then requires the initial velocity `v1₀` and initial spring stretch `Δs₀`.  The position domain instead needs the initial positions for `T1` and `T2` and the natural spring length `l`.  
+The spring will connect the flange/port 1 (`port_a`) to the mass, and flange/port 2 (`port_b`) to the fixed point.  For both position and velocity based domains, we set the spring constant `k=1`.  The velocity domain then requires the initial velocity `v1_0` and initial spring stretch `delta_s_0`.  The position domain instead needs the initial positions for `port_a` and `port_b` and the natural spring length `l`.  
 
 ```@example connections
-@named sv = TV.Spring(k=1, v1₀=1, Δs₀=1)
-@named sp = TP.Spring(k=1, s1₀=3, s2₀=1, l=1)
+@named sv = TV.Spring(k=1, v1_0=1, delta_s_0=1)
+@named sp = TP.Spring(k=1, s1_0=3, s2_0=1, l=1)
 nothing # hide
 ```
 
 #### Mass
-For both position and velocity based domains, we set the mass `m=1` and initial velocity `v₀=1`. Like the damper, the position domain requires the position initial conditions set as well.  
+For both position and velocity based domains, we set the mass `m=1` and initial velocity `v_0=1`. Like the damper, the position domain requires the position initial conditions set as well.  
 
 ```@example connections
-@named bv = TV.Mass(m=1, v₀=1)
-@named bp = TP.Mass(m=1, v₀=1, s₀=3)
+@named bv = TV.Mass(m=1, v_0=1)
+@named bp = TP.Mass(m=1, v_0=1, s_0=3)
 nothing # hide
 ```
 
@@ -248,7 +248,7 @@ Here the velocity domain requires no initial condition, but for our model to wor
 
 ```@example connections
 @named gv =  TV.Fixed()
-@named gp =  TP.Fixed(s₀=1)
+@named gp =  TP.Fixed(s_0=1)
 nothing # hide
 ```
 
@@ -260,8 +260,8 @@ Let's define a quick function to simplify and solve the 2 different systems.
 ```@example connections
 function simplify_and_solve(damping, spring, body, ground)
 
-       eqs = [connect(spring.T1, body.T, damping.T1)
-              connect(spring.T2, damping.T2, ground.T)
+       eqs = [connect(spring.port_a, body.port, damping.port_a)
+              connect(spring.port_b, damping.port_b, ground.port)
               ]
 
        @named model = ODESystem(eqs, t; systems = [ground, body, spring, damping])
@@ -303,11 +303,11 @@ savefig("mass_velocity.png"); nothing # hide
 ![Mass Velocity Comparison](mass_velocity.png)
 
 
-But, what if we wanted to plot the mass position?  This is easy for the position based domain, we have the state `bp₊s(t)`, but for the velocity based domain we have `sv₊Δs(t)` which is the spring stretch.  To get the absolute position we add the spring natrual length (1m) and the fixed position (1m).  As can be seen, we then get the same result.
+But, what if we wanted to plot the mass position?  This is easy for the position based domain, we have the state `bp₊s(t)`, but for the velocity based domain we have `sv₊delta_s(t)` which is the spring stretch.  To get the absolute position we add the spring natrual length (1m) and the fixed position (1m).  As can be seen, we then get the same result.
 
 ```@example connections
 plot(ylabel="mass position [m]")
-plot!(solv.t, solv[sv.Δs] .+ 1 .+ 1, label="sv.Δs(t) + 1 + 1")
+plot!(solv.t, solv[sv.delta_s] .+ 1 .+ 1, label="sv.delta_s(t) + 1 + 1")
 plot!(solp, idxs=[bp.s])
 savefig("mass_position.png"); nothing # hide
 ```
@@ -322,8 +322,8 @@ One may ask then what is the trade off in terms of numerical acuracy?  When we l
 
 ```math
 \begin{aligned}
-m \cdot \dot{v} +  d \cdot v + k \cdot Δs = 0  \\
-\dot{Δs} = v
+m \cdot \dot{v} +  d \cdot v + k \cdot delta_s = 0  \\
+\dot{delta_s} = v
 \end{aligned}
 ```
 
@@ -331,7 +331,7 @@ And for the position domain are
 
 ```math
 \begin{aligned}
-m \cdot \dot{v} +  d \cdot v + k \cdot (s - s2₀ - l) = 0   \\
+m \cdot \dot{v} +  d \cdot v + k \cdot (s - s2_0 - l) = 0   \\
 \dot{s} = v
 \end{aligned}
 ```
@@ -339,7 +339,7 @@ m \cdot \dot{v} +  d \cdot v + k \cdot (s - s2₀ - l) = 0   \\
 By definition the spring stretch is
 
 ```math
-Δs = s - s2₀ - l
+delta_s = s - s2_0 - l
 ```
 
 Which means both systems are actually solving the same exact system.  We can plot the numerical difference between the 2 systems and see the result is negligible.
