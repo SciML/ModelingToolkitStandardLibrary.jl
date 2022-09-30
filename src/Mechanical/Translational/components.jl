@@ -24,7 +24,7 @@ Sliding mass with inertia
 - `g`: [m/s²] (optional) gravity field acting on the mass, positive value acts in the positive direction
 
 
-# States: 
+# States:
 - `v`: [m/s] absolute linear velocity of sliding mass
 - `s`: [m] (optional with parameter s_0) absolute position of sliding mass
 
@@ -67,7 +67,8 @@ function Mass(; name, v_0 = 0.0, m, s_0 = nothing, g = nothing)
         push!(eqs, D(s) ~ v)
     end
 
-    return compose(ODESystem(eqs, t, vars, pars; name = name, defaults = [port.v => v_0]), port)
+    return compose(ODESystem(eqs, t, vars, pars; name = name, defaults = [port.v => v_0]),
+                   port)
 end
 
 const REL = Val(:relative)
@@ -87,7 +88,9 @@ Linear 1D translational spring
 - `port_a: 1-dim. translational port on one side of spring`
 - `port_b: 1-dim. translational port on opposite side of spring`
 """
-Spring(; name, k, delta_s_0 = 0.0, v1_0 = 0.0, v2_0 = 0.0) = Spring(REL; name, k, delta_s_0, v1_0, v2_0) # default 
+function Spring(; name, k, delta_s_0 = 0.0, v1_0 = 0.0, v2_0 = 0.0)
+    Spring(REL; name, k, delta_s_0, v1_0, v2_0)
+end # default
 
 function Spring(::Val{:relative}; name, k, delta_s_0 = 0.0, v1_0 = 0.0, v2_0 = 0.0)
     pars = @parameters begin
@@ -109,11 +112,13 @@ function Spring(::Val{:relative}; name, k, delta_s_0 = 0.0, v1_0 = 0.0, v2_0 = 0
            port_a.f ~ +f
            port_b.f ~ -f]
     return compose(ODESystem(eqs, t, vars, pars; name = name,
-                             defaults = [port_a.v => v1_0, port_b.v => v2_0]), port_a, port_b) #port_a.f => +k*delta_s_0, port_b.f => -k*delta_s_0
+                             defaults = [port_a.v => v1_0, port_b.v => v2_0]), port_a,
+                   port_b) #port_a.f => +k*delta_s_0, port_b.f => -k*delta_s_0
 end
 
 const ABS = Val(:absolute)
-function Spring(::Val{:absolute}; name, k, s1_0 = 0, s2_0 = 0, v1_0 = 0.0, v2_0 = 0.0, l = 0)
+function Spring(::Val{:absolute}; name, k, s1_0 = 0, s2_0 = 0, v1_0 = 0.0, v2_0 = 0.0,
+                l = 0)
     pars = @parameters begin
         k = k
         s1_0 = s1_0
@@ -137,7 +142,8 @@ function Spring(::Val{:absolute}; name, k, s1_0 = 0, s2_0 = 0, v1_0 = 0.0, v2_0 
            port_a.f ~ +f
            port_b.f ~ -f]
     return compose(ODESystem(eqs, t, vars, pars; name = name,
-                             defaults = [port_a.v => v1_0, port_b.v => v2_0]), port_a, port_b) #, port_a.f => k * (s1_0 - s2_0 - l)
+                             defaults = [port_a.v => v1_0, port_b.v => v2_0]), port_a,
+                   port_b) #, port_a.f => k * (s1_0 - s2_0 - l)
 end
 
 """
@@ -173,5 +179,6 @@ function Damper(; name, d, v1_0 = 0.0, v2_0 = 0.0)
            port_a.f ~ +f
            port_b.f ~ -f]
     return compose(ODESystem(eqs, t, vars, pars; name = name,
-                             defaults = [port_a.v => v1_0, port_b.v => v2_0]), port_a, port_b) #port_a.f => +(v1_0 - v2_0)*d, port_b.f => -(v1_0 - v2_0)*d
+                             defaults = [port_a.v => v1_0, port_b.v => v2_0]), port_a,
+                   port_b) #port_a.f => +(v1_0 - v2_0)*d, port_b.f => -(v1_0 - v2_0)*d
 end
