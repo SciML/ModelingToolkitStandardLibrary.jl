@@ -59,7 +59,7 @@ function Mass(; name, m, s_0 = 0.0, v_0 = 0.0)
 end
 
 const REL = Val(:relative)
-function Spring(::Val{:relative}; name, k, v_a_0 = 0.0, v_b_0 = 0.0, delta_s0 = 0,
+function Spring(::Val{:relative}; name, k, v_a_0 = 0.0, v_b_0 = 0.0, delta_s_0 = 0,
                 s_a_0 = 0,
                 s_b_0 = 0)
     pars = @parameters begin
@@ -68,13 +68,13 @@ function Spring(::Val{:relative}; name, k, v_a_0 = 0.0, v_b_0 = 0.0, delta_s0 = 
         v_b_0 = v_b_0
         s_a_0 = s_a_0
         s_b_0 = s_b_0
-        delta_s0 = delta_s0
+        delta_s_0 = delta_s_0
     end
     vars = @variables begin
         v1(t) = v_a_0
         v2(t) = v_b_0
-        delta_s(t) = delta_s0
-        f(t) = delta_s0 * k
+        delta_s(t) = delta_s_0
+        f(t) = delta_s_0 * k
     end
 
     @named flange_a = Flange()
@@ -91,8 +91,8 @@ function Spring(::Val{:relative}; name, k, v_a_0 = 0.0, v_b_0 = 0.0, delta_s0 = 
                              defaults = [
                                  flange_a.s => s_a_0,
                                  flange_b.s => s_b_0,
-                                 flange_a.f => +delta_s0 * k,
-                                 flange_b.f => -delta_s0 * k,
+                                 flange_a.f => +delta_s_0 * k,
+                                 flange_b.f => -delta_s_0 * k,
                              ]), flange_a, flange_b)
 end
 
