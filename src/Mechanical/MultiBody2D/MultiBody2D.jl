@@ -1,12 +1,10 @@
 module MultiBody2D
 
 using ModelingToolkit, Symbolics, IfElse
+using ..Translational
 
 @parameters t
 D = Differential(t)
-
-export Port
-include("utils.jl")
 
 export Link
 include("components.jl")

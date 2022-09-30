@@ -11,10 +11,13 @@ D = Differential(t)
 export MechanicalPort
 include("utils.jl")
 
-export Body, Spring, Damper, Fixed
+export Mass, Spring, Damper, Fixed
 include("components.jl")
 
 export PositionSensor
 include("sensors.jl")
+
+export SineForce
+include("sources.jl")
 
 end

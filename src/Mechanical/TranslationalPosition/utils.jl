@@ -80,16 +80,16 @@ Partial model for the compliant connection of two translational 1-dim. flanges.
 - `f`: [N] Force between flanges (= flange_b.f)
 """
 function PartialCompliantWithRelativeStates(; name, delta_s0 = 0.0)
-    @named port_a = Flange()
-    @named port_b = Flange()
+    @named flange_a = Flange()
+    @named flange_b = Flange()
     sts = @variables begin
         delta_s(t) = delta_s0
         f(t) = 0
     end
-    eqs = [delta_s ~ port_a.s - port_b.s
-           port_a.f ~ +f
-           port_b.f ~ -f]
-    return compose(ODESystem(eqs, t, sts, []; name = name), port_a, port_b)
+    eqs = [delta_s ~ flange_a.s - flange_b.s
+           flange_a.f ~ +f
+           flange_b.f ~ -f]
+    return compose(ODESystem(eqs, t, sts, []; name = name), flange_a, flange_b)
 end
 
 """

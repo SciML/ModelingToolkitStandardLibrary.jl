@@ -1,15 +1,15 @@
 """
     Fixed(;name)
 
-Fixes a port position (velocity = 0)
+Fixes a flange position (velocity = 0)
 
 # Connectors:
-- `port: 1-dim. translational port`
+- `flange: 1-dim. translational flange`
 """
 function Fixed(; name)
-    @named port = MechanicalPort()
-    eqs = [port.v ~ 0]
-    return compose(ODESystem(eqs, t, [], []; name = name, defaults = [port.v => 0]), port)
+    @named flange = MechanicalPort()
+    eqs = [flange.v ~ 0]
+    return compose(ODESystem(eqs, t, [], []; name = name, defaults = [flange.v => 0]), flange)
 end
 
 """
@@ -30,7 +30,7 @@ Sliding mass with inertia
 
 
 # Connectors:
-- `port: 1-dim. translational port`
+- `flange: 1-dim. translational flange`
 """
 function Mass(; name, v_0 = 0.0, m, s_0 = nothing, g = nothing)
     pars = @parameters begin
@@ -42,10 +42,10 @@ function Mass(; name, v_0 = 0.0, m, s_0 = nothing, g = nothing)
         f(t) = 0
     end
 
-    @named port = MechanicalPort()
+    @named flange = MechanicalPort()
 
-    eqs = [port.v ~ v
-           port.f ~ f]
+    eqs = [flange.v ~ v
+           flange.f ~ f]
 
     # gravity option
     if !isnothing(g)
@@ -67,118 +67,118 @@ function Mass(; name, v_0 = 0.0, m, s_0 = nothing, g = nothing)
         push!(eqs, D(s) ~ v)
     end
 
-    return compose(ODESystem(eqs, t, vars, pars; name = name, defaults = [port.v => v_0]),
-                   port)
+    return compose(ODESystem(eqs, t, vars, pars; name = name, defaults = [flange.v => v_0]),
+                   flange)
 end
 
 const REL = Val(:relative)
 
 """
-    Spring(; name, k, delta_s_0 = 0.0,  v1_0=0.0, v2_0=0.0)
+    Spring(; name, k, delta_s_0 = 0.0,  v_a_0=0.0, v_b_0=0.0)
 
 Linear 1D translational spring
 
 # Parameters:
 - `k`: [N/m] Spring constant
 - `delta_s_0`: initial spring stretch
-- `v1_0`: [m/s] Initial value of absolute linear velocity at port_a (default 0 m/s)
-- `v2_0`: [m/s] Initial value of absolute linear velocity at port_b (default 0 m/s)
+- `v_a_0`: [m/s] Initial value of absolute linear velocity at flange_a (default 0 m/s)
+- `v_b_0`: [m/s] Initial value of absolute linear velocity at flange_b (default 0 m/s)
 
 # Connectors:
-- `port_a: 1-dim. translational port on one side of spring`
-- `port_b: 1-dim. translational port on opposite side of spring`
+- `flange_a: 1-dim. translational flange on one side of spring`
+- `flange_b: 1-dim. translational flange on opposite side of spring`
 """
-function Spring(; name, k, delta_s_0 = 0.0, v1_0 = 0.0, v2_0 = 0.0)
-    Spring(REL; name, k, delta_s_0, v1_0, v2_0)
+function Spring(; name, k, delta_s_0 = 0.0, v_a_0 = 0.0, v_b_0 = 0.0)
+    Spring(REL; name, k, delta_s_0, v_a_0, v_b_0)
 end # default
 
-function Spring(::Val{:relative}; name, k, delta_s_0 = 0.0, v1_0 = 0.0, v2_0 = 0.0)
+function Spring(::Val{:relative}; name, k, delta_s_0 = 0.0, v_a_0 = 0.0, v_b_0 = 0.0)
     pars = @parameters begin
         k = k
         delta_s_0 = delta_s_0
-        v1_0 = v1_0
-        v2_0 = v2_0
+        v_a_0 = v_a_0
+        v_b_0 = v_b_0
     end
     vars = @variables begin
         delta_s(t) = delta_s_0
         f(t) = 0
     end
 
-    @named port_a = MechanicalPort()
-    @named port_b = MechanicalPort()
+    @named flange_a = MechanicalPort()
+    @named flange_b = MechanicalPort()
 
-    eqs = [D(delta_s) ~ port_a.v - port_b.v
+    eqs = [D(delta_s) ~ flange_a.v - flange_b.v
            f ~ k * delta_s
-           port_a.f ~ +f
-           port_b.f ~ -f]
+           flange_a.f ~ +f
+           flange_b.f ~ -f]
     return compose(ODESystem(eqs, t, vars, pars; name = name,
-                             defaults = [port_a.v => v1_0, port_b.v => v2_0]), port_a,
-                   port_b) #port_a.f => +k*delta_s_0, port_b.f => -k*delta_s_0
+                             defaults = [flange_a.v => v_a_0, flange_b.v => v_b_0]), flange_a,
+                   flange_b) #flange_a.f => +k*delta_s_0, flange_b.f => -k*delta_s_0
 end
 
 const ABS = Val(:absolute)
-function Spring(::Val{:absolute}; name, k, s1_0 = 0, s2_0 = 0, v1_0 = 0.0, v2_0 = 0.0,
+function Spring(::Val{:absolute}; name, k, s_a_0 = 0, s_b_0 = 0, v_a_0 = 0.0, v_b_0 = 0.0,
                 l = 0)
     pars = @parameters begin
         k = k
-        s1_0 = s1_0
-        s2_0 = s2_0
-        v1_0 = v1_0
-        v2_0 = v2_0
+        s_a_0 = s_a_0
+        s_b_0 = s_b_0
+        v_a_0 = v_a_0
+        v_b_0 = v_b_0
         l = l
     end
     vars = @variables begin
-        s1(t) = s1_0
-        s2(t) = s2_0
+        s1(t) = s_a_0
+        s2(t) = s_b_0
         f(t) = 0
     end
 
-    @named port_a = MechanicalPort()
-    @named port_b = MechanicalPort()
+    @named flange_a = MechanicalPort()
+    @named flange_b = MechanicalPort()
 
-    eqs = [D(s1) ~ port_a.v
-           D(s2) ~ port_b.v
+    eqs = [D(s1) ~ flange_a.v
+           D(s2) ~ flange_b.v
            f ~ k * (s1 - s2 - l) #delta_s
-           port_a.f ~ +f
-           port_b.f ~ -f]
+           flange_a.f ~ +f
+           flange_b.f ~ -f]
     return compose(ODESystem(eqs, t, vars, pars; name = name,
-                             defaults = [port_a.v => v1_0, port_b.v => v2_0]), port_a,
-                   port_b) #, port_a.f => k * (s1_0 - s2_0 - l)
+                             defaults = [flange_a.v => v_a_0, flange_b.v => v_b_0]), flange_a,
+                   flange_b) #, flange_a.f => k * (s_a_0 - s_b_0 - l)
 end
 
 """
-    Damper(; name, d, v1_0=0.0, v2_0=0.0)
+    Damper(; name, d, v_a_0=0.0, v_b_0=0.0)
 
 Linear 1D translational damper
 
 # Parameters:
 - `d`: [N.s/m] Damping constant
-- `v1_0`: [m/s] Initial value of absolute linear velocity at port_a (default 0 m/s)
-- `v2_0`: [m/s] Initial value of absolute linear velocity at port_b (default 0 m/s)
+- `v_a_0`: [m/s] Initial value of absolute linear velocity at flange_a (default 0 m/s)
+- `v_b_0`: [m/s] Initial value of absolute linear velocity at flange_b (default 0 m/s)
 
 # Connectors:
-- `port_a: 1-dim. translational port on one side of damper`
-- `port_b: 1-dim. translational port on opposite side of damper`
+- `flange_a: 1-dim. translational flange on one side of damper`
+- `flange_b: 1-dim. translational flange on opposite side of damper`
 """
-function Damper(; name, d, v1_0 = 0.0, v2_0 = 0.0)
+function Damper(; name, d, v_a_0 = 0.0, v_b_0 = 0.0)
     pars = @parameters begin
         d = d
-        v1_0 = v1_0
-        v2_0 = v2_0
+        v_a_0 = v_a_0
+        v_b_0 = v_b_0
     end
     vars = @variables begin
-        v(t) = v1_0 - v2_0
+        v(t) = v_a_0 - v_b_0
         f(t) = 0.0
     end
 
-    @named port_a = MechanicalPort()
-    @named port_b = MechanicalPort()
+    @named flange_a = MechanicalPort()
+    @named flange_b = MechanicalPort()
 
-    eqs = [v ~ port_a.v - port_b.v
+    eqs = [v ~ flange_a.v - flange_b.v
            f ~ v * d
-           port_a.f ~ +f
-           port_b.f ~ -f]
+           flange_a.f ~ +f
+           flange_b.f ~ -f]
     return compose(ODESystem(eqs, t, vars, pars; name = name,
-                             defaults = [port_a.v => v1_0, port_b.v => v2_0]), port_a,
-                   port_b) #port_a.f => +(v1_0 - v2_0)*d, port_b.f => -(v1_0 - v2_0)*d
+                             defaults = [flange_a.v => v_a_0, flange_b.v => v_b_0]), flange_a,
+                   flange_b) #flange_a.f => +(v_a_0 - v_b_0)*d, flange_b.f => -(v_a_0 - v_b_0)*d
 end

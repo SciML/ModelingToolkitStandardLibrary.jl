@@ -1,5 +1,5 @@
 # Introduction
-In Physical Network Acausal modeling each physical domain must define a **connector** to combine model components.  This is somewhat analogus to real life connections that are seen in electronics (i.e. battery connected to a wire) or fluid dynamics (i.e. pump connected to a pipe), to name a couple examples.  Each physical domain **connector** defines a minimum of 2 variables, one which is called a *Through* variable, and one which is called an *Across* variable.  Both Modelica and SimScape define these variables in the same way:
+In Physical Network Acausal modeling each physical domain must define a **connector** to combine model components.  Each physical domain **connector** defines a minimum of 2 variables, one which is called a *Through* variable, and one which is called an *Across* variable.  Both Modelica and SimScape define these variables in the same way:
 
 - [Modelica Connectors](https://mbe.modelica.university/components/connectors/#acausal-connection)
 - [SimScape Connectors](https://www.mathworks.com/help/simscape/ug/basic-principles-of-modeling-physical-networks.html#bq89sba-6)
@@ -22,7 +22,7 @@ The idea behind the selection of the **through** variable is that it should be a
 
 
 ### Electrical
-So for the Electrical domain the across variable is *voltage* and the through variable *current*.  Therefore 
+For the Electrical domain the across variable is *voltage* and the through variable *current*.  Therefore 
 
 - Energy Dissipation: 
 ```math
@@ -35,7 +35,7 @@ So for the Electrical domain the across variable is *voltage* and the through va
 ```
 
 ### Translational
-And for the translation domain, choosing *velocity* for the across variable and *force* for the through gives
+For the translation domain, choosing *velocity* for the across variable and *force* for the through gives
 
 - Energy Dissipation: 
 ```math  
@@ -51,7 +51,7 @@ The diagram here shows the similarity of problems in different physical domains.
 
 ![Through and Across Variables](through_across.png)
 
-### Translational using Position Across Variable
+### Translational Connector using *Position* Across Variable
 Now, if we choose *position* for the across variable, a similar relationship can be established, but the patern must be broken.
 
 - Energy Dissipation: 
@@ -77,7 +77,7 @@ We can generate the above relationship with ModelingToolkit and the ModelingTool
 As can be seen, this will give a 1 equation model matching our energy dissipation relationship
 
 ```@example connections
-using ModelingToolkitStandardLibrary.Electrical, ModelingToolkit, OrdinaryDiffEq
+using ModelingToolkitStandardLibrary.Electrical, ModelingToolkit, DifferentialEquations
 using Plots
 
 @parameters t
@@ -103,7 +103,7 @@ The solution shows what we would expect, a non-linear disipation of voltage and 
 
 ```@example connections
 prob = ODEProblem(sys, [1.0], (0, 10.0), [])
-sol = solve(prob, ImplicitMidpoint(); dt=0.01)
+sol = solve(prob)
 
 p1=plot(sol, idxs=[capacitor.v])
 p2=plot(sol, idxs=[resistor.i])
@@ -125,13 +125,13 @@ Now using the Translational library based on velocity, we can see the same relat
 using ModelingToolkitStandardLibrary
 const TV = ModelingToolkitStandardLibrary.Mechanical.Translational
 
-@named damping = TV.Damper(d=1, v1_0=1)
+@named damping = TV.Damper(d=1, v_a_0=1)
 @named body = TV.Mass(m=1, v_0=1)
 @named ground = TV.Fixed()
 
 eqs = [
-    connect(damping.port_a, body.port)
-    connect(ground.port, damping.port_b)
+    connect(damping.flange_a, body.flange)
+    connect(ground.flange, damping.flange_b)
     ]
 
 @named model = ODESystem(eqs, t; systems=[damping, body, ground])
@@ -145,7 +145,7 @@ nothing # hide
 As expected we have a similar solution...
 ```@example connections
 prob = ODEProblem(sys, [], (0, 10.0), [])
-sol_v = solve(prob, ImplicitMidpoint(); dt=0.01)
+sol_v = solve(prob)
 
 p1=plot(sol_v, idxs=[body.v])
 p2=plot(sol_v, idxs=[damping.f])
@@ -162,13 +162,13 @@ Now, let's consider the position based approach.  We can build the same model wi
 ```@example connections
 const TP = ModelingToolkitStandardLibrary.Mechanical.TranslationalPosition
 
-@named damping = TP.Damper(d=1, v1_0=1)
+@named damping = TP.Damper(d=1, v_a_0=1)
 @named body =    TP.Mass(m=1, v_0=1)
 @named ground =  TP.Fixed(s_0=0)
 
     eqs = [
-        connect(damping.port_a, body.port)
-        connect(ground.port, damping.port_b)
+        connect(damping.flange_a, body.flange)
+        connect(ground.flange, damping.flange_b)
         ]
 
 @named model = ODESystem(eqs, t; systems=[damping, body, ground])
@@ -182,7 +182,7 @@ As can be seen, we get exactly the same result.  The only difference here is tha
 
 ```@example connections
 prob = ODEProblem(sys, [], (0, 10.0), [])
-sol_p = solve(prob, ImplicitMidpoint(); dt=0.01)
+sol_p = solve(prob)
 
 p1=plot(sol_p, idxs=[body.v])
 p2=plot(sol_p, idxs=[damping.f])
@@ -217,20 +217,20 @@ The main difference between `ModelingToolkitStandardLibrary.Mechanical.Translati
 In this problem we have a mass, spring, and damper which are connected to a fixed point.  Let's see how each component is defined.
 
 #### Damper
-The damper will connect the flange/port 1 (`port_a`) to the mass, and flange/port 2 (`port_b`) to the fixed point.  For both position and velocity based domains, we set the damping constant `d=1` and `v1_0=1` and leave the default for `v2_0` at 0.  For the position domain we also need to set the initial positions for `port_a` and `port_b`.
+The damper will connect the flange/flange 1 (`flange_a`) to the mass, and flange/flange 2 (`flange_b`) to the fixed point.  For both position and velocity based domains, we set the damping constant `d=1` and `v_a_0=1` and leave the default for `v_b_0` at 0.  For the position domain we also need to set the initial positions for `flange_a` and `flange_b`.
 
 ```@example connections
-@named dv = TV.Damper(d=1, v1_0=1)
-@named dp = TP.Damper(d=1, v1_0=1, s1_0=3, s2_0=1)
+@named dv = TV.Damper(d=1, v_a_0=1)
+@named dp = TP.Damper(d=1, v_a_0=1, s_a_0=3, s_b_0=1)
 nothing # hide
 ```
 
 #### Spring
-The spring will connect the flange/port 1 (`port_a`) to the mass, and flange/port 2 (`port_b`) to the fixed point.  For both position and velocity based domains, we set the spring constant `k=1`.  The velocity domain then requires the initial velocity `v1_0` and initial spring stretch `delta_s_0`.  The position domain instead needs the initial positions for `port_a` and `port_b` and the natural spring length `l`.  
+The spring will connect the flange/flange 1 (`flange_a`) to the mass, and flange/flange 2 (`flange_b`) to the fixed point.  For both position and velocity based domains, we set the spring constant `k=1`.  The velocity domain then requires the initial velocity `v_a_0` and initial spring stretch `delta_s_0`.  The position domain instead needs the initial positions for `flange_a` and `flange_b` and the natural spring length `l`.  
 
 ```@example connections
-@named sv = TV.Spring(k=1, v1_0=1, delta_s_0=1)
-@named sp = TP.Spring(k=1, s1_0=3, s2_0=1, l=1)
+@named sv = TV.Spring(k=1, v_a_0=1, delta_s_0=1)
+@named sp = TP.Spring(k=1, s_a_0=3, s_b_0=1, l=1)
 nothing # hide
 ```
 
@@ -255,13 +255,13 @@ nothing # hide
 ### Comparison
 As can be seen, the position based domain requires more initial condition information to be properly defined since the absolute position information is required.  Thereore based on the model being described, it may be more natural to choose one domain over the other.  
 
-Let's define a quick function to simplify and solve the 2 different systems.
+Let's define a quick function to simplify and solve the 2 different systems.  Note we will solve with a fixed time step and a set tolerance to compare the numerical differences.
 
 ```@example connections
 function simplify_and_solve(damping, spring, body, ground)
 
-       eqs = [connect(spring.port_a, body.port, damping.port_a)
-              connect(spring.port_b, damping.port_b, ground.port)
+       eqs = [connect(spring.flange_a, body.flange, damping.flange_a)
+              connect(spring.flange_b, damping.flange_b, ground.flange)
               ]
 
        @named model = ODESystem(eqs, t; systems = [ground, body, spring, damping])
@@ -271,9 +271,9 @@ function simplify_and_solve(damping, spring, body, ground)
        println.(full_equations(sys))
 
        prob = ODEProblem(sys, [], (0, 10.0), [])
-       sol = solve(prob, ImplicitMidpoint(), dt=0.01)
+       sol = solve(prob; dt=0.1, adaptive=false, reltol=1e-9, abstol=1e-9)
 
-       return sol,sys
+       return sol
 end
 nothing # hide
 ```
@@ -281,14 +281,14 @@ nothing # hide
 Now let's solve the velocity domain model
 
 ```@example connections
-solv,sysv=simplify_and_solve(dv, sv, bv, gv);
+solv=simplify_and_solve(dv, sv, bv, gv);
 nothing # hide
 ```
 
 And the position domain model
 
 ```@example connections
-solp,sysp=simplify_and_solve(dp, sp, bp, gp);
+solp=simplify_and_solve(dp, sp, bp, gp);
 nothing # hide
 ```
 
@@ -307,7 +307,7 @@ But, what if we wanted to plot the mass position?  This is easy for the position
 
 ```@example connections
 plot(ylabel="mass position [m]")
-plot!(solv.t, solv[sv.delta_s] .+ 1 .+ 1, label="sv.delta_s(t) + 1 + 1")
+plot!(solv, idxs=[sv.delta_s + 1 + 1])
 plot!(solp, idxs=[bp.s])
 savefig("mass_position.png"); nothing # hide
 ```
@@ -322,8 +322,8 @@ One may ask then what is the trade off in terms of numerical acuracy?  When we l
 
 ```math
 \begin{aligned}
-m \cdot \dot{v} +  d \cdot v + k \cdot delta_s = 0  \\
-\dot{delta_s} = v
+m \cdot \dot{v} +  d \cdot v + k \cdot \Delta s = 0  \\
+\dot{\Delta s} = v
 \end{aligned}
 ```
 
@@ -331,7 +331,7 @@ And for the position domain are
 
 ```math
 \begin{aligned}
-m \cdot \dot{v} +  d \cdot v + k \cdot (s - s2_0 - l) = 0   \\
+m \cdot \dot{v} +  d \cdot v + k \cdot (s - s_{b_0} - l) = 0   \\
 \dot{s} = v
 \end{aligned}
 ```
@@ -339,14 +339,16 @@ m \cdot \dot{v} +  d \cdot v + k \cdot (s - s2_0 - l) = 0   \\
 By definition the spring stretch is
 
 ```math
-delta_s = s - s2_0 - l
+\Delta s = s - s_{b_0} - l
 ```
 
 Which means both systems are actually solving the same exact system.  We can plot the numerical difference between the 2 systems and see the result is negligible.
 
 ```@example connections
 plot(title="numerical difference: vel. vs. pos. domain", xlabel="time [s]", ylabel="solv[bv.v] .- solp[bp.v]")
-plot!(solv.t, solv[bv.v] .- solp[bp.v], label="")
+time = 0:0.1:10
+plot!(time, (solv(time)[bv.v] .- solp(time)[bp.v]), label="")
+Plots.ylims!(-1e-15, 1e-15)
 savefig("err.png"); nothing # hide
 ```
 

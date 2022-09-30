@@ -7,11 +7,11 @@ import ModelingToolkitStandardLibrary.Mechanical.TranslationalPosition as TP
 D = Differential(t)
 
 @testset "spring damper mass fixed" begin
-    @named dv = TV.Damper(d = 1, v1_0 = 1)
-    @named dp = TP.Damper(d = 1, v1_0 = 1, s1_0 = 3, s2_0 = 1)
+    @named dv = TV.Damper(d = 1, v_a_0 = 1)
+    @named dp = TP.Damper(d = 1, v_a_0 = 1, s_a_0 = 3, s_b_0 = 1)
 
-    @named sv = TV.Spring(k = 1, v1_0 = 1, delta_s_0 = 1)
-    @named sp = TP.Spring(k = 1, s1_0 = 3, s2_0 = 1, l = 1)
+    @named sv = TV.Spring(k = 1, v_a_0 = 1, delta_s_0 = 1)
+    @named sp = TP.Spring(k = 1, s_a_0 = 3, s_b_0 = 1, l = 1)
 
     @named bv = TV.Mass(m = 1, v_0 = 1)
     @named bp = TP.Mass(m = 1, v_0 = 1, s_0 = 3)
@@ -20,8 +20,8 @@ D = Differential(t)
     @named gp = TP.Fixed(s_0 = 1)
 
     function simplify_and_solve(damping, spring, body, ground)
-        eqs = [connect(spring.port_a, body.port, damping.port_a)
-               connect(spring.port_b, damping.port_b, ground.port)]
+        eqs = [connect(spring.flange_a, body.flange, damping.flange_a)
+               connect(spring.flange_b, damping.flange_b, ground.flange)]
 
         @named model = ODESystem(eqs, t; systems = [ground, body, spring, damping])
 
