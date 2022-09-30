@@ -8,7 +8,7 @@ using ModelingToolkit, Symbolics, IfElse
 @parameters t
 D = Differential(t)
 
-export Port
+export MechanicalPort
 include("utils.jl")
 
 export Body, Spring, Damper, Fixed

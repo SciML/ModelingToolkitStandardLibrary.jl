@@ -7,7 +7,7 @@ Fixes a port position (velocity = 0)
 - `port: 1-dim. translational port`
 """
 function Fixed(; name)
-    @named port = Port()
+    @named port = MechanicalPort()
     eqs = [port.v ~ 0]
     return compose(ODESystem(eqs, t, [], []; name = name, defaults = [port.v => 0]), port)
 end
@@ -42,7 +42,7 @@ function Mass(; name, v_0 = 0.0, m, s_0 = nothing, g = nothing)
         f(t) = 0
     end
 
-    @named port = Port()
+    @named port = MechanicalPort()
 
     eqs = [port.v ~ v
            port.f ~ f]
@@ -101,8 +101,8 @@ function Spring(::Val{:relative}; name, k, delta_s_0 = 0.0, v1_0 = 0.0, v2_0 = 0
         f(t) = 0
     end
 
-    @named port_a = Port()
-    @named port_b = Port()
+    @named port_a = MechanicalPort()
+    @named port_b = MechanicalPort()
 
     eqs = [D(delta_s) ~ port_a.v - port_b.v
            f ~ k * delta_s
@@ -128,8 +128,8 @@ function Spring(::Val{:absolute}; name, k, s1_0 = 0, s2_0 = 0, v1_0 = 0.0, v2_0 
         f(t) = 0
     end
 
-    @named port_a = Port()
-    @named port_b = Port()
+    @named port_a = MechanicalPort()
+    @named port_b = MechanicalPort()
 
     eqs = [D(s1) ~ port_a.v
            D(s2) ~ port_b.v
@@ -165,8 +165,8 @@ function Damper(; name, d, v1_0 = 0.0, v2_0 = 0.0)
         f(t) = 0.0
     end
 
-    @named port_a = Port()
-    @named port_b = Port()
+    @named port_a = MechanicalPort()
+    @named port_b = MechanicalPort()
 
     eqs = [v ~ port_a.v - port_b.v
            f ~ v * d
