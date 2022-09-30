@@ -9,7 +9,8 @@ Fixes a flange position (velocity = 0)
 function Fixed(; name)
     @named flange = MechanicalPort()
     eqs = [flange.v ~ 0]
-    return compose(ODESystem(eqs, t, [], []; name = name, defaults = [flange.v => 0]), flange)
+    return compose(ODESystem(eqs, t, [], []; name = name, defaults = [flange.v => 0]),
+                   flange)
 end
 
 """
@@ -112,7 +113,8 @@ function Spring(::Val{:relative}; name, k, delta_s_0 = 0.0, v_a_0 = 0.0, v_b_0 =
            flange_a.f ~ +f
            flange_b.f ~ -f]
     return compose(ODESystem(eqs, t, vars, pars; name = name,
-                             defaults = [flange_a.v => v_a_0, flange_b.v => v_b_0]), flange_a,
+                             defaults = [flange_a.v => v_a_0, flange_b.v => v_b_0]),
+                   flange_a,
                    flange_b) #flange_a.f => +k*delta_s_0, flange_b.f => -k*delta_s_0
 end
 
@@ -142,7 +144,8 @@ function Spring(::Val{:absolute}; name, k, s_a_0 = 0, s_b_0 = 0, v_a_0 = 0.0, v_
            flange_a.f ~ +f
            flange_b.f ~ -f]
     return compose(ODESystem(eqs, t, vars, pars; name = name,
-                             defaults = [flange_a.v => v_a_0, flange_b.v => v_b_0]), flange_a,
+                             defaults = [flange_a.v => v_a_0, flange_b.v => v_b_0]),
+                   flange_a,
                    flange_b) #, flange_a.f => k * (s_a_0 - s_b_0 - l)
 end
 
@@ -179,6 +182,7 @@ function Damper(; name, d, v_a_0 = 0.0, v_b_0 = 0.0)
            flange_a.f ~ +f
            flange_b.f ~ -f]
     return compose(ODESystem(eqs, t, vars, pars; name = name,
-                             defaults = [flange_a.v => v_a_0, flange_b.v => v_b_0]), flange_a,
+                             defaults = [flange_a.v => v_a_0, flange_b.v => v_b_0]),
+                   flange_a,
                    flange_b) #flange_a.f => +(v_a_0 - v_b_0)*d, flange_b.f => -(v_a_0 - v_b_0)*d
 end

@@ -1,5 +1,4 @@
 function Link(; name, m, l, I, g)
-    
     pars = @parameters begin
         m = m
         l = l
@@ -12,7 +11,7 @@ function Link(; name, m, l, I, g)
         dA(t) = 0
         ddA(t) = 0
 
-        x_cm(t) = l/2
+        x_cm(t) = l / 2
         y_cm(t) = 0
 
         dx_cm(t) = 0
@@ -26,42 +25,32 @@ function Link(; name, m, l, I, g)
 
         x1(t) = 0
         dx1(t) = 0
-        
     end
 
-    
     @named TX1 = MechanicalPort()
-    
 
-    eqs = [
+    eqs = [D(x_cm) ~ dx_cm
+           D(y_cm) ~ dy_cm
+           D(dx_cm) ~ ddx_cm
+           D(dy_cm) ~ ddy_cm
+           D(A) ~ dA
+           D(dA) ~ ddA
 
-        D(x_cm) ~ dx_cm
-        D(y_cm) ~ dy_cm
+           # x forces
+           m * ddx_cm ~ fx1
 
-        D(dx_cm) ~ ddx_cm
-        D(dy_cm) ~ ddy_cm
+           # y forces
+           m * ddy_cm ~ m * g + fy1
 
-        D(A) ~ dA
-        D(dA) ~ ddA
+           # torques
+           I * ddA ~ m * g * (l / 2) * cos(A)
 
-        # x forces
-        m*ddx_cm ~ fx1
+           # geometry
+           x_cm ~ l * cos(A) / 2 + x1
+           y_cm ~ l * sin(A) / 2
+           TX1.f ~ fx1
+           D(x1) ~ TX1.v]
 
-        # y forces
-        m*ddy_cm ~ m*g + fy1
-
-        # torques
-        I * ddA ~ m * g * (l/2) * cos(A)
-
-        # geometry
-        x_cm ~ l * cos(A)/2 + x1
-        y_cm ~ l * sin(A)/2
-        
-        TX1.f ~ fx1
-        D(x1) ~ TX1.v
-        
-    ]
-
-
-    return ODESystem(eqs, t, vars, pars; name = name, systems = [TX1], defaults = [TX1.v => 0])
+    return ODESystem(eqs, t, vars, pars; name = name, systems = [TX1],
+                     defaults = [TX1.v => 0])
 end

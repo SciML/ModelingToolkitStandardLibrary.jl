@@ -59,7 +59,8 @@ function Mass(; name, m, s_0 = 0.0, v_0 = 0.0)
 end
 
 const REL = Val(:relative)
-function Spring(::Val{:relative}; name, k, v_a_0 = 0.0, v_b_0 = 0.0, delta_s0 = 0, s_a_0 = 0,
+function Spring(::Val{:relative}; name, k, v_a_0 = 0.0, v_b_0 = 0.0, delta_s0 = 0,
+                s_a_0 = 0,
                 s_b_0 = 0)
     pars = @parameters begin
         k = k
