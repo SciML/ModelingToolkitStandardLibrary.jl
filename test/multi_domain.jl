@@ -193,6 +193,7 @@ end
     @named env = FixedTemperature(T = 273.15 + 20)
     connections = [connect(source.n, ground.g, heating_resistor.n)
                    connect(source.p, heating_resistor.p)
+                   connect(voltage_sine.output, source.V)
                    connect(heating_resistor.heat_port, thermal_conductor.port_a)
                    connect(thermal_conductor.port_b, env.port)]
 
@@ -207,7 +208,8 @@ end
                              ])
     sys = structural_simplify(model)
 
-    prob = ODAEProblem(sys, Pair[], (0, 6.0))
+    prob = ODEProblem(sys, Pair[], (0, 6.0))
     sol = solve(prob, Rodas4())
     @test sol.retcode == :Success
+    @test sol[source.v * source.i] == -sol[env.port.Q_flow]
 end

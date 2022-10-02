@@ -186,7 +186,7 @@ function HeatingResistor(; name, R_ref = 1.0, T_ref = 300.15, alpha = 0)
         T_ref = T_ref
         alpha = alpha
     end
-    @variables R(t)
+    @variables R(t) = R_ref
     eqs = [R ~ R_ref * (1 + alpha * (heat_port.T - T_ref))
            heat_port.Q_flow ~ -v * i # -LossPower
            v ~ i * R]
