@@ -191,7 +191,7 @@ end
     @named heating_resistor = HeatingResistor(R_ref = 100, alpha = 1e-3, T_ref = 293.15)
     @named thermal_conductor = ThermalConductor(G = 50)
     @named env = FixedTemperature(T = 273.15 + 20)
-    connections = [connect(source.n, ground.g, heatingResistor.n)
+    connections = [connect(source.n, ground.g, heating_resistor.n)
                    connect(source.p, heating_resistor.p)
                    connect(heating_resistor.heat_port, thermal_conductor.port_a)
                    connect(thermal_conductor.port_b, env.port)]
