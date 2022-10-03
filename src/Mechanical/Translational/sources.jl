@@ -1,3 +1,4 @@
+#=
 function SineForce(; name, amp, freq)
     @named flange = MechanicalPort()
 
@@ -11,3 +12,4 @@ function SineForce(; name, amp, freq)
     ]
     compose(ODESystem(eqs, t, vars, pars; name = name, defaults = [flange.v => 0]), flange)
 end
+=#
