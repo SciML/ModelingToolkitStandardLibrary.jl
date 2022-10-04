@@ -157,9 +157,9 @@ end
                                  systems = [resistor, capacitor, source, ground, voltage])
         sys = structural_simplify(model)
         prob = ODAEProblem(sys, [capacitor.v => 10.0], (0.0, 10.0))
-        sol = solve(prob, Rodas5())
-        @test sol.retcode == :Success
         sol = solve(prob, Tsit5())
+        @test sol.retcode == :Success
+        sol = solve(prob, Rodas4())
         @test sol.retcode == :Success
 
         # Plots.plot(sol; vars=[voltage.v, capacitor.v])
