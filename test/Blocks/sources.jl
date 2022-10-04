@@ -102,7 +102,6 @@ end
     sys = structural_simplify(iosys)
     prob = ODEProblem(sys, Pair[int.x => 0.0], (0.0, 10.0))
     sol = solve(prob, Rodas4())
-
     @test sol.retcode == :Success
     @test sol[src.output.u]≈cosine.(sol.t, frequency, amplitude, phase, offset, start_time) atol=1e-3
 
@@ -169,7 +168,6 @@ end
     sys = structural_simplify(iosys)
     prob = ODEProblem(sys, Pair[int.x => 0.0], (0.0, 10.0))
     sol = solve(prob, Rodas4())
-
     @test sol.retcode == :Success
     @test sol[src.output.u]≈ramp.(sol.t, offset, height, duration, start_time) atol=1e-3
 
@@ -365,7 +363,6 @@ end
     sys = structural_simplify(iosys)
     prob = ODEProblem(sys, Pair[int.x => 0.0], (0.0, 10.0))
     sol = solve(prob, Rodas4())
-
     @test sol.retcode == :Success
     @test sol[src.output.u]≈exp_sine.(sol.t, amplitude, frequency, damping, phase,
                                       start_time) atol=1e-3
