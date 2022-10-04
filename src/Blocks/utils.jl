@@ -1,8 +1,8 @@
 @connector function RealInput(; name, nin = 1, u_start = nin > 1 ? zeros(nin) : 0.0)
     if nin == 1
-        @variables u(t)=u_start [input = true]
+        @variables u(t) = u_start
     else
-        @variables u(t)[1:nin]=u_start [input = true]
+        @variables u(t)[1:nin] = u_start
         u = collect(u)
     end
     ODESystem(Equation[], t, [u...], []; name = name)
@@ -22,9 +22,9 @@ Connector with one input signal of type Real.
 
 @connector function RealOutput(; name, nout = 1, u_start = nout > 1 ? zeros(nout) : 0.0)
     if nout == 1
-        @variables u(t)=u_start [output = true]
+        @variables u(t) = u_start
     else
-        @variables u(t)[1:nout]=u_start [output = true]
+        @variables u(t)[1:nout] = u_start
         u = collect(u)
     end
     ODESystem(Equation[], t, [u...], []; name = name)
