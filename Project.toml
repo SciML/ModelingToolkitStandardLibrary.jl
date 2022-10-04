@@ -12,7 +12,7 @@ Symbolics = "0c5d862f-8b57-4792-8d23-62f2024744c7"
 
 [compat]
 IfElse = "0.1"
-ModelingToolkit = "8.24"
+ModelingToolkit = "8.26"
 OffsetArrays = "1"
 Symbolics = "4.9"
 julia = "1.6"

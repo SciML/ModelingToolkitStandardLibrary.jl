@@ -6,6 +6,7 @@ pages = [
         "Thermal Conduction Model" => "tutorials/thermal_model.md",
         "DC Motor with Speed Controller" => "tutorials/dc_motor_pi.md",
     ],
+    "About Acausal Connections" => "connectors/connections.md",
     "API" => [
         "Basic Blocks" => "API/blocks.md",
         "Electrical Components" => "API/electrical.md",
