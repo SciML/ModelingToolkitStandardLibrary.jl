@@ -79,6 +79,7 @@ L = P*(-C) # Add the minus sign to build the negative feedback into the controll
 
 To obtain the transfer function between two analysis points, we call `linearize`
 ```@example LINEAR_ANALYSIS
+using ModelingToolkit # hide
 matrices_PS = linearize(sys, :plant_input, :plant_output)[1]
 ```
 this particular transfer function should be equivalent to the linear system `P(s)S(s)`, i.e., equivalent to

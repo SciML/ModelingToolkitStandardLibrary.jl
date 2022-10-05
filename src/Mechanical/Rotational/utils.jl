@@ -118,7 +118,7 @@ Partial model for a component with one rotational 1-dim. shaft flange and a supp
 function PartialElementaryOneFlangeAndSupport2(; name, use_support = false)
     @named flange = Flange()
     sys = [flange]
-    @variables phi_support(t)
+    @variables phi_support(t) = 0.0
     if use_support
         @named support = Support()
         eqs = [support.phi ~ phi_support

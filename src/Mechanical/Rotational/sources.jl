@@ -1,5 +1,5 @@
 """
-    Torque(;name) 
+    Torque(; name, use_support=false) 
 
 Input signal acting as external torque on a flange
 
