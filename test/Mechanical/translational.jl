@@ -70,7 +70,8 @@ end
                connect(spring.flange_a, body.flange, damping.flange_a)
                connect(spring.flange_b, damping.flange_b, ground.flange)]
 
-        @named model = ODESystem(eqs, t; systems = [ground, body, spring, damping, f, source])
+        @named model = ODESystem(eqs, t;
+                                 systems = [ground, body, spring, damping, f, source])
 
         sys = structural_simplify(model)
 
@@ -86,7 +87,7 @@ end
     solp = simplify_and_solve(dp, sp, bp, gp, fp, source)
 
     for sol in (solv, solp)
-        lb, ub = extrema(solv(15:0.05:20, idxs=bv.v).u)
+        lb, ub = extrema(solv(15:0.05:20, idxs = bv.v).u)
         @test -lb≈ub atol=1e-2
         @test -0.11 < lb < -0.1
     end

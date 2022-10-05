@@ -8,5 +8,6 @@ function Force(; name)
     eqs = [
         flange.f ~ -f.u,
     ]
-    compose(ODESystem(eqs, t, vars, pars; name = name, defaults = [flange.v => 0]), [flange, f])
+    compose(ODESystem(eqs, t, vars, pars; name = name, defaults = [flange.v => 0]),
+            [flange, f])
 end
