@@ -1,15 +1,13 @@
-#=
-function SineForce(; name, amp, freq)
-    @named flange = MechanicalPort()
+using ModelingToolkitStandardLibrary.Blocks
 
-    pars = @parameters begin
-        amp = amp
-        freq = freq
-    end
-    vars = []
+function Force(; name)
+    @named flange = MechanicalPort()
+    @named f = RealInput()
+
+    vars = pars = []
     eqs = [
-        flange.f ~ amp * sin(2 * π * t * freq),
+        flange.f ~ -f.u,
     ]
-    compose(ODESystem(eqs, t, vars, pars; name = name, defaults = [flange.v => 0]), flange)
+    compose(ODESystem(eqs, t, vars, pars; name = name, defaults = [flange.v => 0]),
+            [flange, f])
 end
-=#
