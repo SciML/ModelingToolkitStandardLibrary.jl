@@ -17,7 +17,7 @@ include("components.jl")
 export PositionSensor
 include("sensors.jl")
 
-#export SineForce
+export Force
 include("sources.jl")
 
 end
