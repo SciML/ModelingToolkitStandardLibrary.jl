@@ -7,6 +7,8 @@ using ModelingToolkitStandardLibrary.Magnetic.FluxTubes
 using ModelingToolkitStandardLibrary.Electrical
 using ModelingToolkitStandardLibrary.Thermal
 
+ENV["GKSwstype"] = "100"
+
 include("pages.jl")
 
 makedocs(sitename = "ModelingToolkitStandardLibrary.jl",
