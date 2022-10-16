@@ -17,7 +17,7 @@ L = 4.5e-3 # [H]
 k = 0.5 # [N.m/A]
 J = 0.02 # [kg.m²]
 f = 0.01 # [N.m.s/rad]
-tau_L_step = -3 # [N.m]
+tau_L_step = -0.3 # [N.m]
 nothing # hide
 ```
 
@@ -27,7 +27,7 @@ The actual model can now be composed.
 @named ground = Ground()
 @named source = Voltage()
 @named ref = Blocks.Step(height = 1, start_time = 0)
-@named pi_controller = Blocks.LimPI(k = 1.1, T = 0.035, u_max = 0.6, Ta = 0.035)
+@named pi_controller = Blocks.LimPI(k = 1.1, T = 0.035, u_max = 10, Ta = 0.035)
 @named feedback = Blocks.Feedback()
 @named R1 = Resistor(R = R)
 @named L1 = Inductor(L = L)
