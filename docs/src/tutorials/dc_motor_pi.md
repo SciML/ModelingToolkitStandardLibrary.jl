@@ -1,6 +1,13 @@
 # DC Motor with PI-controller
-In this example a PI-controller is setup for speed control of a DC-motor. First the needed packages 
-are imported and the parameters of the model defined.
+In this example a PI-controller is setup for speed control of a DC-motor. An equivalent circuit diagram is depicted below.
+
+![DC-motor](../assets/dc_motor.svg)
+
+The electrical part consists of a resistance and inductance. The coupling between the electrical and rotational domain is done via an electro motive force (EMF) component. The voltage across the EMF is proportional to the angular velocity and the current is proportional to the torque. On the mechanical side viscous friction in e.g. a bearing and the inertia of the shaft is modelled.
+
+A PI-controller with anti windup measure should be used as a speed controller. A simulation is performed to verify the tracking performance of the controller and the disturbance rejection capabilities. 
+
+First the needed packages are imported and the parameters of the model defined.
 
 ```@example dc_motor_pi
 using ModelingToolkit
@@ -12,12 +19,12 @@ using Plots
 
 @parameters t
 
-R = 0.5 # [Ohm]
-L = 4.5e-3 # [H]
-k = 0.5 # [N.m/A]
-J = 0.02 # [kg.m²]
-f = 0.01 # [N.m.s/rad]
-tau_L_step = -0.3 # [N.m]
+R = 0.5 # [Ohm] armature resistance
+L = 4.5e-3 # [H] armature inductance
+k = 0.5 # [N.m/A] motor constant
+J = 0.02 # [kg.m²] inertia
+f = 0.01 # [N.m.s/rad] friction factor
+tau_L_step = -0.3 # [N.m] amplitude of the load torque step 
 nothing # hide
 ```
 
