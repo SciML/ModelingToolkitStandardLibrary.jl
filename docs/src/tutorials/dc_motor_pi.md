@@ -87,7 +87,4 @@ p1 = Plots.plot(sol.t, sol[inertia.w], ylabel = "Angular Vel. in rad/s",
 Plots.plot!(sol.t, sol[ref.output.u], label = "Reference")
 p2 = Plots.plot(sol.t, sol[load.tau.u], ylabel = "Disturbance in Nm", label = "")
 Plots.plot(p1, p2, layout = (2, 1))
-nothing # hide
 ```
-
-![DC Motor with speed controller](dc_motor_pi.png)
