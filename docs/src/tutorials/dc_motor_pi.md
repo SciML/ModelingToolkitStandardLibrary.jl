@@ -1,7 +1,7 @@
 # DC Motor with PI-controller
 In this example a PI-controller is setup for speed control of a DC-motor. An equivalent circuit diagram is depicted below.
 
-![DC-motor](../assets/dc_motor.svg)
+![DC-motor](https://user-images.githubusercontent.com/50108075/196108356-0e8605e3-61a9-4006-8559-786252e55928.png)
 
 The electrical part consists of a resistance and inductance. The coupling between the electrical and rotational domain is done via an electro motive force (EMF) component. The voltage across the EMF is proportional to the angular velocity and the current is proportional to the torque. On the mechanical side viscous friction in e.g. a bearing and the inertia of the shaft is modelled.
 
