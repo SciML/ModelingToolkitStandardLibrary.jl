@@ -106,7 +106,7 @@ is given by `Y(s)/U(s) = `
 ─────────────────
 s² + 2d*w*s + w^2
 ```
-Critical damping corresponds to `d=1`, which yields the fastest step response without overshoot, d < 1` results in an under-damped filter while `d > 1` results in an over-damped filter.
+Critical damping corresponds to `d=1`, which yields the fastest step response without overshoot, `d < 1` results in an underdamped filter while `d > 1` results in an overdamped filter.
 `d = 1/√2` corresponds to a Butterworth filter of order 2 (maximally flat frequency response).
 
 # Parameters:
