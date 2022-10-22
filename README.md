@@ -1,8 +1,7 @@
 # ModelingToolkitStandardLibrary.jl
 
 [![Join the chat at https://julialang.zulipchat.com #sciml-bridged](https://img.shields.io/static/v1?label=Zulip&message=chat&color=9558b2&labelColor=389826)](https://julialang.zulipchat.com/#narrow/stream/279055-sciml-bridged)
-[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](http://mtkstdlib.sciml.ai/stable/)
-[![Global Docs](https://img.shields.io/badge/docs-SciML-blue.svg)](https://docs.sciml.ai/dev/modules/ModelingToolkitStandardLibrary/)
+[![Global Docs](https://img.shields.io/badge/docs-SciML-blue.svg)](https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/)
 
 [![codecov](https://codecov.io/gh/SciML/ModelingToolkitStandardLibrary.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/SciML/ModelingToolkitStandardLibrary.jl)
 [![Build Status](https://github.com/SciML/ModelingToolkitStandardLibrary.jl/workflows/CI/badge.svg)](https://github.com/SciML/ModelingToolkitStandardLibrary.jl/actions?query=workflow%3ACI)
@@ -26,23 +25,23 @@ import Pkg; Pkg.add("ModelingToolkitStandardLibrary")
 ## Tutorials and Documentation
 
 For information on using the package,
-[see the stable documentation](https://mtkstdlib.sciml.ai/stable/). Use the
-[in-development documentation](https://mtkstdlib.sciml.ai/dev/) for the version of
+[see the stable documentation](https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/). Use the
+[in-development documentation](https://docs.sciml.ai/ModelingToolkitStandardLibrary/dev/) for the version of
 the documentation, which contains the unreleased features.
 
 ## Libraries
 
 The following are the constituant libraries of the ModelingToolkit Standard Library.
 
-- [Basic Blocks](http://mtkstdlib.sciml.ai/dev/API/blocks/)
-- [Mechanical Components](http://mtkstdlib.sciml.ai/dev/API/mechanical/)
-- [Electrical Components](http://mtkstdlib.sciml.ai/dev/API/electrical/)
-- [Magnetic Components](http://mtkstdlib.sciml.ai/dev/API/magnetic/)
-- [Thermal Components](http://mtkstdlib.sciml.ai/dev/API/thermal/)
+- [Basic Blocks](https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/API/blocks/)
+- [Mechanical Components](https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/API/mechanical/)
+- [Electrical Components](https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/API/electrical/)
+- [Magnetic Components](https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/API/magnetic/)
+- [Thermal Components](https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/API/thermal/)
 
 ## Example
 
-The following is the [RC Circuit Demonstration](http://mtkstdlib.sciml.ai/dev/tutorials/rc_circuit/):
+The following is the [RC Circuit Demonstration](https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/tutorials/rc_circuit/):
 
 ```julia
 using ModelingToolkit, OrdinaryDiffEq, Plots

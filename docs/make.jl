@@ -28,7 +28,7 @@ makedocs(sitename = "ModelingToolkitStandardLibrary.jl",
              ModelingToolkitStandardLibrary.Electrical,
              ModelingToolkitStandardLibrary.Thermal],
          format = Documenter.HTML(assets = ["assets/favicon.ico"],
-                                  canonical = "https://mtkstdlib.sciml.ai/stable/"),
+                                  canonical = "https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/"),
          pages = pages)
 
 deploydocs(repo = "github.com/SciML/ModelingToolkitStandardLibrary.jl";

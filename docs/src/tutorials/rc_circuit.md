@@ -1,7 +1,7 @@
 # RC Circuit Model
 
 This tutorial is a simplified version of the [RC circuit tutorial in the
-`ModelingToolkit.jl` documentation](https://mtk.sciml.ai/dev/tutorials/acausal_components/).
+`ModelingToolkit.jl` documentation](https://docs.sciml.ai/ModelingToolkit/stable/tutorials/acausal_components/).
 In that tutorial, the full RC circuit is built from scratch. Here, we will use the
 components of the `Electrical` model in the ModelingToolkit Standard Library to simply
 connect pre-made components and simulate the model.
