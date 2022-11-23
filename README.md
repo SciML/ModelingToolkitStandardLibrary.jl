@@ -67,9 +67,9 @@ rc_eqs = [
 
 @named rc_model = ODESystem(rc_eqs, t, systems=[resistor, capacitor, constant, source, ground])
 sys = structural_simplify(rc_model)
-prob = ODAEProblem(sys, Pair[], (0, 10.0))
+prob = ODEProblem(sys, Pair[], (0, 10.0))
 sol = solve(prob, Tsit5())
-plot(sol, vars = [capacitor.v, resistor.i],
+plot(sol, idxs = [capacitor.v, resistor.i],
      title = "RC Circuit Demonstration",
      labels = ["Capacitor Voltage" "Resistor Current"])
 savefig("plot.png")
