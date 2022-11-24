@@ -331,11 +331,16 @@ function open_loop(sys, ap_name::Symbol; kwargs...)
 end
 
 """
-    ModelingToolkit.linearize(sys, input_name::Symbol, output_name::Symbol)
+    ModelingToolkit.linearize(sys, input_name::Symbol, output_name::Symbol; kwargs...)
 
 Linearize a system between two analysis points. To get a loop-transfer function, see [`get_looptransfer`](@ref)
 """
-function ModelingToolkit.linearize(sys, input_name::Symbol, output_name::Symbol;
+function linearize(sys, input_name::Symbol, output_name::Symbol, kwargs...)
+    lin_fun, ssys = linearization_function(sys, input_name, output_name; kwargs...)
+    linearize(ssys, lin_fun; op, t, allow_input_derivatives), ssys
+end
+
+function ModelingToolkit.linearization_function(sys::ModelingToolkit.AbstractSystem, input_name::Symbol, output_name::Symbol;
                                    kwargs...)
     find = function (x, ns)
         x isa AnalysisPoint || return false
@@ -371,7 +376,7 @@ function ModelingToolkit.linearize(sys, input_name::Symbol, output_name::Symbol;
         y = ModelingToolkit.renamespace(ns, y)
         u = ModelingToolkit.renamespace(ns, u)
     end
-    ModelingToolkit.linearize(sys, [u], [y]; kwargs...)
+    ModelingToolkit.linearization_function(sys, [u], [y]; kwargs...)
 end
 
 # Add a method to get_sensitivity that accepts the name of an AnalysisPoint
