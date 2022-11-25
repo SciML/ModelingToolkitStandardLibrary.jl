@@ -152,21 +152,7 @@ function Base.:(==)(ap1::AnalysisPoint, ap2::AnalysisPoint)
     return ap1.in == ap2.in && ap1.out == ap2.out # Name doesn't really matter if inputs and outputs are the same
 end
 
-"""
-    get_sensitivity(sys, ap::AnalysisPoint; kwargs)
-    get_sensitivity(sys, ap_name::Symbol; kwargs)
-
-Compute the sensitivity function in analysis point `ap`. The sensitivity function is obtained by introducing an infinitesimal perturbation `d` at the input of `ap`, linearizing the system and computing the transfer function between `d` and the output of `ap`.
-
-!!! danger "Experimental"
-    The analysis-point interface is currently experimental and at any time subject to breaking changes not respecting semantic versioning.
-
-# Arguments:
-- `kwargs`: Are sent to `ModelingToolkit.linearize`
-
-See also [`get_comp_sensitivity`](@ref), [`get_looptransfer`](@ref).
-"""
-function get_sensitivity(sys, ap_name::Symbol; kwargs...)
+function get_sensitivity_function(sys, ap_name::Symbol; kwargs...)
     find = function (x, ns)
         x isa AnalysisPoint || return false
         if ns === nothing
@@ -193,24 +179,10 @@ function get_sensitivity(sys, ap_name::Symbol; kwargs...)
         d = ModelingToolkit.renamespace(ns, d)
         u = ModelingToolkit.renamespace(ns, u)
     end
-    ModelingToolkit.linearize(sys, [d], [u]; kwargs...)
+    ModelingToolkit.linearization_function(sys, [d], [u]; kwargs...)
 end
 
-"""
-    get_comp_sensitivity(sys, ap::AnalysisPoint; kwargs)
-    get_comp_sensitivity(sys, ap_name::Symbol; kwargs)
-
-Compute the complementary sensitivity function in analysis point `ap`. The complementary sensitivity function is obtained by introducing an infinitesimal perturbation `d` at the output of `ap`, linearizing the system and computing the transfer function between `d` and the input of `ap`.
-
-!!! danger "Experimental"
-    The analysis-point interface is currently experimental and at any time subject to breaking changes not respecting semantic versioning.
-
-# Arguments:
-- `kwargs`: Are sent to `ModelingToolkit.linearize`
-
-See also [`get_sensitivity`](@ref), [`get_looptransfer`](@ref).
-"""
-function get_comp_sensitivity(sys, ap_name::Symbol; kwargs...)
+function get_comp_sensitivity_function(sys, ap_name::Symbol; kwargs...)
     find = function (x, ns)
         x isa AnalysisPoint || return false
         if ns === nothing
@@ -237,24 +209,10 @@ function get_comp_sensitivity(sys, ap_name::Symbol; kwargs...)
         d = ModelingToolkit.renamespace(ns, d)
         u = ModelingToolkit.renamespace(ns, u)
     end
-    ModelingToolkit.linearize(sys, [d], [u]; kwargs...)
+    ModelingToolkit.linearization_function(sys, [d], [u]; kwargs...)
 end
 
-"""
-    get_looptransfer(sys, ap::AnalysisPoint; kwargs)
-    get_looptransfer(sys, ap_name::Symbol; kwargs)
-
-Compute the (linearized) loop-transfer function in analysis point `ap`, from `ap.out` to `ap.in`.
-
-!!! danger "Experimental"
-    The analysis-point interface is currently experimental and at any time subject to breaking changes not respecting semantic versioning.
-
-# Arguments:
-- `kwargs`: Are sent to `ModelingToolkit.linearize`
-
-See also [`get_sensitivity`](@ref), [`get_comp_sensitivity`](@ref), [`open_loop`](@ref).
-"""
-function get_looptransfer(sys, ap_name::Symbol; kwargs...)
+function get_looptransfer_function(sys, ap_name::Symbol; kwargs...)
     find = function (x, ns)
         x isa AnalysisPoint || return false
         if ns === nothing
@@ -281,7 +239,7 @@ function get_looptransfer(sys, ap_name::Symbol; kwargs...)
         y = ModelingToolkit.renamespace(ns, y)
         u = ModelingToolkit.renamespace(ns, u)
     end
-    ModelingToolkit.linearize(sys, [u], [y]; kwargs...)
+    ModelingToolkit.linearization_function(sys, [u], [y]; kwargs...)
 end
 
 """
@@ -330,13 +288,9 @@ function open_loop(sys, ap_name::Symbol; kwargs...)
     sys
 end
 
-"""
-    ModelingToolkit.linearize(sys, input_name::Symbol, output_name::Symbol)
-
-Linearize a system between two analysis points. To get a loop-transfer function, see [`get_looptransfer`](@ref)
-"""
-function ModelingToolkit.linearize(sys, input_name::Symbol, output_name::Symbol;
-                                   kwargs...)
+function ModelingToolkit.linearization_function(sys::ModelingToolkit.AbstractSystem,
+                                                input_name::Symbol, output_name::Symbol;
+                                                kwargs...)
     find = function (x, ns)
         x isa AnalysisPoint || return false
         if ns === nothing
@@ -371,7 +325,7 @@ function ModelingToolkit.linearize(sys, input_name::Symbol, output_name::Symbol;
         y = ModelingToolkit.renamespace(ns, y)
         u = ModelingToolkit.renamespace(ns, u)
     end
-    ModelingToolkit.linearize(sys, [u], [y]; kwargs...)
+    ModelingToolkit.linearization_function(sys, [u], [y]; kwargs...)
 end
 
 # Add a method to get_sensitivity that accepts the name of an AnalysisPoint
@@ -385,3 +339,69 @@ function ModelingToolkit.linearize(sys, input::AnalysisPoint, output::AnalysisPo
                                    kwargs...)
     ModelingToolkit.linearize(sys, nameof(input), nameof(output); kwargs...)
 end
+
+# Methods above are implemented in terms of linearization_function, the method below creates wrappers for linearize
+for f in [:get_sensitivity, :get_comp_sensitivity, :get_looptransfer]
+    @eval function $f(sys, ap::Symbol, args...; kwargs...)
+        lin_fun, ssys = $(Symbol(string(f) * "_function"))(sys, ap, args...; kwargs...)
+        ModelingToolkit.linearize(ssys, lin_fun; kwargs...), ssys
+    end
+end
+
+"""
+    ModelingToolkit.linearize(sys, input_name::Symbol, output_name::Symbol; kwargs...)
+
+Linearize a system between two analysis points. To get a loop-transfer function, see [`get_looptransfer`](@ref)
+"""
+function ModelingToolkit.linearize(sys, input_name::Symbol, output_name::Symbol; kwargs...)
+    lin_fun, ssys = linearization_function(sys, input_name, output_name; kwargs...)
+    ModelingToolkit.linearize(ssys, lin_fun; kwargs...), ssys
+end
+
+"""
+    get_sensitivity(sys, ap::AnalysisPoint; kwargs)
+    get_sensitivity(sys, ap_name::Symbol; kwargs)
+
+Compute the sensitivity function in analysis point `ap`. The sensitivity function is obtained by introducing an infinitesimal perturbation `d` at the input of `ap`, linearizing the system and computing the transfer function between `d` and the output of `ap`.
+
+!!! danger "Experimental"
+    The analysis-point interface is currently experimental and at any time subject to breaking changes not respecting semantic versioning.
+
+# Arguments:
+- `kwargs`: Are sent to `ModelingToolkit.linearize`
+
+See also [`get_comp_sensitivity`](@ref), [`get_looptransfer`](@ref).
+"""
+get_sensitivity
+
+"""
+    get_comp_sensitivity(sys, ap::AnalysisPoint; kwargs)
+    get_comp_sensitivity(sys, ap_name::Symbol; kwargs)
+
+Compute the complementary sensitivity function in analysis point `ap`. The complementary sensitivity function is obtained by introducing an infinitesimal perturbation `d` at the output of `ap`, linearizing the system and computing the transfer function between `d` and the input of `ap`.
+
+!!! danger "Experimental"
+    The analysis-point interface is currently experimental and at any time subject to breaking changes not respecting semantic versioning.
+
+# Arguments:
+- `kwargs`: Are sent to `ModelingToolkit.linearize`
+
+See also [`get_sensitivity`](@ref), [`get_looptransfer`](@ref).
+"""
+get_comp_sensitivity
+
+"""
+    get_looptransfer(sys, ap::AnalysisPoint; kwargs)
+    get_looptransfer(sys, ap_name::Symbol; kwargs)
+
+Compute the (linearized) loop-transfer function in analysis point `ap`, from `ap.out` to `ap.in`.
+
+!!! danger "Experimental"
+    The analysis-point interface is currently experimental and at any time subject to breaking changes not respecting semantic versioning.
+
+# Arguments:
+- `kwargs`: Are sent to `ModelingToolkit.linearize`
+
+See also [`get_sensitivity`](@ref), [`get_comp_sensitivity`](@ref), [`open_loop`](@ref).
+"""
+get_looptransfer
