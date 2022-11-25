@@ -173,7 +173,7 @@ function get_sensitivity_function(sys, ap_name::Symbol; kwargs...)
         end
     end
     sys = expand_connections(sys, find, replace)
-    (ap = apr[]) === nothing && error("Did not find analysis point $ap")
+    (ap = apr[]) === nothing && error("Did not find analysis point $ap_name")
     u = ap.out.u
     if (ns = namespace[]) !== nothing
         d = ModelingToolkit.renamespace(ns, d)
@@ -203,7 +203,7 @@ function get_comp_sensitivity_function(sys, ap_name::Symbol; kwargs...)
         end
     end
     sys = expand_connections(sys, find, replace)
-    (ap = apr[]) === nothing && error("Did not find analysis point $ap")
+    (ap = apr[]) === nothing && error("Did not find analysis point $ap_name")
     u = ap.in.u
     if (ns = namespace[]) !== nothing
         d = ModelingToolkit.renamespace(ns, d)
@@ -232,7 +232,7 @@ function get_looptransfer_function(sys, ap_name::Symbol; kwargs...)
         end
     end
     sys = expand_connections(sys, find, replace)
-    (ap = apr[]) === nothing && error("Did not find analysis point $ap")
+    (ap = apr[]) === nothing && error("Did not find analysis point $ap_name")
     u = ap.out.u
     y = ap.in.u
     if (ns = namespace[]) !== nothing
@@ -283,8 +283,7 @@ function open_loop(sys, ap_name::Symbol; kwargs...)
         y = ModelingToolkit.renamespace(ns, y)
         u = ModelingToolkit.renamespace(ns, u)
     end
-    sys = expand_connections(sys, find, replace)
-    (ap = apr[]) === nothing && error("Did not find analysis point $ap")
+    (ap = apr[]) === nothing && error("Did not find analysis point $ap_name")
     sys
 end
 
