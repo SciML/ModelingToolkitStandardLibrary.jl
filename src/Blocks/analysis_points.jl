@@ -298,19 +298,19 @@ function ModelingToolkit.linearization_function(sys::ModelingToolkit.AbstractSys
             Symbol(ns, :_, nameof(x)) ∈ (input_name, output_name)
         end
     end
-    t = get_iv(sys)
-    @variables u(t)=0 [input = true]
-    @variables y(t)=0 [output = true]
-    namespace = Ref{Union{Nothing, Symbol}}(nothing)
-    apr = Ref{Union{Nothing, AnalysisPoint}}(nothing)
-    replace = let u = u, y = y, namespace = namespace, apr = apr
+
+    namespace_u = Ref{Union{Nothing, Symbol}}(nothing)
+    namespace_y = Ref{Union{Nothing, Symbol}}(nothing)
+    apr_u = Ref{Union{Nothing, AnalysisPoint}}(nothing)
+    apr_y = Ref{Union{Nothing, AnalysisPoint}}(nothing)
+    replace = let u = u, y = y, namespace_u = namespace_u, apr_u = apr_u, namespace_y = namespace_y, apr_y = apr_y
         function (ap, ns)
-            namespace[] = ns # Save the namespace to make it available for renamespace below
-            apr[] = ap
-            if nameof(ap) === input_name
+                namespace_u[] = ns # Save the namespace to make it available for renamespace below
+                apr_u[] = ap
                 [ap.out.u ~ ap.in.u + u], u
                 #input.in.u ~ 0] # We only need to ground one of the ends, hence not including this equation
-            elseif nameof(ap) === output_name
+                namespace_y[] = ns # Save the namespace to make it available for renamespace below
+                apr_y[] = ap
                 [ap.in.u ~ y
                  ap.out.u ~ ap.in.u], y
             else
@@ -319,12 +319,15 @@ function ModelingToolkit.linearization_function(sys::ModelingToolkit.AbstractSys
         end
     end
     sys = expand_connections(sys, find, replace)
-    (ap = apr[]) === nothing && error("Did not find analysis point $ap")
-    if (ns = namespace[]) !== nothing
-        y = ModelingToolkit.renamespace(ns, y)
-        u = ModelingToolkit.renamespace(ns, u)
+    (ap = apr_u[]) === nothing && error("Did not find analysis point $input_name")
+    (ap = apr_y[]) === nothing && error("Did not find analysis point $output_name")
+    if (ns = namespace_u[]) !== nothing
+        inputs[1] = ModelingToolkit.renamespace(ns, inputs[1]) # u
     end
-    ModelingToolkit.linearization_function(sys, [u], [y]; kwargs...)
+    if (ns = namespace_y[]) !== nothing
+        outputs[1] = ModelingToolkit.renamespace(ns, outputs[1]) # y
+    end
+    ModelingToolkit.linearization_function(sys, inputs, outputs; kwargs...)
 end
 
 # Add a method to get_sensitivity that accepts the name of an AnalysisPoint
