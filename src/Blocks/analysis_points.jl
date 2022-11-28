@@ -96,7 +96,8 @@ end
 
 Connect `output_connector` and `input_connector` with an [`AnalysisPoint`](@ref) inbetween.
 The incoming connection `output_connector` is expected to be of type [`RealOutput`](@ref), and vice versa.
-NOTE: The connection is assumed to be *causal*, meaning that
+
+*PLEASE NOTE*: The connection is assumed to be *causal*, meaning that
 ```
 connect(C.output, :plant_input, P.input)
 ```
@@ -152,28 +153,44 @@ function Base.:(==)(ap1::AnalysisPoint, ap2::AnalysisPoint)
     return ap1.in == ap2.in && ap1.out == ap2.out # Name doesn't really matter if inputs and outputs are the same
 end
 
-function get_sensitivity_function(sys, ap_name::Symbol; kwargs...)
-    find = function (x, ns)
-        x isa AnalysisPoint || return false
-        if ns === nothing
-            nameof(x) === ap_name
-        else
-            Symbol(ns, :_, nameof(x)) === ap_name
-        end
+function namespaced_ap_match(ap_name, loop_openings)
+    (x, ns) -> namespaced_ap_match(x, ns, ap_name, loop_openings)
+end # 🍛
+
+"""
+    namespaced_ap_match(x, ns, ap_name, loop_openings)
+
+Returns true if `x` is an AnalysisPoint and matches either `ap_name` or any of the loop openings if namedspaced with `ns`.
+"""
+function namespaced_ap_match(x, ns, ap_name, loop_openings)
+    x isa AnalysisPoint || return false
+    if ns === nothing
+        nameof(x) === ap_name || (loop_openings !== nothing && nameof(x) ∈ loop_openings)
+    else
+        xx = Symbol(ns, :_, nameof(x))
+        xx === ap_name || (loop_openings !== nothing && xx ∈ loop_openings)
     end
+end
+
+function get_sensitivity_function(sys, ap_name::Symbol; loop_openings = nothing, kwargs...)
+    find = namespaced_ap_match(ap_name, loop_openings)
     t = get_iv(sys)
     @variables d(t) = 0 # Perturbation serving as input to sensitivity transfer function
     namespace = Ref{Union{Nothing, Symbol}}(nothing)
     apr = Ref{Union{Nothing, AnalysisPoint}}(nothing)
     replace = let d = d, namespace = namespace, apr = apr
         function (ap, ns)
-            namespace[] = ns # Save the namespace to make it available for renamespace below
-            apr[] = ap
-            (ap.out.u ~ ap.in.u + d), d
+            if namespaced_ap_match(ap, ns, ap_name, nothing)
+                namespace[] = ns
+                apr[] = ap
+                (ap.out.u ~ ap.in.u + d), d
+            else # loop opening
+                [ap.out.u ~ 0], []
+            end
         end
     end
     sys = expand_connections(sys, find, replace)
-    (ap = apr[]) === nothing && error("Did not find analysis point $ap")
+    (ap = apr[]) === nothing && error("Did not find analysis point $ap_name")
     u = ap.out.u
     if (ns = namespace[]) !== nothing
         d = ModelingToolkit.renamespace(ns, d)
@@ -182,28 +199,26 @@ function get_sensitivity_function(sys, ap_name::Symbol; kwargs...)
     ModelingToolkit.linearization_function(sys, [d], [u]; kwargs...)
 end
 
-function get_comp_sensitivity_function(sys, ap_name::Symbol; kwargs...)
-    find = function (x, ns)
-        x isa AnalysisPoint || return false
-        if ns === nothing
-            nameof(x) === ap_name
-        else
-            Symbol(ns, :_, nameof(x)) === ap_name
-        end
-    end
+function get_comp_sensitivity_function(sys, ap_name::Symbol; loop_openings = nothing,
+                                       kwargs...)
+    find = namespaced_ap_match(ap_name, loop_openings)
     t = get_iv(sys)
     @variables d(t) = 0 # Perturbation serving as input to sensitivity transfer function
     namespace = Ref{Union{Nothing, Symbol}}(nothing)
     apr = Ref{Union{Nothing, AnalysisPoint}}(nothing)
     replace = let d = d, namespace = namespace, apr = apr
         function (ap, ns)
-            namespace[] = ns # Save the namespace to make it available for renamespace below
-            apr[] = ap
-            (ap.out.u + d ~ ap.in.u), d
+            if namespaced_ap_match(ap, ns, ap_name, nothing)
+                namespace[] = ns
+                apr[] = ap
+                (ap.out.u + d ~ ap.in.u), d
+            else # loop opening
+                [ap.out.u ~ 0], []
+            end
         end
     end
     sys = expand_connections(sys, find, replace)
-    (ap = apr[]) === nothing && error("Did not find analysis point $ap")
+    (ap = apr[]) === nothing && error("Did not find analysis point $ap_name")
     u = ap.in.u
     if (ns = namespace[]) !== nothing
         d = ModelingToolkit.renamespace(ns, d)
@@ -212,27 +227,24 @@ function get_comp_sensitivity_function(sys, ap_name::Symbol; kwargs...)
     ModelingToolkit.linearization_function(sys, [d], [u]; kwargs...)
 end
 
-function get_looptransfer_function(sys, ap_name::Symbol; kwargs...)
-    find = function (x, ns)
-        x isa AnalysisPoint || return false
-        if ns === nothing
-            nameof(x) === ap_name
-        else
-            Symbol(ns, :_, nameof(x)) === ap_name
-        end
-    end
+function get_looptransfer_function(sys, ap_name::Symbol; loop_openings = nothing, kwargs...)
+    find = namespaced_ap_match(ap_name, loop_openings)
     t = get_iv(sys)
     namespace = Ref{Union{Nothing, Symbol}}(nothing)
     apr = Ref{Union{Nothing, AnalysisPoint}}(nothing)
     replace = let namespace = namespace, apr = apr
         function (ap, ns)
-            namespace[] = ns # Save the namespace to make it available for renamespace below
-            apr[] = ap
-            (0 ~ 0), nothing
+            if namespaced_ap_match(ap, ns, ap_name, nothing)
+                namespace[] = ns
+                apr[] = ap
+                (0 ~ 0), nothing
+            else # loop opening
+                [ap.out.u ~ 0], []
+            end
         end
     end
     sys = expand_connections(sys, find, replace)
-    (ap = apr[]) === nothing && error("Did not find analysis point $ap")
+    (ap = apr[]) === nothing && error("Did not find analysis point $ap_name")
     u = ap.out.u
     y = ap.in.u
     if (ns = namespace[]) !== nothing
@@ -258,15 +270,8 @@ Open the loop at analysis point `ap` by breaking the connection through `ap`.
 
 See also [`get_sensitivity`](@ref), [`get_comp_sensitivity`](@ref), [`get_looptransfer`](@ref).
 """
-function open_loop(sys, ap_name::Symbol; kwargs...)
-    find = function (x, ns)
-        x isa AnalysisPoint || return false
-        if ns === nothing
-            nameof(x) === ap_name
-        else
-            Symbol(ns, :_, nameof(x)) === ap_name
-        end
-    end
+function open_loop(sys, ap_name::Symbol; ground_input = false, kwargs...)
+    find = namespaced_ap_match(ap_name, nothing)
     t = get_iv(sys)
     @variables u(t)=0 [input = true]
     @variables y(t)=0 [output = true]
@@ -276,54 +281,60 @@ function open_loop(sys, ap_name::Symbol; kwargs...)
         function (ap, ns)
             namespace[] = ns # Save the namespace to make it available for renamespace below
             apr[] = ap
-            [ap.out.u ~ u, ap.in.u ~ y], [u, y]
+            if ground_input
+                [ap.out.u ~ 0, ap.in.u ~ y], [y]
+            else
+                [ap.out.u ~ u, ap.in.u ~ y], [u, y]
+            end
         end
     end
-    if (ns = namespace[]) !== nothing
-        y = ModelingToolkit.renamespace(ns, y)
-        u = ModelingToolkit.renamespace(ns, u)
-    end
     sys = expand_connections(sys, find, replace)
-    (ap = apr[]) === nothing && error("Did not find analysis point $ap")
+    (ap = apr[]) === nothing && error("Did not find analysis point $ap_name")
     sys
 end
 
 function ModelingToolkit.linearization_function(sys::ModelingToolkit.AbstractSystem,
                                                 input_name::Symbol, output_name::Symbol;
+                                                loop_openings = nothing,
                                                 kwargs...)
-    find = function (x, ns)
-        x isa AnalysisPoint || return false
-        if ns === nothing
-            nameof(x) ∈ (input_name, output_name)
-        else
-            Symbol(ns, :_, nameof(x)) ∈ (input_name, output_name)
-        end
-    end
     t = get_iv(sys)
     @variables u(t)=0 [input = true]
     @variables y(t)=0 [output = true]
-    namespace = Ref{Union{Nothing, Symbol}}(nothing)
-    apr = Ref{Union{Nothing, AnalysisPoint}}(nothing)
-    replace = let u = u, y = y, namespace = namespace, apr = apr
+    find_input = namespaced_ap_match(input_name, loop_openings)
+    find_output = namespaced_ap_match(output_name, loop_openings)
+    find = (x, ns) -> find_input(x, ns) || find_output(x, ns)
+
+    namespace_u = Ref{Union{Nothing, Symbol}}(nothing)
+    namespace_y = Ref{Union{Nothing, Symbol}}(nothing)
+    apr_u = Ref{Union{Nothing, AnalysisPoint}}(nothing)
+    apr_y = Ref{Union{Nothing, AnalysisPoint}}(nothing)
+    replace = let u = u, y = y, namespace_u = namespace_u, apr_u = apr_u,
+        namespace_y = namespace_y, apr_y = apr_y
+
         function (ap, ns)
-            namespace[] = ns # Save the namespace to make it available for renamespace below
-            apr[] = ap
-            if nameof(ap) === input_name
+            if namespaced_ap_match(ap, ns, input_name, nothing)
+                namespace_u[] = ns # Save the namespace to make it available for renamespace below
+                apr_u[] = ap
                 [ap.out.u ~ ap.in.u + u], u
                 #input.in.u ~ 0] # We only need to ground one of the ends, hence not including this equation
-            elseif nameof(ap) === output_name
+            elseif namespaced_ap_match(ap, ns, output_name, nothing)
+                namespace_y[] = ns # Save the namespace to make it available for renamespace below
+                apr_y[] = ap
                 [ap.in.u ~ y
                  ap.out.u ~ ap.in.u], y
-            else
-                error("This should never happen")
+            else # loop opening
+                [ap.out.u ~ 0], []
             end
         end
     end
     sys = expand_connections(sys, find, replace)
-    (ap = apr[]) === nothing && error("Did not find analysis point $ap")
-    if (ns = namespace[]) !== nothing
-        y = ModelingToolkit.renamespace(ns, y)
+    (ap = apr_u[]) === nothing && error("Did not find analysis point $input_name")
+    (ap = apr_y[]) === nothing && error("Did not find analysis point $output_name")
+    if (ns = namespace_u[]) !== nothing
         u = ModelingToolkit.renamespace(ns, u)
+    end
+    if (ns = namespace_y[]) !== nothing
+        y = ModelingToolkit.renamespace(ns, y)
     end
     ModelingToolkit.linearization_function(sys, [u], [y]; kwargs...)
 end
@@ -342,8 +353,9 @@ end
 
 # Methods above are implemented in terms of linearization_function, the method below creates wrappers for linearize
 for f in [:get_sensitivity, :get_comp_sensitivity, :get_looptransfer]
-    @eval function $f(sys, ap::Symbol, args...; kwargs...)
-        lin_fun, ssys = $(Symbol(string(f) * "_function"))(sys, ap, args...; kwargs...)
+    @eval function $f(sys, ap::Symbol, args...; loop_openings = nothing, kwargs...)
+        lin_fun, ssys = $(Symbol(string(f) * "_function"))(sys, ap, args...; loop_openings,
+                                                           kwargs...)
         ModelingToolkit.linearize(ssys, lin_fun; kwargs...), ssys
     end
 end
@@ -353,8 +365,10 @@ end
 
 Linearize a system between two analysis points. To get a loop-transfer function, see [`get_looptransfer`](@ref)
 """
-function ModelingToolkit.linearize(sys, input_name::Symbol, output_name::Symbol; kwargs...)
-    lin_fun, ssys = linearization_function(sys, input_name, output_name; kwargs...)
+function ModelingToolkit.linearize(sys, input_name::Symbol, output_name::Symbol;
+                                   loop_openings = nothing, kwargs...)
+    lin_fun, ssys = linearization_function(sys, input_name, output_name; loop_openings,
+                                           kwargs...)
     ModelingToolkit.linearize(ssys, lin_fun; kwargs...), ssys
 end
 

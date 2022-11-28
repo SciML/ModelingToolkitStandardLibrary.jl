@@ -3,6 +3,7 @@ using ModelingToolkit
 using ModelingToolkitStandardLibrary.Blocks
 using OrdinaryDiffEq
 using ModelingToolkit: get_eqs, vars, @set!, get_iv
+using ControlSystemsBase
 
 @named P = FirstOrder(k = 1, T = 1)
 @named C = Gain(-1)
@@ -224,3 +225,33 @@ matrices, ssys = get_sensitivity(closed_loop, :u)
 Si = ss(matrices...)
 
 @test tf(So) ≈ tf(Si)
+
+## A simple multi-level system with loop openings
+@parameters t
+@named P_inner = FirstOrder(k = 1, T = 1)
+@named feedback = Feedback()
+@named ref = Step()
+@named sys_inner = ODESystem([connect(P_inner.output, :y, feedback.input2)
+                              connect(feedback.output, :u, P_inner.input)
+                              connect(ref.output, :r, feedback.input1)], t,
+                             systems = [P_inner, feedback, ref])
+
+Sinner = sminreal(ss(get_sensitivity(sys_inner, :u)[1]...))
+
+@named sys_inner = ODESystem([connect(P_inner.output, :y, feedback.input2)
+                              connect(feedback.output, :u, P_inner.input)], t,
+                             systems = [P_inner, feedback])
+
+@named P_outer = FirstOrder(k = rand(), T = rand())
+
+@named sys_outer = ODESystem([connect(sys_inner.P_inner.output, :y2, P_outer.input)
+                              connect(P_outer.output, :u2, sys_inner.feedback.input1)], t,
+                             systems = [P_outer, sys_inner])
+
+Souter = sminreal(ss(get_sensitivity(sys_outer, :sys_inner_u)[1]...))
+
+Sinner2 = sminreal(ss(get_sensitivity(sys_outer, :sys_inner_u, loop_openings = [:y2])[1]...))
+
+@test Sinner.nx == 1
+@test Sinner == Sinner2
+@test Souter.nx == 2
