@@ -1,7 +1,7 @@
 name = "ModelingToolkitStandardLibrary"
 uuid = "16a59e39-deab-5bd0-87e4-056b12336739"
 authors = ["Chris Rackauckas and Julia Computing"]
-version = "1.8.0"
+version = "1.9.0"
 
 [deps]
 IfElse = "615f187c-cbe4-4ef1-ba3b-2fcf58d6d173"
