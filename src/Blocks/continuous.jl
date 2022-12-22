@@ -127,16 +127,15 @@ Critical damping corresponds to `d=1`, which yields the fastest step response wi
 function SecondOrder(; name, k = 1, w, d, x_start = 0.0, xd_start = 0.0)
     @named siso = SISO()
     @unpack u, y = siso
-    sts = @variables x(t)=x_start [description = "State of SecondOrder filter $name"] xd(t)=xd_start [
-        description = "Derivative state of SecondOrder filter $name",
-    ]
-    pars = @parameters k=k [description = "Gain of SecondOrder $name"] w=w [
-        description = "Bandwidth of SecondOrder $name",
-    ] d=d [description = "Relative damping of SecondOrder $name"]
+    @variables x(t)=x_start [description = "State of SecondOrder filter $name"]
+    @variables xd(t)=xd_start [description = "Derivative state of SecondOrder filter $name"]
+    @parameters k=k [description = "Gain of SecondOrder $name"]
+    @parameters w=w [description = "Bandwidth of SecondOrder $name"]
+    @parameters d=d [description = "Relative damping of SecondOrder $name"]
     eqs = [D(x) ~ xd
            D(xd) ~ w * (w * (k * u - x) - 2 * d * xd)
            y ~ x]
-    extend(ODESystem(eqs, t, sts, pars; name = name), siso)
+    extend(ODESystem(eqs, t; name = name), siso)
 end
 
 """
