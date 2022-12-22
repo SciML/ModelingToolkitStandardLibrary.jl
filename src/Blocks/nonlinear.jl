@@ -18,7 +18,9 @@ function Limiter(; name, y_max, y_min = y_max > 0 ? -y_max : -Inf)
     y_max ≥ y_min || throw(ArgumentError("`y_min` must be smaller than `y_max`"))
     @named siso = SISO()
     @unpack u, y = siso
-    pars = @parameters y_max=y_max y_min=y_min
+    pars = @parameters y_max=y_max [description = "Maximum allowed output of Limiter $name"] y_min=y_min [
+        description = "Minimum allowed output of Limiter $name",
+    ]
     eqs = [
         y ~ _clamp(u, y_min, y_max),
     ]
@@ -55,7 +57,9 @@ function DeadZone(; name, u_max, u_min = -u_max)
     end
     @named siso = SISO()
     @unpack u, y = siso
-    pars = @parameters u_max=u_max u_min=u_min
+    pars = @parameters u_max=u_max [
+        description = "Upper limit of dead zone of DeadZone $name",
+    ] u_min=u_min [description = "Lower limit of dead zone of DeadZone $name"]
     eqs = [
         y ~ _dead_zone(u, u_min, u_max),
     ]
@@ -81,7 +85,11 @@ function SlewRateLimiter(; name, rising = 1, falling = -rising, Td = 0.001, y_st
     Td > 0 || throw(ArgumentError("Time constant `Td` must be strictly positive"))
     @named siso = SISO(y_start = y_start)
     @unpack u, y = siso
-    pars = @parameters rising=rising falling=falling
+    pars = @parameters rising=rising [
+        description = "Maximum rising slew rate of SlewRateLimiter $name",
+    ] falling=falling [description = "Maximum falling slew rate of SlewRateLimiter $name"] Td=Td [
+        description = "Derivative time constant of SlewRateLimiter $name",
+    ]
     eqs = [
         D(y) ~ max(min((u - y) / Td, rising), falling),
     ]
