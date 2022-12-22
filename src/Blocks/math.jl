@@ -13,7 +13,7 @@ Output the product of a gain value with the input signal.
 function Gain(k; name)
     @named siso = SISO()
     @unpack u, y = siso
-    pars = @parameters k = k
+    pars = @parameters k=k [description = "Gain of Gain $name"]
     eqs = [
         y ~ k * u,
     ]
@@ -99,10 +99,8 @@ function Add(; name, k1 = 1, k2 = 1)
     @named input1 = RealInput()
     @named input2 = RealInput()
     @named output = RealOutput()
-    pars = @parameters begin
-        k1 = k1
-        k2 = k2
-    end
+    pars = @parameters(k1=k1, [description = "Gain of Add $name input1"],
+                       k2=k2, [description = "Gain of Add $name input2"],)
     eqs = [
         output.u ~ k1 * input1.u + k2 * input2.u,
     ]
@@ -130,11 +128,9 @@ function Add3(; name, k1 = 1, k2 = 1, k3 = 1)
     @named input2 = RealInput()
     @named input3 = RealInput()
     @named output = RealOutput()
-    pars = @parameters begin
-        k1 = k1
-        k2 = k2
-        k3 = k3
-    end
+    pars = @parameters(k1=k1, [description = "Gain of Add $name input1"],
+                       k2=k2, [description = "Gain of Add $name input2"],
+                       k3=k3, [description = "Gain of Add $name input3"],)
     eqs = [
         output.u ~ k1 * input1.u + k2 * input2.u + k3 * input3.u,
     ]
