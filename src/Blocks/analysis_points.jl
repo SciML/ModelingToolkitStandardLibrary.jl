@@ -8,6 +8,13 @@ end
 
 Base.nameof(ap::AnalysisPoint) = ap.name
 
+function ap_var(sys)
+    hasproperty(sys, :u) && return sys.u
+    x = states(sys)
+    length(x) == 1 && return x[1]
+    error("Could not determine the analysis-point variable in system $(nameof(sys)). To use an analysis point, apply it to a connection between two causal blocks containing connectors of type `RealInput/RealOutput` from ModelingToolkitStandardLibrary.Blocks.")
+end
+
 """
     AnalysisPoint(in, out, name::Symbol)
     AnalysisPoint(in, out; name::Symbol)
@@ -70,15 +77,15 @@ function Base.show(io::IO, ::MIME"text/plain", ap::AnalysisPoint)
         return
     end
     if get(io, :compact, false)
-        print(io, "AnalysisPoint($(ap.in.u), $(ap.out.u); name=$(ap.name))")
+        print(io, "AnalysisPoint($(ap_var(ap.in)), $(ap_var(ap.out)); name=$(ap.name))")
     else
         print(io, "AnalysisPoint(")
         printstyled(io, ap.name, color = :cyan)
         if ap.in !== nothing && ap.out !== nothing
             print(io, " from ")
-            printstyled(io, ap.in.u, color = :green)
+            printstyled(io, ap_var(ap.in), color = :green)
             print(io, " to ")
-            printstyled(io, ap.out.u, color = :blue)
+            printstyled(io, ap_var(ap.out), color = :blue)
         end
         print(io, ")")
     end
@@ -183,15 +190,15 @@ function get_sensitivity_function(sys, ap_name::Symbol; loop_openings = nothing,
             if namespaced_ap_match(ap, ns, ap_name, nothing)
                 namespace[] = ns
                 apr[] = ap
-                (ap.out.u ~ ap.in.u + d), d
+                (ap_var(ap.out) ~ ap_var(ap.in) + d), d
             else # loop opening
-                [ap.out.u ~ 0], []
+                [ap_var(ap.out) ~ 0], []
             end
         end
     end
     sys = expand_connections(sys, find, replace)
     (ap = apr[]) === nothing && error("Did not find analysis point $ap_name")
-    u = ap.out.u
+    u = ap_var(ap.out)
     if (ns = namespace[]) !== nothing
         d = ModelingToolkit.renamespace(ns, d)
         u = ModelingToolkit.renamespace(ns, u)
@@ -211,15 +218,15 @@ function get_comp_sensitivity_function(sys, ap_name::Symbol; loop_openings = not
             if namespaced_ap_match(ap, ns, ap_name, nothing)
                 namespace[] = ns
                 apr[] = ap
-                (ap.out.u + d ~ ap.in.u), d
+                (ap_var(ap.out) + d ~ ap_var(ap.in)), d
             else # loop opening
-                [ap.out.u ~ 0], []
+                [ap_var(ap.out) ~ 0], []
             end
         end
     end
     sys = expand_connections(sys, find, replace)
     (ap = apr[]) === nothing && error("Did not find analysis point $ap_name")
-    u = ap.in.u
+    u = ap_var(ap.in)
     if (ns = namespace[]) !== nothing
         d = ModelingToolkit.renamespace(ns, d)
         u = ModelingToolkit.renamespace(ns, u)
@@ -239,14 +246,14 @@ function get_looptransfer_function(sys, ap_name::Symbol; loop_openings = nothing
                 apr[] = ap
                 (0 ~ 0), nothing
             else # loop opening
-                [ap.out.u ~ 0], []
+                [ap_var(ap.out) ~ 0], []
             end
         end
     end
     sys = expand_connections(sys, find, replace)
     (ap = apr[]) === nothing && error("Did not find analysis point $ap_name")
-    u = ap.out.u
-    y = ap.in.u
+    u = ap_var(ap.out)
+    y = ap_var(ap.in)
     if (ns = namespace[]) !== nothing
         y = ModelingToolkit.renamespace(ns, y)
         u = ModelingToolkit.renamespace(ns, u)
@@ -282,9 +289,9 @@ function open_loop(sys, ap_name::Symbol; ground_input = false, kwargs...)
             namespace[] = ns # Save the namespace to make it available for renamespace below
             apr[] = ap
             if ground_input
-                [ap.out.u ~ 0, ap.in.u ~ y], [y]
+                [ap_var(ap.out) ~ 0, ap_var(ap.in) ~ y], [y]
             else
-                [ap.out.u ~ u, ap.in.u ~ y], [u, y]
+                [ap_var(ap.out) ~ u, ap_var(ap.in) ~ y], [u, y]
             end
         end
     end
@@ -315,15 +322,15 @@ function ModelingToolkit.linearization_function(sys::ModelingToolkit.AbstractSys
             if namespaced_ap_match(ap, ns, input_name, nothing)
                 namespace_u[] = ns # Save the namespace to make it available for renamespace below
                 apr_u[] = ap
-                [ap.out.u ~ ap.in.u + u], u
+                [ap_var(ap.out) ~ ap_var(ap.in) + u], u
                 #input.in.u ~ 0] # We only need to ground one of the ends, hence not including this equation
             elseif namespaced_ap_match(ap, ns, output_name, nothing)
                 namespace_y[] = ns # Save the namespace to make it available for renamespace below
                 apr_y[] = ap
-                [ap.in.u ~ y
-                 ap.out.u ~ ap.in.u], y
+                [ap_var(ap.in) ~ y
+                 ap_var(ap.out) ~ ap_var(ap.in)], y
             else # loop opening
-                [ap.out.u ~ 0], []
+                [ap_var(ap.out) ~ 0], []
             end
         end
     end
