@@ -36,4 +36,7 @@ include("Analog/sources.jl")
 # - machines
 # - multi-phase
 
+export Logic
+include("Digital/logic.jl")
+
 end

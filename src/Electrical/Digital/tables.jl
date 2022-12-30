@@ -7,7 +7,7 @@ logicmap = Dict(0 => 0,
                 :X => 3, # Unknown
                 :Z => 4, # High Impedence
                 :W => 5, # Weak Unknown
-                :L => 6, # Weak Low                
+                :L => 6, # Weak Low
                 :H => 7, # Weak High
                 :D => 8) # Don't Care; standard representation is `-`
 
