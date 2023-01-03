@@ -11,7 +11,7 @@ Flange fixed in housing at a given angle.
 """
 function Fixed(; name, phi0 = 0.0)
     @named flange = Flange()
-    @parameters phi0 = phi0
+    @parameters phi0=phi0 [description = "Fixed offset angle of flange"]
     eqs = [flange.phi ~ phi0]
     return compose(ODESystem(eqs, t, [], [phi0]; name = name), flange)
 end
@@ -40,12 +40,11 @@ function Inertia(; name, J, phi_start = 0.0, w_start = 0.0, a_start = 0.0)
     @named flange_a = Flange()
     @named flange_b = Flange()
     J > 0 || throw(ArgumentError("Expected `J` to be positive"))
-    @parameters J = J
-    sts = @variables begin
-        phi(t) = phi_start
-        w(t) = w_start
-        a(t) = a_start
-    end
+    @parameters J=J [description = "Moment of inertia of $name"]
+    sts = @variables(phi(t)=phi_start, [description = "Absolute rotation angle of $name"],
+                     w(t)=w_start, [description = "Absolute angular velocity of $name"],
+                     a(t)=a_start,
+                     [description = "Absolute angular acceleration of $name"],)
     eqs = [phi ~ flange_a.phi
            phi ~ flange_b.phi
            D(phi) ~ w
@@ -75,10 +74,9 @@ function Spring(; name, c, phi_rel0 = 0.0)
     @named partial_comp = PartialCompliant()
     @unpack phi_rel, tau = partial_comp
     c > 0 || throw(ArgumentError("Expected `c` to be positive"))
-    pars = @parameters begin
-        c = c
-        phi_rel0 = phi_rel0
-    end
+    pars = @parameters(c=c, [description = "Spring constant of $name"],
+                       phi_rel0=phi_rel0,
+                       [description = "Unstretched spring angle of $name"],)
     eqs = [tau ~ c * (phi_rel - phi_rel0)]
     extend(ODESystem(eqs, t, [], pars; name = name), partial_comp)
 end
@@ -105,7 +103,7 @@ function Damper(; name, d)
     @named partial_comp = PartialCompliantWithRelativeStates()
     @unpack w_rel, tau = partial_comp
     d > 0 || throw(ArgumentError("Expected `d` to be positive"))
-    pars = @parameters d = d
+    pars = @parameters d=d [description = "Damping constant of $name"]
     eqs = [tau ~ d * w_rel]
     extend(ODESystem(eqs, t, [], pars; name = name), partial_comp)
 end
@@ -134,8 +132,10 @@ function IdealGear(; name, ratio, use_support = false)
     @named partial_element = PartialElementaryTwoFlangesAndSupport2(use_support = use_support)
     @unpack phi_support, flange_a, flange_b = partial_element
     ratio > 0 || throw(ArgumentError("Expected `ratio` to be positive"))
-    @parameters ratio = ratio
-    sts = @variables phi_a(t)=0.0 phi_b(t)=0.0
+    @parameters ratio=ratio [description = "Transmission ratio of $name"]
+    sts = @variables phi_a(t)=0.0 [
+        description = "Relative angle between shaft a and the support of $name",
+    ] phi_b(t)=0.0 [description = "Relative angle between shaft b and the support of $name"]
     eqs = [phi_a ~ flange_a.phi - phi_support
            phi_b ~ flange_b.phi - phi_support
            phi_a ~ ratio * phi_b
@@ -170,7 +170,11 @@ Friction model: "Armstrong, B. and C.C. de Wit, Friction Modeling and Compensati
 function RotationalFriction(; name, f, tau_c, w_brk, tau_brk)
     @named partial_comp = PartialCompliantWithRelativeStates()
     @unpack w_rel, tau = partial_comp
-    pars = @parameters f=f tau_c=tau_c w_brk=w_brk tau_brk=tau_brk
+    pars = @parameters(f=f, [description = "Viscous friction coefficient of $name"],
+                       tau_c=tau_c, [description = "Coulomb friction torque of $name"],
+                       w_brk=w_brk, [description = "Breakaway friction velocity of $name"],
+                       tau_brk=tau_brk,
+                       [description = "Breakaway friction torque of $name"],)
 
     str_scale = sqrt(2 * exp(1)) * (tau_brk - tau_c)
     w_st = w_brk * sqrt(2)

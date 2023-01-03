@@ -69,7 +69,7 @@ Generate constant signal.
 """
 function Constant(; name, k = 1)
     @named output = RealOutput()
-    pars = @parameters k = k
+    pars = @parameters k=k [description = "Constant output value of block $name"]
     eqs = [
         output.u ~ k,
     ]

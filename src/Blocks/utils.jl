@@ -1,8 +1,14 @@
 @connector function RealInput(; name, nin = 1, u_start = nin > 1 ? zeros(nin) : 0.0)
     if nin == 1
-        @variables u(t)=u_start [input = true]
+        @variables u(t)=u_start [
+            input = true,
+            description = "Inner variable in RealInput $name",
+        ]
     else
-        @variables u(t)[1:nin]=u_start [input = true]
+        @variables u(t)[1:nin]=u_start [
+            input = true,
+            description = "Inner variable in RealInput $name",
+        ]
         u = collect(u)
     end
     ODESystem(Equation[], t, [u...], []; name = name)
@@ -22,9 +28,15 @@ Connector with one input signal of type Real.
 
 @connector function RealOutput(; name, nout = 1, u_start = nout > 1 ? zeros(nout) : 0.0)
     if nout == 1
-        @variables u(t)=u_start [output = true]
+        @variables u(t)=u_start [
+            output = true,
+            description = "Inner variable in RealOutput $name",
+        ]
     else
-        @variables u(t)[1:nout]=u_start [output = true]
+        @variables u(t)[1:nout]=u_start [
+            output = true,
+            description = "Inner variable in RealOutput $name",
+        ]
         u = collect(u)
     end
     ODESystem(Equation[], t, [u...], []; name = name)
@@ -54,10 +66,8 @@ Single input single output (SISO) continuous system block.
 function SISO(; name, u_start = 0.0, y_start = 0.0)
     @named input = RealInput(u_start = u_start)
     @named output = RealOutput(u_start = y_start)
-    @variables begin
-        u(t) = u_start
-        y(t) = y_start
-    end
+    @variables(u(t)=u_start, [description = "Input of SISO system $name"],
+               y(t)=y_start, [description = "Output of SISO system $name"],)
     eqs = [u ~ input.u
            y ~ output.u]
     return ODESystem(eqs, t, [u, y], []; name = name, systems = [input, output])
@@ -77,10 +87,8 @@ Base class for a multiple input multiple output (MIMO) continuous system block.
 function MIMO(; name, nin = 1, nout = 1, u_start = zeros(nin), y_start = zeros(nout))
     @named input = RealInput(nin = nin, u_start = u_start)
     @named output = RealOutput(nout = nout, u_start = y_start)
-    @variables begin
-        u(t)[1:nin] = u_start
-        y(t)[1:nout] = y_start
-    end
+    @variables(u(t)[1:nin]=u_start, [description = "Input of MIMO system $name"],
+               y(t)[1:nout]=y_start, [description = "Output of MIMO system $name"],)
     eqs = [
         [u[i] ~ input.u[i] for i in 1:nin]...,
         [y[i] ~ output.u[i] for i in 1:nout]...,

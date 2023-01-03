@@ -1,8 +1,6 @@
 @connector function Flange(; name)
-    sts = @variables begin
-        phi(t)
-        tau(t), [connect = Flow]
-    end
+    sts = @variables(phi(t), [description = "Rotation angle of flange $name"],
+                     tau(t), [connect = Flow, description = "Cut torque in flange $name"],)
     ODESystem(Equation[], t, sts, [], name = name, defaults = Dict(phi => 0.0, tau => 0.0))
 end
 Base.@doc """
@@ -16,10 +14,8 @@ Base.@doc """
 """ Flange
 
 @connector function Support(; name)
-    sts = @variables begin
-        phi(t)
-        tau(t), [connect = Flow]
-    end
+    sts = @variables(phi(t), [description = "Rotation angle of support $name"],
+                     tau(t), [connect = Flow, description = "Cut torque in support $name"],)
     ODESystem(Equation[], t, sts, [], name = name, defaults = Dict(phi => 0.0, tau => 0.0))
 end
 Base.@doc """
@@ -52,10 +48,9 @@ Partial model for the compliant connection of two rotational 1-dim. shaft flange
 function PartialCompliant(; name, phi_rel_start = 0.0, tau_start = 0.0)
     @named flange_a = Flange()
     @named flange_b = Flange()
-    sts = @variables begin
-        phi_rel(t) = phi_rel_start
-        tau(t) = tau_start
-    end
+    sts = @variables(phi_rel(t)=phi_rel_start,
+                     [description = "Relative rotation angle between flanges"],
+                     tau(t)=tau_start, [description = "Torque between flanges"])
     eqs = [phi_rel ~ flange_b.phi - flange_a.phi
            flange_b.tau ~ tau
            flange_a.tau ~ -tau]
@@ -87,12 +82,13 @@ function PartialCompliantWithRelativeStates(; name, phi_rel_start = 0.0, w_start
                                             a_start = 0.0, tau_start = 0.0)
     @named flange_a = Flange()
     @named flange_b = Flange()
-    sts = @variables begin
-        phi_rel(t) = phi_rel_start
-        w_rel(t) = w_start
-        a_rel(t) = a_start
-        tau(t) = tau_start
-    end
+    sts = @variables(phi_rel(t)=phi_rel_start,
+                     [description = "Relative rotation angle between flanges"],
+                     w_rel(t)=w_start,
+                     [description = "Relative angular velocity between flanges"],
+                     a_rel(t)=a_start,
+                     [description = "Relative angular acceleration between flanges"],
+                     tau(t)=tau_start, [description = "Torque between flanges"],)
     eqs = [phi_rel ~ flange_b.phi - flange_a.phi
            D(phi_rel) ~ w_rel
            D(w_rel) ~ a_rel
@@ -118,7 +114,7 @@ Partial model for a component with one rotational 1-dim. shaft flange and a supp
 function PartialElementaryOneFlangeAndSupport2(; name, use_support = false)
     @named flange = Flange()
     sys = [flange]
-    @variables phi_support(t) = 0.0
+    @variables phi_support(t)=0.0 [description = "Absolute angle of support flange"]
     if use_support
         @named support = Support()
         eqs = [support.phi ~ phi_support
@@ -150,7 +146,7 @@ function PartialElementaryTwoFlangesAndSupport2(; name, use_support = false)
     @named flange_a = Flange()
     @named flange_b = Flange()
     sys = [flange_a, flange_b]
-    @variables phi_support(t) = 0.0
+    @variables phi_support(t)=0.0 [description = "Absolute angle of support flange"]
     if use_support
         @named support = Support()
         eqs = [support.phi ~ phi_support

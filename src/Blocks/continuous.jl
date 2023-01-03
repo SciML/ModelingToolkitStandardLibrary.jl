@@ -14,8 +14,8 @@ Outputs `y = ∫k*u dt`, corresponding to the transfer function `1/s`.
 function Integrator(; name, k = 1, x_start = 0.0)
     @named siso = SISO()
     @unpack u, y = siso
-    sts = @variables x(t) = x_start
-    pars = @parameters k = k
+    sts = @variables x(t)=x_start [description = "State of Integrator $name"]
+    pars = @parameters k=k [description = "Gain of Integrator $name"]
     eqs = [D(x) ~ k * u
            y ~ x]
     extend(ODESystem(eqs, t, sts, pars; name = name), siso)
@@ -49,8 +49,10 @@ function Derivative(; name, k = 1, T, x_start = 0.0)
     T > 0 || throw(ArgumentError("Time constant `T` has to be strictly positive"))
     @named siso = SISO()
     @unpack u, y = siso
-    sts = @variables x(t) = x_start
-    pars = @parameters T=T k=k
+    sts = @variables x(t)=x_start [description = "State of Derivative $name"]
+    pars = @parameters T=T [description = "Time constant of Derivative $name"] k=k [
+        description = "Gain of Derivative $name",
+    ]
     eqs = [D(x) ~ (u - x) / T
            y ~ (k / T) * (u - x)]
     extend(ODESystem(eqs, t, sts, pars; name = name), siso)
@@ -89,8 +91,10 @@ function FirstOrder(; name, k = 1, T, x_start = 0.0, lowpass = true)
     T > 0 || throw(ArgumentError("Time constant `T` has to be strictly positive"))
     @named siso = SISO()
     @unpack u, y = siso
-    sts = @variables x(t) = x_start
-    pars = @parameters T=T k=k
+    sts = @variables x(t)=x_start [description = "State of FirstOrder filter $name"]
+    pars = @parameters T=T [description = "Time constant of FirstOrder filter $name"] k=k [
+        description = "Gain of FirstOrder $name",
+    ]
     eqs = [D(x) ~ (k * u - x) / T
            lowpass ? y ~ x : y ~ k * u - x]
     extend(ODESystem(eqs, t, sts, pars; name = name), siso)
@@ -123,12 +127,15 @@ Critical damping corresponds to `d=1`, which yields the fastest step response wi
 function SecondOrder(; name, k = 1, w, d, x_start = 0.0, xd_start = 0.0)
     @named siso = SISO()
     @unpack u, y = siso
-    sts = @variables x(t)=x_start xd(t)=xd_start
-    pars = @parameters k=k w=w d=d
+    @variables x(t)=x_start [description = "State of SecondOrder filter $name"]
+    @variables xd(t)=xd_start [description = "Derivative state of SecondOrder filter $name"]
+    @parameters k=k [description = "Gain of SecondOrder $name"]
+    @parameters w=w [description = "Bandwidth of SecondOrder $name"]
+    @parameters d=d [description = "Relative damping of SecondOrder $name"]
     eqs = [D(x) ~ xd
            D(xd) ~ w * (w * (k * u - x) - 2 * d * xd)
            y ~ x]
-    extend(ODESystem(eqs, t, sts, pars; name = name), siso)
+    extend(ODESystem(eqs, t; name = name), siso)
 end
 
 """
@@ -451,7 +458,9 @@ function StateSpace(; A, B, C, D = nothing, x_start = zeros(size(A, 1)), name,
     end
     @named input = RealInput(nin = nu)
     @named output = RealOutput(nout = ny)
-    @variables x(t)[1:nx] = x_start
+    @variables x(t)[1:nx]=x_start [
+        description = "State variables of StateSpace system $name",
+    ]
     # pars = @parameters A=A B=B C=C D=D # This is buggy
     eqs = [ # FIXME: if array equations work
         [Differential(t)(x[i]) ~ sum(A[i, k] * x[k] for k in 1:nx) +
