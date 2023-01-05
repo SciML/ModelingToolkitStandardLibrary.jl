@@ -9,7 +9,10 @@ end
 Base.nameof(ap::AnalysisPoint) = ap.name
 
 function ap_var(sys)
-    hasproperty(sys, :u) && return sys.u
+    if hasproperty(sys, :u)
+        # collect to turn symbolic arrays into arrays of symbols
+        return length(sys.u) == 1 ? sys.u : collect(sys.u)
+    end
     x = states(sys)
     length(x) == 1 && return x[1]
     error("Could not determine the analysis-point variable in system $(nameof(sys)). To use an analysis point, apply it to a connection between two causal blocks containing connectors of type `RealInput/RealOutput` from ModelingToolkitStandardLibrary.Blocks.")
@@ -179,18 +182,22 @@ function namespaced_ap_match(x, ns, ap_name, loop_openings)
     end
 end
 
+get_perturbation_var(x::Num) = (@variables d(t) = 0; d)
+get_perturbation_var(x) = (@variables d(t)[1:length(x)] = 0; collect(d))
+
 function get_sensitivity_function(sys, ap_name::Symbol; loop_openings = nothing, kwargs...)
     find = namespaced_ap_match(ap_name, loop_openings)
     t = get_iv(sys)
-    @variables d(t) = 0 # Perturbation serving as input to sensitivity transfer function
     namespace = Ref{Union{Nothing, Symbol}}(nothing)
     apr = Ref{Union{Nothing, AnalysisPoint}}(nothing)
-    replace = let d = d, namespace = namespace, apr = apr
+    local d
+    replace = let namespace = namespace, apr = apr
         function (ap, ns)
             if namespaced_ap_match(ap, ns, ap_name, nothing)
                 namespace[] = ns
                 apr[] = ap
-                (ap_var(ap.out) ~ ap_var(ap.in) + d), d
+                d = get_perturbation_var(ap_var(ap.in))
+                (ap_var(ap.out) .~ ap_var(ap.in) + d), d
             else # loop opening
                 [ap_var(ap.out) ~ 0], []
             end
@@ -203,22 +210,23 @@ function get_sensitivity_function(sys, ap_name::Symbol; loop_openings = nothing,
         d = ModelingToolkit.renamespace(ns, d)
         u = ModelingToolkit.renamespace(ns, u)
     end
-    ModelingToolkit.linearization_function(sys, [d], [u]; kwargs...)
+    ModelingToolkit.linearization_function(sys, [d;], [u;]; kwargs...)
 end
 
 function get_comp_sensitivity_function(sys, ap_name::Symbol; loop_openings = nothing,
                                        kwargs...)
     find = namespaced_ap_match(ap_name, loop_openings)
     t = get_iv(sys)
-    @variables d(t) = 0 # Perturbation serving as input to sensitivity transfer function
     namespace = Ref{Union{Nothing, Symbol}}(nothing)
     apr = Ref{Union{Nothing, AnalysisPoint}}(nothing)
-    replace = let d = d, namespace = namespace, apr = apr
+    local d
+    replace = let namespace = namespace, apr = apr
         function (ap, ns)
             if namespaced_ap_match(ap, ns, ap_name, nothing)
                 namespace[] = ns
                 apr[] = ap
-                (ap_var(ap.out) + d ~ ap_var(ap.in)), d
+                d = get_perturbation_var(ap_var(ap.in))
+                (ap_var(ap.out) + d .~ ap_var(ap.in)), d
             else # loop opening
                 [ap_var(ap.out) ~ 0], []
             end
@@ -231,7 +239,7 @@ function get_comp_sensitivity_function(sys, ap_name::Symbol; loop_openings = not
         d = ModelingToolkit.renamespace(ns, d)
         u = ModelingToolkit.renamespace(ns, u)
     end
-    ModelingToolkit.linearization_function(sys, [d], [u]; kwargs...)
+    ModelingToolkit.linearization_function(sys, [d;], [u;]; kwargs...)
 end
 
 function get_looptransfer_function(sys, ap_name::Symbol; loop_openings = nothing, kwargs...)
@@ -258,7 +266,7 @@ function get_looptransfer_function(sys, ap_name::Symbol; loop_openings = nothing
         y = ModelingToolkit.renamespace(ns, y)
         u = ModelingToolkit.renamespace(ns, u)
     end
-    ModelingToolkit.linearization_function(sys, [u], [y]; kwargs...)
+    ModelingToolkit.linearization_function(sys, [u;], [y;]; kwargs...)
 end
 
 """

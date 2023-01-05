@@ -255,3 +255,36 @@ Sinner2 = sminreal(ss(get_sensitivity(sys_outer, :sys_inner_u, loop_openings = [
 @test Sinner.nx == 1
 @test Sinner == Sinner2
 @test Souter.nx == 2
+
+## Sensitivities in multivariate signals
+import ControlSystemsBase as CS
+import ModelingToolkitStandardLibrary.Blocks
+A = [-0.994 -0.0794; -0.006242 -0.0134]
+B = [-0.181 -0.389; 1.1 1.12]
+C = [1.74 0.72; -0.33 0.33]
+D = [0.0 0.0; 0.0 0.0]
+@named P = Blocks.StateSpace(A, B, C, D)
+Pss = CS.ss(A, B, C, D)
+
+A = [-0.097;;]
+B = [-0.138 -1.02]
+C = [-0.076; 0.09;;]
+D = [0.0 0.0; 0.0 0.0]
+@named K = Blocks.StateSpace(A, B, C, D)
+Kss = CS.ss(A, B, C, D)
+
+eqs = [connect(P.output, K.input)
+       connect(K.output, :plant_input, P.input)]
+sys = ODESystem(eqs, t, systems = [P, K], name = :hej)
+
+matrices, _ = Blocks.get_sensitivity(sys, :plant_input)
+S = CS.feedback(I(2), Kss * Pss, pos_feedback = true)
+
+# bodeplot([ss(matrices...), S])
+@test CS.tf(CS.ss(matrices...)) ≈ CS.tf(S)
+
+matrices, _ = Blocks.get_comp_sensitivity(sys, :plant_input)
+T = -CS.feedback(Kss * Pss, I(2), pos_feedback = true)
+
+# bodeplot([ss(matrices...), T])
+@test CS.tf(CS.ss(matrices...)) ≈ CS.tf(T)
