@@ -183,13 +183,13 @@ function namespaced_ap_match(x, ns, ap_names0, loop_openings)
     end
 end
 
-function get_perturbation_var(x::Num)
+function get_perturbation_var(x::Num, prefix = "d")
     @variables d(t) = 0
-    @set! d.val.f.name = Symbol("d_$(x)")
+    @set! d.val.f.name = Symbol("$(prefix)_$(x)")
     d
 end
-function get_perturbation_var(x)
-    get_perturbation_var.(x)
+function get_perturbation_var(x, args...)
+    get_perturbation_var.(x, args...)
 end
 
 function _check_and_sort!(ap_names, aps, namespaces, multiplicities)
@@ -367,49 +367,52 @@ function open_loop(sys, ap_name::Symbol; ground_input = false, kwargs...)
 end
 
 function ModelingToolkit.linearization_function(sys::ModelingToolkit.AbstractSystem,
-                                                input_name::Symbol, output_name::Symbol;
+                                                input_name::SymOrVec, output_name::SymOrVec;
                                                 loop_openings = nothing,
                                                 kwargs...)
     t = get_iv(sys)
     @variables u(t)=0 [input = true]
     @variables y(t)=0 [output = true]
-    find_input = namespaced_ap_match(input_name, loop_openings)
-    find_output = namespaced_ap_match(output_name, loop_openings)
-    find = (x, ns) -> find_input(x, ns) || find_output(x, ns)
+    find = namespaced_ap_match([input_name; output_name], loop_openings)
 
-    namespace_u = Ref{Union{Nothing, Symbol}}(nothing)
-    namespace_y = Ref{Union{Nothing, Symbol}}(nothing)
-    apr_u = Ref{Union{Nothing, AnalysisPoint}}(nothing)
-    apr_y = Ref{Union{Nothing, AnalysisPoint}}(nothing)
-    replace = let u = u, y = y, namespace_u = namespace_u, apr_u = apr_u,
-        namespace_y = namespace_y, apr_y = apr_y
+    u = []
+    y = []
+    namespace_u = []
+    namespace_y = []
+    aps_u = []
+    aps_y = []
+    multiplicities_u = Int[]
+    multiplicities_y = Int[]
 
-        function (ap, ns)
-            if namespaced_ap_match(ap, ns, input_name, nothing)
-                namespace_u[] = ns # Save the namespace to make it available for renamespace below
-                apr_u[] = ap
-                [ap_var(ap.out) ~ ap_var(ap.in) + u], u
-                #input.in.u ~ 0] # We only need to ground one of the ends, hence not including this equation
-            elseif namespaced_ap_match(ap, ns, output_name, nothing)
-                namespace_y[] = ns # Save the namespace to make it available for renamespace below
-                apr_y[] = ap
-                [ap_var(ap.in) ~ y
-                 ap_var(ap.out) ~ ap_var(ap.in)], y
-            else # loop opening
-                [ap_var(ap.out) ~ 0], []
-            end
+    replace = function (ap, ns)
+        if namespaced_ap_match(ap, ns, input_name, nothing)
+            push!(namespace_u, ns) # Save the namespace to make it available for renamespace below
+            push!(aps_u, ap)
+            ui = get_perturbation_var(ap_var(ap.out), "u")
+            push!(multiplicities_u, length(ui)) # one ap may yield several new vars
+            append!(u, ui)
+            [ap_var(ap.out) .~ ap_var(ap.in) + ui;], ui
+            #input.in.u ~ 0] # We only need to ground one of the ends, hence not including this equation
+        elseif namespaced_ap_match(ap, ns, output_name, nothing)
+            push!(namespace_y, ns) # Save the namespace to make it available for renamespace below
+            push!(aps_y, ap)
+            yi = get_perturbation_var(ap_var(ap.in), "y")
+            push!(multiplicities_y, length(yi))
+            append!(y, yi)
+            [ap_var(ap.in) .~ yi;
+             ap_var(ap.out) .~ ap_var(ap.in)], yi
+        else # loop opening
+            [ap_var(ap.out) .~ 0;], []
         end
     end
+
     sys = expand_connections(sys, find, replace)
-    (ap = apr_u[]) === nothing && error("Did not find analysis point $input_name")
-    (ap = apr_y[]) === nothing && error("Did not find analysis point $output_name")
-    if (ns = namespace_u[]) !== nothing
-        u = ModelingToolkit.renamespace(ns, u)
-    end
-    if (ns = namespace_y[]) !== nothing
-        y = ModelingToolkit.renamespace(ns, y)
-    end
-    ModelingToolkit.linearization_function(sys, [u], [y]; kwargs...)
+    permutation_u = _check_and_sort!(input_name, aps_u, namespace_u, multiplicities_u)
+    permutation_y = _check_and_sort!(output_name, aps_y, namespace_y, multiplicities_y)
+
+    yn = ModelingToolkit.renamespace.(namespace_u, y) # permutation applied in _check_and_sort
+    un = ModelingToolkit.renamespace.(namespace_y, u)
+    ModelingToolkit.linearization_function(sys, un, yn; kwargs...)
 end
 
 # Add a method to get_sensitivity that accepts the name of an AnalysisPoint
@@ -438,7 +441,7 @@ end
 
 Linearize a system between two analysis points. To get a loop-transfer function, see [`get_looptransfer`](@ref)
 """
-function ModelingToolkit.linearize(sys, input_name::Symbol, output_name::Symbol;
+function ModelingToolkit.linearize(sys, input_name::SymOrVec, output_name::SymOrVec;
                                    loop_openings = nothing, kwargs...)
     lin_fun, ssys = linearization_function(sys, input_name, output_name; loop_openings,
                                            kwargs...)

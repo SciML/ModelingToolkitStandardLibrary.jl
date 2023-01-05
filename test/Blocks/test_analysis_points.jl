@@ -273,7 +273,7 @@ D = [0.0 0.0; 0.0 0.0]
 @named K = Blocks.StateSpace(A, B, C, D)
 Kss = CS.ss(A, B, C, D)
 
-eqs = [connect(P.output, K.input)
+eqs = [connect(P.output, :plant_output, K.input)
        connect(K.output, :plant_input, P.input)]
 sys = ODESystem(eqs, t, systems = [P, K], name = :hej)
 
@@ -292,6 +292,10 @@ T = -CS.feedback(Kss * Pss, I(2), pos_feedback = true)
 matrices, _ = Blocks.get_looptransfer(sys, :plant_input)
 L = Kss * Pss
 @test CS.tf(CS.ss(matrices...)) ≈ CS.tf(L)
+
+matrices, _ = linearize(sys, :plant_input, :plant_output)
+G = CS.feedback(Pss, Kss, pos_feedback = true)
+@test CS.tf(CS.ss(matrices...)) ≈ CS.tf(G)
 
 ## Multiple analysis points ====================================================
 @named P = FirstOrder(k = 1, T = 1)
@@ -353,3 +357,7 @@ L = CS.ss(matrices...) |> sminreal
 @test tf(L[2, 2]) ≈ tf(0)
 @test sminreal(L[1, 2]) ≈ ss(-1)
 @test tf(L[2, 1]) ≈ tf(Ps)
+
+matrices, _ = linearize(sys_outer, [:inner_plant_input], [:inner_plant_output])
+G = CS.ss(matrices...) |> sminreal
+@test tf(G) ≈ tf(CS.feedback(Ps, Cs))
