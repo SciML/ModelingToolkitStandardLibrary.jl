@@ -88,13 +88,13 @@ feedback(P, C)
 ```
 
 ### Obtaining transfer functions
-A statespace system from [ControlSystemsBase](https://juliacontrol.github.io/ControlSystems.jl/latest/man/creating_systems/) can be converted to a transfer function using the function `tf`:
+A statespace system from [ControlSystemsBase](https://juliacontrol.github.io/ControlSystems.jl/stable/man/creating_systems/) can be converted to a transfer function using the function `tf`:
 ```@example LINEAR_ANALYSIS_CS
 tf(S)
 ```
 
 ## Gain and phase margins
-Further linear analysis can be performed using the [analysis methods from ControlSystemsBase](https://juliacontrol.github.io/ControlSystems.jl/latest/lib/analysis/). For example, calculating the gain and phase margins of a system can be done using
+Further linear analysis can be performed using the [analysis methods from ControlSystemsBase](https://juliacontrol.github.io/ControlSystems.jl/stable/lib/analysis/). For example, calculating the gain and phase margins of a system can be done using
 ```@example LINEAR_ANALYSIS_CS
 margin(P)
 ```
