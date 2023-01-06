@@ -410,8 +410,8 @@ function ModelingToolkit.linearization_function(sys::ModelingToolkit.AbstractSys
     permutation_u = _check_and_sort!(input_name, aps_u, namespace_u, multiplicities_u)
     permutation_y = _check_and_sort!(output_name, aps_y, namespace_y, multiplicities_y)
 
-    yn = ModelingToolkit.renamespace.(namespace_u, y) # permutation applied in _check_and_sort
-    un = ModelingToolkit.renamespace.(namespace_y, u)
+    yn = ModelingToolkit.renamespace.(namespace_y, y) # permutation applied in _check_and_sort
+    un = ModelingToolkit.renamespace.(namespace_u, u)
     ModelingToolkit.linearization_function(sys, un, yn; kwargs...)
 end
 
