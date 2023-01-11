@@ -16,6 +16,19 @@ An analysis point can be created explicitly using the constructor [`AnalysisPoin
 connect(comp1.output, :analysis_point_name, comp2.input)
 ```
 
+!!! warning "Causality"
+    Analysis points are *causal*, i.e., they imply a directionality for the flow of information. The order of the connections in the connect statement is thus important, i.e., `connect(out, :name, in)` is different from `connect(in, :name, out)`.
+    
+The directionality of an analysis point can be thought of as an arrow in a block diagram, where the name of the analysis point applies to the arrow itself.
+```
+┌─────┐         ┌─────┐
+│     │  name   │     │
+│  out├────────►│in   │
+│     │         │     │
+└─────┘         └─────┘
+```
+This is signified by the name being the middle argument to `connect`.
+
 Of the above mentioned functions, all except for [`open_loop`](@ref) return the output of [`ModelingToolkit.linearize`](@ref), which is
 ```julia
 matrices, simplified_sys = linearize(...)
