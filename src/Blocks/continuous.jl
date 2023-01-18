@@ -425,20 +425,26 @@ end
 
 A linear, time-invariant state-space system on the form.
 ```math
-ẋ = Ax + Bu
-y = Cx + Du
+\\begin{aligned}
+ẋ &= Ax + Bu \\\\
+y &= Cx + Du
+\\end{aligned}
 ```
 Transfer functions can also be simulated by converting them to a StateSpace form.
 
 `y0` and `u0` can be used to set an operating point, providing them changes the dynamics from an LTI system to the affine system 
 ```math
-ẋ = Ax + B(u - u0)
-y = Cx + D(u - u0) + y0
+\\begin{aligned}
+ẋ &= Ax + B(u - u0) \\\\
+y &= Cx + D(u - u0) + y0
+\\end{aligned}
 ```
 For a nonlinear system
 ```math
-ẋ = f(x, u)
-y = h(x, u)
+\\begin{aligned}
+ẋ &= f(x, u) \\\\
+y &= h(x, u)
+\\end{aligned}
 ```
 linearized around the operating point `x₀, u₀`, we have `y0, u0 = h(x₀, u₀), u₀`.
 """
