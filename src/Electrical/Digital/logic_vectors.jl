@@ -38,3 +38,11 @@ function Base.getindex(s::T, i1::Int, i2::Int,
                                          } where {N}
     getindex(s.logic, i1, i2, I...)
 end
+
+# predefined vectors
+
+std_ulogic = StdULogicVector([U, X, F0, F1, Z, W, L, H, DC])
+UX01 = StdULogicVector([U, X, F0, F1])
+UX01Z = StdULogicVector([U, X, F0, F1, Z])
+X01 = StdULogicVector([X, F0, F1])
+X01Z = StdULogicVector([X, F0, F1, Z])

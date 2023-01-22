@@ -37,7 +37,8 @@ include("Analog/sources.jl")
 export Logic
 include("Digital/logic.jl")
 
-export StdLogicVector, StdULogicVector
+export StdLogicVector, StdULogicVector,
+       std_ulogic, UX01, UX01Z, X01, X01Z
 include("Digital/logic_vectors.jl")
 
 include("Digital/tables.jl")
