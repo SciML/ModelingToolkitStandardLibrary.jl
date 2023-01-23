@@ -8,7 +8,7 @@ struct StdULogicVector{N} <: AbstractArray{Logic, N}
     function StdULogicVector(l::AbstractArray{<:LogicOrNumber})
         N = ndims(l)
         l = AbstractArray{Logic}(convert.(Logic, l))
-        levels = getfield.(l, :level)
+        levels = get_logic_level.(l)
         new{N}(l, levels)
     end
 end
@@ -19,7 +19,7 @@ struct StdLogicVector{N} <: AbstractArray{Logic, N}
     function StdLogicVector(l::AbstractArray{<:LogicOrNumber})
         N = ndims(l)
         l = AbstractArray{Logic}(convert.(Logic, l))
-        levels = getfield.(l, :level)
+        levels = get_logic_level.(l)
         new{N}(l, levels)
     end
 end

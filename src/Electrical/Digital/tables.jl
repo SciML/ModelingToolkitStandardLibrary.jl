@@ -12,7 +12,7 @@ const AndTable = [
                   U X F0 X X X F0 X X]       # DC
 
 function _and2(a::Logic, b::Logic)
-    AndTable[a.level, b.level]
+    AndTable[get_logic_level(a), get_logic_level(b)]
 end
 _and2(a::Number, b::Logic) = _and2(convert(Logic, a), b)
 _and2(a::Logic, b::Number) = _and2(a, convert(Logic, b))
@@ -50,7 +50,7 @@ const OrTable = [
                  U X X F1 X X X F1 X]       # DC
 
 function _or2(a::Logic, b::Logic)
-    OrTable[a.level, b.level]
+    OrTable[get_logic_level(a), get_logic_level(b)]
 end
 _or2(a::Number, b::Logic) = _or2(convert(Logic, a), b)
 _or2(a::Logic, b::Number) = _or2(a, convert(Logic, b))
@@ -80,7 +80,7 @@ const XorTable = [
                   U X X X X X X X X]    # DC
 
 function _xor2(a::Logic, b::Logic)
-    XorTable[a.level, b.level]
+    XorTable[get_logic_level(a), get_logic_level(b)]
 end
 _xor2(a::Number, b::Logic) = _xor2(convert(Logic, a), b)
 _xor2(a::Logic, b::Number) = _xor2(a, convert(Logic, b))
