@@ -1,5 +1,58 @@
 using ModelingToolkitStandardLibrary.Electrical, ModelingToolkit, OrdinaryDiffEq, Test
-using ModelingToolkitStandardLibrary.Electrical: Set, Reset, _and, _or, _not
+using ModelingToolkitStandardLibrary.Electrical: _and, _or, _not, _xor
+using ModelingToolkitStandardLibrary.Electrical: U, X, F0, F1, Z, W, L, H, DC
+using ModelingToolkitStandardLibrary.Electrical: AndTable, OrTable, NotTable, XorTable
+using ModelingToolkitStandardLibrary.Electrical: convert_to_logic, get_logic_level
+# using ModelingToolkitStandardLibrary.Electrical: Set, Reset
+
+@testset "Logic, logic-vectors and helpers" begin
+    # Logic and helper functions
+    @test length(instances(Logic)) == 9
+    @test convert_to_logic.([1, 0]) |> typeof == Vector{Logic}
+    @test get_logic_level(Z) == 5
+
+    # Logic zeros and ones
+    @test zero(Logic) == zero(U) == F0
+    @test one(Logic) == one(U) == F1
+    @test ones(Logic, 2, 2) == [F1 F1
+                                F1 F1]
+
+    # Logic vectors
+    u_logic = StdULogicVector([U, W, X, 1])
+    @test typeof(u_logic.logic) == Vector{Logic}
+    @test get_logic_level(u_logic) == [1, 6, 2, 4]
+
+    logic = StdLogicVector([U, W, X, 1])
+    @test typeof(logic.logic) == Vector{Logic}
+    @test get_logic_level(logic) == [1, 6, 2, 4]
+
+    # Predefiend logic vectors
+    @test std_ulogic.logic == [U, X, F0, F1, Z, W, L, H, DC]
+    @test UX01.logic == [U, X, F0, F1]
+    @test UX01Z.logic == [U, X, F0, F1, Z]
+    @test X01.logic == [X, F0, F1]
+    @test X01Z.logic == [X, F0, F1, Z]
+
+    # Logic helper functions
+    @test get_logic_level.([U, X, F0, F1, Z, W, L, H, DC]) == 1:9
+    @test convert_to_logic.([1, 0, U]) == [F1, F0, U]
+end
+@testset "Logic tables and logic gate helpers" begin
+    # logic tables and logic gate helpers
+    @test size(AndTable) == size(OrTable) == size(XorTable) == (9, 9)
+    @test size(NotTable) == (9,)
+
+    @test _and(1, 1, 1, 1, 1, 0) == F0
+    @test _or(0, 1, 1, 1) == F1
+    @test _xor(0, 1, 1, 1, 1, 1) == F1
+    @test _not(1) == F0
+
+    A = [U, W, Z, F1, F0]
+    B = [U, W, X, F0, DC]
+    _xor.(A, B) == _and.(_or.(A, _not.(B)), _or.(_not.(A), B))
+end
+
+#=
 
 @parameters t
 
@@ -374,5 +427,7 @@ end
 
     u0 = []
     prob = ODEProblem(sys, u0, (0, 1.5))
-    # sol = solve(prob, Rosenbrock23())        
+    # sol = solve(prob, Rosenbrock23())
 end
+
+=#
