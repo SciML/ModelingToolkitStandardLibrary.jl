@@ -196,7 +196,8 @@ end
     # TODO:
 end
 
-@testset "Sum" begin @named s = Sum(2;)
+@testset "Sum" begin
+    @named s = Sum(2;)
     # TODO:
 end
 

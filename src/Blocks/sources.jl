@@ -86,7 +86,7 @@ Generate sine signal.
 - `offset`: Offset of output signal
 - `start_time`: [s] Output `y = offset` for `t < start_time`
 - `smooth`:  If `true`, returns a smooth wave. Defaults to `false`
-             It uses a smoothing factor of `δ=1e-5`
+             It uses a default smoothing factor of `δ=1e-5`, but this can be changed by supplying `smooth=δ`.
 
 # Connectors:
 - `output`
@@ -104,8 +104,8 @@ function Sine(; name,
         offset + ifelse(t < start_time, 0,
                amplitude * sin(2 * pi * frequency * (t - start_time) + phase))
     else
-        δ = 1e-5
-        smooth_sin(t, δ, frequency, amplitude, phase, offset, start_time)
+        smooth === true && (smooth = 1e-5)
+        smooth_sin(t, smooth, frequency, amplitude, phase, offset, start_time)
     end
 
     eqs = [
@@ -125,7 +125,7 @@ Generate cosine signal.
 - `offset`: Offset of output signal
 - `start_time`: [s] Output `y = offset` for `t < start_time`
 - `smooth`:  If `true`, returns a smooth wave. Defaults to `false`
-             It uses a smoothing factor of `δ=1e-5`
+             It uses a default smoothing factor of `δ=1e-5`, but this can be changed by supplying `smooth=δ`.
 
 # Connectors:
 - `output`
@@ -144,8 +144,8 @@ function Cosine(; name,
         offset + ifelse(t < start_time, zero(t),
                amplitude * cos(2 * pi * frequency * (t - start_time) + phase))
     else
-        δ = 1e-5
-        smooth_cos(t, δ, frequency, amplitude, phase, offset, start_time)
+        smooth === true && (smooth = 1e-5)
+        smooth_cos(t, smooth, frequency, amplitude, phase, offset, start_time)
     end
     eqs = [
         output.u ~ equation,
@@ -183,7 +183,7 @@ Generate ramp signal.
 - `offset`: Offset of output signal
 - `start_time`: [s] Output `y = offset` for `t < start_time`
 - `smooth`:  If `true`, returns a smooth wave. Defaults to `false`
-             It uses a smoothing factor of `δ=1e-5`
+             It uses a default smoothing factor of `δ=1e-5`, but this can be changed by supplying `smooth=δ`.
 
 # Connectors:
 - `output`
@@ -201,8 +201,8 @@ function Ramp(; name,
                ifelse(t < (start_time + duration), (t - start_time) * height / duration,
                       height))
     else
-        δ = 1e-5
-        smooth_ramp(t, δ, height, duration, offset, start_time)
+        smooth === true && (smooth = 1e-5)
+        smooth_ramp(t, smooth, height, duration, offset, start_time)
     end
 
     eqs = [
@@ -221,15 +221,13 @@ Generate smooth square signal.
 - `offset`: Offset of output signal
 - `start_time`: [s] Output `y = offset` for `t < start_time`
 - `smooth`:  If `true`, returns a smooth wave. Defaults to `false`
-             It uses a smoothing factor of `δ=1e-5`
+             It uses a default smoothing factor of `δ=1e-5`, but this can be changed by supplying `smooth=δ`.
 
 # Connectors:
 - `output`
 """
 function Square(; name, frequency = 1.0, amplitude = 1.0,
                 offset = 0.0, start_time = 0.0, smooth = false)
-    δ = 1e-5
-
     @named output = RealOutput()
     pars = @parameters begin
         frequency = frequency
@@ -241,8 +239,8 @@ function Square(; name, frequency = 1.0, amplitude = 1.0,
     equation = if smooth == false
         square(t, frequency, amplitude, offset, start_time)
     else
-        δ = 1e-5
-        smooth_square(t, δ, frequency, amplitude, offset, start_time)
+        smooth === true && (smooth = 1e-5)
+        smooth_square(t, smooth, frequency, amplitude, offset, start_time)
     end
 
     eqs = [
@@ -262,25 +260,25 @@ Generate step signal.
 - `offset`: Offset of output signal
 - `start_time`: [s] Output `y = offset` for `t < start_time` and thereafter `offset+height`.
 - `duration`: [s] If `duration < Inf` is supplied, the output will revert to `offset` after `duration` seconds.
-- `smooth`:  If `true`, returns a smooth wave. Defaults to `false`
-             It uses a smoothing factor of `δ=1e-5`
+- `smooth`:  If `true`, returns a smooth wave. Defaults to `true`
+             It uses a default smoothing factor of `δ=1e-5`, but this can be changed by supplying `smooth=δ`.
 
 # Connectors:
 - `output`
 """
-function Step(; name, height = 1, offset = 0, start_time = 0, duration = Inf, smooth = true)
+function Step(; name, height = 1, offset = 0, start_time = 0, duration = Inf, smooth = 1e-5)
     @named output = RealOutput()
     duration_numeric = duration
     pars = @parameters offset=offset start_time=start_time height=height duration=duration
-    equation = if !smooth
+    equation = if smooth == false # use comparison in case smooth is a float
         offset + ifelse((start_time < t) & (t < start_time + duration), height, 0)
     else
-        δ = 1e-5
+        smooth === true && (smooth = 1e-5)
         if duration_numeric == Inf
-            smooth_step(t, δ, height, offset, start_time)
+            smooth_step(t, smooth, height, offset, start_time)
         else
-            smooth_step(t, δ, height, offset, start_time) -
-            smooth_step(t, δ, height, 0, start_time + duration)
+            smooth_step(t, smooth, height, offset, start_time) -
+            smooth_step(t, smooth, height, 0, start_time + duration)
         end
     end
 
@@ -302,7 +300,7 @@ Generate exponentially damped sine signal.
 - `offset`: Offset of output signal
 - `start_time`: [s] Output `y = offset` for `t < start_time`
 - `smooth`:  If `true`, returns a smooth wave. Defaults to `false`
-             It uses a smoothing factor of `δ=1e-5`
+             It uses a default smoothing factor of `δ=1e-5`, but this can be changed by supplying `smooth=δ`.
 
 # Connectors:
 - `output`
@@ -323,8 +321,9 @@ function ExpSine(; name,
                amplitude * exp(-damping * (t - start_time)) *
                sin(2 * pi * frequency * (t - start_time) + phase))
     else
-        δ = 1e-5
-        smooth_damped_sin(t, δ, frequency, amplitude, damping, phase, offset, start_time)
+        smooth === true && (smooth = 1e-5)
+        smooth_damped_sin(t, smooth, frequency, amplitude, damping, phase, offset,
+                          start_time)
     end
 
     eqs = [
@@ -343,7 +342,7 @@ Generate smooth triangular signal for frequencies less than or equal to 25 Hz
 - `offset`: Offset of output signal.
 - `start_time`: [s] Output `y = offset` for `t < start_time`
 - `smooth`:  If `true`, returns a smooth wave. Defaults to `false`
-             It uses a smoothing factor of `δ=1e-5`
+             It uses a default smoothing factor of `δ=1e-5`, but this can be changed by supplying `smooth=δ`.
 
 # Connectors:
 - `output`
@@ -361,8 +360,8 @@ function Triangular(; name, amplitude = 1.0, frequency = 1.0,
     equation = if smooth == false
         triangular(t, frequency, amplitude, offset, start_time)
     else
-        δ = 1e-5
-        smooth_triangular(t, δ, frequency, amplitude, offset, start_time)
+        smooth === true && (smooth = 1e-5)
+        smooth_triangular(t, smooth, frequency, amplitude, offset, start_time)
     end
 
     eqs = [
