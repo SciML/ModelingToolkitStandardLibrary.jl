@@ -1,15 +1,19 @@
 using ModelingToolkitStandardLibrary.Electrical, ModelingToolkit, OrdinaryDiffEq, Test
 using ModelingToolkitStandardLibrary.Electrical: _and, _or, _not, _xor
-using ModelingToolkitStandardLibrary.Electrical: U, X, F0, F1, Z, W, L, H, DC
+using ModelingToolkitStandardLibrary.Electrical: U, X, F0, F1, Z, W, L, H, DC, Uninitialized
 using ModelingToolkitStandardLibrary.Electrical: AndTable, OrTable, NotTable, XorTable
-using ModelingToolkitStandardLibrary.Electrical: convert_to_logic, get_logic_level
+using ModelingToolkitStandardLibrary.Electrical: get_logic_level
 # using ModelingToolkitStandardLibrary.Electrical: Set, Reset
 
 @testset "Logic, logic-vectors and helpers" begin
     # Logic and helper functions
     @test length(instances(Logic)) == 9
-    @test convert_to_logic.([1, 0]) |> typeof == Vector{Logic}
+    @test convert.(Logic, [1, 0]) |> typeof == Vector{Logic}
     @test get_logic_level(Z) == 5
+
+    io = IOBuffer()
+    show(io, MIME("text/plain"), Uninitialized)
+    @test String(take!(io)) == "U"
 
     # Logic zeros and ones
     @test zero(Logic) == zero(U) == F0
@@ -33,18 +37,35 @@ using ModelingToolkitStandardLibrary.Electrical: convert_to_logic, get_logic_lev
     @test X01.logic == [X, F0, F1]
     @test X01Z.logic == [X, F0, F1, Z]
 
+    # Logic vector helpers
+    logic_vector = StdULogicVector([U F0
+                                    F1 X])
+    size(logic_vector) == (2, 2)
+    axes(logic_vector) == (Base.OneTo(2), Base.OneTo(2))
+    getindex(logic_vector, 1, 1) == U
+
+    getindex(StdLogicVector([U, F0, F1, X]), 1) == U
+
     # Logic helper functions
     @test get_logic_level.([U, X, F0, F1, Z, W, L, H, DC]) == 1:9
-    @test convert_to_logic.([1, 0, U]) == [F1, F0, U]
+    @test convert.(Logic, [1, 0, U]) == [F1, F0, U]
+    @test_throws "3 isn't a valid `Logic` value" convert(Logic, 3)
 end
+
 @testset "Logic tables and logic gate helpers" begin
     # logic tables and logic gate helpers
     @test size(AndTable) == size(OrTable) == size(XorTable) == (9, 9)
     @test size(NotTable) == (9,)
 
-    @test _and(1, 1, 1, 1, 1, 0) == F0
-    @test _or(0, 1, 1, 1) == F1
-    @test _xor(0, 1, 1, 1, 1, 1) == F1
+    # tests (Number, Number), (Logic, Logic), (Logic, Number) inputs
+    @test _and(1, 1, U, W, 1, 0) == F0
+    @test _or(0, 1, U, 1) == F1
+    @test _xor(0, 1, U, U, 1, 1) == U
+    # tests (Number, Logic) input
+    @info _and(1, F1) == F1
+    @info _or(0, F0) == F0
+    @test _xor(1, F0) == F1
+    # tests Number and Logic (via internal convert)
     @test _not(1) == F0
 
     A = [U, W, Z, F1, F0]
