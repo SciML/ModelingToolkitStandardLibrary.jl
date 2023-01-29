@@ -30,14 +30,14 @@ function Base.show(io::IO, ::MIME"text/plain", l::Logic)
     elseif Int(l) == 9
         print(io, "DC")
     else
-        print(io, "Invalid logic level")
+        print(io, "Invalid logic level: $l")
     end
 end
 
-Base.zero(l::Logic) = F0
-Base.zero(l::Type{Logic}) = F0
-Base.one(l::Logic) = F1
-Base.one(l::Type{Logic}) = F1
+Base.zero(::Logic) = F0
+Base.zero(::Type{Logic}) = F0
+Base.one(::Logic) = F1
+Base.one(::Type{Logic}) = F1
 
 # Helpers to convert 1 and 0 to their `Logic` counterparts
 function Base.convert(l::Type{Logic}, i::Number)

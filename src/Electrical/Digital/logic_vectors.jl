@@ -24,20 +24,20 @@ end
 
 const LogicVector = Union{StdULogicVector, StdLogicVector}
 
-Base.size(l::L) where {L <: LogicVector} = size(l.logic)
+Base.size(l::LogicVector) = size(l.logic)
 
-Base.axes(l::L) where {L <: LogicVector} = axes(l.logic)
+Base.axes(l::LogicVector) = axes(l.logic)
 
-function Base.getindex(s::L,
-                       i::Int) where {L <: LogicVector}
+function Base.getindex(s::LogicVector,
+                       i::Int)
     getindex(s.logic, i)
 end
-function Base.getindex(s::L, i1::Int, i2::Int,
-                       I::Int...) where {L <: LogicVector}
+function Base.getindex(s::LogicVector, i1::Int, i2::Int,
+                       I::Int...)
     getindex(s.logic, i1, i2, I...)
 end
 
-get_logic_level(s::L) where {L <: LogicVector} = s.level
+get_logic_level(s::LogicVector) = s.level
 
 # predefined vectors
 std_ulogic = StdULogicVector([U, X, F0, F1, Z, W, L, H, DC])
