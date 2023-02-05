@@ -25,7 +25,6 @@ include("Analog/sensors.jl")
 export Voltage, Current
 include("Analog/sources.jl")
 
-# include("Digital/logic_vectors.jl")
 # include("Digital/gates.jl")
 # include("Digital/sources.jl")
 
@@ -38,7 +37,8 @@ export Logic
 include("Digital/logic.jl")
 
 export StdLogicVector, StdULogicVector,
-       std_ulogic, UX01, UX01Z, X01, X01Z
+       std_ulogic, UX01, UX01Z, X01, X01Z,
+       get_logic_level
 include("Digital/logic_vectors.jl")
 
 include("Digital/tables.jl")

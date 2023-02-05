@@ -38,13 +38,20 @@ using ModelingToolkitStandardLibrary.Electrical: get_logic_level
     @test X01Z.logic == [X, F0, F1, Z]
 
     # Logic vector helpers
-    logic_vector = StdULogicVector([U F0
-                                    F1 X])
-    size(logic_vector) == (2, 2)
-    axes(logic_vector) == (Base.OneTo(2), Base.OneTo(2))
-    getindex(logic_vector, 1, 1) == U
+    test_logic_matrix = StdULogicVector([U F0
+                                         F1 X])
+    test_logic_vector = StdLogicVector([U, F0, F1, X])
 
-    getindex(StdLogicVector([U, F0, F1, X]), 1) == U
+    size(test_logic_matrix) == (2, 2)
+    axes(test_logic_matrix) == (Base.OneTo(2), Base.OneTo(2))
+
+    getindex(test_logic_matrix, 1, 1) == U
+    getindex(test_logic_vector, 1) == U
+
+    setindex!(test_logic_matrix, Z, 1, 1)
+    @test test_logic_matrix[1, 1] == Z
+    setindex!(test_logic_vector, Z, 1)
+    @test test_logic_vector[1] == Z
 
     # Logic helper functions
     @test get_logic_level.([U, X, F0, F1, Z, W, L, H, DC]) == 1:9
@@ -62,8 +69,8 @@ end
     @test _or(0, 1, U, 1) == F1
     @test _xor(0, 1, U, U, 1, 1) == U
     # tests (Number, Logic) input
-    @info _and(1, F1) == F1
-    @info _or(0, F0) == F0
+    @test _and(1, F1) == F1
+    @test _or(0, F0) == F0
     @test _xor(1, F0) == F1
     # tests Number and Logic (via internal convert)
     @test _not(1) == F0
