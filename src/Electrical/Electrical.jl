@@ -41,6 +41,8 @@ export StdLogicVector, StdULogicVector,
        get_logic_level
 include("Digital/logic_vectors.jl")
 
+export LogicTable,
+       AndTable, OrTable, NotTable, XorTable
 include("Digital/tables.jl")
 
 end

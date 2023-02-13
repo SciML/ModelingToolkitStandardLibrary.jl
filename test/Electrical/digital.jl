@@ -59,7 +59,19 @@ using ModelingToolkitStandardLibrary.Electrical: get_logic_level
     @test_throws "3 isn't a valid `Logic` value" convert(Logic, 3)
 end
 
-@testset "Logic tables and logic gate helpers" begin
+@testset "Logic Tables" begin
+    # LogicTable vec-or-mat and helpers
+    test_not_logic_table = LogicTable([U, X, F1, F0, X, X, F1, F0, X])
+    @test test_not_logic_table[1] == U
+    @test test_not_logic_table[F1] == F0
+
+    test_not_logic_table[1] = X
+    @test test_not_logic_table[1] == X
+
+    @test_throws ArgumentError LogicTable([U; U])
+end
+
+@testset "Gate tables and logic gate helpers" begin
     # logic tables and logic gate helpers
     @test size(AndTable) == size(OrTable) == size(XorTable) == (9, 9)
     @test size(NotTable) == (9,)
