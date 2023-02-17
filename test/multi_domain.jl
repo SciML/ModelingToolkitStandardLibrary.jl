@@ -5,6 +5,7 @@ using ModelingToolkitStandardLibrary.Blocks
 using ModelingToolkitStandardLibrary.Thermal
 import ModelingToolkitStandardLibrary
 using ModelingToolkit, OrdinaryDiffEq, Test
+using OrdinaryDiffEq: ReturnCode.Success
 # using Plots
 
 @parameters t
@@ -59,7 +60,7 @@ D = Differential(t)
     @test_broken prob = ODAEProblem(sys, Pair[], (0, 6.0))
     @test_skip begin
         sol = solve(prob, Rodas4())
-        @test sol.retcode == :Success
+        @test sol.retcode == Success
         # EMF equations
         @test -0.5 .* sol[emf.i] == sol[emf.flange.tau]
         @test sol[emf.v] == 0.5 .* sol[emf.w]
@@ -75,7 +76,7 @@ D = Differential(t)
 
     prob = DAEProblem(sys, D.(states(sys)) .=> 0.0, Pair[], (0, 6.0))
     sol = solve(prob, DFBDF())
-    @test sol.retcode == :Success
+    @test sol.retcode == Success
     # EMF equations
     @test -0.5 .* sol[emf.i] == sol[emf.flange.tau]
     @test sol[emf.v] == 0.5 .* sol[emf.w]
@@ -147,7 +148,7 @@ end
     @test_skip begin
         sol = solve(prob, Rodas4())
 
-        @test sol.retcode == :Success
+        @test sol.retcode == Success
         # EMF equations
         @test -0.5 .* sol[emf.i] == sol[emf.flange.tau]
         @test sol[emf.v] == 0.5 .* sol[emf.w]
@@ -161,14 +162,14 @@ end
         @test sol[inertia.w][idx_t]≈(dc_gain * [V_step; -tau_L_step])[2] rtol=1e-3
         @test sol[emf.i][idx_t]≈(dc_gain * [V_step; -tau_L_step])[1] rtol=1e-3
 
-        # 
+        #
         @test all(sol[inertia.w] .== sol[speed_sensor.w.u])
     end
 
     prob = DAEProblem(sys, D.(states(sys)) .=> 0.0, Pair[], (0, 6.0))
     sol = solve(prob, DFBDF())
 
-    @test sol.retcode == :Success
+    @test sol.retcode == Success
     # EMF equations
     @test -0.5 .* sol[emf.i] == sol[emf.flange.tau]
     @test sol[emf.v] == 0.5 .* sol[emf.w]
@@ -180,7 +181,7 @@ end
     idx_t = findfirst(sol.t .> 5.5)
     @test sol[inertia.w][idx_t]≈(dc_gain * [V_step; -tau_L_step])[2] rtol=1e-3
     @test sol[emf.i][idx_t]≈(dc_gain * [V_step; -tau_L_step])[1] rtol=1e-3
-    # 
+    #
     @test all(sol[inertia.w] .== sol[speed_sensor.w.u])
 end
 
@@ -210,6 +211,6 @@ end
 
     prob = ODEProblem(sys, Pair[], (0, 6.0))
     sol = solve(prob, Rodas4())
-    @test sol.retcode == :Success
+    @test sol.retcode == Success
     @test sol[source.v * source.i] == -sol[env.port.Q_flow]
 end

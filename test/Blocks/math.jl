@@ -2,6 +2,7 @@ using ModelingToolkitStandardLibrary.Blocks
 using ModelingToolkit, OrdinaryDiffEq, Test
 using ModelingToolkitStandardLibrary.Blocks: _clamp, _dead_zone
 using ModelingToolkit: inputs, unbound_inputs, bound_inputs
+using OrdinaryDiffEq: ReturnCode.Success
 
 @parameters t
 
@@ -19,7 +20,7 @@ using ModelingToolkit: inputs, unbound_inputs, bound_inputs
     sol = solve(prob, Rodas4())
 
     @test isequal(unbound_inputs(sys), [])
-    @test sol.retcode == :Success
+    @test sol.retcode == Success
     @test all(sol[c.output.u] .≈ 1)
     @test sol[int.output.u][end] ≈ 2 # expected solution after 1s
 end
@@ -43,7 +44,7 @@ end
 
     sol = solve(prob, Rodas4())
     @test isequal(unbound_inputs(sys), [])
-    @test sol.retcode == :Success
+    @test sol.retcode == Success
     @test sol[int.output.u][end] ≈ 2 # expected solution after 1s
 end
 
@@ -63,7 +64,7 @@ end
     prob = ODEProblem(sys, Pair[int.x => 0.0], (0.0, 1.0))
     sol = solve(prob, Rodas4())
     @test isequal(unbound_inputs(sys), [])
-    @test sol.retcode == :Success
+    @test sol.retcode == Success
     @test sol[add.output.u] ≈ 1 .+ sin.(2 * pi * sol.t)
 
     @testset "weights" begin
@@ -81,7 +82,7 @@ end
         prob = ODEProblem(sys, Pair[int.x => 0.0], (0.0, 1.0))
         sol = solve(prob, Rodas4())
         @test isequal(unbound_inputs(sys), [])
-        @test sol.retcode == :Success
+        @test sol.retcode == Success
         @test sol[add.output.u] ≈ k1 .* 1 .+ k2 .* sin.(2 * pi * sol.t)
     end
 end
@@ -104,7 +105,7 @@ end
     prob = ODEProblem(sys, Pair[int.x => 0.0], (0.0, 1.0))
     sol = solve(prob, Rodas4())
     @test isequal(unbound_inputs(sys), [])
-    @test sol.retcode == :Success
+    @test sol.retcode == Success
     @test sol[add.output.u] ≈ 1 .+ sin.(2 * pi * sol.t) .+ sin.(2 * pi * 2 * sol.t)
 
     @testset "weights" begin
@@ -124,7 +125,7 @@ end
         prob = ODEProblem(sys, Pair[int.x => 0.0], (0.0, 1.0))
         sol = solve(prob, Rodas4())
         @test isequal(unbound_inputs(sys), [])
-        @test sol.retcode == :Success
+        @test sol.retcode == Success
         @test sol[add.output.u] ≈
               k1 .* 1 .+ k2 .* sin.(2 * pi * sol.t) .+ k3 .* sin.(2 * pi * 2 * sol.t)
     end
@@ -146,7 +147,7 @@ end
     prob = ODEProblem(sys, Pair[int.x => 0.0], (0.0, 1.0))
     sol = solve(prob, Rodas4())
     @test isequal(unbound_inputs(sys), [])
-    @test sol.retcode == :Success
+    @test sol.retcode == Success
     @test sol[prod.output.u] ≈ 2 * sin.(2 * pi * sol.t)
 end
 
@@ -166,7 +167,7 @@ end
     prob = ODEProblem(sys, Pair[int.x => 0.0], (0.0, 1.0))
     sol = solve(prob, Rodas4())
     @test isequal(unbound_inputs(sys), [])
-    @test sol.retcode == :Success
+    @test sol.retcode == Success
     @test sol[div.output.u] ≈ sin.(2 * pi * sol.t) ./ 2
 end
 
@@ -184,7 +185,7 @@ end
     prob = ODEProblem(sys, Pair[int.x => 0.0], (0.0, 1.0))
     sol = solve(prob, Rodas4())
     @test isequal(unbound_inputs(sys), [])
-    @test sol.retcode == :Success
+    @test sol.retcode == Success
     @test sol[absb.output.u] ≈ abs.(sin.(2 * pi * sol.t))
 end
 
@@ -228,7 +229,7 @@ end
         prob = ODEProblem(sys, Pair[int.x => 0.0], (0.0, 1.0))
         sol = solve(prob, Rodas4())
         @test isequal(unbound_inputs(sys), [])
-        @test sol.retcode == :Success
+        @test sol.retcode == Success
         @test sol[b.output.u] ≈ func.(sol[source.output.u])
     end
 
@@ -246,7 +247,7 @@ end
         prob = ODEProblem(sys, Pair[int.x => 0.0, b.input.u => 2.0], (0.0, 1.0))
         sol = solve(prob, Rodas4())
         @test isequal(unbound_inputs(sys), [])
-        @test sol.retcode == :Success
+        @test sol.retcode == Success
         @test sol[b.output.u] ≈ func.(sol[source.output.u])
     end
 end
@@ -271,6 +272,6 @@ end
     @test isequal(unbound_inputs(sys), [])
     @test all(map(u -> u in Set([b.input1.u, b.input2.u, int.input.u]), bound_inputs(sys)))
     @test all(map(u -> u in Set([b.input1.u, b.input2.u, int.input.u]), inputs(sys)))
-    @test sol.retcode == :Success
+    @test sol.retcode == Success
     @test sol[int.input.u] ≈ atan.(sol[c1.output.u], sol[c2.output.u])
 end

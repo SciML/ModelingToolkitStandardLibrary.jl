@@ -1,5 +1,6 @@
 using ModelingToolkitStandardLibrary.Electrical, ModelingToolkit, OrdinaryDiffEq #, Plots
 using ModelingToolkitStandardLibrary.Blocks: Constant
+using OrdinaryDiffEq: ReturnCode.Success
 using Test
 
 @testset "RC demo" begin
@@ -24,6 +25,6 @@ using Test
     prob = ODAEProblem(sys, Pair[], (0, 10.0))
     sol = solve(prob, Tsit5())
     #plot(sol)
-    @test sol.retcode == :Success
+    @test sol.retcode == Success
     @test isapprox(sol[capacitor.v][end], V, atol = 1e-2)
 end

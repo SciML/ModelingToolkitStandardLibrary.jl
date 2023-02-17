@@ -3,6 +3,7 @@ using ModelingToolkitStandardLibrary.Blocks
 using ModelingToolkitStandardLibrary.Blocks: smooth_sin, smooth_cos, smooth_damped_sin,
                                              smooth_square, smooth_step, smooth_ramp,
                                              smooth_triangular, triangular, square
+using OrdinaryDiffEq: ReturnCode.Success
 
 @parameters t
 
@@ -19,7 +20,7 @@ using ModelingToolkitStandardLibrary.Blocks: smooth_sin, smooth_cos, smooth_damp
     prob = ODEProblem(sys, Pair[int.x => 0.0], (0.0, 10.0))
 
     sol = solve(prob, Rodas4())
-    @test sol.retcode == :Success
+    @test sol.retcode == Success
     @test sol[src.output.u][end]≈2 atol=1e-3
 end
 
@@ -49,7 +50,7 @@ end
     prob = ODEProblem(sys, Pair[int.x => 0.0], (0.0, 10.0))
 
     sol = solve(prob, Rodas4())
-    @test sol.retcode == :Success
+    @test sol.retcode == Success
     @test sol[src.output.u]≈sine.(sol.t, frequency, amplitude, phase, offset, start_time) atol=1e-3
 
     @named smooth_src = Sine(frequency = frequency,
@@ -68,7 +69,7 @@ end
     smooth_prob = ODEProblem(smooth_sys, Pair[int.x => 0.0], (0.0, 10.0))
     smooth_sol = solve(smooth_prob, Rodas4())
 
-    @test sol.retcode == :Success
+    @test sol.retcode == Success
     @test smooth_sol[smooth_src.output.u]≈smooth_sin.(smooth_sol.t, δ, frequency, amplitude,
                                                       phase, offset, start_time) atol=1e-3
 end
@@ -102,7 +103,7 @@ end
     sys = structural_simplify(iosys)
     prob = ODEProblem(sys, Pair[int.x => 0.0], (0.0, 10.0))
     sol = solve(prob, Rodas4())
-    @test sol.retcode == :Success
+    @test sol.retcode == Success
     @test sol[src.output.u]≈cosine.(sol.t, frequency, amplitude, phase, offset, start_time) atol=1e-3
 
     @named smooth_src = Cosine(frequency = frequency,
@@ -121,7 +122,7 @@ end
     smooth_prob = ODEProblem(smooth_sys, Pair[int.x => 0.0], (0.0, 10.0))
     smooth_sol = solve(smooth_prob, Rodas4())
 
-    @test smooth_sol.retcode == :Success
+    @test smooth_sol.retcode == Success
     @test smooth_sol[smooth_src.output.u]≈smooth_cos.(smooth_sol.t, δ, frequency, amplitude,
                                                       phase, offset, start_time) atol=1e-3
 end
@@ -143,7 +144,7 @@ end
     prob = ODEProblem(sys, Pair[int.x => 0.0], (0.0, 10.0))
 
     sol = solve(prob, Rodas4())
-    @test sol.retcode == :Success
+    @test sol.retcode == Success
     @test sol[src.output.u]≈cont_clock.(sol.t, offset, start_time) atol=1e-3
 end
 
@@ -168,7 +169,7 @@ end
     sys = structural_simplify(iosys)
     prob = ODEProblem(sys, Pair[int.x => 0.0], (0.0, 10.0))
     sol = solve(prob, Rodas4())
-    @test sol.retcode == :Success
+    @test sol.retcode == Success
     @test sol[src.output.u]≈ramp.(sol.t, offset, height, duration, start_time) atol=1e-3
 
     start_time = 2
@@ -184,7 +185,7 @@ end
     smooth_prob = ODEProblem(smooth_sys, Pair[int.x => 0.0], (0.0, 10.0))
     smooth_sol = solve(smooth_prob, Rodas4())
 
-    @test smooth_sol.retcode == :Success
+    @test smooth_sol.retcode == Success
     @test smooth_sol[smooth_src.output.u]≈smooth_ramp.(smooth_sol.t, δ, height, duration,
                                                        offset, start_time) atol=1e-3
 end
@@ -207,7 +208,7 @@ end
     prob = ODEProblem(sys, Pair[int.x => 0.0], (0.0, 10.0))
     sol = solve(prob, Rodas4())
 
-    @test sol.retcode == :Success
+    @test sol.retcode == Success
     @test sol[src.output.u]≈step.(sol.t, offset, height, start_time) atol=1e-2
 
     # test with duration
@@ -224,7 +225,7 @@ end
     prob = ODEProblem(sys, Pair[int.x => 0.0], (0.0, 10.0))
     sol = solve(prob, Rodas4(), dtmax = 0.1) # set dtmax to prevent the solver from overstepping the entire step disturbance
 
-    @test sol.retcode == :Success
+    @test sol.retcode == Success
     @test sol[src.output.u]≈step.(sol.t, offset, height, start_time) -
                             step.(sol.t, 0, height, start_time + duration) atol=1e-2
 
@@ -240,7 +241,7 @@ end
     smooth_prob = ODEProblem(smooth_sys, Pair[int.x => 0.0], (0.0, 10.0))
     smooth_sol = solve(smooth_prob, Rodas4(), dtmax = 0.1) # set dtmax to prevent the solver from overstepping the entire step disturbance)
 
-    @test smooth_sol.retcode == :Success
+    @test smooth_sol.retcode == Success
     @test smooth_sol[smooth_src.output.u] ≈
           smooth_step.(smooth_sol.t, δ, height, offset, start_time)
 
@@ -257,7 +258,7 @@ end
     smooth_prob = ODEProblem(smooth_sys, Pair[int.x => 0.0], (0.0, 10.0))
     smooth_sol = solve(smooth_prob, Rodas4())
 
-    @test smooth_sol.retcode == :Success
+    @test smooth_sol.retcode == Success
     @test smooth_sol[smooth_src.output.u] ≈
           smooth_step.(smooth_sol.t, δ, height, offset, start_time) -
           smooth_step.(smooth_sol.t, δ, height, 0, start_time + duration)
@@ -283,7 +284,7 @@ end
     prob = ODEProblem(sys, Pair[int.x => 0.0], (0.0, 10.0))
     sol = solve(prob, Rodas4())
 
-    @test sol.retcode == :Success
+    @test sol.retcode == Success
     @test sol[src.output.u]≈square.(sol.t, frequency, amplitude, offset, start_time) atol=1e-3
 
     @named smooth_src = Square(frequency = frequency, amplitude = amplitude,
@@ -298,7 +299,7 @@ end
     smooth_prob = ODEProblem(smooth_sys, Pair[int.x => 0.0], (0.0, 10.0))
     smooth_sol = solve(smooth_prob, Rodas4())
 
-    @test smooth_sol.retcode == :Success
+    @test smooth_sol.retcode == Success
     @test smooth_sol[smooth_src.output.u]≈smooth_square.(smooth_sol.t, δ, frequency,
                                                          amplitude, offset, start_time) atol=1e-3
 end
@@ -323,7 +324,7 @@ end
     prob = ODEProblem(sys, Pair[int.x => 0.0], (0.0, 4.0))
     sol = solve(prob, Rodas4(), saveat = 0.01)
 
-    @test sol.retcode == :Success
+    @test sol.retcode == Success
     @test sol[src.output.u]≈triangular.(sol.t, frequency, amplitude, offset, start_time) atol=1e-3
 
     @named smooth_src = Triangular(frequency = frequency, amplitude = amplitude,
@@ -338,7 +339,7 @@ end
     smooth_prob = ODEProblem(smooth_sys, Pair[int.x => 0.0], (0.0, 4.0))
     smooth_sol = solve(smooth_prob, Rodas4(), saveat = 0.01)
 
-    @test smooth_sol.retcode == :Success
+    @test smooth_sol.retcode == Success
     @test smooth_sol[smooth_src.output.u]≈smooth_triangular.(smooth_sol.t, δ, frequency,
                                                              amplitude, offset, start_time) atol=1e-3
 end
@@ -363,7 +364,7 @@ end
     sys = structural_simplify(iosys)
     prob = ODEProblem(sys, Pair[int.x => 0.0], (0.0, 10.0))
     sol = solve(prob, Rodas4())
-    @test sol.retcode == :Success
+    @test sol.retcode == Success
     @test sol[src.output.u]≈exp_sine.(sol.t, amplitude, frequency, damping, phase,
                                       start_time) atol=1e-3
 
@@ -380,7 +381,7 @@ end
     smooth_prob = ODEProblem(smooth_sys, Pair[int.x => 0.0], (0.0, 10.0))
     smooth_sol = solve(smooth_prob, Rodas4())
 
-    @test smooth_sol.retcode == :Success
+    @test smooth_sol.retcode == Success
     @test smooth_sol[smooth_src.output.u]≈smooth_damped_sin.(smooth_sol.t, δ, frequency,
                                                              amplitude, damping, phase,
                                                              offset, start_time) atol=1e-3

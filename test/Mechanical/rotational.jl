@@ -1,6 +1,8 @@
 using ModelingToolkitStandardLibrary.Mechanical.Rotational, ModelingToolkit, OrdinaryDiffEq,
       Test
 import ModelingToolkitStandardLibrary.Blocks
+using OrdinaryDiffEq: ReturnCode.Success
+
 # using Plots
 
 @parameters t
@@ -23,15 +25,15 @@ D = Differential(t)
 
     prob = ODEProblem(sys, Pair[], (0, 10.0))
     sol = solve(prob, Rodas4())
-    @test sol.retcode == :Success
+    @test sol.retcode == Success
 
     prob = ODAEProblem(sys, Pair[], (0, 10.0))
     sol = solve(prob, Rodas4())
-    @test sol.retcode == :Success
+    @test sol.retcode == Success
 
     prob = DAEProblem(sys, D.(states(sys)) .=> 0.0, Pair[], (0, 10.0))
     sol = solve(prob, DFBDF())
-    @test sol.retcode == :Success
+    @test sol.retcode == Success
     @test all(sol[inertia1.w] .== 0)
     @test sol[inertia2.w][end]≈0 atol=1e-3 # all energy has dissipated
 
@@ -71,14 +73,14 @@ end
     prob = DAEProblem(sys, D.(states(sys)) .=> 0.0,
                       [D(D(inertia2.phi)) => 1.0; D.(states(model)) .=> 0.0], (0, 10.0))
     sol = solve(prob, DFBDF())
-    @test sol.retcode == :Success
+    @test sol.retcode == Success
 
     prob = ODAEProblem(sys, Pair[], (0, 1.0))
     sol = solve(prob, Rodas4())
-    @test sol.retcode == :Success
+    @test sol.retcode == Success
 
     @test_skip begin
-        @test sol.retcode == :Success
+        @test sol.retcode == Success
         @test all(isapprox.(sol[inertia1.w], -sol[inertia2.w] * 2, atol = 1)) # exact opposite oscillation with smaller amplitude J2 = 2*J1
         @test_broken all(sol[torque.flange.tau] .== -sol[sine.output.u]) # torque source is equal to negative sine
     end
@@ -130,7 +132,7 @@ end
         sys = structural_simplify(model) #key 7 not found
         prob = ODAEProblem(sys, Pair[], (0, 1.0))
         sol = solve(prob, Rodas4())
-        @test sol.retcode == :Success
+        @test sol.retcode == Success
     end
     # Plots.plot(sol; vars=[inertia2.w, inertia3.w])
 end
@@ -179,7 +181,7 @@ end
     prob = DAEProblem(sys, D.(states(sys)) .=> 0.0, Pair[], (0, 10.0))
 
     sol = solve(prob, DFBDF())
-    @test sol.retcode == :Success
+    @test sol.retcode == Success
     @test sol[angle_sensor.phi.u] == sol[inertia.flange_a.phi]
 
     # p1 = Plots.plot(sol; vars=[inertia.flange_a.phi, source.phi], title="Angular Position", labels=["Inertia" "Source"], ylabel="Angle in rad")
@@ -216,7 +218,7 @@ end
 
     prob = ODEProblem(sys, Pair[], (0, 10.0))
     sol = solve(prob, Rodas4())
-    @test sol.retcode == :Success
+    @test sol.retcode == Success
     @test all(sol[inertia1.w] .== 0)
     @test all(sol[inertia1.w] .== sol[speed_sensor.w.u])
     @test sol[inertia2.w][end]≈0 atol=1e-3 # all energy has dissipated
@@ -225,7 +227,7 @@ end
 
     prob = DAEProblem(sys, D.(states(sys)) .=> 0.0, Pair[], (0, 10.0))
     sol = solve(prob, DFBDF())
-    @test sol.retcode == :Success
+    @test sol.retcode == Success
     @test all(sol[inertia1.w] .== 0)
     @test all(sol[inertia1.w] .== sol[speed_sensor.w.u])
     @test sol[inertia2.w][end]≈0 atol=1e-3 # all energy has dissipated

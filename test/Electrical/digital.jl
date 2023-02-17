@@ -3,6 +3,8 @@ using ModelingToolkitStandardLibrary.Electrical: _and, _or, _not, _xor
 using ModelingToolkitStandardLibrary.Electrical: U, X, F0, F1, Z, W, L, H, DC, Uninitialized
 using ModelingToolkitStandardLibrary.Electrical: AndTable, OrTable, NotTable, XorTable
 using ModelingToolkitStandardLibrary.Electrical: get_logic_level
+using OrdinaryDiffEq: ReturnCode.Success
+
 # using ModelingToolkitStandardLibrary.Electrical: Set, Reset
 
 @testset "Logic, logic-vectors and helpers" begin
@@ -135,7 +137,7 @@ end
         u0 = []
         prob = ODEProblem(sys, u0, (0, 1.5))
         sol = solve(prob, Rosenbrock23())
-        @test sol.retcode == :Success
+        @test sol.retcode == Success
         @test sol[and.y.val] == _and.(sol[one.d.val], sol[two.d.val])
 
         nand_eqs = [connect(one.d, nand.x1)
@@ -147,7 +149,7 @@ end
         u0 = []
         prob = ODEProblem(sys, u0, (0, 1.5))
         nsol = solve(prob, Rosenbrock23())
-        @test nsol.retcode == :Success
+        @test nsol.retcode == Success
         @test nsol[nand.y.val] == _not.(sol[and.y.val])
     end
 end
@@ -165,7 +167,7 @@ end
         u0 = []
         prob = ODEProblem(sys, u0, (0, 1.5))
         sol = solve(prob, Rosenbrock23())
-        @test sol.retcode == :Success
+        @test sol.retcode == Success
         @test sol[or.y.val] == _or.(sol[one.d.val], sol[two.d.val])
 
         nor_eqs = [connect(one.d, nor.x1)
@@ -177,7 +179,7 @@ end
         u0 = []
         prob = ODEProblem(sys, u0, (0, 1.5))
         nsol = solve(prob, Rosenbrock23())
-        @test nsol.retcode == :Success
+        @test nsol.retcode == Success
         @test nsol[nor.y.val] == _not.(sol[or.y.val])
     end
 end
@@ -195,7 +197,7 @@ end
         u0 = []
         prob = ODEProblem(sys, u0, (0, 1.5))
         sol = solve(prob, Rosenbrock23())
-        @test sol.retcode == :Success
+        @test sol.retcode == Success
         @test sol[xor.y.val] ==
               _or.(_and.(sol[one.d.val], _not.(sol[two.d.val])),
                    _and.(sol[two.d.val], _not.(sol[one.d.val])))
@@ -209,7 +211,7 @@ end
         u0 = []
         prob = ODEProblem(sys, u0, (0, 1.5))
         nsol = solve(prob, Rosenbrock23())
-        @test nsol.retcode == :Success
+        @test nsol.retcode == Success
         @test nsol[xnor.y.val] == _not.(sol[xor.y.val])
     end
 end
@@ -231,7 +233,7 @@ end
         prob = ODEProblem(sys, u0, (0, 1.5))
         sol = solve(prob, Rosenbrock23())
 
-        @test sol.retcode == :Success
+        @test sol.retcode == Success
         @test sol[ha.y0.val] == sol[ha.sum] == _xor.(sol[one.d.val], sol[two.d.val])
     end
 end
@@ -257,7 +259,7 @@ end
         prob = ODEProblem(sys, u0, (0, 1.5))
         sol = solve(prob, Rosenbrock23())
 
-        @test sol.retcode == :Success
+        @test sol.retcode == Success
         @test sol[fa.y0.val] == sol[fa.sum] ==
               _xor(sol[one.d.val], sol[two.d.val], sol[three.d.val])
     end
@@ -294,7 +296,7 @@ end
     prob = ODEProblem(sys, u0, (0, 1.5))
     sol = solve(prob, Rosenbrock23())
 
-    @test sol.retcode == :Success
+    @test sol.retcode == Success
     @test sol[mux2x1.y.val] == sol[mux2x1.d1.val]
     @test sol[mux2x1.y.val] == sol[demux1x2.y0.val]
 
@@ -322,7 +324,7 @@ end
         prob = ODEProblem(sys, u0, (0, 1.5))
         sol = solve(prob, Rosenbrock23())
 
-        @test sol.retcode == :Success
+        @test sol.retcode == Success
         (idx1 == 1 && idx0 == 1) && @test sol[mux4x1.y.val] == sol[mux4x1.d0.val]
         (idx1 == 1 && idx0 == 2) && @test sol[mux4x1.y.val] == sol[mux4x1.d1.val]
         (idx1 == 2 && idx0 == 1) && @test sol[mux4x1.y.val] == sol[mux4x1.d2.val]
@@ -363,7 +365,7 @@ end
         prob = ODEProblem(sys, u0, (0, 1.5))
         sol = solve(prob, Rosenbrock23())
 
-        @test sol.retcode == :Success
+        @test sol.retcode == Success
         (idx1 == 1 && idx0 == 1) && @test sol[demux1x4.d.val] == sol[demux1x4.y0.val]
         (idx1 == 1 && idx0 == 2) && @test sol[demux1x4.d.val] == sol[demux1x4.y1.val]
         (idx1 == 2 && idx0 == 1) && @test sol[demux1x4.d.val] == sol[demux1x4.y2.val]
@@ -398,7 +400,7 @@ end
     prob = ODEProblem(sys, u0, (0, 1.5))
     sol = solve(prob, Rosenbrock23())
 
-    @test sol.retcode == :Success
+    @test sol.retcode == Success
     @test sol[enc4x2.y0.val] == _or.(sol[input[4].d.val], sol[input[2].d.val])
     @test sol[enc4x2.y1.val] == _or.(sol[input[4].d.val], sol[input[3].d.val])
 
@@ -419,7 +421,7 @@ end
     prob = ODEProblem(sys, u0, (0, 1.5))
     sol = solve(prob, Rosenbrock23())
 
-    @test sol.retcode == :Success
+    @test sol.retcode == Success
     @test sol[dec2x4.y0.val] ==
           _and.(_not.(sol[input[2].d.val]),
                 _not.(sol[input[1].d.val]))
@@ -450,7 +452,7 @@ end
         prob = ODEProblem(sys, u0, (0, 1.5))
         sol = solve(prob, Rosenbrock23())
 
-        @test sol.retcode == :Success
+        @test sol.retcode == Success
         @test ModelingToolkitStandardLibrary._and.(sol[and.x1.val], sol[and.x2.val]) ==
               sol[and.y.val]
     end

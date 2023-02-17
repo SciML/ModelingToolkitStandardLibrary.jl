@@ -1,5 +1,6 @@
 using ModelingToolkit, ModelingToolkitStandardLibrary, OrdinaryDiffEq
 using ModelingToolkitStandardLibrary.Blocks
+using OrdinaryDiffEq: ReturnCode.Success
 
 @parameters t
 
@@ -7,7 +8,7 @@ using ModelingToolkitStandardLibrary.Blocks
 Testing strategy:
 The general strategy is to test systems using simple intputs where the solution
 is known on closed form. For algebraic systems (without differential variables),
-an integrator with a constant input is often used together with the system under test. 
+an integrator with a constant input is often used together with the system under test.
 =#
 
 @testset "Constant" begin
@@ -17,9 +18,9 @@ an integrator with a constant input is often used together with the system under
     sys = structural_simplify(iosys)
     prob = ODEProblem(sys, Pair[int.x => 1.0], (0.0, 1.0))
     sol = solve(prob, Rodas4())
-    @test sol.retcode == :Success
+    @test sol.retcode == Success
     @test all(sol[c.output.u] .≈ 1)
-    @test sol[int.output.u][end] .≈ 2 # expected solution 
+    @test sol[int.output.u][end] .≈ 2 # expected solution
 end
 
 @testset "Derivative" begin
@@ -35,7 +36,7 @@ end
     sys = structural_simplify(iosys)
     prob = ODEProblem(sys, Pair[int.x => 0.0], (0.0, 10.0))
     sol = solve(prob, Rodas4())
-    @test sol.retcode == :Success
+    @test sol.retcode == Success
     @test all(isapprox.(sol[source.output.u], sol[int.output.u], atol = 1e-1))
 end
 
@@ -49,7 +50,7 @@ end
     sys = structural_simplify(iosys)
     prob = ODEProblem(sys, Pair[], (0.0, 100.0))
     sol = solve(prob, Rodas4())
-    @test sol.retcode == :Success
+    @test sol.retcode == Success
     @test sol[pt1.output.u]≈pt1_func.(sol.t, k, T) atol=1e-3
 
     # Test highpass feature
@@ -58,7 +59,7 @@ end
     sys = structural_simplify(iosys)
     prob = ODEProblem(sys, Pair[], (0.0, 100.0))
     sol = solve(prob, Rodas4())
-    @test sol.retcode == :Success
+    @test sol.retcode == Success
     @test sol[pt1.output.u]≈k .- pt1_func.(sol.t, k, T) atol=1e-3
 end
 
@@ -82,7 +83,7 @@ end
     sys = structural_simplify(iosys)
     prob = ODEProblem(sys, Pair[], (0.0, 100.0))
     sol = solve(prob, Rodas4())
-    @test sol.retcode == :Success
+    @test sol.retcode == Success
     @test sol[pt2.output.u]≈pt2_func.(sol.t, k, w, d) atol=1e-3
 end
 
@@ -101,7 +102,7 @@ end
     sys = structural_simplify(model)
     prob = ODEProblem(sys, Pair[], (0.0, 100.0))
     sol = solve(prob, Rodas4())
-    @test sol.retcode == :Success
+    @test sol.retcode == Success
     # initial condition
     @test sol[ss.x[1]][1]≈0 atol=1e-3
     @test sol[ss.x[2]][1]≈0 atol=1e-3
@@ -121,7 +122,7 @@ end
     sys = structural_simplify(model)
     prob = ODEProblem(sys, Pair[], (0.0, 100.0))
     sol = solve(prob, Rodas4())
-    @test sol.retcode == :Success
+    @test sol.retcode == Success
 
     @test sol[ss.x[1]][end ÷ 2]≈0 atol=1e-3 # Test that x did not move
     @test sol[ss.x[1]][end]≈0 atol=1e-3 # Test that x did not move
@@ -158,7 +159,7 @@ end
     sys = structural_simplify(model)
     prob = ODEProblem(sys, Pair[], (0.0, 100.0))
     sol = solve(prob, Rodas4())
-    @test sol.retcode == :Success
+    @test sol.retcode == Success
     @test all(isapprox.(sol[ref.output.u], re_val, atol = 1e-3))  # check reference
     @test sol[plant.output.u][end]≈re_val atol=1e-3 # zero control error after 100s
 end
@@ -180,7 +181,7 @@ end
     sys = structural_simplify(model)
     prob = ODEProblem(sys, Pair[], (0.0, 100.0))
     sol = solve(prob, Rodas4())
-    @test sol.retcode == :Success
+    @test sol.retcode == Success
     @test all(isapprox.(sol[ref.output.u], re_val, atol = 1e-3))  # check reference
     @test sol[plant.output.u][end]≈re_val atol=1e-3 # zero control error after 100s
 
@@ -197,7 +198,7 @@ end
         sys = structural_simplify(model)
         prob = ODEProblem(sys, Pair[], (0.0, 100.0))
         sol = solve(prob, Rodas4())
-        @test sol.retcode == :Success
+        @test sol.retcode == Success
         @test all(isapprox.(sol[ref.output.u], re_val, atol = 1e-3))  # check reference
         @test sol[plant.output.u][end]≈re_val atol=1e-3 # zero control error after 100s
     end
@@ -215,7 +216,7 @@ end
         sys = structural_simplify(model)
         prob = ODEProblem(sys, Pair[], (0.0, 100.0))
         sol = solve(prob, Rodas4())
-        @test sol.retcode == :Success
+        @test sol.retcode == Success
         @test all(isapprox.(sol[ref.output.u], re_val, atol = 1e-3))  # check reference
         @test sol[plant.output.u][end] > 1 # without I there will be a steady-state error
     end
@@ -262,8 +263,8 @@ end
         sol = solve(prob, Rodas4())
     end
 
-    @test sol.retcode == :Success
-    @test sol_lim.retcode == :Success
+    @test sol.retcode == Success
+    @test sol_lim.retcode == ReturnCode.Success
     @test all(isapprox.(sol[ref.output.u], re_val, atol = 1e-3))  # check reference
     @test all(isapprox.(sol_lim[ref.output.u], re_val, atol = 1e-3))  # check reference
     @test sol[plant.output.u][end]≈re_val atol=1e-3 # zero control error after 100s
@@ -292,7 +293,7 @@ end
     sol = solve(prob, Rodas4())
 
     # Plots.plot(sol, vars=[plant.output.u, plant.input.u])
-    @test sol.retcode == :Success
+    @test sol.retcode == Success
     @test all(isapprox.(sol[ref.output.u], re_val, atol = 1e-3))  # check reference
     @test sol[plant.output.u][end]≈re_val atol=1e-3 # zero control error after 100s
     @test all(-1.5 .<= sol[pid_controller.ctr_output.u] .<= 1.5) # test limit
@@ -312,7 +313,7 @@ end
         sol = solve(prob, Rodas4())
 
         # Plots.plot(sol, vars=[plant.output.u, plant.input.u])
-        @test sol.retcode == :Success
+        @test sol.retcode == Success
         @test all(isapprox.(sol[ref.output.u], re_val, atol = 1e-3))  # check reference
         @test sol[plant.output.u][end]≈re_val atol=1e-3 # zero control error after 100s
         @test all(-1.5 .<= sol[pid_controller.ctr_output.u] .<= 1.5) # test limit
@@ -332,7 +333,7 @@ end
         sol = solve(prob, Rodas4())
 
         # Plots.plot(sol, vars=[plant.output.u, plant.input.u])
-        @test sol.retcode == :Success
+        @test sol.retcode == Success
         @test all(isapprox.(sol[ref.output.u], re_val, atol = 1e-3))  # check reference
         @test sol[plant.output.u][end] > 0.5 # without I there will be a steady-state error
         @test all(-1.5 .<= sol[pid_controller.ctr_output.u] .<= 1.5) # test limit
@@ -353,7 +354,7 @@ end
             sol = solve(prob, Rodas4())
 
             # Plots.plot(sol, vars=[plant.output.u, plant.input.u])
-            @test sol.retcode == :Success
+            @test sol.retcode == Success
             @test all(isapprox.(sol[ref.output.u], re_val, atol = 1e-3))  # check reference
             sol[pid_controller.addP.output.u] == -sol[pid_controller.measurement.u]
             @test sol[plant.output.u][end]≈re_val atol=1e-3 # zero control error after 100s
@@ -374,7 +375,7 @@ end
             sol = solve(prob, Rodas4())
 
             # Plots.plot(sol, vars=[plant.output.u, plant.input.u])
-            @test sol.retcode == :Success
+            @test sol.retcode == Success
             @test all(isapprox.(sol[ref.output.u], re_val, atol = 1e-3))  # check reference
             @test sol[plant.output.u][end]≈re_val atol=1e-3 # zero control error after 100s
             sol[pid_controller.addD.output.u] == -sol[pid_controller.measurement.u]
@@ -396,7 +397,7 @@ end
         sol = solve(prob, Rodas4())
 
         # Plots.plot(sol, vars=[plant.output.u, plant.input.u])
-        @test sol.retcode == :Success
+        @test sol.retcode == Success
         @test all(isapprox.(sol[ref.output.u], re_val, atol = 1e-3))  # check reference
         @test sol[plant.output.u][end]≈re_val atol=1e-3 # zero control error after 100s
         @test all(-1.5 .<= sol[pid_controller.ctr_output.u] .<= 1.5) # test limit
