@@ -1,5 +1,7 @@
 using ModelingToolkitStandardLibrary.Thermal, ModelingToolkit, OrdinaryDiffEq, Test
 using ModelingToolkitStandardLibrary.Blocks: Constant, Step
+using OrdinaryDiffEq: ReturnCode.Success
+
 @parameters t
 D = Differential(t)
 
@@ -29,7 +31,7 @@ D = Differential(t)
 
     # Check if Relative temperature sensor reads the temperature of heat capacitor
     # when connected to a thermal conductor and a fixed temperature source
-    @test sol.retcode == :Success
+    @test sol.retcode == Success
     @test sol[reltem_sensor.T] + sol[tem_src.port.T] == sol[mass1.T] + sol[th_conductor.dT]
 
     @info "Building a two-body system..."
@@ -49,7 +51,7 @@ D = Differential(t)
     prob = ODEProblem(sys, u0, (0, 3.0))
     sol = solve(prob, Tsit5())
 
-    @test sol.retcode == :Success
+    @test sol.retcode == Success
     m1, m2 = sol.u[end]
     @test m1≈m2 atol=1e-1
     mass_T = reduce(hcat, sol.u)
@@ -85,7 +87,7 @@ end
     prob = ODEProblem(sys, u0, (0, 3.0))
     sol = solve(prob, Tsit5())
 
-    @test sol.retcode == :Success
+    @test sol.retcode == Success
     @test sol[th_conductor.dT] .* G == sol[th_conductor.Q_flow]
     @test sol[th_conductor.Q_flow] ≈ sol[hf_sensor1.Q_flow] + sol[flow_src.port.Q_flow]
 
@@ -119,7 +121,7 @@ end
 
     # Heat-flow-rate is equal in magnitude
     # and opposite in direction
-    @test sol.retcode == :Success
+    @test sol.retcode == Success
     @test sol[gas.Q_flow] + sol[coolant.Q_flow] == zeros(length(sol))
 end
 
@@ -157,7 +159,7 @@ end
     prob = ODEProblem(sys, u0, (0, 3.0))
     sol = solve(prob, Rodas4())
 
-    @test sol.retcode == :Success
+    @test sol.retcode == Success
     @test sol[dissipator.dT] == sol[radiator.port_a.T] - sol[radiator.port_b.T]
     rad_Q_flow = G * σ * (T_gas^4 - T_coolant^4)
     @test sol[radiator.Q_flow] == fill(rad_Q_flow, length(sol[radiator.Q_flow]))
@@ -190,7 +192,7 @@ end
     prob = ODEProblem(sys, u0, (0, 3.0))
     sol = solve(prob, Rodas4())
 
-    @test sol.retcode == :Success
+    @test sol.retcode == Success
     @test sol[collector.port_b.Q_flow] + sol[collector.port_a1.Q_flow] +
           sol[collector.port_a2.Q_flow] ==
           zeros(length(sol[collector.port_b.Q_flow]))
@@ -237,7 +239,7 @@ end
     sol = solve(prob, Rodas4())
 
     # plot(sol; vars=[T_winding.T, T_core.T])
-    @test sol.retcode == :Success
+    @test sol.retcode == Success
     @test sol[T_winding.T] == sol[winding.T]
     @test sol[T_core.T] == sol[core.T]
     @test sol[-core.port.Q_flow] ==

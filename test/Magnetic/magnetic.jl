@@ -4,6 +4,7 @@ import ModelingToolkitStandardLibrary.Electrical
 import ModelingToolkitStandardLibrary.Blocks
 import ModelingToolkitStandardLibrary.Magnetic
 using ModelingToolkit, OrdinaryDiffEq, Test
+using OrdinaryDiffEq: ReturnCode.Success
 # using Plots
 
 @parameters t
@@ -54,7 +55,7 @@ using ModelingToolkit, OrdinaryDiffEq, Test
     # Plots.plot(sol; vars=[r.i])
     # Plots.plot(sol; vars=[r_mFe.V_m, r_mFe.Phi])
 
-    @test sol.retcode == :Success
+    @test sol.retcode == Success
     @test sol[r_mFe.Phi] == sol[r_mAirPar.Phi]
     @test all(sol[coil.port_p.Phi] + sol[r_mLeak.Phi] + sol[r_mAirPar.Phi] .== 0)
 end

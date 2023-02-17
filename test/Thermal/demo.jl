@@ -1,4 +1,6 @@
 using ModelingToolkitStandardLibrary.Thermal, ModelingToolkit, OrdinaryDiffEq, Test
+using OrdinaryDiffEq: ReturnCode.Success
+
 @parameters t
 D = Differential(t)
 
@@ -22,5 +24,5 @@ D = Differential(t)
     sys = structural_simplify(model)
     prob = ODEProblem(sys, [mass1.der_T => 1.0, mass2.der_T => 1.0], (0, 3.0))
     sol = solve(prob, Tsit5())
-    @test sol.retcode == :Success
+    @test sol.retcode == Success
 end

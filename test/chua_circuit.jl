@@ -2,6 +2,7 @@ using ModelingToolkit
 using ModelingToolkitStandardLibrary.Electrical
 using ModelingToolkitStandardLibrary.Electrical: OnePort
 using OrdinaryDiffEq
+using OrdinaryDiffEq: ReturnCode.Success
 using IfElse: ifelse
 
 @testset "Chua Circuit" begin
@@ -46,5 +47,5 @@ using IfElse: ifelse
     prob = ODEProblem(sys, Pair[], (0, 5e4), saveat = 0.01)
     sol = solve(prob, Rodas4())
 
-    @test sol.retcode == :Success
+    @test sol.retcode == Success
 end
