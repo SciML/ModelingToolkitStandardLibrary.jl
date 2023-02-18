@@ -118,11 +118,7 @@ sol = solve(prob)
 p1 = plot(sol, idxs = [capacitor.v])
 p2 = plot(sol, idxs = [resistor.i])
 plot(p1, p2)
-savefig("electrical.png");
-nothing; # hide
 ```
-
-![Plot of Electrical Example](electrical.png)
 
 ### Mechanical Translational Domain
 
@@ -162,11 +158,7 @@ sol_v = solve(prob)
 p1 = plot(sol_v, idxs = [body.v])
 p2 = plot(sol_v, idxs = [damping.f])
 plot(p1, p2)
-savefig("mechanical_velocity.png");
-nothing; # hide
 ```
-
-![Plot of Mechanical (Velocity Based) Example](mechanical_velocity.png)
 
 #### Across Variable = position
 
@@ -201,11 +193,7 @@ p2 = plot(sol_p, idxs = [damping.f])
 p3 = plot(sol_p, idxs = [body.s])
 
 plot(p1, p2, p3)
-savefig("mechanical_position.png");
-nothing; # hide
 ```
-
-![Plot of Mechanical (Velocity Based) Example](mechanical_position.png)
 
 The question then arises, can the position be plotted when using the Mechanical Translational Domain based on the Velocity Across variable?  Yes, we can!  There are 2 solutions:
 
@@ -315,11 +303,7 @@ Now we can plot the comparison of the 2 models and see they give the same result
 plot(ylabel = "mass velocity [m/s]")
 plot!(solv, idxs = [bv.v])
 plot!(solp, idxs = [bp.v])
-savefig("mass_velocity.png");
-nothing; # hide
 ```
-
-![Mass Velocity Comparison](mass_velocity.png)
 
 But, what if we wanted to plot the mass position?  This is easy for the position based domain, we have the state `bp₊s(t)`, but for the velocity based domain we have `sv₊delta_s(t)` which is the spring stretch.  To get the absolute position we add the spring natrual length (1m) and the fixed position (1m).  As can be seen, we then get the same result.
 
@@ -327,11 +311,7 @@ But, what if we wanted to plot the mass position?  This is easy for the position
 plot(ylabel = "mass position [m]")
 plot!(solv, idxs = [sv.delta_s + 1 + 1])
 plot!(solp, idxs = [bp.s])
-savefig("mass_position.png");
-nothing; # hide
 ```
-
-![Mass Position Comparison](mass_position.png)
 
 So in conclusion, the position based domain gives easier access to absolute position information, but requires more initial condition information.
 
@@ -369,8 +349,4 @@ plot(title = "numerical difference: vel. vs. pos. domain", xlabel = "time [s]",
 time = 0:0.1:10
 plot!(time, (solv(time)[bv.v] .- solp(time)[bp.v]), label = "")
 Plots.ylims!(-1e-15, 1e-15)
-savefig("err.png");
-nothing; # hide
 ```
-
-![Accuracy Comparison](err.png)
