@@ -4,15 +4,18 @@
 Lumped thermal element storing heat
 
 # States:
-- `T`: [`K`] Temperature of element
-- `der_T`: [`K/s`] Time derivative of temperature
+
+  - `T`: [`K`] Temperature of element
+  - `der_T`: [`K/s`] Time derivative of temperature
 
 # Connectors:
-- `port`
+
+  - `port`
 
 # Parameters:
-- `C`: [`J/K`] Heat capacity of element (= cp*m)
-- `T_start`: [`K`] Initial temperature of element
+
+  - `C`: [`J/K`] Heat capacity of element (= cp*m)
+  - `T_start`: [`K`] Initial temperature of element
 """
 function HeatCapacitor(; name, C, T_start = 273.15 + 20)
     @named port = HeatPort()
@@ -35,14 +38,17 @@ end
 Lumped thermal element transporting heat without storing it.
 
 # States:
+
 see [`Element1D`](@ref)
 
 # Connectors:
+
 `port_a`
 `port_b`
 
 # Parameters:
-- `G`: [`W/K`] Constant thermal conductance of material
+
+  - `G`: [`W/K`] Constant thermal conductance of material
 """
 function ThermalConductor(; name, G)
     @named element1d = Element1D()
@@ -60,15 +66,18 @@ end
 Lumped thermal element transporting heat without storing it.
 
 # States:
-- `dT`:  [`K`] Temperature difference across the component a.T - b.T
-- `Q_flow`: [`W`] Heat flow rate from port a -> port b
+
+  - `dT`:  [`K`] Temperature difference across the component a.T - b.T
+  - `Q_flow`: [`W`] Heat flow rate from port a -> port b
 
 # Connectors:
-- `port_a`
-- `port_b`
+
+  - `port_a`
+  - `port_b`
 
 # Parameters:
-- `R`: [`K/W`] Constant thermal resistance of material
+
+  - `R`: [`K/W`] Constant thermal resistance of material
 """
 function ThermalResistor(; name, R)
     @named element1d = Element1D()
@@ -87,15 +96,18 @@ end
 Lumped thermal element for heat convection.
 
 # States:
-- `dT`:  [`K`] Temperature difference across the component solid.T - fluid.T
-- `Q_flow`: [`W`] Heat flow rate from `solid` -> `fluid`
+
+  - `dT`:  [`K`] Temperature difference across the component solid.T - fluid.T
+  - `Q_flow`: [`W`] Heat flow rate from `solid` -> `fluid`
 
 # Connectors:
-- `solid`
-- `fluid`
+
+  - `solid`
+  - `fluid`
 
 # Parameters:
-- `G`: [W/K] Convective thermal conductance
+
+  - `G`: [W/K] Convective thermal conductance
 """
 function ConvectiveConductor(; name, G)
     @named solid = HeatPort()
@@ -115,15 +127,18 @@ end
 Lumped thermal element for heat convection.
 
 # States:
-- `dT`:  [`K`] Temperature difference across the component solid.T - fluid.T
-- `Q_flow`: [`W`] Heat flow rate from `solid` -> `fluid`
+
+  - `dT`:  [`K`] Temperature difference across the component solid.T - fluid.T
+  - `Q_flow`: [`W`] Heat flow rate from `solid` -> `fluid`
 
 # Connectors:
-- `solid`
-- `fluid`
+
+  - `solid`
+  - `fluid`
 
 # Parameters:
-- `R`: [`K/W`] Constant thermal resistance of material
+
+  - `R`: [`K/W`] Constant thermal resistance of material
 """
 function ConvectiveResistor(; name, R)
     @named solid = HeatPort()
@@ -143,15 +158,18 @@ end
 Lumped thermal element for radiation heat transfer.
 
 # States:
-- `dT`:  [`K`] Temperature difference across the component a.T - b.T
-- `Q_flow`: [`W`] Heat flow rate from port a -> port b
+
+  - `dT`:  [`K`] Temperature difference across the component a.T - b.T
+  - `Q_flow`: [`W`] Heat flow rate from port a -> port b
 
 # Connectors:
-- `port_a`
-- `port_b`
+
+  - `port_a`
+  - `port_b`
 
 # Parameters:
-- `G`: [m^2] Net radiation conductance between two surfaces
+
+  - `G`: [m^2] Net radiation conductance between two surfaces # Stefan-Boltzmann constant TODO: extract into physical constants module or use existing one
 """
 function BodyRadiation(; name, G)
     sigma = 5.6703744191844294e-8 # Stefan-Boltzmann constant TODO: extract into physical constants module or use existing one
@@ -177,11 +195,13 @@ This is a model to collect the heat flows from `m` heatports to one single heatp
 # States:
 
 # Connectors:
-- `port_a1` to `port_am`
-- `port_b`
+
+  - `port_a1` to `port_am`
+  - `port_b`
 
 # Parameters:
-- `m`: Number of heat ports (e.g. m=2: `port_a1`, `port_a2`)
+
+  - `m`: Number of heat ports (e.g. m=2: `port_a1`, `port_a2`)
 """
 function ThermalCollector(; name, m::Integer = 1)
     port_a = [HeatPort(name = Symbol(:port_a, i)) for i in 1:m]

@@ -2,7 +2,8 @@
 Constant magnetomotive force.
 
 Parameters:
-- `V_m`: [A] Magnetic potential difference
+
+  - `V_m`: [A] Magnetic potential difference
 """
 function ConstantMagneticPotentialDifference(; name, V_m = 1.0)
     port_p = PositiveMagneticPort()
@@ -19,7 +20,8 @@ end
 Source of constant magnetic flux.
 
 Parameters:
-- `Phi`: [Wb] Magnetic flux
+
+  - `Phi`: [Wb] Magnetic flux
 """
 function ConstantMagneticFlux(; name, Phi = 1.0)
     port_p = PositiveMagneticPort()

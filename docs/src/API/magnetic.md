@@ -1,14 +1,17 @@
 # ModelingToolkitStandardLibrary: Magnetic Components
 
-
 ```@contents
 Pages = ["magnetic.md"]
 ```
+
 ## Index
+
 ```@index
 Pages = ["magnetic.md"]
 ```
+
 ## Flux Tubes
+
 ```@meta
 CurrentModule = ModelingToolkitStandardLibrary.Magnetic.FluxTubes
 ```

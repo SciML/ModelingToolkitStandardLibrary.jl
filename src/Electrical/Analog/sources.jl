@@ -4,12 +4,14 @@
 Acts as an ideal voltage source with no internal resistance.
 
 # States:
+
 See [OnePort](@ref)
 
 # Connectors:
-- `p` Positive pin
-- `n` Negative pin
-- `V` [RealInput](@ref) Input for the voltage control signal, i.e. `V ~ p.v - n.v`
+
+  - `p` Positive pin
+  - `n` Negative pin
+  - `V` [RealInput](@ref) Input for the voltage control signal, i.e. `V ~ p.v - n.v`
 """
 function Voltage(; name)
     @named oneport = OnePort()
@@ -28,12 +30,14 @@ end
 Acts as an ideal current source with no internal resistance.
 
 # States:
+
 See [OnePort](@ref)
 
 # Connectors:
-- `p` Positive pin
-- `n` Negative pin
-- `I` [RealInput](@ref) Input for the current control signal, i.e. `I ~ p.i
+
+  - `p` Positive pin
+  - `n` Negative pin
+  - `I` [RealInput](@ref) Input for the current control signal, i.e. `I ~ p.i
 """
 function Current(; name)
     @named oneport = OnePort()

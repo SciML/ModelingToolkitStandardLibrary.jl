@@ -1,13 +1,15 @@
 # ModelingToolkitStandardLibrary: Electrical Components
+
 ```@meta
 CurrentModule = ModelingToolkitStandardLibrary.Electrical
 ```
 
-
 ```@contents
 Pages = ["electrical.md"]
 ```
+
 ## Index
+
 ```@index
 Pages = ["electrical.md"]
 ```
@@ -63,6 +65,7 @@ ExpSineCurrent
 ```
 
 ## Digital Gates
+
 ```@docs
 Not
 And
@@ -74,6 +77,7 @@ Xnor
 ```
 
 ## Digital Components
+
 ```@docs
 HalfAdder
 FullAdder
@@ -84,6 +88,7 @@ Decoder
 ```
 
 ## Digital Sources
+
 ```@docs
 PulseDiff
 Set

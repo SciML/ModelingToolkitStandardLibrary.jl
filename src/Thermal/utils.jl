@@ -20,21 +20,24 @@ Port for a thermal system.
 """
     Element1D(;name, dT0=0.0, Q_flow0=0.0)
 
-This partial model contains the basic connectors and variables to allow heat transfer models to be created that do not 
+This partial model contains the basic connectors and variables to allow heat transfer models to be created that do not
 store energy. This model defines and includes equations for the temperature drop across the element, `dT`, and the heat
 flow rate through the element from `port_a` to `port_b`, `Q_flow`.
 
 # States:
-- `dT`:  [`K`] Temperature difference across the component a.T - b.T
-- `Q_flow`: [`W`] Heat flow rate from port a -> port b
+
+  - `dT`:  [`K`] Temperature difference across the component a.T - b.T
+  - `Q_flow`: [`W`] Heat flow rate from port a -> port b
 
 # Connectors:
+
 `port_a`
 `port_b`
 
 # Parameters:
-- `dT_start`:  [K] Initial temperature difference across the component a.T - b.T
-- `Q_flow_start`: [W] Initial heat flow rate from port a -> port b
+
+  - `dT_start`:  [K] Initial temperature difference across the component a.T - b.T
+  - `Q_flow_start`: [W] Initial heat flow rate from port a -> port b
 """
 function Element1D(; name, dT_start = 0.0, Q_flow_start = 0.0)
     @named port_a = HeatPort()

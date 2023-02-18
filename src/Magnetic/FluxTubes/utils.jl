@@ -21,8 +21,9 @@ const NegativeMagneticPort = MagneticPort
 Partial component with magnetic potential difference between two magnetic ports p and n and magnetic flux Phi from p to n.
 
 # Parameters:
-- `V_m_start`: Initial magnetic potential difference between both ports
-- `Phi_start`: Initial magnetic flux from port_p to port_n
+
+  - `V_m_start`: Initial magnetic potential difference between both ports
+  - `Phi_start`: Initial magnetic flux from port_p to port_n
 """
 function TwoPort(; name, V_m_start = 0.0, Phi_start = 0.0)
     @named port_p = PositiveMagneticPort()

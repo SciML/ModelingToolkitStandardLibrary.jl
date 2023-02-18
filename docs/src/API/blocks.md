@@ -1,11 +1,15 @@
 # ModelingToolkitStandardLibrary: Blocks
+
 ```@meta
 CurrentModule = ModelingToolkitStandardLibrary.Blocks
 ```
+
 ```@contents
 Pages = ["blocks.md"]
 ```
+
 ## Index
+
 ```@index
 Pages = ["blocks.md"]
 ```

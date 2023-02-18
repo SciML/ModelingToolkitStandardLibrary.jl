@@ -1,13 +1,15 @@
 # ModelingToolkitStandardLibrary: Thermal Components
+
 ```@meta
 CurrentModule = ModelingToolkitStandardLibrary.Thermal
 ```
 
-
 ```@contents
 Pages = ["thermal.md"]
 ```
+
 ## Index
+
 ```@index
 Pages = ["thermal.md"]
 ```

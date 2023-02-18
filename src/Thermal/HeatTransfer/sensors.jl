@@ -4,14 +4,16 @@
 Absolute temperature sensor in kelvin.
 
 This is an ideal absolute temperature sensor which returns the temperature of the connected port in kelvin as an output
-signal. The sensor itself has no thermal interaction with whatever it is connected to. Furthermore, no thermocouple-like 
+signal. The sensor itself has no thermal interaction with whatever it is connected to. Furthermore, no thermocouple-like
 lags are associated with this sensor model.
 
 # States:
-- `T(t)`: [`K`] Absolute temperature
+
+  - `T(t)`: [`K`] Absolute temperature
 
 # Connectors:
-- `port`
+
+  - `port`
 """
 function TemperatureSensor(; name)
     @named port = HeatPort()
@@ -26,15 +28,17 @@ end
 
 Relative Temperature sensor.
 
-The relative temperature `port_a.T - port_b.T` is determined between the two ports of this component and is provided as 
+The relative temperature `port_a.T - port_b.T` is determined between the two ports of this component and is provided as
 output signal in kelvin.
 
 # States:
-- `T(t)`: [`K`] Relative temperature `a.T - b.T`
+
+  - `T(t)`: [`K`] Relative temperature `a.T - b.T`
 
 # Connectors:
-- `port_a`
-- `port_b`
+
+  - `port_a`
+  - `port_b`
 """
 function RelativeTemperatureSensor(; name)
     @named port_a = HeatPort()
@@ -52,16 +56,18 @@ end
 Heat flow rate sensor.
 
 This model is capable of monitoring the heat flow rate flowing through this component. The sensed value of heat flow rate
-is the amount that passes through this sensor while keeping the temperature drop across the sensor zero. This is an ideal 
+is the amount that passes through this sensor while keeping the temperature drop across the sensor zero. This is an ideal
 model so it does not absorb any energy and it has no direct effect on the thermal response of a system it is included in.
 The output signal is positive, if the heat flows from `port_a` to `port_b`.
 
 # States:
-- `Q_flow(t)`: [`W`] Heat flow from `port_a` to `port_b`
+
+  - `Q_flow(t)`: [`W`] Heat flow from `port_a` to `port_b`
 
 # Connectors:
-- `port_a`
-- `port_b`
+
+  - `port_a`
+  - `port_b`
 """
 function HeatFlowSensor(; name)
     @named port_a = HeatPort()
