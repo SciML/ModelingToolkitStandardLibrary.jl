@@ -2,7 +2,7 @@
 
 This example demonstrates the thermal response of two masses connected by a conducting element.
 The two masses have the same heat capacity but different initial temperatures (`T1=100 [°C]`, `T2=0 [°C]`).
-The mass with the higher temperature will cool off while the mass with the lower temperature heats up.
+The mass with the higher temperature will cool off, while the mass with the lower temperature heats up.
 They will each asymptotically approach the calculated temperature T_final_K that results
 from dividing the total initial energy in the system by the sum of the heat capacities of each element.
 

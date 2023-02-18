@@ -1,16 +1,15 @@
 # ModelingToolkitStandardLibrary.jl
 
 ModelingToolkitStandardLibrary.jl is a standard library for the
-[ModelingToolkit](https://docs.sciml.ai/ModelingToolkit/stable/) acasual modeling system.
+[ModelingToolkit](https://docs.sciml.ai/ModelingToolkit/stable/) acausal modeling system.
 
 ## Installation
 
-Assuming that you already have Julia correctly installed, it suffices to import
-ModelingToolkitStandardLibrary.jl in the standard way:
+To install ModelingToolkitStandardLibrary.jl, use the Julia package manager:
 
 ```julia
-import Pkg;
-Pkg.add("ModelingToolkitStandardLibrary");
+using Pkg
+Pkg.add("ModelingToolkitStandardLibrary")
 ```
 
 ## Tutorials
@@ -29,6 +28,22 @@ The following are the constituant libraries of the ModelingToolkit Standard Libr
   - [Electrical Components](https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/API/electrical/)
   - [Magnetic Components](https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/API/magnetic/)
   - [Thermal Components](https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/API/thermal/)
+
+## Contributing
+
+  - Please refer to the
+    [SciML ColPrac: Contributor's Guide on Collaborative Practices for Community Packages](https://github.com/SciML/ColPrac/blob/master/README.md)
+    for guidance on PRs, issues, and other matters relating to contributing to SciML.
+
+  - See the [SciML Style Guide](https://github.com/SciML/SciMLStyle) for common coding practices and other style decisions.
+  - There are a few community forums:
+    
+      + The #diffeq-bridged and #sciml-bridged channels in the
+        [Julia Slack](https://julialang.org/slack/)
+      + The #diffeq-bridged and #sciml-bridged channels in the
+        [Julia Zulip](https://julialang.zulipchat.com/#narrow/stream/279055-sciml-bridged)
+      + On the [Julia Discourse forums](https://discourse.julialang.org)
+      + See also [SciML Community page](https://sciml.ai/community/)
 
 ## Reproducibility
 

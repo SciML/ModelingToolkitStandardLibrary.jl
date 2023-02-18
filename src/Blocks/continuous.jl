@@ -29,7 +29,7 @@ end
 Outputs an approximate derivative of the input. The transfer function of this block is
 
 ```
-k       k     
+k       k
 ─ - ──────────
 T    2 ⎛    1⎞
     T ⋅⎜s + ─⎟
@@ -71,7 +71,7 @@ A first-order filter with a single real pole in `s = -T` and gain `k`. If `lowpa
 is given by `Y(s)/U(s) = `
 
 ```
-   k   
+   k
 ───────
 sT + 1
 ```
@@ -79,7 +79,7 @@ sT + 1
 and if `lowpass=false`, by
 
 ```
-sT + 1 - k   
+sT + 1 - k
 ──────────
   sT + 1
 ```
@@ -117,7 +117,7 @@ A second-order filter with gain `k`, a bandwidth of `w` rad/s and relative dampi
 is given by `Y(s)/U(s) = `
 
 ```
-      k*w^2   
+      k*w^2
 ─────────────────
 s² + 2d*w*s + w^2
 ```
@@ -196,8 +196,8 @@ Text-book version of a PID-controller without actuator saturation and anti-windu
 # Parameters:
 
   - `k`: Gain
-  - `Ti`: [s] Integrator time constant (Ti>0 required). If set to false no integral action is used.
-  - `Td`: [s] Derivative time constant (Td>0 required). If set to false no derivative action is used.
+  - `Ti`: [s] Integrator time constant (Ti>0 required). If set to false, no integral action is used.
+  - `Td`: [s] Derivative time constant (Td>0 required). If set to false, no derivative action is used.
   - `Nd`: [s] Time constant for the derivative approximation (Nd>0 required; Nd=0 is ideal derivative).
   - `x_start`: Initial value for the integrator.
   - `xd_start`: Initial value for the derivative state.

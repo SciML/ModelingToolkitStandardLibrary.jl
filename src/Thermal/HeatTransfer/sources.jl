@@ -64,7 +64,7 @@ This model allows a specified amount of heat flow rate to be "injected" into a t
 The amount of heat is given by the input signal `Q_flow` into the model. The heat flows into the component to which
 the component `PrescribedHeatFlow` is connected, if the input signal is positive.
 If parameter alpha is > 0, the heat flow is multiplied by `1 + alpha*(port.T - T_ref`) in order to simulate temperature
-dependent losses (which are given an reference temperature T_ref).
+dependent losses (which are given a reference temperature T_ref).
 
 # Connectors:
 
@@ -96,7 +96,7 @@ end
 This model represents a variable temperature boundary condition.
 
 The temperature in kelvin is given as input signal `T` to the model. The effect is that an instance of
-this model acts as an infinite reservoir able to absorb or generate as much energy as required to keep
+this model acts as an infinite reservoir, able to absorb or generate as much energy as required to keep
 the temperature at the specified value.
 
 # Connectors:

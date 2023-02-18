@@ -1,16 +1,16 @@
 # DC Motor with PI-controller
 
-In this example a PI-controller is setup for speed control of a DC-motor. An equivalent circuit diagram is depicted below.
+In this example, a PI-controller is set up for speed control of a DC-motor. An equivalent circuit diagram is depicted below.
 
 ![DC-motor](https://user-images.githubusercontent.com/50108075/196108356-0e8605e3-61a9-4006-8559-786252e55928.png)
 
 ## Modeling and simulation
 
-The electrical part consists of a resistance and inductance. The coupling between the electrical and rotational domain is done via an electro motive force (EMF) component. The voltage across the EMF is proportional to the angular velocity and the current is proportional to the torque. On the mechanical side viscous friction in e.g. a bearing and the inertia of the shaft is modelled.
+The electrical part consists of a resistance and inductance. The coupling between the electrical and rotational domain is done via an electro-motive force (EMF) component. The voltage across the EMF is proportional to the angular velocity and the current is proportional to the torque. On the mechanical side, viscous friction in, e.g., a bearing and the inertia of the shaft is modelled.
 
-A PI-controller with anti windup measure should be used as a speed controller. A simulation is performed to verify the tracking performance of the controller and the disturbance rejection capabilities.
+A PI-controller with anti-windup measure should be used as a speed controller. A simulation is performed to verify the tracking performance of the controller and the disturbance rejection capabilities.
 
-First the needed packages are imported and the parameters of the model defined.
+First, the needed packages are imported and the parameters of the model defined.
 
 ```@example dc_motor_pi
 using ModelingToolkit
@@ -84,7 +84,7 @@ nothing # hide
 ```
 
 Now the model can be simulated. Typical rotational mechanical systems are described via `DAE`
-(differential algebraic equations), however in this case ModelingToolkit can simplify the model enough
+(differential algebraic equations), however in this case, ModelingToolkit can simplify the model enough
 so that it can be represented as a system of `ODEs` (ordinary differential equations).
 
 ```@example dc_motor_pi
@@ -127,7 +127,7 @@ bodeplot([So, To], label = ["S" "T"], plot_title = "Sensitivity functions",
          plotphase = false)
 ```
 
-In a similar fashion, we may compute the loop-transfer function and plot its Nyquist curve
+Similarly, we may compute the loop-transfer function and plot its Nyquist curve
 
 ```@example dc_motor_pi
 matrices_L, simplified_sys = Blocks.get_looptransfer(model, :y)

@@ -57,7 +57,7 @@ Heat flow rate sensor.
 
 This model is capable of monitoring the heat flow rate flowing through this component. The sensed value of heat flow rate
 is the amount that passes through this sensor while keeping the temperature drop across the sensor zero. This is an ideal
-model so it does not absorb any energy and it has no direct effect on the thermal response of a system it is included in.
+model, so it does not absorb any energy, and it has no direct effect on the thermal response of a system it is included in.
 The output signal is positive, if the heat flows from `port_a` to `port_b`.
 
 # States:

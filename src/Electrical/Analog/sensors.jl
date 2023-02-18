@@ -51,7 +51,7 @@ Creates a circuit component that measures the voltage across it. Analogous to an
 
 # States:
 
-  - `v(t)`: [`V`] The voltage difference form positive to negative pin `p.v - n.v`
+  - `v(t)`: [`V`] The voltage difference from positive to negative pin `p.v - n.v`
 
 # Connectors:
 

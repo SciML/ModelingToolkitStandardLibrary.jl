@@ -20,10 +20,10 @@ Connector with one input signal of type Real.
 
 # Parameters:
 - `nin=1`: Number of inputs
-- `u_start=0`: Initial value for `u`  
+- `u_start=0`: Initial value for `u`
 
 # States:
-- `u`: Value of of the connector; if nin=1 this is a scalar
+- `u`: Value of the connector; if nin=1 this is a scalar
 """ RealInput
 
 @connector function RealOutput(; name, nout = 1, u_start = nout > 1 ? zeros(nout) : 0.0)
@@ -48,10 +48,10 @@ Connector with one output signal of type Real.
 
 # Parameters:
 - `nout=1`: Number of inputs
-- `u_start=0`: Initial value for `u`  
+- `u_start=0`: Initial value for `u`
 
 # States:
-- `u`: Value of of the connector; if nout=1 this is a scalar
+- `u`: Value of the connector; if nout=1 this is a scalar
 """ RealOutput
 
 """

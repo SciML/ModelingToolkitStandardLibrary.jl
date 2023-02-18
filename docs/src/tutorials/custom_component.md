@@ -1,8 +1,8 @@
 # Custom Component
 
 In this tutorial, the creation of a custom component is demonstrated via the [Chua's circuit](https://en.wikipedia.org/wiki/Chua%27s_circuit).
-The circuit is a simple circuit that shows chaotic behaviour.
-Except for a non-linear resistor every other component already is part of `ModelingToolkitStandardLibrary.Electrical`.
+The circuit is a simple circuit that shows chaotic behavior.
+Except for a non-linear resistor, every other component already is part of `ModelingToolkitStandardLibrary.Electrical`.
 
 First, we need to make some imports.
 

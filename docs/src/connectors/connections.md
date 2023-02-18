@@ -1,17 +1,17 @@
 # Introduction
 
-In Physical Network Acausal modeling each physical domain must define a **connector** to combine model components.  Each physical domain **connector** defines a minimum of 2 variables, one which is called a *Through* variable, and one which is called an *Across* variable.  Both Modelica and SimScape define these variables in the same way:
+In Physical Network Acausal modeling, each physical domain must define a **connector** to combine model components.  Each physical domain **connector** defines a minimum of 2 variables, one which is called a *Through* variable, and one which is called an *Across* variable.  Both Modelica and SimScape define these variables in the same way:
 
   - [Modelica Connectors](https://mbe.modelica.university/components/connectors/#acausal-connection)
   - [SimScape Connectors](https://www.mathworks.com/help/simscape/ug/basic-principles-of-modeling-physical-networks.html#bq89sba-6)
 
-However, the standard libraries differ on the selection of the Across variable for the Mechanical Translation and Rotation libraries, Modelica choosing position and angle and SimScape choosing velocity and angular velocity, respectively for Translation and Rotation.  Modelica describes their decision [here](https://mbe.modelica.university/components/connectors/simple_domains/).  In summary they would like to provide less integration in the model to avoid lossy numerical behavior, but this decision assumes the lowest order derivative is needed by the model.  Numerically it is possible to define the connector either way, but there are some consequences to this decision, and therefore we will study them in detail here as they relate to ModelingToolkit.
+However, the standard libraries differ on the selection of the Across variable for the Mechanical Translation and Rotation libraries, Modelica choosing position and angle and SimScape choosing velocity and angular velocity, respectively for Translation and Rotation.  Modelica describes their decision [here](https://mbe.modelica.university/components/connectors/simple_domains/).  In summary, they would like to provide less integration in the model to avoid lossy numerical behavior, but this decision assumes the lowest order derivative is needed by the model.  Numerically it is possible to define the connector either way, but there are some consequences of this decision, and therefore we will study them in detail here as they relate to ModelingToolkit.
 
 # Through and Across Variable Theory
 
 ### General
 
-The idea behind the selection of the **through** variable is that it should be a time derivative of some conserved quantity. The conserved quantity should be expressed by the **across** variable.  In general terms the physical system is given by
+The idea behind the selection of the **through** variable is that it should be a time derivative of some conserved quantity. The conserved quantity should be expressed by the **across** variable.  In general terms, the physical system is given by
 
   - Energy Dissipation & Flow:
 
@@ -24,7 +24,7 @@ The idea behind the selection of the **through** variable is that it should be a
 
 ### Electrical
 
-For the Electrical domain the across variable is *voltage* and the through variable *current*.  Therefore
+For the Electrical domain, the across variable is *voltage* and the through variable *current*.  Therefore
 
   - Energy Dissipation:
 
@@ -60,7 +60,7 @@ The diagram here shows the similarity of problems in different physical domains.
 
 ### Translational Connector using *Position* Across Variable
 
-Now, if we choose *position* for the across variable, a similar relationship can be established, but the patern must be broken.
+Now, if we choose *position* for the across variable, a similar relationship can be established, but the pattern must be broken.
 
   - Energy Dissipation:
 
@@ -109,7 +109,7 @@ println.(equations(sys))
 nothing # hide
 ```
 
-The solution shows what we would expect, a non-linear disipation of voltage and releated decrease in current flow...
+The solution shows what we would expect, a non-linear dissipation of voltage and related decrease in current flow…
 
 ```@example connections
 prob = ODEProblem(sys, [1.0], (0, 10.0), [])
@@ -149,7 +149,7 @@ println.(full_equations(sys))
 nothing # hide
 ```
 
-As expected we have a similar solution...
+As expected, we have a similar solution…
 
 ```@example connections
 prob = ODEProblem(sys, [], (0, 10.0), [])
@@ -162,7 +162,7 @@ plot(p1, p2)
 
 #### Across Variable = position
 
-Now, let's consider the position based approach.  We can build the same model with the same components.  As can be seen, we now end of up with 2 equations, because we need to relate the lower derivative (position) to force (with acceleration).
+Now, let's consider the position-based approach.  We can build the same model with the same components.  As can be seen, we now end of up with 2 equations, because we need to relate the lower derivative (position) to force (with acceleration).
 
 ```@example connections
 const TP = ModelingToolkitStandardLibrary.Mechanical.TranslationalPosition
@@ -197,7 +197,7 @@ plot(p1, p2, p3)
 
 The question then arises, can the position be plotted when using the Mechanical Translational Domain based on the Velocity Across variable?  Yes, we can!  There are 2 solutions:
 
- 1. the `Mass` component will add the position variable when the `s_0` parameter is used to set an initial position.  Otherwise the position is not tracked by the component.
+ 1. the `Mass` component will add the position variable when the `s_0` parameter is used to set an initial position. Otherwise, the component does not track the position.
 
 ```julia
 @named body = TV.Mass(m = 1, v_0 = 1, s_0 = 0)
@@ -212,15 +212,15 @@ Either option will produce the same result regardless of which across variable i
 
 ## Initialization
 
-The main difference between `ModelingToolkitStandardLibrary.Mechanical.Translational` and `ModelingToolkitStandardLibrary.Mechanical.TranslationalPosition` is how they are initialized.  In the `ModelingToolkitStandardLibrary` initialization parameters are defined at the component level, so we simply need to be careful to set the correct initial conditions for the domain that it used.  Let's use the following example problem to explain the differences.
+The main difference between `ModelingToolkitStandardLibrary.Mechanical.Translational` and `ModelingToolkitStandardLibrary.Mechanical.TranslationalPosition` is how they are initialized.  In the `ModelingToolkitStandardLibrary` initialization, parameters are defined at the component level, so we simply need to be careful to set the correct initial conditions for the domain that it used.  Let's use the following example problem to explain the differences.
 
 ![Example Mechanical Model](model.png)
 
-In this problem we have a mass, spring, and damper which are connected to a fixed point.  Let's see how each component is defined.
+In this problem, we have a mass, spring, and damper which are connected to a fixed point.  Let's see how each component is defined.
 
 #### Damper
 
-The damper will connect the flange/flange 1 (`flange_a`) to the mass, and flange/flange 2 (`flange_b`) to the fixed point.  For both position and velocity based domains, we set the damping constant `d=1` and `v_a_0=1` and leave the default for `v_b_0` at 0.  For the position domain we also need to set the initial positions for `flange_a` and `flange_b`.
+The damper will connect the flange/flange 1 (`flange_a`) to the mass, and flange/flange 2 (`flange_b`) to the fixed point.  For both position- and velocity-based domains, we set the damping constant `d=1` and `v_a_0=1` and leave the default for `v_b_0` at 0.  For the position domain, we also need to set the initial positions for `flange_a` and `flange_b`.
 
 ```@example connections
 @named dv = TV.Damper(d = 1, v_a_0 = 1)
@@ -230,7 +230,7 @@ nothing # hide
 
 #### Spring
 
-The spring will connect the flange/flange 1 (`flange_a`) to the mass, and flange/flange 2 (`flange_b`) to the fixed point.  For both position and velocity based domains, we set the spring constant `k=1`.  The velocity domain then requires the initial velocity `v_a_0` and initial spring stretch `delta_s_0`.  The position domain instead needs the initial positions for `flange_a` and `flange_b` and the natural spring length `l`.
+The spring will connect the flange/flange 1 (`flange_a`) to the mass, and flange/flange 2 (`flange_b`) to the fixed point.  For both position- and velocity-based domains, we set the spring constant `k=1`.  The velocity domain then requires the initial velocity `v_a_0` and initial spring stretch `delta_s_0`.  The position domain instead needs the initial positions for `flange_a` and `flange_b` and the natural spring length `l`.
 
 ```@example connections
 @named sv = TV.Spring(k = 1, v_a_0 = 1, delta_s_0 = 1)
@@ -240,7 +240,7 @@ nothing # hide
 
 #### Mass
 
-For both position and velocity based domains, we set the mass `m=1` and initial velocity `v_0=1`. Like the damper, the position domain requires the position initial conditions set as well.
+For both position- and velocity-based domains, we set the mass `m=1` and initial velocity `v_0=1`. Like the damper, the position domain requires the position initial conditions set as well.
 
 ```@example connections
 @named bv = TV.Mass(m = 1, v_0 = 1)
@@ -250,7 +250,7 @@ nothing # hide
 
 #### Fixed
 
-Here the velocity domain requires no initial condition, but for our model to work as defined we must set the position domain component to the correct intital position.
+Here the velocity domain requires no initial condition, but for our model to work as defined we must set the position domain component to the correct initial position.
 
 ```@example connections
 @named gv = TV.Fixed()
@@ -260,9 +260,9 @@ nothing # hide
 
 ### Comparison
 
-As can be seen, the position based domain requires more initial condition information to be properly defined since the absolute position information is required.  Thereore based on the model being described, it may be more natural to choose one domain over the other.
+As can be seen, the position-based domain requires more initial condition information to be properly defined, since the absolute position information is required. Therefore, based on the model being described, it may be more natural to choose one domain over the other.
 
-Let's define a quick function to simplify and solve the 2 different systems.  Note we will solve with a fixed time step and a set tolerance to compare the numerical differences.
+Let's define a quick function to simplify and solve the 2 different systems. Note, we will solve with a fixed time step and a set tolerance to compare the numerical differences.
 
 ```@example connections
 function simplify_and_solve(damping, spring, body, ground)
@@ -305,7 +305,7 @@ plot!(solv, idxs = [bv.v])
 plot!(solp, idxs = [bp.v])
 ```
 
-But, what if we wanted to plot the mass position?  This is easy for the position based domain, we have the state `bp₊s(t)`, but for the velocity based domain we have `sv₊delta_s(t)` which is the spring stretch.  To get the absolute position we add the spring natrual length (1m) and the fixed position (1m).  As can be seen, we then get the same result.
+But, what if we wanted to plot the mass position?  This is easy for the position-based domain, we have the state `bp₊s(t)`, but for the velocity-based domain we have `sv₊delta_s(t)` which is the spring stretch.  To get the absolute position, we add the spring natural length (1m) and the fixed position (1m).  As can be seen, we then get the same result.
 
 ```@example connections
 plot(ylabel = "mass position [m]")
@@ -315,9 +315,9 @@ plot!(solp, idxs = [bp.s])
 
 So in conclusion, the position based domain gives easier access to absolute position information, but requires more initial condition information.
 
-## Acuracy
+## Accuracy
 
-One may ask then what is the trade off in terms of numerical acuracy?  When we look at the simplified equations, we can see that actually both systems solve the same equations.  The differential equations of the velocity domain are
+One may then ask, what the trade-off in terms of numerical accuracy is. When we look at the simplified equations, we can see that actually both systems solve the same equations.  The differential equations of the velocity domain are
 
 ```math
 \begin{aligned}
@@ -335,7 +335,7 @@ m \cdot \dot{v} +  d \cdot v + k \cdot (s - s_{b_0} - l) = 0   \\
 \end{aligned}
 ```
 
-By definition the spring stretch is
+By definition, the spring stretch is
 
 ```math
 \Delta s = s - s_{b_0} - l
