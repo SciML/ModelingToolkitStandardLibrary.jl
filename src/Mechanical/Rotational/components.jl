@@ -4,10 +4,12 @@
 Flange fixed in housing at a given angle.
 
 # Connectors:
-- `flange` [Flange](@ref)
+
+  - `flange` [Flange](@ref)
 
 # Parameters:
-- `phi0`: [`rad`] Fixed offset angle of housing
+
+  - `phi0`: [`rad`] Fixed offset angle of housing
 """
 function Fixed(; name, phi0 = 0.0)
     @named flange = Flange()
@@ -21,20 +23,23 @@ end
 
 1D-rotational component with inertia.
 
-# States: 
-- `phi`: [`rad`] Absolute rotation angle of component 
-- `w`: [`rad/s`] Absolute angular velocity of component (= D(phi)) 
-- `a`: [`rad/s²`] Absolute angular acceleration of component (= D(w)) 
+# States:
+
+  - `phi`: [`rad`] Absolute rotation angle of component
+  - `w`: [`rad/s`] Absolute angular velocity of component (= D(phi))
+  - `a`: [`rad/s²`] Absolute angular acceleration of component (= D(w))
 
 # Connectors:
-- `flange_a` [Flange](@ref) Left flange
-- `flange_b` [Flange](@ref) Right flange
+
+  - `flange_a` [Flange](@ref) Left flange
+  - `flange_b` [Flange](@ref) Right flange
 
 # Parameters:
-- `J`: [`kg·m²`] Moment of inertia 
-- `phi_start`: [`rad`] Initial value of absolute rotation angle of component 
-- `w_start`: [`rad/s`] Initial value of absolute angular velocity of component
-- `a_start`: [`rad/s²`] Initial value of absolute angular acceleration of component
+
+  - `J`: [`kg·m²`] Moment of inertia
+  - `phi_start`: [`rad`] Initial value of absolute rotation angle of component
+  - `w_start`: [`rad/s`] Initial value of absolute angular velocity of component
+  - `a_start`: [`rad/s²`] Initial value of absolute angular acceleration of component
 """
 function Inertia(; name, J, phi_start = 0.0, w_start = 0.0, a_start = 0.0)
     @named flange_a = Flange()
@@ -59,16 +64,19 @@ end
 Linear 1D rotational spring
 
 # States:
-- `phi_rel(t)`: [`rad`] Relative rotation angle (`flange_b.phi - flange_a.phi`)
-- `tau(t)`: [`N.m`] Torque between flanges (`flange_b.tau`)
+
+  - `phi_rel(t)`: [`rad`] Relative rotation angle (`flange_b.phi - flange_a.phi`)
+  - `tau(t)`: [`N.m`] Torque between flanges (`flange_b.tau`)
 
 # Connectors:
-- `flange_a` [Flange](@ref)
-- `flange_b` [Flange](@ref)
+
+  - `flange_a` [Flange](@ref)
+  - `flange_b` [Flange](@ref)
 
 # Parameters:
-- `c`: [`N.m/rad`] Spring constant
-- `phi_rel0`: [`rad`] Unstretched spring angle
+
+  - `c`: [`N.m/rad`] Spring constant
+  - `phi_rel0`: [`rad`] Unstretched spring angle
 """
 function Spring(; name, c, phi_rel0 = 0.0)
     @named partial_comp = PartialCompliant()
@@ -87,17 +95,20 @@ end
 Linear 1D rotational damper
 
 # States:
-- `phi_rel(t)`: [`rad`] Relative rotation angle (= flange_b.phi - flange_a.phi)
-- `w_rel(t)`: [`rad/s`] Relative angular velocity (= D(phi_rel))
-- `a_rel(t)`: [`rad/s²`] Relative angular acceleration (= D(w_rel))
-- `tau(t)`: [`N.m`] Torque between flanges (= flange_b.tau)
+
+  - `phi_rel(t)`: [`rad`] Relative rotation angle (= flange_b.phi - flange_a.phi)
+  - `w_rel(t)`: [`rad/s`] Relative angular velocity (= D(phi_rel))
+  - `a_rel(t)`: [`rad/s²`] Relative angular acceleration (= D(w_rel))
+  - `tau(t)`: [`N.m`] Torque between flanges (= flange_b.tau)
 
 # Connectors:
-- `flange_a` [Flange](@ref)
-- `flange_b` [Flange](@ref)
+
+  - `flange_a` [Flange](@ref)
+  - `flange_b` [Flange](@ref)
 
 # Parameters:
-- `d`: [`N.m.s/rad`] Damping constant
+
+  - `d`: [`N.m.s/rad`] Damping constant
 """
 function Damper(; name, d)
     @named partial_comp = PartialCompliantWithRelativeStates()
@@ -116,17 +127,20 @@ Ideal gear without inertia.
 This element characterizes any type of gear box which is fixed in the ground and which has one driving shaft and one driven shaft.
 
 # States:
-- `phi_a(t)`: [`rad`] Relative angle between shaft a and the support
-- `phi_b(t)`: [`rad`] Relative angle between shaft b and the support
+
+  - `phi_a(t)`: [`rad`] Relative angle between shaft a and the support
+  - `phi_b(t)`: [`rad`] Relative angle between shaft b and the support
 
 # Connectors:
-- `flange_a` [Flange](@ref)
-- `flange_b` [Flange](@ref)
-- `support` [Support](@ref) if `use_support == true`
+
+  - `flange_a` [Flange](@ref)
+  - `flange_b` [Flange](@ref)
+  - `support` [Support](@ref) if `use_support == true`
 
 # Parameters:
-- `ratio`: Transmission ratio (flange_a.phi/flange_b.phi)
-- `use_support`: If support flange enabled, otherwise implicitly grounded
+
+  - `ratio`: Transmission ratio (flange_a.phi/flange_b.phi)
+  - `use_support`: If support flange enabled, otherwise implicitly grounded
 """
 function IdealGear(; name, ratio, use_support = false)
     @named partial_element = PartialElementaryTwoFlangesAndSupport2(use_support = use_support)
@@ -152,20 +166,23 @@ The friction torque is a function of the relative angular velocity between flang
 Friction model: "Armstrong, B. and C.C. de Wit, Friction Modeling and Compensation, The Control Handbook, CRC Press, 1995."
 
 # States:
-- `phi_rel(t)`: [`rad`] Relative rotation angle (= flange_b.phi - flange_a.phi)
-- `w_rel(t)`: [`rad/s`] Relative angular velocity (= D(phi_rel))
-- `a_rel(t)`: [`rad/s²`] Relative angular acceleration (= D(w_rel))
-- `tau(t)`: [`N.m`] Torque between flanges (= flange_b.tau)
+
+  - `phi_rel(t)`: [`rad`] Relative rotation angle (= flange_b.phi - flange_a.phi)
+  - `w_rel(t)`: [`rad/s`] Relative angular velocity (= D(phi_rel))
+  - `a_rel(t)`: [`rad/s²`] Relative angular acceleration (= D(w_rel))
+  - `tau(t)`: [`N.m`] Torque between flanges (= flange_b.tau)
 
 # Connectors:
-- `flange_a` [Flange](@ref)
-- `flange_b` [Flange](@ref)
+
+  - `flange_a` [Flange](@ref)
+  - `flange_b` [Flange](@ref)
 
 # Parameters:
-- `f`: [`N⋅m/(rad/s)`] Viscous friction coefficient 
-- `tau_c`: [`N⋅m`] Coulomb friction torque
-- `w_brk`: [`rad/s`] Breakaway friction velocity 
-- `tau_brk`: [`N⋅m`] Breakaway friction torque
+
+  - `f`: [`N⋅m/(rad/s)`] Viscous friction coefficient
+  - `tau_c`: [`N⋅m`] Coulomb friction torque
+  - `w_brk`: [`rad/s`] Breakaway friction velocity
+  - `tau_brk`: [`N⋅m`] Breakaway friction torque
 """
 function RotationalFriction(; name, f, tau_c, w_brk, tau_brk)
     @named partial_comp = PartialCompliantWithRelativeStates()

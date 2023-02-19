@@ -34,16 +34,19 @@ Support/housing of a 1-dim. rotational shaft
 Partial model for the compliant connection of two rotational 1-dim. shaft flanges.
 
 # States:
-- `phi_rel(t)`: [`rad`] Relative rotation angle (`flange_b.phi - flange_a.phi`)
-- `tau(t)`: [`N.m`] Torque between flanges (`flange_b.tau`)
+
+  - `phi_rel(t)`: [`rad`] Relative rotation angle (`flange_b.phi - flange_a.phi`)
+  - `tau(t)`: [`N.m`] Torque between flanges (`flange_b.tau`)
 
 # Connectors:
-- `flange_a` [Flange](@ref) 
-- `flange_b` [Flange](@ref) 
+
+  - `flange_a` [Flange](@ref)
+  - `flange_b` [Flange](@ref)
 
 # Parameters:
-- `phi_rel_start`: [`rad`] Initial relative rotation angle
-- `tau_start`: [`N.m`] Initial torque between flanges
+
+  - `phi_rel_start`: [`rad`] Initial relative rotation angle
+  - `tau_start`: [`N.m`] Initial torque between flanges
 """
 function PartialCompliant(; name, phi_rel_start = 0.0, tau_start = 0.0)
     @named flange_a = Flange()
@@ -63,20 +66,23 @@ end
 Partial model for the compliant connection of two rotational 1-dim. shaft flanges where the relative angle and speed are used as preferred states
 
 # States:
-- `phi_rel(t)`: [`rad`] Relative rotation angle (= flange_b.phi - flange_a.phi)
-- `w_rel(t)`: [`rad/s`] Relative angular velocity (= D(phi_rel))
-- `a_rel(t)`: [`rad/s²`] Relative angular acceleration (= D(w_rel))
-- `tau(t)`: [`N.m`] Torque between flanges (= flange_b.tau)
+
+  - `phi_rel(t)`: [`rad`] Relative rotation angle (= flange_b.phi - flange_a.phi)
+  - `w_rel(t)`: [`rad/s`] Relative angular velocity (= D(phi_rel))
+  - `a_rel(t)`: [`rad/s²`] Relative angular acceleration (= D(w_rel))
+  - `tau(t)`: [`N.m`] Torque between flanges (= flange_b.tau)
 
 # Connectors:
-- `flange_a` [Flange](@ref) 
-- `flange_b` [Flange](@ref) 
+
+  - `flange_a` [Flange](@ref)
+  - `flange_b` [Flange](@ref)
 
 # Parameters:
-- `phi_rel_start`: [`rad`] Initial relative rotation angle
-- `w_rel_start`: [`rad/s`] Initial relative angular velocity (= D(phi_rel))
-- `a_rel_start`: [`rad/s²`] Initial relative angular acceleration (= D(w_rel))
-- `tau_start`: [`N.m`] Initial torque between flanges
+
+  - `phi_rel_start`: [`rad`] Initial relative rotation angle
+  - `w_rel_start`: [`rad/s`] Initial relative angular velocity (= D(phi_rel))
+  - `a_rel_start`: [`rad/s²`] Initial relative angular acceleration (= D(w_rel))
+  - `tau_start`: [`N.m`] Initial torque between flanges
 """
 function PartialCompliantWithRelativeStates(; name, phi_rel_start = 0.0, w_start = 0.0,
                                             a_start = 0.0, tau_start = 0.0)
@@ -103,13 +109,16 @@ end
 Partial model for a component with one rotational 1-dim. shaft flange and a support used for textual modeling, i.e., for elementary models
 
 # States:
-- `phi_support(t)`: [`rad`] Absolute angle of support flange"
+
+  - `phi_support(t)`: [`rad`] Absolute angle of support flange"
 
 # Connectors:
-- `flange` [Flange](@ref) 
+
+  - `flange` [Flange](@ref)
 
 # Parameters:
-- `use_support`: If support flange enabled, otherwise implicitly grounded
+
+  - `use_support`: If support flange enabled, otherwise implicitly grounded
 """
 function PartialElementaryOneFlangeAndSupport2(; name, use_support = false)
     @named flange = Flange()
@@ -132,15 +141,18 @@ end
 Partial model for a component with two rotational 1-dim. shaft flanges and a support used for textual modeling, i.e., for elementary models
 
 # States:
-- `phi_support(t)`: [`rad`] Absolute angle of support flange
+
+  - `phi_support(t)`: [`rad`] Absolute angle of support flange
 
 # Connectors:
-- `flange_a` [Flange](@ref) 
-- `flange_b` [Flange](@ref) 
-- `support` [Support](@ref)  if `use_support == true`
+
+  - `flange_a` [Flange](@ref)
+  - `flange_b` [Flange](@ref)
+  - `support` [Support](@ref)  if `use_support == true`
 
 # Parameters:
-- `use_support`: If support flange enabled, otherwise implicitly grounded
+
+  - `use_support`: If support flange enabled, otherwise implicitly grounded
 """
 function PartialElementaryTwoFlangesAndSupport2(; name, use_support = false)
     @named flange_a = Flange()

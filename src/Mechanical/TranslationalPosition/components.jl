@@ -4,10 +4,12 @@
 Flange fixed in housing at a given position.
 
 # Parameters:
-- `s_0`: [m] Fixed offset position of housing
+
+  - `s_0`: [m] Fixed offset position of housing
 
 # Connectors:
-- `flange: 1-dim. translational flange`
+
+  - `flange: 1-dim. translational flange`
 """
 function Fixed(; name, s_0 = 0.0)
     pars = @parameters s_0 = s_0
@@ -27,16 +29,19 @@ end
 Sliding mass with inertia
 
 # Parameters:
-- `m`: [kg] Mass of sliding mass
-- `s_0`: [m] Initial value of absolute position of sliding mass
-- `v_0`: [m/s] Initial value of absolute linear velocity of sliding mass
 
-# States: 
-- `s`: [m] Absolute position of sliding mass
-- `v`: [m/s] Absolute linear velocity of sliding mass (= der(s)) 
+  - `m`: [kg] Mass of sliding mass
+  - `s_0`: [m] Initial value of absolute position of sliding mass
+  - `v_0`: [m/s] Initial value of absolute linear velocity of sliding mass
+
+# States:
+
+  - `s`: [m] Absolute position of sliding mass
+  - `v`: [m/s] Absolute linear velocity of sliding mass (= der(s))
 
 # Connectors:
-- `flange: 1-dim. translational flange of mass`
+
+  - `flange: 1-dim. translational flange of mass`
 """
 function Mass(; name, m, s_0 = 0.0, v_0 = 0.0)
     @named flange = Flange()
@@ -104,14 +109,16 @@ const ABS = Val(:absolute)
 Linear 1D translational spring
 
 # Parameters:
-- `k`: [N/m] Spring constant
-- `l`: Unstretched spring length
-- `s_a_0`: [m] Initial value of absolute position of flange_a
-- `s_b_0`: [m] Initial value of absolute position of flange_b
+
+  - `k`: [N/m] Spring constant
+  - `l`: Unstretched spring length
+  - `s_a_0`: [m] Initial value of absolute position of flange_a
+  - `s_b_0`: [m] Initial value of absolute position of flange_b
 
 # Connectors:
-- `flange_a: 1-dim. translational flange on one side of spring`
-- `flange_b: 1-dim. translational flange on opposite side of spring`
+
+  - `flange_a: 1-dim. translational flange on one side of spring`
+  - `flange_b: 1-dim. translational flange on opposite side of spring` #default function
 """
 Spring(; name, k, s_a_0 = 0, s_b_0 = 0, l = 0) = Spring(ABS; name, k, s_a_0, s_b_0, l) #default function
 
@@ -149,15 +156,17 @@ end
 Linear 1D translational damper
 
 # Parameters:
-- `d`: [N.s/m] Damping constant
-- `s_a_0`: [m] Initial value of absolute position of flange_a
-- `s_b_0`: [m] Initial value of absolute position of flange_b
-- `v_a_0`: [m/s] Initial value of absolute linear velocity of flange_a
-- `v_b_0`: [m/s] Initial value of absolute linear velocity of flange_a
+
+  - `d`: [N.s/m] Damping constant
+  - `s_a_0`: [m] Initial value of absolute position of flange_a
+  - `s_b_0`: [m] Initial value of absolute position of flange_b
+  - `v_a_0`: [m/s] Initial value of absolute linear velocity of flange_a
+  - `v_b_0`: [m/s] Initial value of absolute linear velocity of flange_a
 
 # Connectors:
-- `flange_a: 1-dim. translational flange on one side of damper`
-- `flange_b: 1-dim. translational flange on opposite side of damper`
+
+  - `flange_a: 1-dim. translational flange on one side of damper`
+  - `flange_b: 1-dim. translational flange on opposite side of damper`
 """
 function Damper(; name, d, v_a_0 = 0.0, v_b_0 = 0.0, s_a_0 = 0, s_b_0 = 0)
     pars = @parameters begin

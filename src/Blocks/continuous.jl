@@ -4,12 +4,14 @@
 Outputs `y = ∫k*u dt`, corresponding to the transfer function `1/s`.
 
 # Connectors:
-- `input`
-- `output`
+
+  - `input`
+  - `output`
 
 # Parameters:
-- `k`: Gain of integrator
-- `x_start`: Initial value of integrator
+
+  - `k`: Gain of integrator
+  - `x_start`: Initial value of integrator
 """
 function Integrator(; name, k = 1, x_start = 0.0)
     @named siso = SISO()
@@ -25,25 +27,29 @@ end
     Derivative(; name, k=1, T, x_start=0.0)
 
 Outputs an approximate derivative of the input. The transfer function of this block is
+
 ```
-k       k     
+k       k
 ─ - ──────────
 T    2 ⎛    1⎞
     T ⋅⎜s + ─⎟
        ⎝    T⎠
 ```
+
 and a state-space realization is given by `ss(-1/T, 1/T, -k/T, k/T)`
 where `T` is the time constant of the filter.
 A smaller `T` leads to a more ideal approximation of the derivative.
 
 # Parameters:
-- `k`: Gain
-- `T`: [s] Time constants (T>0 required; T=0 is ideal derivative block)
-- `x_start`: Initial value of state
+
+  - `k`: Gain
+  - `T`: [s] Time constants (T>0 required; T=0 is ideal derivative block)
+  - `x_start`: Initial value of state
 
 # Connectors:
-- `input`
-- `output`
+
+  - `input`
+  - `output`
 """
 function Derivative(; name, k = 1, T, x_start = 0.0)
     T > 0 || throw(ArgumentError("Time constant `T` has to be strictly positive"))
@@ -63,27 +69,31 @@ end
 
 A first-order filter with a single real pole in `s = -T` and gain `k`. If `lowpass=true` (default), the transfer function
 is given by `Y(s)/U(s) = `
+
 ```
-   k   
+   k
 ───────
 sT + 1
 ```
+
 and if `lowpass=false`, by
+
 ```
-sT + 1 - k   
+sT + 1 - k
 ──────────
   sT + 1
 ```
 
-
 # Parameters:
-- `k`: Gain
-- `T`: [s] Time constants (T>0 required)
-- `x_start`: Initial value of state
+
+  - `k`: Gain
+  - `T`: [s] Time constants (T>0 required)
+  - `x_start`: Initial value of state
 
 # Connectors:
-- `input`
-- `output`
+
+  - `input`
+  - `output`
 
 See also [`SecondOrder`](@ref)
 """
@@ -105,24 +115,28 @@ end
 
 A second-order filter with gain `k`, a bandwidth of `w` rad/s and relative damping `d`. The transfer function
 is given by `Y(s)/U(s) = `
+
 ```
-      k*w^2   
+      k*w^2
 ─────────────────
 s² + 2d*w*s + w^2
 ```
+
 Critical damping corresponds to `d=1`, which yields the fastest step response without overshoot, `d < 1` results in an underdamped filter while `d > 1` results in an overdamped filter.
 `d = 1/√2` corresponds to a Butterworth filter of order 2 (maximally flat frequency response).
 
 # Parameters:
-- `k`: Gain
-- `w`: [`rad/s`] Angular frequency
-- `d`: Damping
-- `x_start`: Initial value of state (output)
-- `xd_start`: Initial value of derivative of state (output)
+
+  - `k`: Gain
+  - `w`: [`rad/s`] Angular frequency
+  - `d`: Damping
+  - `x_start`: Initial value of state (output)
+  - `xd_start`: Initial value of derivative of state (output)
 
 # Connectors:
-- `input`
-- `output`
+
+  - `input`
+  - `output`
 """
 function SecondOrder(; name, k = 1, w, d, x_start = 0.0, xd_start = 0.0)
     @named siso = SISO()
@@ -144,13 +158,15 @@ end
 Textbook version of a PI-controller without actuator saturation and anti-windup measure.
 
 # Parameters:
-- `k`: Gain
-- `T`: [s] Integrator time constant (T>0 required)
-- `x_start`: Initial value for the integrator
+
+  - `k`: Gain
+  - `T`: [s] Integrator time constant (T>0 required)
+  - `x_start`: Initial value for the integrator
 
 # Connectors:
-- `err_input`
-- `ctr_output`
+
+  - `err_input`
+  - `ctr_output`
 
 See also [`LimPI`](@ref)
 """
@@ -178,16 +194,18 @@ end
 Text-book version of a PID-controller without actuator saturation and anti-windup measure.
 
 # Parameters:
-- `k`: Gain
-- `Ti`: [s] Integrator time constant (Ti>0 required). If set to false no integral action is used.
-- `Td`: [s] Derivative time constant (Td>0 required). If set to false no derivative action is used.
-- `Nd`: [s] Time constant for the derivative approximation (Nd>0 required; Nd=0 is ideal derivative).
-- `x_start`: Initial value for the integrator.
-- `xd_start`: Initial value for the derivative state.
+
+  - `k`: Gain
+  - `Ti`: [s] Integrator time constant (Ti>0 required). If set to false, no integral action is used.
+  - `Td`: [s] Derivative time constant (Td>0 required). If set to false, no derivative action is used.
+  - `Nd`: [s] Time constant for the derivative approximation (Nd>0 required; Nd=0 is ideal derivative).
+  - `x_start`: Initial value for the integrator.
+  - `xd_start`: Initial value for the derivative state.
 
 # Connectors:
-- `err_input`
-- `ctr_output`
+
+  - `err_input`
+  - `ctr_output`
 
 See also [`LimPID`](@ref)
 """
@@ -251,14 +269,16 @@ end
 Text-book version of a PI-controller with actuator saturation and anti-windup measure.
 
 # Parameters:
-- `k`: Gain
-- `T`: [s] Integrator time constant (T>0 required)
-- `Ta`: [s] Tracking time constant (Ta>0 required)
-- `x_start`: Initial value for the integrator
+
+  - `k`: Gain
+  - `T`: [s] Integrator time constant (T>0 required)
+  - `Ta`: [s] Tracking time constant (Ta>0 required)
+  - `x_start`: Initial value for the integrator
 
 # Connectors:
-- `err_input`
-- `ctr_output`
+
+  - `err_input`
+  - `ctr_output`
 """
 function LimPI(; name, k = 1, T, u_max, u_min = -u_max, Ta, x_start = 0.0)
     Ta > 0 || throw(ArgumentError("Time constant `Ta` has to be strictly positive"))
@@ -296,28 +316,32 @@ end
 Proportional-Integral-Derivative (PID) controller with output saturation, set-point weighting and integrator anti-windup.
 
 The equation for the control signal is roughly
+
 ```
 k(ep + 1/Ti * ∫e + 1/Td * d/dt(ed))
 e = u_r - u_y
 ep = wp*u_r - u_y
 ed = wd*u_r - u_y
 ```
+
 where the transfer function for the derivative includes additional filtering, see `? Derivative` for more details.
 
 # Parameters:
-- `k`: Proportional gain
-- `Ti`: [s] Integrator time constant. Set to `false` to turn off integral action.
-- `Td`: [s] Derivative time constant. Set to `false` to turn off derivative action.
-- `wp`: [0,1] Set-point weighting in the proportional part.
-- `wd`: [0,1] Set-point weighting in the derivative part.
-- `Nd`: [1/s] Derivative limit, limits the derivative gain to Nd/Td. Reasonable values are ∈ [8, 20]. A higher value gives a better approximation of an ideal derivative at the expense of higher noise amplification.
-- `Ni`: `Ni*Ti` controls the time constant `Ta` of anti-windup tracking. A common (default) choice is `Ta = √(Ti*Td)` which is realized by `Ni = √(Td / Ti)`. Anti-windup can be effectively turned off by setting `Ni = Inf`.
-- `gains`: If `gains = true`, `Ti` and `Td` will be interpreted as gains with a fundamental PID transfer function on parallel form `ki=Ti, kd=Td, k + ki/s + kd*s`.
+
+  - `k`: Proportional gain
+  - `Ti`: [s] Integrator time constant. Set to `false` to turn off integral action.
+  - `Td`: [s] Derivative time constant. Set to `false` to turn off derivative action.
+  - `wp`: [0,1] Set-point weighting in the proportional part.
+  - `wd`: [0,1] Set-point weighting in the derivative part.
+  - `Nd`: [1/s] Derivative limit, limits the derivative gain to Nd/Td. Reasonable values are ∈ [8, 20]. A higher value gives a better approximation of an ideal derivative at the expense of higher noise amplification.
+  - `Ni`: `Ni*Ti` controls the time constant `Ta` of anti-windup tracking. A common (default) choice is `Ta = √(Ti*Td)` which is realized by `Ni = √(Td / Ti)`. Anti-windup can be effectively turned off by setting `Ni = Inf`.
+  - `gains`: If `gains = true`, `Ti` and `Td` will be interpreted as gains with a fundamental PID transfer function on parallel form `ki=Ti, kd=Td, k + ki/s + kd*s`.
 
 # Connectors:
-- `reference`
-- `measurement`
-- `ctr_output`
+
+  - `reference`
+  - `measurement`
+  - `ctr_output`
 """
 function LimPID(; name, k = 1, Ti = false, Td = false, wp = 1, wd = 1,
                 Ni = Ti == 0 ? Inf : √(max(Td / Ti, 1e-6)),
@@ -424,28 +448,34 @@ end
     StateSpace(A, B, C, D=0; x_start=zeros(size(A,1)), u0=zeros(size(B,2)), y0=zeros(size(C,1)), name)
 
 A linear, time-invariant state-space system on the form.
+
 ```math
 \\begin{aligned}
 ẋ &= Ax + Bu \\\\
 y &= Cx + Du
 \\end{aligned}
 ```
+
 Transfer functions can also be simulated by converting them to a StateSpace form.
 
-`y0` and `u0` can be used to set an operating point, providing them changes the dynamics from an LTI system to the affine system 
+`y0` and `u0` can be used to set an operating point, providing them changes the dynamics from an LTI system to the affine system
+
 ```math
 \\begin{aligned}
 ẋ &= Ax + B(u - u0) \\\\
 y &= Cx + D(u - u0) + y0
 \\end{aligned}
 ```
+
 For a nonlinear system
+
 ```math
 \\begin{aligned}
 ẋ &= f(x, u) \\\\
 y &= h(x, u)
 \\end{aligned}
 ```
+
 linearized around the operating point `x₀, u₀`, we have `y0, u0 = h(x₀, u₀), u₀`.
 """
 function StateSpace(; A, B, C, D = nothing, x_start = zeros(size(A, 1)), name,

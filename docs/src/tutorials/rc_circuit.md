@@ -15,27 +15,27 @@ R = 1.0
 C = 1.0
 V = 1.0
 @variables t
-@named resistor = Resistor(R=R)
-@named capacitor = Capacitor(C=C)
+@named resistor = Resistor(R = R)
+@named capacitor = Capacitor(C = C)
 @named source = Voltage()
-@named constant = Constant(k=V)
+@named constant = Constant(k = V)
 @named ground = Ground()
 
-rc_eqs = [
-        connect(constant.output, source.V)
-        connect(source.p, resistor.p)
-        connect(resistor.n, capacitor.p)
-        connect(capacitor.n, source.n, ground.g)
-        ]
+rc_eqs = [connect(constant.output, source.V)
+          connect(source.p, resistor.p)
+          connect(resistor.n, capacitor.p)
+          connect(capacitor.n, source.n, ground.g)]
 
-@named rc_model = ODESystem(rc_eqs, t, systems=[resistor, capacitor, constant, source, ground])
+@named rc_model = ODESystem(rc_eqs, t,
+                            systems = [resistor, capacitor, constant, source, ground])
 sys = structural_simplify(rc_model)
 prob = ODAEProblem(sys, Pair[], (0, 10.0))
 sol = solve(prob, Tsit5())
 plot(sol, vars = [capacitor.v, resistor.i],
      title = "RC Circuit Demonstration",
      labels = ["Capacitor Voltage" "Resistor Current"])
-savefig("plot.png"); nothing # hide
+savefig("plot.png");
+nothing; # hide
 ```
 
 ![](plot.png)

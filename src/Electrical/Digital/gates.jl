@@ -1,15 +1,16 @@
 """
 ```julia
-function Not(; name)
+Not(; name)
 ```
 
 NOT gate in 9-level logic.
 
 # Connectors
-- `x`
-  Input [`DigitalPin`](@ref)
-- `y`
-  Output [`DigitalPin`](@ref)
+
+  - `x`
+    Input [`DigitalPin`](@ref)
+  - `y`
+    Output [`DigitalPin`](@ref)
 """
 function Not(; name)
     @named x = DigitalPin()
@@ -22,16 +23,17 @@ end
 
 """
 ```julia
-function And(; name, N=2)
+And(; name, N = 2)
 ```
 
 AND gate in 9-level logic, with `N` inputs
 
 # Connectors
-- `x1`, `x2`, ...
-  `N` input [`DigitalPin`](@ref)s
-- `y`
-  Output [`DigitalPin`](@ref)
+
+  - `x1`, `x2`, ...
+    `N` input [`DigitalPin`](@ref)s
+  - `y`
+    Output [`DigitalPin`](@ref)
 """
 function And(; name, N = 2)
     x = map(1:N) do i
@@ -47,16 +49,17 @@ end
 
 """
 ```julia
-function Nand(; name, N=2)
+Nand(; name, N = 2)
 ```
 
 NAND gate in 9-level logic, with `N` inputs
 
 # Connectors
-- `x1`, `x2`, ...
-  `N` input [`DigitalPin`](@ref)s
-- `y`
-  Output [`DigitalPin`](@ref)
+
+  - `x1`, `x2`, ...
+    `N` input [`DigitalPin`](@ref)s
+  - `y`
+    Output [`DigitalPin`](@ref)
 """
 function Nand(; name, N = 2)
     x = map(1:N) do i
@@ -72,16 +75,17 @@ end
 
 """
 ```julia
-function Or(; name, N=2)
+Or(; name, N = 2)
 ```
 
 OR gate in 9-level logic, with `N` inputs
 
 # Connectors
-- `x1`, `x2`, ...
-  `N` input [`DigitalPin`](@ref)s
-- `y`
-  Output [`DigitalPin`](@ref)
+
+  - `x1`, `x2`, ...
+    `N` input [`DigitalPin`](@ref)s
+  - `y`
+    Output [`DigitalPin`](@ref)
 """
 function Or(; name, N = 2)
     x = map(1:N) do i
@@ -97,16 +101,17 @@ end
 
 """
 ```julia
-function Nor(; name, N=2)
+Nor(; name, N = 2)
 ```
 
 NOR gate in 9-level logic, with `N` inputs
 
 # Connectors
-- `x1`, `x2`, ...
-  `N` input [`DigitalPin`](@ref)s
-- `y`
-  Output [`DigitalPin`](@ref)
+
+  - `x1`, `x2`, ...
+    `N` input [`DigitalPin`](@ref)s
+  - `y`
+    Output [`DigitalPin`](@ref)
 """
 function Nor(; name, N = 2)
     x = map(1:N) do i
@@ -122,16 +127,17 @@ end
 
 """
 ```julia
-function Xor(; name, N=2)
+Xor(; name, N = 2)
 ```
 
 XOR gate in 9-level logic, with `N` inputs
 
 # Connectors
-- `x1`, `x2`, ...
-  `N` input [`DigitalPin`](@ref)s
-- `y`
-  Output [`DigitalPin`](@ref)
+
+  - `x1`, `x2`, ...
+    `N` input [`DigitalPin`](@ref)s
+  - `y`
+    Output [`DigitalPin`](@ref)
 """
 function Xor(; name, N = 2)
     x = map(1:N) do i
@@ -147,16 +153,17 @@ end
 
 """
 ```julia
-function Xnor(; name, N=2)
+Xnor(; name, N = 2)
 ```
 
 XNOR gate in 9-level logic, with `N` inputs
 
 # Connectors
-- `x1`, `x2`, ...
-  `N` input [`DigitalPin`](@ref)s
-- `y`
-  Output [`DigitalPin`](@ref)
+
+  - `x1`, `x2`, ...
+    `N` input [`DigitalPin`](@ref)s
+  - `y`
+    Output [`DigitalPin`](@ref)
 """
 function Xnor(; name, N = 2)
     x = map(1:N) do i

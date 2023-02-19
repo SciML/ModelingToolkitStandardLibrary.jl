@@ -21,16 +21,19 @@ A pin in an analog circuit.
 Component with two electrical pins `p` and `n` and current `i` flows from `p` to `n`.
 
 # States:
-- `v(t)`: [`V`] The voltage across component `p.v - n.v`
-- `i(t)`: [`A`] The current passing through positive pin
+
+  - `v(t)`: [`V`] The voltage across component `p.v - n.v`
+  - `i(t)`: [`A`] The current passing through positive pin
 
 # Parameters:
-- `v_start`: [`V`] Initial voltage across the component
-- `i_start`: [`A`] Initial current through the component
+
+  - `v_start`: [`V`] Initial voltage across the component
+  - `i_start`: [`A`] Initial current through the component
 
 # Connectors:
-- `p` Positive pin
-- `n` Negative pin
+
+  - `p` Positive pin
+  - `n` Negative pin
 """
 function OnePort(; name, v_start = 0.0, i_start = 0.0)
     @named p = Pin()

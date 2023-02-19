@@ -5,7 +5,8 @@ Ground node with the potential of zero and connector `g`. Every circuit must hav
 node.
 
 # Connectors:
-- `g`
+
+  - `g`
 """
 function Ground(; name)
     @named g = Pin()
@@ -19,14 +20,17 @@ end
 Creates an ideal Resistor following Ohm's Law.
 
 # States:
+
 See [OnePort](@ref)
 
 # Connectors:
-- `p` Positive pin
-- `n` Negative pin
+
+  - `p` Positive pin
+  - `n` Negative pin
 
 # Parameters:
-- `R`: [`Ohm`] Resistance
+
+  - `R`: [`Ohm`] Resistance
 """
 function Resistor(; name, R)
     @named oneport = OnePort()
@@ -44,14 +48,17 @@ end
 Creates an ideal conductor.
 
 # States:
+
 See [OnePort](@ref)
 
 # Connectors:
-- `p` Positive pin
-- `n` Negative pin
+
+  - `p` Positive pin
+  - `n` Negative pin
 
 # Parameters:
-- `G`: [`S`] Conductance
+
+  - `G`: [`S`] Conductance
 """
 function Conductor(; name, G)
     @named oneport = OnePort()
@@ -66,19 +73,21 @@ end
 """
     Capacitor(; name, C)
 
-
 Creates an ideal capacitor.
 
 # States:
-- `v(t)`: [`V`] The voltage across the capacitor, given by `D(v) ~ p.i / C`
+
+  - `v(t)`: [`V`] The voltage across the capacitor, given by `D(v) ~ p.i / C`
 
 # Connectors:
-- `p` Positive pin
-- `n` Negative pin
+
+  - `p` Positive pin
+  - `n` Negative pin
 
 # Parameters:
-- `C`: [`F`] Capacitance
-- `v_start`: [`V`] Initial voltage of capacitor
+
+  - `C`: [`F`] Capacitance
+  - `v_start`: [`V`] Initial voltage of capacitor
 """
 function Capacitor(; name, C, v_start = 0.0)
     @named oneport = OnePort(; v_start = v_start)
@@ -96,15 +105,18 @@ end
 Creates an ideal Inductor.
 
 # States:
+
 See [OnePort](@ref)
 
 # Connectors:
-- `p` Positive pin
-- `n` Negative pin
+
+  - `p` Positive pin
+  - `n` Negative pin
 
 # Parameters:
-- `L`: [`H`] Inductance
-- `i_start`: [`A`] Initial current through inductor
+
+  - `L`: [`H`] Inductance
+  - `i_start`: [`A`] Initial current through inductor
 """
 function Inductor(; name, L, i_start = 0.0)
     @named oneport = OnePort(; i_start = i_start)
@@ -124,13 +136,15 @@ The ideal OpAmp is a two-port. The left port is fixed to `v1 = 0` and `i1 = 0` (
 At the right port both any voltage `v2` and any current `i2` are possible (norator).
 
 # States:
+
 See [TwoPort](@ref)
 
 # Connectors:
-- `p1` Positive pin (left port)
-- `p2` Positive pin (right port)
-- `n1` Negative pin (left port)
-- `n2` Negative pin (right port)
+
+  - `p1` Positive pin (left port)
+  - `p2` Positive pin (right port)
+  - `n1` Negative pin (left port)
+  - `n2` Negative pin (right port)
 """
 function IdealOpAmp(; name)
     @named twoport = TwoPort()
@@ -147,11 +161,13 @@ end
 Short is a simple short cut branch. That means the voltage drop between both pins is zero.
 
 # States:
+
 See [OnePort](@ref)
 
 # Connectors:
-- `p` Positive pin
-- `n` Negative pin
+
+  - `p` Positive pin
+  - `n` Negative pin
 """
 function Short(; name)
     @named oneport = OnePort()
@@ -166,16 +182,19 @@ end
 Temperature dependent electrical resistor
 
 # States
-- See [OnePort](@ref)
-- `R(t)`: [`Ohm`] Temperature dependent resistance `R ~ R_ref*(1 + alpha*(heat_port.T(t) - T_ref))`
+
+  - See [OnePort](@ref)
+  - `R(t)`: [`Ohm`] Temperature dependent resistance `R ~ R_ref*(1 + alpha*(heat_port.T(t) - T_ref))`
 
 # Connectors
-- `p` Positive pin
-- `n` Negative pin
 
-# Parameters: 
-- `R_ref`: [`Ω`] Reference resistance 
-- `T_ref`: [K] Reference temperature
+  - `p` Positive pin
+  - `n` Negative pin
+
+# Parameters:
+
+  - `R_ref`: [`Ω`] Reference resistance
+  - `T_ref`: [K] Reference temperature
 """
 function HeatingResistor(; name, R_ref = 1.0, T_ref = 300.15, alpha = 0)
     @named oneport = OnePort()
@@ -199,19 +218,22 @@ end
 Electromotoric force (electric/mechanic transformer)
 
 # States
-- `v(t)`: [`V`] The voltage across component `p.v - n.v`
-- `i(t)`: [`A`] The current passing through positive pin
-- `phi`: [`rad`] Rotation angle (=flange.phi - support.phi)
-- `w`: [`rad/s`] Angular velocity (= der(phi))
+
+  - `v(t)`: [`V`] The voltage across component `p.v - n.v`
+  - `i(t)`: [`A`] The current passing through positive pin
+  - `phi`: [`rad`] Rotation angle (=flange.phi - support.phi)
+  - `w`: [`rad/s`] Angular velocity (= der(phi))
 
 # Connectors
-- `p` [Pin](@ref) Positive pin
-- `n` [Pin](@ref) Negative pin
-- `flange` [Flange](@ref) Shaft of EMF shaft
-- `support` [Support](@ref) Support/housing of emf shaft
 
-# Parameters: 
-- `k`: [`N⋅m/A`] Transformation coefficient 
+  - `p` [Pin](@ref) Positive pin
+  - `n` [Pin](@ref) Negative pin
+  - `flange` [Flange](@ref) Shaft of EMF shaft
+  - `support` [Support](@ref) Support/housing of emf shaft
+
+# Parameters:
+
+  - `k`: [`N⋅m/A`] Transformation coefficient
 """
 function EMF(; name, k)
     @named p = Pin()

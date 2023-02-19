@@ -38,12 +38,14 @@ Support/housing 1-dim. translational flange.
 Partial model for the compliant connection of two translational 1-dim. flanges.
 
 # Parameters:
-- `s_rel_start`: [m] Initial relative distance between the flanges 
-- `f_start`: [N] Initial force between flanges
+
+  - `s_rel_start`: [m] Initial relative distance between the flanges
+  - `f_start`: [N] Initial force between flanges
 
 # States:
-- `s_rel`: [m] Relative distance (= flange_b.s - flange_a.s)
-- `f`: [N] Force between flanges (= flange_b.f)
+
+  - `s_rel`: [m] Relative distance (= flange_b.s - flange_a.s)
+  - `f`: [N] Force between flanges (= flange_b.f)
 """
 function PartialCompliant(; name, s_rel_start = 0.0, f_start = 0.0)
     @named flange_a = Flange()
@@ -68,16 +70,18 @@ end
 Partial model for the compliant connection of two translational 1-dim. flanges.
 
 # Parameters:
-- `s_rel_start`: [m] Initial relative distance
-- `v_rel_start`: [m/s] Initial relative linear velocity (= der(s_rel))
-- `a_rel_start`: [m/s²] Initial relative linear acceleration (= der(v_rel))
-- `f_start`: [N] Initial force between flanges
+
+  - `s_rel_start`: [m] Initial relative distance
+  - `v_rel_start`: [m/s] Initial relative linear velocity (= der(s_rel))
+  - `a_rel_start`: [m/s²] Initial relative linear acceleration (= der(v_rel))
+  - `f_start`: [N] Initial force between flanges
 
 # States:
-- `s_rel`: [m] Relative distance (= flange_b.phi - flange_a.phi)
-- `v_rel`: [m/s] Relative linear velocity (= der(s_rel))
-- `a_rel`: [m/s²] Relative linear acceleration (= der(v_rel))
-- `f`: [N] Force between flanges (= flange_b.f)
+
+  - `s_rel`: [m] Relative distance (= flange_b.phi - flange_a.phi)
+  - `v_rel`: [m/s] Relative linear velocity (= der(s_rel))
+  - `a_rel`: [m/s²] Relative linear acceleration (= der(v_rel))
+  - `f`: [N] Force between flanges (= flange_b.f)
 """
 function PartialCompliantWithRelativeStates(; name, delta_s_0 = 0.0)
     @named flange_a = Flange()
@@ -98,10 +102,12 @@ end
 Partial model for a component with one translational 1-dim. shaft flange and a support used for textual modeling, i.e., for elementary models
 
 # Parameters:
-- `use_support`: If support flange enabled, otherwise implicitly grounded
+
+  - `use_support`: If support flange enabled, otherwise implicitly grounded
 
 # States:
-- `s_support`: [m] Absolute position of support flange"
+
+  - `s_support`: [m] Absolute position of support flange"
 """
 function PartialElementaryOneFlangeAndSupport2(; name, use_support = false)
     @named flange = Flange()
@@ -124,10 +130,12 @@ end
 Partial model for a component with two translational 1-dim. flanges and a support used for textual modeling, i.e., for elementary models
 
 # Parameters:
-- `use_support`: If support flange enabled, otherwise implicitly grounded
+
+  - `use_support`: If support flange enabled, otherwise implicitly grounded
 
 # States:
-- `s_support`: [m] Absolute position of support flange"
+
+  - `s_support`: [m] Absolute position of support flange"
 """
 function PartialElementaryTwoFlangesAndSupport2(; name, use_support = false)
     @named flange_a = Flange()

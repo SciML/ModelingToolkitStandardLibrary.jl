@@ -130,7 +130,9 @@ end
     @test sol[ss.output.u[1]][end]≈y0[] atol=1e-3 # Test that the output equals the operating point
 end
 
-"""Second order demo plant"""
+"""
+Second order demo plant
+"""
 function Plant(; name, x_start = zeros(2))
     @named input = RealInput()
     @named output = RealOutput()

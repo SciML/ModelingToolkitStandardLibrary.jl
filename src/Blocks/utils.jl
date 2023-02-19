@@ -20,10 +20,10 @@ Connector with one input signal of type Real.
 
 # Parameters:
 - `nin=1`: Number of inputs
-- `u_start=0`: Initial value for `u`  
+- `u_start=0`: Initial value for `u`
 
 # States:
-- `u`: Value of of the connector; if nin=1 this is a scalar
+- `u`: Value of the connector; if nin=1 this is a scalar
 """ RealInput
 
 @connector function RealOutput(; name, nout = 1, u_start = nout > 1 ? zeros(nout) : 0.0)
@@ -48,10 +48,10 @@ Connector with one output signal of type Real.
 
 # Parameters:
 - `nout=1`: Number of inputs
-- `u_start=0`: Initial value for `u`  
+- `u_start=0`: Initial value for `u`
 
 # States:
-- `u`: Value of of the connector; if nout=1 this is a scalar
+- `u`: Value of the connector; if nout=1 this is a scalar
 """ RealOutput
 
 """
@@ -60,8 +60,9 @@ Connector with one output signal of type Real.
 Single input single output (SISO) continuous system block.
 
 # Parameters:
-- `u_start`: Initial value for the input
-- `y_start`: Initial value for the output
+
+  - `u_start`: Initial value for the input
+  - `y_start`: Initial value for the output
 """
 function SISO(; name, u_start = 0.0, y_start = 0.0)
     @named input = RealInput(u_start = u_start)
@@ -79,10 +80,11 @@ end
 Base class for a multiple input multiple output (MIMO) continuous system block.
 
 # Parameters:
-- `nin`: Input dimension
-- `nout`: Output dimension
-- `u_start`: Initial value for the input
-- `y_start`: Initial value for the output
+
+  - `nin`: Input dimension
+  - `nout`: Output dimension
+  - `u_start`: Initial value for the input
+  - `y_start`: Initial value for the output
 """
 function MIMO(; name, nin = 1, nout = 1, u_start = zeros(nin), y_start = zeros(nout))
     @named input = RealInput(nin = nin, u_start = u_start)

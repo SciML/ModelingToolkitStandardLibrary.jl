@@ -4,8 +4,9 @@
 Ideal sensor to measure the absolute flange angle
 
 # Connectors:
-- `flange`: [Flange](@ref) Flange of shaft from which sensor information shall be measured
-- `phi`: [RealOutput](@ref) Absolute angle of flange
+
+  - `flange`: [Flange](@ref) Flange of shaft from which sensor information shall be measured
+  - `phi`: [RealOutput](@ref) Absolute angle of flange
 """
 function AngleSensor(; name)
     @named flange = Flange()
@@ -21,8 +22,9 @@ end
 Ideal sensor to measure the absolute flange angular velocity
 
 # Connectors:
-- `flange`: [Flange](@ref) Flange of shaft from which sensor information shall be measured
-- `w`: [RealOutput](@ref) Absolute angular velocity of flange
+
+  - `flange`: [Flange](@ref) Flange of shaft from which sensor information shall be measured
+  - `w`: [RealOutput](@ref) Absolute angular velocity of flange
 """
 function SpeedSensor(; name)
     @named flange = Flange()
@@ -38,9 +40,10 @@ end
 Ideal sensor to measure the torque between two flanges (`= flange_a.tau`)
 
 # Connectors:
-- `flange_a`: [Flange](@ref) Left flange of shaft
-- `flange_b`: [Flange](@ref) Left flange of shaft
-- `tau`: [RealOutput](@ref) Torque in flange flange_a and flange_b (`tau = flange_a.tau = -flange_b.tau`)
+
+  - `flange_a`: [Flange](@ref) Left flange of shaft
+  - `flange_b`: [Flange](@ref) Left flange of shaft
+  - `tau`: [RealOutput](@ref) Torque in flange flange_a and flange_b (`tau = flange_a.tau = -flange_b.tau`)
 """
 function TorqueSensor(; name)
     @named flange_a = Flange()
@@ -57,9 +60,10 @@ end
 Ideal sensor to measure the relative angular velocity
 
 # Connectors:
-- `flange_a`: [Flange](@ref) Flange of shaft from which sensor information shall be measured
-- `flange_b`: [Flange](@ref) Flange of shaft from which sensor information shall be measured
-- `w`: [RealOutput](@ref) Absolute angular velocity of flange
+
+  - `flange_a`: [Flange](@ref) Flange of shaft from which sensor information shall be measured
+  - `flange_b`: [Flange](@ref) Flange of shaft from which sensor information shall be measured
+  - `w`: [RealOutput](@ref) Absolute angular velocity of flange
 """
 function RelSpeedSensor(; name)
     @named flange_a = Flange()

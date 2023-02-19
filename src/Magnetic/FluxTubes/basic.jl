@@ -62,7 +62,8 @@ end
 Constant permeance.
 
 # Parameters:
-- `G_m`: [H] Magnetic permeance
+
+  - `G_m`: [H] Magnetic permeance
 """
 function ConstantPermeance(; name, G_m = 1.0)
     @named two_port = TwoPort()
@@ -80,7 +81,8 @@ end
 Constant reluctance.
 
 # Parameters:
-- `R_m`: [H^-1] Magnetic reluctance
+
+  - `R_m`: [H^-1] Magnetic reluctance
 """
 function ConstantReluctance(; name, R_m = 1.0)
     @named two_port = TwoPort()
@@ -102,8 +104,9 @@ V_m = N * i
 N * dΦ/dt = -v
 
 # Parameters:
-- `N`: Number of turns
-- `Phi_start`: [Wb] Initial magnetic flux flowing into the port_p
+
+  - `N`: Number of turns
+  - `Phi_start`: [Wb] Initial magnetic flux flowing into the port_p
 """
 function ElectroMagneticConverter(; name, N, Phi_start = 0.0)
     @named port_p = PositiveMagneticPort()
@@ -131,10 +134,11 @@ end
 For modelling of eddy current in a conductive magnetic flux tube.
 
 # Parameters:
-- `rho`: [ohm * m] Resistivity of flux tube material (default: Iron at 20degC)
-- `l`: [m] Average length of eddy current path
-- `A`: [m^2] Cross sectional area of eddy current path
-- `Phi_start`: [Wb] Initial magnetic flux flowing into the port_p
+
+  - `rho`: [ohm * m] Resistivity of flux tube material (default: Iron at 20degC)
+  - `l`: [m] Average length of eddy current path
+  - `A`: [m^2] Cross sectional area of eddy current path
+  - `Phi_start`: [Wb] Initial magnetic flux flowing into the port_p
 """
 function EddyCurrent(; name, rho = 0.098e-6, l = 1, A = 1, Phi_start = 0.0)
     @named two_port = TwoPort(Phi_start = Phi_start)

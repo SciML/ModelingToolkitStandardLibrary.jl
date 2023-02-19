@@ -4,14 +4,17 @@
 Input signal acting as external torque on a flange
 
 # States:
-- `phi_support(t)`: [`rad`] Absolute angle of support flange"
+
+  - `phi_support(t)`: [`rad`] Absolute angle of support flange"
 
 # Connectors:
-- `flange` [Flange](@ref) 
-- `tau` [RealInput](@ref)  Accelerating torque acting at flange `-flange.tau`
+
+  - `flange` [Flange](@ref)
+  - `tau` [RealInput](@ref)  Accelerating torque acting at flange `-flange.tau`
 
 # Parameters:
-- `use_support`
+
+  - `use_support`
 """
 function Torque(; name, use_support = false)
     @named partial_element = PartialElementaryOneFlangeAndSupport2(use_support = use_support)
@@ -27,16 +30,19 @@ end
 Forced movement of a flange according to a reference angular velocity signal
 
 # States:
-- `phi_support(t)`: [`rad`] Absolute angle of support flange"
+
+  - `phi_support(t)`: [`rad`] Absolute angle of support flange"
 
 # Connectors:
-- `flange` [Flange](@ref) 
-- `w_ref` [RealInput](@ref) Reference angular velocity of flange with respect to support as input signal needs to be continuously differential
+
+  - `flange` [Flange](@ref)
+  - `w_ref` [RealInput](@ref) Reference angular velocity of flange with respect to support as input signal needs to be continuously differential
 
 # Parameters:
-- `use_support`: If support flange enabled, otherwise implicitly grounded
-- `exact`: true/false exact treatment/filtering the input signal
-- `tau_filt`: [`rad/s`] if exact=false, Time constant of low-pass filter to filter input signal
+
+  - `use_support`: If support flange enabled, otherwise implicitly grounded
+  - `exact`: true/false exact treatment/filtering the input signal
+  - `tau_filt`: [`rad/s`] if exact=false, Time constant of low-pass filter to filter input signal
 """
 function Speed(; name, use_support = false, exact = false, tau_filt = 50)
     @named partial_element = PartialElementaryOneFlangeAndSupport2(use_support = use_support)
