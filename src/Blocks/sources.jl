@@ -79,6 +79,24 @@ function Constant(; name, k = 1)
 end
 
 """
+    TimeVaryingFunction(f; t=t, name)
+
+Outputs ``f(t)``.
+
+The input variable `t` can be changed by passing a different variable as the keyword argument `t`.
+
+# Connectors:
+- `output`
+"""
+function TimeVaryingFunction(f; t = t, name)
+    @named output = RealOutput()
+    eqs = [
+        output.u ~ f(t),
+    ]
+    compose(ODESystem(eqs, Blocks.t; name = name), [output])
+end
+
+"""
 Generate sine signal.
 
 # Parameters:

@@ -24,6 +24,26 @@ using OrdinaryDiffEq: ReturnCode.Success
     @test sol[src.output.u][end]≈2 atol=1e-3
 end
 
+@testset "TimeVaryingFunction" begin
+    f(t) = t^2
+
+    @named src = TimeVaryingFunction(f)
+    @named int = Integrator()
+    @named iosys = ODESystem([
+                                 connect(src.output, int.input),
+                             ],
+                             t,
+                             systems = [int, src])
+    sys = structural_simplify(iosys)
+
+    prob = ODEProblem(sys, Pair[int.x => 0.0], (0.0, 10.0))
+
+    sol = solve(prob, Rodas4())
+    @test sol.retcode == :Success
+    @test sol[src.output.u]≈f.(sol.t) atol=1e-3
+    @test sol[int.output.u][end]≈1 / 3 * 10^3 atol=1e-3 # closed-form solution to integral
+end
+
 @testset "Sine" begin
     function sine(t, frequency, amplitude, phase, offset, start_time)
         offset + ifelse(t < start_time, 0,
