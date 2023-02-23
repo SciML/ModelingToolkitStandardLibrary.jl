@@ -318,7 +318,7 @@ Proportional-Integral-Derivative (PID) controller with output saturation, set-po
 The equation for the control signal is roughly
 
 ```
-k(ep + 1/Ti * ∫e + 1/Td * d/dt(ed))
+k(ep + 1/Ti * ∫e + Td * d/dt(ed))
 e = u_r - u_y
 ep = wp*u_r - u_y
 ed = wd*u_r - u_y
@@ -389,7 +389,7 @@ function LimPID(; name, k = 1, Ti = false, Td = false, wp = 1, wd = 1,
         @named Izero = Constant(k = 0)
     end
     if with_D
-        @named der = Derivative(k = 1 / Td, T = 1 / Nd, x_start = xd_start)
+        @named der = Derivative(k = Td, T = 1 / Nd, x_start = xd_start)
         @named addD = Add(k1 = wd, k2 = -1)
     else
         @named Dzero = Constant(k = 0)
