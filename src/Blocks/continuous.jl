@@ -228,7 +228,7 @@ function PID(; name, k = 1, Ti = false, Td = false, Nd = 10, xi_start = 0, xd_st
         @named Izero = Constant(k = 0)
     end
     if with_D
-        @named der = Derivative(k = 1 / Td, T = 1 / Nd, x_start = xd_start)
+        @named der = Derivative(k = Td, T = 1 / Nd, x_start = xd_start)
     else
         @named Dzero = Constant(k = 0)
     end
