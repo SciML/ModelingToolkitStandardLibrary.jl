@@ -333,9 +333,9 @@ uuid = "8ba89e20-285c-5b6f-9357-94700520ee1b"
 
 [[deps.Distributions]]
 deps = ["ChainRulesCore", "DensityInterface", "FillArrays", "LinearAlgebra", "PDMats", "Printf", "QuadGK", "Random", "SparseArrays", "SpecialFunctions", "Statistics", "StatsBase", "StatsFuns", "Test"]
-git-tree-sha1 = "239fe7c3312050992dcc5d5a8d54abcf099c3ff2"
+git-tree-sha1 = "9a782b47da6ee4cb3d041764e0c6830469105984"
 uuid = "31c24e10-a181-5473-b8eb-7969acd0382f"
-version = "0.25.82"
+version = "0.25.83"
 
 [[deps.DocStringExtensions]]
 deps = ["LibGit2"]
@@ -911,6 +911,12 @@ git-tree-sha1 = "42324d08725e200c23d4dfb549e0d5d89dede2d2"
 uuid = "1914dd2f-81c6-5fcd-8719-6d5c9610ff09"
 version = "0.5.10"
 
+[[deps.MakieCore]]
+deps = ["Observables"]
+git-tree-sha1 = "2c3fc86d52dfbada1a2e5e150e50f06c30ef149c"
+uuid = "20f20a25-4f0e-4fdf-b5d1-57303727442b"
+version = "0.6.2"
+
 [[deps.ManualMemory]]
 git-tree-sha1 = "bcaef4fc7a0cfe2cba636d84cda54b5e4e4ca3cd"
 uuid = "d125e4d3-2237-4719-b19c-fa641b8a4667"
@@ -1017,6 +1023,11 @@ deps = ["ArrayInterface", "DiffEqBase", "FiniteDiff", "ForwardDiff", "LinearAlge
 git-tree-sha1 = "536aa8b33b2c3a10df8ce89bdb0b0affef93d393"
 uuid = "8913a72c-1f9b-4ce2-8d82-65094dcecaec"
 version = "1.4.0"
+
+[[deps.Observables]]
+git-tree-sha1 = "6862738f9796b3edc1c09d0890afce4eca9e7e93"
+uuid = "510215fc-4207-5dde-b226-833fc4488ee2"
+version = "0.5.4"
 
 [[deps.OffsetArrays]]
 deps = ["Adapt"]
@@ -1157,10 +1168,10 @@ uuid = "1d0040c9-8b98-4ee7-8388-3f51789ca0ad"
 version = "0.2.1"
 
 [[deps.Polynomials]]
-deps = ["LinearAlgebra", "RecipesBase"]
-git-tree-sha1 = "a14a99e430e42a105c898fcc7f212334bc7be887"
+deps = ["LinearAlgebra", "MakieCore", "RecipesBase"]
+git-tree-sha1 = "a10bf14e9dc2d0897da7ba8119acc7efdb91ca80"
 uuid = "f27b6e38-b328-58d1-80ce-0feddd5e7a45"
-version = "3.2.4"
+version = "3.2.5"
 
 [[deps.PositiveFactorizations]]
 deps = ["LinearAlgebra"]
@@ -1621,9 +1632,9 @@ version = "0.2.0"
 
 [[deps.VectorizationBase]]
 deps = ["ArrayInterface", "CPUSummary", "HostCPUFeatures", "IfElse", "LayoutPointers", "Libdl", "LinearAlgebra", "SIMDTypes", "Static", "StaticArrayInterface"]
-git-tree-sha1 = "7bdcd1b36993026f91e61c3cc671c7127770be84"
+git-tree-sha1 = "952ba509a61d1ebb26381ac459c5c6e838ed43c4"
 uuid = "3d5dd08c-fd9d-11e8-17fa-ed2836048c2f"
-version = "0.21.59"
+version = "0.21.60"
 
 [[deps.VertexSafeGraphs]]
 deps = ["Graphs"]
