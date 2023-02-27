@@ -80,7 +80,7 @@ Partial model for the compliant connection of two translational 1-dim. flanges.
   - `f`: [N] Force between flanges (= flange_b.f)
 """
 function PartialCompliantWithRelativeStates(; name, s_rel_start = 0, v_rel_start = 0, f_start = 0)
-    pt = PartialTwoFlanges()
+    @named pt = PartialTwoFlanges()
     @unpack flange_a, flange_b = pt
     @variables s_rel(t) = s_rel_start [description = "Relative distance between flanges flange_b.s - flange_a.s"]
     @variables v_rel(t) = v_rel_start [description = "Relative linear velocity (= D(s_rel))"]
@@ -154,7 +154,7 @@ function PartialElementaryTwoFlangesAndSupport2(; name, use_support = false)
 end
 
 function PartialRigid(; name, L=0, s0=0)
-    ptf = PartialTwoFlanges()
+    @named ptf = PartialTwoFlanges()
     @unpack flange_a, flange_b = ptf
     @variables s(t) = s0 [description="Absolute position of center of component (s = flange_a.s + L/2 = flange_b.s - L/2)"]
     @parameters L(t) = L [description="Length of component, from left flange to right flange (= flange_b.s - flange_a.s)"]
