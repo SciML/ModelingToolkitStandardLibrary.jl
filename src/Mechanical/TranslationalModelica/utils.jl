@@ -29,7 +29,6 @@ Support/housing 1-dim. translational flange.
 - `f`: [N] Cut force into the flange
 """ Support
 
-
 function PartialTwoFlanges(; name)
     @named flange_a = Flange() # (left) driving flange (flange axis directed into cut plane, e. g. from left to right)
     @named flange_b = Flange() # (right) driven flange (flange axis directed out of cut plane)
@@ -54,8 +53,12 @@ Partial model for the compliant connection of two translational 1-dim. flanges.
 function PartialCompliant(; name, s_rel_start = 0.0, f_start = 0.0)
     @named pt = PartialTwoFlanges()
     @unpack flange_a, flange_b = pt
-    @variables s_rel(t) = s_rel_start [description = "Relative distance between flanges flange_b.s - flange_a.s"]
-    @variables f(t) = f_start [description = "Force between flanges (positive in direction of flange axis R)"]
+    @variables s_rel(t)=s_rel_start [
+        description = "Relative distance between flanges flange_b.s - flange_a.s",
+    ]
+    @variables f(t)=f_start [
+        description = "Force between flanges (positive in direction of flange axis R)",
+    ]
 
     eqs = [s_rel ~ flange_b.s - flange_a.s
            flange_b.f ~ +f
@@ -79,17 +82,20 @@ Partial model for the compliant connection of two translational 1-dim. flanges.
   - `v_rel`: [m/s] Relative linear velocity (= der(s_rel))
   - `f`: [N] Force between flanges (= flange_b.f)
 """
-function PartialCompliantWithRelativeStates(; name, s_rel_start = 0, v_rel_start = 0, f_start = 0)
+function PartialCompliantWithRelativeStates(; name, s_rel_start = 0, v_rel_start = 0,
+                                            f_start = 0)
     @named pt = PartialTwoFlanges()
     @unpack flange_a, flange_b = pt
-    @variables s_rel(t) = s_rel_start [description = "Relative distance between flanges flange_b.s - flange_a.s"]
-    @variables v_rel(t) = v_rel_start [description = "Relative linear velocity (= D(s_rel))"]
-    @variables f(t) = f_start [description = "Forces between flanges (= flange_b.f)"]
+    @variables s_rel(t)=s_rel_start [
+        description = "Relative distance between flanges flange_b.s - flange_a.s",
+    ]
+    @variables v_rel(t)=v_rel_start [description = "Relative linear velocity (= D(s_rel))"]
+    @variables f(t)=f_start [description = "Forces between flanges (= flange_b.f)"]
 
     eqs = [s_rel ~ flange_b.s - flange_a.s
-            v_rel ~ D(s_rel)
-            flange_b.f ~ f
-            flange_a.f ~ -f]
+           v_rel ~ D(s_rel)
+           flange_b.f ~ f
+           flange_a.f ~ -f]
     return extend(ODESystem(eqs, t; name = name), pt)
 end
 
@@ -109,7 +115,9 @@ Partial model for a component with one translational 1-dim. shaft flange and a s
 function PartialElementaryOneFlangeAndSupport2(; name, use_support = false)
     @named flange = Flange()
     @variables s_support(t) [description = "Absolute position of support flange"]
-    @variables s(t) [description = "Distance between flange and support (= flange.s - support.s)"]
+    @variables s(t) [
+        description = "Distance between flange and support (= flange.s - support.s)",
+    ]
     eqs = [s ~ flange.s - s_support]
     if use_support
         @named support = Support()
@@ -153,12 +161,16 @@ function PartialElementaryTwoFlangesAndSupport2(; name, use_support = false)
     end
 end
 
-function PartialRigid(; name, L=0, s0=0)
+function PartialRigid(; name, L = 0, s0 = 0)
     @named ptf = PartialTwoFlanges()
     @unpack flange_a, flange_b = ptf
-    @variables s(t) = s0 [description="Absolute position of center of component (s = flange_a.s + L/2 = flange_b.s - L/2)"]
-    @parameters L(t) = L [description="Length of component, from left flange to right flange (= flange_b.s - flange_a.s)"]
-    eqs = [flange_a.s ~ s - L/2
-    flange_b.s ~ s + L/2]
+    @variables s(t)=s0 [
+        description = "Absolute position of center of component (s = flange_a.s + L/2 = flange_b.s - L/2)",
+    ]
+    @parameters L=L [
+        description = "Length of component, from left flange to right flange (= flange_b.s - flange_a.s)",
+    ]
+    eqs = [flange_a.s ~ s - L / 2
+           flange_b.s ~ s + L / 2]
     return extend(ODESystem(eqs, t; name = name), ptf)
 end

@@ -44,19 +44,16 @@ Sliding mass with inertia
   - `flange: 1-dim. translational flange of mass`
 """
 function Mass(m; name, s0 = 0.0, v0 = 0.0)
-    @named pr = PartialRigid(; L=0, s0)
+    @named pr = PartialRigid(; L = 0, s0)
     @unpack flange_a, flange_b, s = pr
-    @parameters m = m [description = "Mass of sliding mass [kg]"]
+    @parameters m=m [description = "Mass of sliding mass [kg]"]
     @variables v(t)=v0 [description = "Absolute linear velocity of sliding mass [m/s]"]
     @variables a(t)=0 [description = "Absolute linear acceleration of sliding mass [m/s^2]"]
-    eqs = [
-        v ~ D(s)
-        a ~ D(v)
-        m*a ~ flange_a.f + flange_b.f
-    ]
+    eqs = [v ~ D(s)
+           a ~ D(v)
+           m * a ~ flange_a.f + flange_b.f]
     return extend(ODESystem(eqs, t; name), pr)
 end
-
 
 """
     Spring(c; name, s_rel0=0)
@@ -76,10 +73,10 @@ Linear 1D translational spring
 function Spring(c; name, s_rel0 = 0)
     @named pc = PartialCompliant()
     @unpack flange_a, flange_b, s_rel, f = pc
-    @parameters c = c [description = "Spring constant [N/m]"]
-    @parameters s_rel0 = s_rel0 [description = "Unstretched spring length [m]"]
+    @parameters c=c [description = "Spring constant [N/m]"]
+    @parameters s_rel0=s_rel0 [description = "Unstretched spring length [m]"]
 
-    eqs = [f ~ c*(s_rel - s_rel0)]
+    eqs = [f ~ c * (s_rel - s_rel0)]
     return extend(ODESystem(eqs, t; name), pc)
 end
 
@@ -98,10 +95,10 @@ Linear 1D translational damper
   - `flange_b: 1-dim. translational flange on opposite side of damper`
 """
 function Damper(d; name)
-  @named pc = PartialCompliantWithRelativeStates()
-  @unpack flange_a, flange_b, v_rel, f = pc
-  @parameters d = d [description = "Damping constant [Ns/m]"]
-  @variables lossPower(t) = 0 [description = "Power dissipated by the damper [W]"]
-  eqs = [f ~ d*v_rel; lossPower ~ f*v_rel]
-  return extend(ODESystem(eqs, t; name), pc)
+    @named pc = PartialCompliantWithRelativeStates()
+    @unpack flange_a, flange_b, v_rel, f = pc
+    @parameters d=d [description = "Damping constant [Ns/m]"]
+    @variables lossPower(t)=0 [description = "Power dissipated by the damper [W]"]
+    eqs = [f ~ d * v_rel; lossPower ~ f * v_rel]
+    return extend(ODESystem(eqs, t; name), pc)
 end
