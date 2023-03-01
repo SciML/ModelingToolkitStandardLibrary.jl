@@ -28,7 +28,7 @@ get_fluid(x::FluidType) = Val(x)
 density(fluid) = density(get_fluid(fluid))
 @register_symbolic density(fluid)
 
-bulk_modulus(fluid) = bulk_modulus(Val(fluid))
+bulk_modulus(fluid) = bulk_modulus(get_fluid(fluid))
 @register_symbolic bulk_modulus(fluid)
 
 viscosity(fluid) = viscosity(get_fluid(fluid))
@@ -53,7 +53,7 @@ density(fluid, p) = density(fluid)*(1 + p/bulk_modulus(fluid))
 
 get_shape(x::Float64) = get_shape(Int(x))
 get_shape(x::Int) = get_shape(ShapeType(x))
-get_shape(x::FluidType) = Val(x)
+get_shape(x::ShapeType) = Val(x)
 
 friction_factor(shape) = friction_factor(get_shape(shape))
 @register_symbolic friction_factor(shape)

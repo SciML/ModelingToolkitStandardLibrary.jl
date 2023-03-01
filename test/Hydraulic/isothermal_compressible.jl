@@ -27,5 +27,5 @@ end
 @named sys = system(;fluid=Int(IC.water))
 ss = structural_simplify(sys)
 
-# prob = ODEProblem(ss, [], (0,0.01))
-# sol = solve(prob, ImplicitEuler())
+prob = ODEProblem(ss, [], (0,0.01))
+sol = solve(prob, ImplicitEuler())

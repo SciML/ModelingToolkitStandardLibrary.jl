@@ -88,7 +88,7 @@ fixed fluid volume
 
   - `port`: hydraulic port
 """
-function LaminarResistance(;fluid, shape=1, name, p_int, area, length, perimeter=2*sqrt(area*pi))
+function LaminarResistance(;fluid, shape=Int(circle), name, p_int, area, length, perimeter=2*sqrt(area*pi))
     pars = @parameters begin
         p_int = p_int
         area = area
