@@ -12,7 +12,7 @@ function system(; name, fluid)
 
     systems = @named begin
         src = IC.Source(;p)
-        vol = IC.FixedVolume(;p_int=p, vol=0.1, fluid)
+        vol = IC.FixedVolume(;p_int=0, vol=0.1, fluid)
         res = IC.LaminarResistance(; p_int=p, area=0.01, length=0.1, fluid)
     end
 
@@ -28,4 +28,10 @@ end
 ss = structural_simplify(sys)
 
 prob = ODEProblem(ss, [], (0,0.01))
-sol = solve(prob, ImplicitEuler())
+dt = 1e-4
+sol = solve(prob, ImplicitEuler(); adaptive=false, dt, initializealg=NoInit())  
+
+sys = complete(sys)
+
+# gives: ERROR: UndefVarError: `res₊port_a₊dm` not defined
+sol[sys.vol.port.p] 
