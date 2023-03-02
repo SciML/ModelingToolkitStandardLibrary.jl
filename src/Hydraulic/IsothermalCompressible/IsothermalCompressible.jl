@@ -4,7 +4,7 @@ Library to model iso-thermal compressible fluid flow
 module IsothermalCompressible
 
 using ModelingToolkit, Symbolics
-import Base: float
+using ...Blocks: RealInput, RealOutput
 
 @parameters t
 D = Differential(t)

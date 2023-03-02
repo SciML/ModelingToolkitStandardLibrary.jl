@@ -16,13 +16,37 @@ port for hydraulic components
 - `dm`: [kg/s] mass flow
 """ HydraulicPort
 
-@enum FluidType water sae_30_oil
 
-# Base.float(x::FluidType) = Base.float(Int(x))
+struct FluidType
+    name::Symbol
+    value::Int
+end
+FluidType(value; name) = FluidType(name, value)
 
-get_fluid(x::Float64) = get_fluid(Int(x))
-get_fluid(x::Int) = get_fluid(FluidType(x))
-get_fluid(x::FluidType) = Val(x)
+
+Base.float(x::FluidType) = Base.float(x.value)
+Base.eltype(x::FluidType) = Int
+Base.promote_type(x::Type{FluidType}, y::Type{Int64}) = Int64
+Base.promote_type(x::Type{FluidType}, y::Type{Float64}) = Float64
+Base.convert(T::Type{Float64}, x::FluidType) = float(x)
+
+Base.show(io::IO, x::FluidType) = show(io, MIME"text/plain"(), x)
+function Base.show(io::IO, ::MIME"text/plain", x::FluidType)
+    print(io, "$(x.name)::FluidType")
+end
+
+get_fluid(x::Float64) = Val(round(Int, x))
+get_fluid(x::Int) = Val(x)
+get_fluid(x::FluidType) = Val(x.value)
+
+
+module Fluids
+import ..IsothermalCompressible: FluidType
+using ModelingToolkit
+@named water = FluidType(0)
+@named sae_30_oil = FluidType(1)
+end
+
 
 
 density(fluid) = density(get_fluid(fluid))
@@ -34,28 +58,54 @@ bulk_modulus(fluid) = bulk_modulus(get_fluid(fluid))
 viscosity(fluid) = viscosity(get_fluid(fluid))
 @register_symbolic viscosity(fluid)
 
-density(::Val{water}) = 997 # [kg/m^3]
-bulk_modulus(::Val{water}) = 2.09e9 # [Pa]
-viscosity(::Val{water}) = 0.0010016 # [Pa*s] or [kg/m-s]
+
+density(::Val{Fluids.water.value}) = 997 # [kg/m^3]
+bulk_modulus(::Val{Fluids.water.value}) = 2.09e9 # [Pa]
+viscosity(::Val{Fluids.water.value}) = 0.0010016 # [Pa*s] or [kg/m-s]
 
 # https://wiki.anton-paar.com/us-en/engine-oil/ at 20C
-density(::Val{sae_30_oil}) = 881.5
-bulk_modulus(::Val{sae_30_oil}) = 1.5e9
-viscosity(::Val{sae_30_oil}) = 0.23939
+density(::Val{Fluids.sae_30_oil.value}) = 881.5
+bulk_modulus(::Val{Fluids.sae_30_oil.value}) = 1.5e9
+viscosity(::Val{Fluids.sae_30_oil.value}) = 0.23939
 
 
 density(fluid, p) = density(fluid)*(1 + p/bulk_modulus(fluid))
 
 
-@enum ShapeType circle triangle square rectangle
 
-# Base.float(x::ShapeType) = Base.float(Int(x))
 
-get_shape(x::Float64) = get_shape(Int(x))
-get_shape(x::Int) = get_shape(ShapeType(x))
-get_shape(x::ShapeType) = Val(x)
+struct ShapeType
+    name::Symbol
+    value::Int
+end
+ShapeType(value; name) = ShapeType(name, value)
+
+
+Base.float(x::ShapeType) = Base.float(x.value)
+Base.eltype(x::ShapeType) = Int
+Base.promote_type(x::Type{ShapeType}, y::Type{Int64}) = Int64
+Base.promote_type(x::Type{ShapeType}, y::Type{Float64}) = Float64
+Base.convert(T::Type{Float64}, x::ShapeType) = float(x)
+
+Base.show(io::IO, x::ShapeType) = show(io, MIME"text/plain"(), x)
+function Base.show(io::IO, ::MIME"text/plain", x::ShapeType)
+    print(io, "$(x.name)::ShapeType")
+end
+
+get_shape(x::Float64) = Val(round(Int, x))
+get_shape(x::Int) = Val(x)
+get_shape(x::ShapeType) = Val(x.value)
+
+
+module Shapes
+import ..IsothermalCompressible: ShapeType
+using ModelingToolkit
+@named circle = ShapeType(0)
+@named triangle = ShapeType(1)
+end
+
 
 friction_factor(shape) = friction_factor(get_shape(shape))
 @register_symbolic friction_factor(shape)
 
-friction_factor(::Val{circle}) = 64
+friction_factor(::Val{Shapes.circle.value}) = 64

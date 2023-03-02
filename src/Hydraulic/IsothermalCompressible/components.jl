@@ -29,6 +29,28 @@ function Source(;name, p)
     ODESystem(eqs, t, vars, pars; name, systems)
 end
 
+
+
+function InputSource(;name, p)
+    pars = @parameters begin
+        p = p
+    end
+
+    vars = []
+    
+    systems = @named begin
+        port = HydraulicPort(; p_int = p)
+        input = RealInput()
+    end
+    
+    eqs = [
+        port.p ~ input.u
+    ]
+
+    ODESystem(eqs, t, vars, pars; name, systems)
+end
+
+
 """
     FixedVolume(fluid; name, vol, p_int)
 
@@ -88,7 +110,7 @@ fixed fluid volume
 
   - `port`: hydraulic port
 """
-function LaminarResistance(;fluid, shape=Int(circle), name, p_int, area, length, perimeter=2*sqrt(area*pi))
+function LaminarResistance(;fluid, shape=Shapes.circle, name, p_int, area, length, perimeter=2*sqrt(area*pi))
     pars = @parameters begin
         p_int = p_int
         area = area
