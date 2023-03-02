@@ -1,5 +1,5 @@
 """
-Library to model iso-thermal compressible fluid flow 
+Library to model iso-thermal compressible liquid fluid flow 
 """
 module IsothermalCompressible
 
@@ -12,7 +12,7 @@ D = Differential(t)
 export HydraulicPort
 include("utils.jl")
 
-export Source, FixedVolume, LaminarResistance
+export Source, InputSource, FixedVolume, Pipe
 include("components.jl")
 
 

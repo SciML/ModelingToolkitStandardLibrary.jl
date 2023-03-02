@@ -2,21 +2,32 @@ using ModelingToolkit, OrdinaryDiffEq, Test
 import ModelingToolkitStandardLibrary.Hydraulic.IsothermalCompressible as IC
 import ModelingToolkitStandardLibrary.Blocks as B
 
+
+
+
 @parameters t
 D = Differential(t)
 
-function system(; name, fluid)
+function system(N; name, fluid)
 
     pars = @parameters begin
         fluid = fluid
     end
 
     systems = @named begin
-        stp = B.Step(;height = 100e5, offset = 0, start_time = 0.01, duration = Inf, smooth = 1e-5)
-        src = IC.InputSource(;p=0)
-        vol = IC.FixedVolume(;p_int=0, vol=0.1, fluid)
-        res = IC.LaminarResistance(; p_int=0, area=0.01, length=1e2, fluid)
+        stp = B.Step(;height = 10e5, offset = 0, start_time = 0.005, duration = Inf, smooth = 0)
+        src = IC.InputSource(;p_int=0)
+        vol = IC.FixedVolume(;p_int=0, vol=10.0, fluid)
+        
     end
+
+    if N == 1
+        @named res = IC.PipeBase(; p_int=0, area=0.01, length=500.0, fluid)
+    else
+        @named res = IC.Pipe(N; p_int=0, area=0.01, length=500.0, fluid)
+    end
+    push!(systems, res)
+
 
     eqs = [
         connect(stp.output, src.input)
@@ -27,63 +38,52 @@ function system(; name, fluid)
     ODESystem(eqs, t, [], pars; name, systems)
 end
 
-@named sys = system(;fluid=IC.Fluids.water)
 
-cc = structural_simplify(sys; allow_parameter=false)
-prob = ODEProblem(cc, [], (0,0.1))
-dt = 1e-6
-sol = solve(prob, ImplicitEuler(); adaptive=false, dt, initializealg=NoInit())  
+@named user_oil = IC.FluidType()
+user_oil_type = typeof(IC.get_fluid(user_oil))
+IC.density(::user_oil_type) = 876
+IC.bulk_modulus(::user_oil_type) = 1.2e9
+IC.viscosity(::user_oil_type) = 0.034
 
-# sys = complete(sys)
-# sol[sys.vol.port.p] 
 
-# using GLMakie
+@named sys1 = system(1;fluid=IC.water_20C)
+@named sys2 = system(2;fluid=IC.water_20C)
+@named sys5 = system(5;fluid=IC.water_20C)
+@named sys25 = system(25;fluid=IC.water_20C)
 
-# lines(sol.t, sol[sys.vol.port.p]/1e5)
 
-# function ModelingToolkit.promote_to_concrete(vs; tofloat = true, use_union = false)
-#     if isempty(vs)
-#         return vs
-#     end
-#     T = eltype(vs)
-#     if Base.isconcretetype(T) && (!tofloat || T === float(T)) # nothing to do
-#         vs
-#     else
-#         sym_vs = filter(x -> SymbolicUtils.issym(x) || SymbolicUtils.istree(x), vs)
-#         isempty(sym_vs) || throw_missingvars_in_sys(sym_vs)
-#         C = typeof(first(vs))
-#         println("55: C=$C")
-#         I = Int8
-#         has_int = false
-#         has_array = false
-#         array_T = nothing
-#         for v in vs
-#             if v isa AbstractArray
-#                 has_array = true
-#                 array_T = typeof(v)
-#             end
-#             E = eltype(v)
-#             print("67: C (before)=$C")
-#             C = promote_type(C, E)
-#             println(", C (after)=$C, E=$E")
-#             if E <: Integer
-#                 has_int = true
-#                 I = promote_type(I, E)
-#             end
-#         end
-#         if tofloat && !has_array
-#             C = float(C)
-#         elseif has_array || (use_union && has_int && C !== I)
-#             if has_array
-#                 C = Union{C, array_T}
-#             end
-#             if has_int
-#                 C = Union{C, I}
-#             end
-#             return copyto!(similar(vs, C), vs)
-#         end
-#         convert.(C, vs)
-#     end
-# end
+cc1 = structural_simplify(sys1; allow_parameter=false)
+cc2 = structural_simplify(sys2; allow_parameter=false)
+cc5 = structural_simplify(sys5; allow_parameter=false)
+cc25 = structural_simplify(sys25; allow_parameter=false)
 
-# ModelingToolkit.promote_to_concrete(prob.p)
+t_end = 0.2
+prob0 = ODEProblem(cc1, [], (0,t_end), [complete(sys1).fluid => user_oil])
+prob1 = ODEProblem(cc1, [], (0,t_end))
+prob2 = ODEProblem(cc2, [], (0,t_end))
+prob5 = ODEProblem(cc5, [], (0,t_end))
+prob25 = ODEProblem(cc25, [], (0,t_end))
+
+
+dt = 1e-4
+NEWTON = NLNewton(check_div = false, always_new = true, max_iter=100, relax=4//10)
+sol0 = solve(prob0, ImplicitEuler(nlsolve=NEWTON); adaptive=false, dt, initializealg=NoInit())  
+sol1 = solve(prob1, ImplicitEuler(nlsolve=NEWTON); adaptive=false, dt, initializealg=NoInit())  
+sol2 = solve(prob2, ImplicitEuler(nlsolve=NEWTON); adaptive=false, dt, initializealg=NoInit())  
+sol5 = solve(prob5, ImplicitEuler(nlsolve=NEWTON); adaptive=false, dt, initializealg=NoInit())  
+sol25 = solve(prob25, ImplicitEuler(nlsolve=NEWTON); adaptive=false, dt, initializealg=NoInit())  
+
+
+
+
+using GLMakie
+fig = Figure()
+ax = Axis(fig[1,1])
+lines!(ax, sol0.t, sol0[sys1.res.port_a.p] .- sol0[sys1.res.port_b.p]; label="pipe base, oil", linestyle=:dash)
+lines!(ax, sol1.t, sol1[sys1.res.port_a.p] .- sol1[sys1.res.port_b.p]; label="pipe base")
+lines!(ax, sol2.t, sol2[sys2.res.port_a.p] .- sol2[sys2.res.port_b.p]; label="pipe N=2")
+lines!(ax, sol5.t, sol5[sys5.res.port_a.p] .- sol5[sys5.res.port_b.p]; label="pipe N=5")
+lines!(ax, sol25.t, sol25[sys25.res.port_a.p] .- sol25[sys25.res.port_b.p]; label="pipe N=25")
+axislegend(ax)
+fig
+

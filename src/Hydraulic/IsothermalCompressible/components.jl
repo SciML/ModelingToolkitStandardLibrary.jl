@@ -31,15 +31,15 @@ end
 
 
 
-function InputSource(;name, p)
+function InputSource(;name, p_int)
     pars = @parameters begin
-        p = p
+        p_int = p_int
     end
 
     vars = []
     
     systems = @named begin
-        port = HydraulicPort(; p_int = p)
+        port = HydraulicPort(; p_int)
         input = RealInput()
     end
     
@@ -98,7 +98,7 @@ end
 """
     LaminarResistance(fluid, shape=:circle; name, p_int, area, length, perimeter=2*sqrt(area*pi))
 
-fixed fluid volume
+laminar pipe resistance
 
 # Parameters:
 
@@ -110,7 +110,7 @@ fixed fluid volume
 
   - `port`: hydraulic port
 """
-function LaminarResistance(;fluid, shape=Shapes.circle, name, p_int, area, length, perimeter=2*sqrt(area*pi))
+function PipeBase(;name, fluid, shape=Shapes.circle, p_int, area, length, perimeter=2*sqrt(area*pi))
     pars = @parameters begin
         p_int = p_int
         area = area
@@ -120,9 +120,7 @@ function LaminarResistance(;fluid, shape=Shapes.circle, name, p_int, area, lengt
         shape=shape
     end
 
-    vars = @variables begin
-        v(t) = 0
-    end
+    vars = []
     
     systems = @named begin
         port_a = HydraulicPort(; p_int)
@@ -133,19 +131,69 @@ function LaminarResistance(;fluid, shape=Shapes.circle, name, p_int, area, lengt
     # let ----------------------
     Δp = port_a.p - port_b.p
     dm = port_a.dm
+    p = (port_a.p + port_b.p)/2
 
     d_h = 4*area/perimeter
-    rho = density(fluid, port_a.p)
-    Re = rho*v*d_h/viscosity(fluid)
-    f = friction_factor(shape)/Re
-    
+
+    ρ = density(fluid, p)
+    μ = viscosity(fluid)
+    Φ = shape_factor(shape)
+    f = friction_factor(dm, area, d_h, ρ, μ, Φ)
+    u = dm/(ρ*area)
 
     eqs = [        
-        Δp ~ 1/2 * rho * v^2 * f * length
-        dm ~ rho*v*area
-        0 ~ port_a.dm - port_b.dm
+        Δp ~ 1/2 * ρ * u^2 * f * (length/d_h)
+        0 ~ port_a.dm + port_b.dm
     ]
 
     ODESystem(eqs, t, vars, pars; name, systems)
+end
+
+function Pipe(N; name, fluid, shape=Shapes.circle, p_int, area, length, perimeter=2*sqrt(area*pi))
+
+    @assert(N>1, "the pipe component must be defined with more than 1 segment (i.e. N>1), found N=$N")
+
+    pars = @parameters begin
+        p_int = p_int
+        area = area
+        length = length
+        perimeter = perimeter
+        fluid=fluid
+        shape=shape
+    end
+    
+    vars = []
+    
+    ports = @named begin
+        port_a = HydraulicPort(; p_int)
+        port_b = HydraulicPort(; p_int)
+    end
+
+
+    pipe_bases = []
+    for i=1:N-1
+        x = PipeBase(;name=Symbol("p$i"), fluid=ParentScope(fluid), shape=ParentScope(shape), p_int=ParentScope(p_int), area=ParentScope(area), length=ParentScope(length)/(N-1), perimeter=ParentScope(perimeter))
+        push!(pipe_bases, x)
+    end
+
+    volumes = []
+    for i=1:N
+        x = FixedVolume(; name=Symbol("v$i"), fluid=ParentScope(fluid), vol=ParentScope(area)*ParentScope(length)/N, p_int=ParentScope(p_int))
+        push!(volumes, x)
+    end
+    
+
+    eqs = [
+        connect(volumes[1].port, pipe_bases[1].port_a, port_a)
+        connect(volumes[end].port, pipe_bases[end].port_b, port_b)
+    ]
+
+    for i=2:N-1
+        eq = connect(volumes[i].port, pipe_bases[i-1].port_b, pipe_bases[i].port_a)
+        push!(eqs, eq)
+    end
+
+
+    ODESystem(eqs, t, vars, pars; name, systems=[ports; pipe_bases; volumes])
 end
 
