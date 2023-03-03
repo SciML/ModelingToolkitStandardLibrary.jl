@@ -197,3 +197,43 @@ function Pipe(N; name, fluid, shape=Shapes.circle, p_int, area, length, perimete
     ODESystem(eqs, t, vars, pars; name, systems=[ports; pipe_bases; volumes])
 end
 
+
+function Actuator(direction; name, fluid, p_int, x_int, area, dead_volume)
+
+    pars = @parameters begin
+        fluid = fluid
+        p_int = p_int
+        x_int = x_int
+        area = area
+        dead_volume = dead_volume
+    end
+
+    vars = @variables begin
+        x(t) = x_int
+        dx(t) = 0
+        rho(t) = density(fluid, p_int)
+        drho(t) = 0
+    end
+
+    systems = @named begin
+        port = HydraulicPort(; p_int)
+        flange = MechanicalPort()
+    end
+
+    # let -------------
+    vol = dead_volume + area*x
+
+    eqs = [
+        D(x) ~ dx
+        D(rho) ~ drho
+
+        dx ~ flange.v*direction
+        rho ~ density(fluid, port.p)
+        
+        port.dm ~ drho*vol + rho*area*dx
+        flange.f ~ -port.p*area*direction
+    ]
+
+    ODESystem(eqs, t, vars, pars; name, systems)
+end
+

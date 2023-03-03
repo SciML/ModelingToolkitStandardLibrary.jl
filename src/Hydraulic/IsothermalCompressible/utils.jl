@@ -106,6 +106,8 @@ shape_factor(::Val{Shapes.rectangle_r4.value}) = 73
 shape_factor(::Val{Shapes.rectangle_r8.value}) = 82
 shape_factor(::Val{Shapes.rectangle_rinf.value}) = 96
 
+
+
 function friction_factor(dm, area, d_h, rho, mu, shape_factor)
 
     u = abs(dm)/(rho*area)

@@ -5,6 +5,7 @@ module IsothermalCompressible
 
 using ModelingToolkit, Symbolics
 using ...Blocks: RealInput, RealOutput
+using ...Mechanical.Translational: MechanicalPort
 
 @parameters t
 D = Differential(t)
