@@ -47,7 +47,7 @@ Partial model for the compliant connection of two translational 1-dim. flanges.
   - `s_rel`: [m] Relative distance (= flange_b.s - flange_a.s)
   - `f`: [N] Force between flanges (= flange_b.f)
 """
-function PartialCompliant(; name, s_rel_start = 0.0, f_start = 0.0)
+@component function PartialCompliant(; name, s_rel_start = 0.0, f_start = 0.0)
     @named flange_a = Flange()
     @named flange_b = Flange()
     sts = @variables begin
@@ -83,7 +83,7 @@ Partial model for the compliant connection of two translational 1-dim. flanges.
   - `a_rel`: [m/s²] Relative linear acceleration (= der(v_rel))
   - `f`: [N] Force between flanges (= flange_b.f)
 """
-function PartialCompliantWithRelativeStates(; name, delta_s_0 = 0.0)
+@component function PartialCompliantWithRelativeStates(; name, delta_s_0 = 0.0)
     @named flange_a = Flange()
     @named flange_b = Flange()
     sts = @variables begin
@@ -109,7 +109,7 @@ Partial model for a component with one translational 1-dim. shaft flange and a s
 
   - `s_support`: [m] Absolute position of support flange"
 """
-function PartialElementaryOneFlangeAndSupport2(; name, use_support = false)
+@component function PartialElementaryOneFlangeAndSupport2(; name, use_support = false)
     @named flange = Flange()
     sys = [flange]
     @variables s_support(t)
@@ -137,7 +137,7 @@ Partial model for a component with two translational 1-dim. flanges and a suppor
 
   - `s_support`: [m] Absolute position of support flange"
 """
-function PartialElementaryTwoFlangesAndSupport2(; name, use_support = false)
+@component function PartialElementaryTwoFlangesAndSupport2(; name, use_support = false)
     @named flange_a = Flange()
     @named flange_b = Flange()
     sys = [flange_a, flange_b]

@@ -13,7 +13,7 @@ an ideal ammeter.
   - `p` Positive pin
   - `n` Negative pin
 """
-function CurrentSensor(; name)
+@component function CurrentSensor(; name)
     @named p = Pin()
     @named n = Pin()
     @variables i(t) = 1.0
@@ -36,7 +36,7 @@ Creates a circuit component which measures the potential at a pin.
 
   - `p` Pin at which potential is to be measured
 """
-function PotentialSensor(; name)
+@component function PotentialSensor(; name)
     @named p = Pin()
     @variables phi(t) = 1.0
     eqs = [p.i ~ 0
@@ -58,7 +58,7 @@ Creates a circuit component that measures the voltage across it. Analogous to an
   - `p` Positive pin
   - `n` Negative pin
 """
-function VoltageSensor(; name)
+@component function VoltageSensor(; name)
     @named p = Pin()
     @named n = Pin()
     @variables v(t) = 1.0
@@ -87,7 +87,7 @@ consumed by a circuit.
   - `pv` Corresponds to the `p` pin of the [`VoltageSensor`](@ref)
   - `nv` Corresponds to the `n` pin of the [`VoltageSensor`](@ref)
 """
-function PowerSensor(; name)
+@component function PowerSensor(; name)
     @named pc = Pin()
     @named nc = Pin()
     @named pv = Pin()
@@ -121,7 +121,7 @@ Combines a [`VoltageSensor`](@ref) and a [`CurrentSensor`](@ref).
   - `pv` Corresponds to the `p` pin of the [`VoltageSensor`](@ref)
   - `nv` Corresponds to the `n` pin of the [`VoltageSensor`](@ref)
 """
-function MultiSensor(; name)
+@component function MultiSensor(; name)
     @named pc = Pin()
     @named nc = Pin()
     @named pv = Pin()

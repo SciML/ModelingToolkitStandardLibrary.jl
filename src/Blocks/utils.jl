@@ -64,7 +64,7 @@ Single input single output (SISO) continuous system block.
   - `u_start`: Initial value for the input
   - `y_start`: Initial value for the output
 """
-function SISO(; name, u_start = 0.0, y_start = 0.0)
+@component function SISO(; name, u_start = 0.0, y_start = 0.0)
     @named input = RealInput(u_start = u_start)
     @named output = RealOutput(u_start = y_start)
     @variables(u(t)=u_start, [description = "Input of SISO system $name"],
@@ -86,7 +86,8 @@ Base class for a multiple input multiple output (MIMO) continuous system block.
   - `u_start`: Initial value for the input
   - `y_start`: Initial value for the output
 """
-function MIMO(; name, nin = 1, nout = 1, u_start = zeros(nin), y_start = zeros(nout))
+@component function MIMO(; name, nin = 1, nout = 1, u_start = zeros(nin),
+                         y_start = zeros(nout))
     @named input = RealInput(nin = nin, u_start = u_start)
     @named output = RealOutput(nout = nout, u_start = y_start)
     @variables(u(t)[1:nin]=u_start, [description = "Input of MIMO system $name"],

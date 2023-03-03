@@ -8,7 +8,7 @@ node.
 
   - `g`
 """
-function Ground(; name)
+@component function Ground(; name)
     @named g = Pin()
     eqs = [g.v ~ 0]
     ODESystem(eqs, t, [], []; systems = [g], name = name)
@@ -32,7 +32,7 @@ See [OnePort](@ref)
 
   - `R`: [`Ohm`] Resistance
 """
-function Resistor(; name, R)
+@component function Resistor(; name, R)
     @named oneport = OnePort()
     @unpack v, i = oneport
     pars = @parameters R = R
@@ -60,7 +60,7 @@ See [OnePort](@ref)
 
   - `G`: [`S`] Conductance
 """
-function Conductor(; name, G)
+@component function Conductor(; name, G)
     @named oneport = OnePort()
     @unpack v, i = oneport
     pars = @parameters G = G
@@ -89,7 +89,7 @@ Creates an ideal capacitor.
   - `C`: [`F`] Capacitance
   - `v_start`: [`V`] Initial voltage of capacitor
 """
-function Capacitor(; name, C, v_start = 0.0)
+@component function Capacitor(; name, C, v_start = 0.0)
     @named oneport = OnePort(; v_start = v_start)
     @unpack v, i = oneport
     pars = @parameters C = C
@@ -118,7 +118,7 @@ See [OnePort](@ref)
   - `L`: [`H`] Inductance
   - `i_start`: [`A`] Initial current through inductor
 """
-function Inductor(; name, L, i_start = 0.0)
+@component function Inductor(; name, L, i_start = 0.0)
     @named oneport = OnePort(; i_start = i_start)
     @unpack v, i = oneport
     pars = @parameters L = L
@@ -146,7 +146,7 @@ See [TwoPort](@ref)
   - `n1` Negative pin (left port)
   - `n2` Negative pin (right port)
 """
-function IdealOpAmp(; name)
+@component function IdealOpAmp(; name)
     @named twoport = TwoPort()
     @unpack v1, v2, i1, i2 = twoport
 
@@ -169,7 +169,7 @@ See [OnePort](@ref)
   - `p` Positive pin
   - `n` Negative pin
 """
-function Short(; name)
+@component function Short(; name)
     @named oneport = OnePort()
     @unpack v, i = oneport
     eqs = [v ~ 0]
@@ -196,7 +196,7 @@ Temperature dependent electrical resistor
   - `R_ref`: [`Ω`] Reference resistance
   - `T_ref`: [K] Reference temperature
 """
-function HeatingResistor(; name, R_ref = 1.0, T_ref = 300.15, alpha = 0)
+@component function HeatingResistor(; name, R_ref = 1.0, T_ref = 300.15, alpha = 0)
     @named oneport = OnePort()
     @unpack v, i = oneport
     @named heat_port = HeatPort()
@@ -235,7 +235,7 @@ Electromotoric force (electric/mechanic transformer)
 
   - `k`: [`N⋅m/A`] Transformation coefficient
 """
-function EMF(; name, k)
+@component function EMF(; name, k)
     @named p = Pin()
     @named n = Pin()
     @named flange = Flange()

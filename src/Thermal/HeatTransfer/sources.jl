@@ -17,7 +17,7 @@ the component FixedHeatFlow is connected, if parameter `Q_flow` is positive.
   - `T_ref`: [K] Reference temperature
   - `alpha`: [1/K] Temperature coefficient of heat flow rate
 """
-function FixedHeatFlow(; name, Q_flow = 1.0, T_ref = 293.15, alpha = 0.0)
+@component function FixedHeatFlow(; name, Q_flow = 1.0, T_ref = 293.15, alpha = 0.0)
     pars = @parameters begin
         Q_flow = Q_flow
         T_ref = T_ref
@@ -46,7 +46,7 @@ This model defines a fixed temperature `T` at its port in kelvin, i.e., it defin
 
   - `T`: [K] Fixed temperature boundary condition
 """
-function FixedTemperature(; name, T)
+@component function FixedTemperature(; name, T)
     @named port = HeatPort()
     pars = @parameters T = T
     eqs = [
@@ -76,7 +76,7 @@ dependent losses (which are given a reference temperature T_ref).
   - `T_ref`: [K] Reference temperature
   - `alpha`: [1/K] Temperature coefficient of heat flow rate
 """
-function PrescribedHeatFlow(; name, T_ref = 293.15, alpha = 0.0)
+@component function PrescribedHeatFlow(; name, T_ref = 293.15, alpha = 0.0)
     pars = @parameters begin
         T_ref = T_ref
         alpha = alpha
@@ -104,7 +104,7 @@ the temperature at the specified value.
   - `port`
   - `T` input for the temperature
 """
-function PrescribedTemperature(; name)
+@component function PrescribedTemperature(; name)
     @named port = HeatPort()
     @named T = RealInput()
     eqs = [

@@ -8,7 +8,7 @@ using IfElse: ifelse
 @testset "Chua Circuit" begin
     @parameters t
 
-    function NonlinearResistor(; name, Ga, Gb, Ve)
+    @component function NonlinearResistor(; name, Ga, Gb, Ve)
         @named oneport = OnePort()
         @unpack v, i = oneport
         pars = @parameters Ga=Ga Gb=Gb Ve=Ve

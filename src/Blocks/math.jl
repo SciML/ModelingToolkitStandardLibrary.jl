@@ -12,7 +12,7 @@ Output the product of a gain value with the input signal.
   - `input`
   - `output`
 """
-function Gain(k; name)
+@component function Gain(k; name)
     @named siso = SISO()
     @unpack u, y = siso
     pars = @parameters k=k [description = "Gain of Gain $name"]
@@ -36,7 +36,7 @@ Output the product of a gain matrix with the input signal vector.
   - `input`
   - `output`
 """
-function MatrixGain(K::AbstractArray; name)
+@component function MatrixGain(K::AbstractArray; name)
     nout, nin = size(K, 1), size(K, 2)
     @named input = RealInput(; nin = nin)
     @named output = RealOutput(; nout = nout)
@@ -58,7 +58,7 @@ Output the sum of the elements of the input port vector.
   - `input`
   - `output`
 """
-function Sum(n::Int; name)
+@component function Sum(n::Int; name)
     @named input = RealInput(; nin = n)
     @named output = RealOutput()
     eqs = [
@@ -78,7 +78,7 @@ Output difference between reference input (input1) and feedback input (input2).
   - `input2`
   - `output`
 """
-function Feedback(; name)
+@component function Feedback(; name)
     @named input1 = RealInput()
     @named input2 = RealInput()
     @named output = RealOutput()
@@ -104,7 +104,7 @@ Output the sum of the two scalar inputs.
   - `input2`
   - `output`
 """
-function Add(; name, k1 = 1, k2 = 1)
+@component function Add(; name, k1 = 1, k2 = 1)
     @named input1 = RealInput()
     @named input2 = RealInput()
     @named output = RealOutput()
@@ -134,7 +134,7 @@ Output the sum of the three scalar inputs.
   - `input3`
   - `output`
 """
-function Add3(; name, k1 = 1, k2 = 1, k3 = 1)
+@component function Add3(; name, k1 = 1, k2 = 1, k3 = 1)
     @named input1 = RealInput()
     @named input2 = RealInput()
     @named input3 = RealInput()
@@ -159,7 +159,7 @@ Output product of the two inputs.
   - `input2`
   - `output`
 """
-function Product(; name)
+@component function Product(; name)
     @named input1 = RealInput()
     @named input2 = RealInput()
     @named output = RealOutput()
@@ -180,7 +180,7 @@ Output first input divided by second input.
   - `input2`
   - `output`
 """
-function Division(; name)
+@component function Division(; name)
     @named input1 = RealInput()
     @named input2 = RealInput(u_start = 1.0) # denominator can not be zero
     @named output = RealOutput()
@@ -202,7 +202,7 @@ If the given function is not composed of simple core methods (e.g. sin, abs, ...
   - `input`
   - `output`
 """
-function StaticNonLinearity(func; name)
+@component function StaticNonLinearity(func; name)
     @named siso = SISO()
     @unpack u, y = siso
     eqs = [y ~ func(u)]
@@ -218,7 +218,7 @@ Output the absolute value of the input.
 
 See [`StaticNonLinearity`](@ref)
 """
-Abs(; name) = StaticNonLinearity(abs; name)
+@component Abs(; name) = StaticNonLinearity(abs; name)
 
 """
     Sign(;name)
@@ -229,7 +229,7 @@ Output the sign of the input
 
 See [`StaticNonLinearity`](@ref)
 """
-Sign(; name) = StaticNonLinearity(sign; name)
+@component Sign(; name) = StaticNonLinearity(sign; name)
 
 """
     Sqrt(;name)
@@ -240,7 +240,7 @@ Output the square root of the input (input >= 0 required).
 
 See [`StaticNonLinearity`](@ref)
 """
-Sqrt(; name) = StaticNonLinearity(sqrt; name)
+@component Sqrt(; name) = StaticNonLinearity(sqrt; name)
 
 """
     Sin(;name)
@@ -251,7 +251,7 @@ Output the sine of the input.
 
 See [`StaticNonLinearity`](@ref)
 """
-Sin(; name) = StaticNonLinearity(sin; name)
+@component Sin(; name) = StaticNonLinearity(sin; name)
 
 """
     Cos(;name)
@@ -262,7 +262,7 @@ Output the cosine of the input.
 
 See [`StaticNonLinearity`](@ref)
 """
-Cos(; name) = StaticNonLinearity(cos; name)
+@component Cos(; name) = StaticNonLinearity(cos; name)
 
 """
     Tan(;name)
@@ -273,7 +273,7 @@ Output the tangent of the input.
 
 See [`StaticNonLinearity`](@ref)
 """
-Tan(; name) = StaticNonLinearity(tan; name)
+@component Tan(; name) = StaticNonLinearity(tan; name)
 
 """
     Asin(;name)
@@ -284,7 +284,7 @@ Output the arc sine of the input.
 
 See [`StaticNonLinearity`](@ref)
 """
-Asin(; name) = StaticNonLinearity(asin; name)
+@component Asin(; name) = StaticNonLinearity(asin; name)
 
 """
     Acos(;name)
@@ -295,7 +295,7 @@ Output the arc cosine of the input.
 
 See [`StaticNonLinearity`](@ref)
 """
-Acos(; name) = StaticNonLinearity(acos; name)
+@component Acos(; name) = StaticNonLinearity(acos; name)
 
 """
     Atan(;name)
@@ -306,7 +306,7 @@ Output the arc tangent of the input.
 
 See [`StaticNonLinearity`](@ref)
 """
-Atan(; name) = StaticNonLinearity(atan; name)
+@component Atan(; name) = StaticNonLinearity(atan; name)
 
 """
     Atan2(;name)
@@ -319,7 +319,7 @@ Output the arc tangent of the input.
   - `input2`
   - `output`
 """
-function Atan2(; name)
+@component function Atan2(; name)
     @named input1 = RealInput()
     @named input2 = RealInput()
     @named output = RealOutput()
@@ -338,7 +338,7 @@ Output the hyperbolic sine of the input.
 
 See [`StaticNonLinearity`](@ref)
 """
-Sinh(; name) = StaticNonLinearity(sinh; name)
+@component Sinh(; name) = StaticNonLinearity(sinh; name)
 
 """
     Cosh(;name)
@@ -349,7 +349,7 @@ Output the hyperbolic cosine of the input.
 
 See [`StaticNonLinearity`](@ref)
 """
-Cosh(; name) = StaticNonLinearity(cosh; name)
+@component Cosh(; name) = StaticNonLinearity(cosh; name)
 
 """
     Tanh(;name)
@@ -360,7 +360,7 @@ Output the hyperbolic tangent of the input.
 
 See [`StaticNonLinearity`](@ref)
 """
-Tanh(; name) = StaticNonLinearity(tanh; name)
+@component Tanh(; name) = StaticNonLinearity(tanh; name)
 
 """
     Exp(;name)
@@ -371,7 +371,7 @@ Output the exponential (base e) of the input.
 
 See [`StaticNonLinearity`](@ref)
 """
-Exp(; name) = StaticNonLinearity(exp; name)
+@component Exp(; name) = StaticNonLinearity(exp; name)
 
 """
     Log(;name)
@@ -382,7 +382,7 @@ Output the natural (base e) logarithm of the input.
 
 See [`StaticNonLinearity`](@ref)
 """
-Log(; name) = StaticNonLinearity(log; name)
+@component Log(; name) = StaticNonLinearity(log; name)
 
 """
     Log10(;name)
@@ -393,4 +393,4 @@ Output the base 10 logarithm of the input.
 
 See [`StaticNonLinearity`](@ref)
 """
-Log10(; name) = StaticNonLinearity(log10; name)
+@component Log10(; name) = StaticNonLinearity(log10; name)
