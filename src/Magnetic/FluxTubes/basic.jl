@@ -3,7 +3,7 @@
 
 Zero magnetic potential.
 """
-function Ground(; name)
+@component function Ground(; name)
     @named port = PositiveMagneticPort()
     eqs = [port.V_m ~ 0]
     ODESystem(eqs, t, [], [], systems = [port], name = name)
@@ -14,7 +14,7 @@ end
 
 Idle running branch.
 """
-function Idle(; name)
+@component function Idle(; name)
     @named two_port = TwoPort()
     @unpack Phi = two_port
     eqs = [
@@ -28,7 +28,7 @@ end
 
 Short cut branch.
 """
-function Short(; name)
+@component function Short(; name)
     @named two_port = TwoPort()
     @unpack V_m = two_port
     eqs = [
@@ -44,7 +44,7 @@ Crossing of two branches.
 
 This is a simple crossing of two branches. The ports port_p1 and port_p2 are connected, as well as port_n1 and port_n2.
 """
-function Crossing(; name)
+@component function Crossing(; name)
     @named port_p1 = PositiveMagneticPort()
     @named port_p2 = PositiveMagneticPort()
     @named port_n1 = NegativeMagneticPort()
@@ -65,7 +65,7 @@ Constant permeance.
 
   - `G_m`: [H] Magnetic permeance
 """
-function ConstantPermeance(; name, G_m = 1.0)
+@component function ConstantPermeance(; name, G_m = 1.0)
     @named two_port = TwoPort()
     @unpack V_m, Phi = two_port
     @parameters G_m = G_m
@@ -84,7 +84,7 @@ Constant reluctance.
 
   - `R_m`: [H^-1] Magnetic reluctance
 """
-function ConstantReluctance(; name, R_m = 1.0)
+@component function ConstantReluctance(; name, R_m = 1.0)
     @named two_port = TwoPort()
     @unpack V_m, Phi = two_port
     @parameters R_m = R_m
@@ -108,7 +108,7 @@ N * dΦ/dt = -v
   - `N`: Number of turns
   - `Phi_start`: [Wb] Initial magnetic flux flowing into the port_p
 """
-function ElectroMagneticConverter(; name, N, Phi_start = 0.0)
+@component function ElectroMagneticConverter(; name, N, Phi_start = 0.0)
     @named port_p = PositiveMagneticPort()
     @named port_n = NegativeMagneticPort()
     @named p = Pin()
@@ -140,7 +140,7 @@ For modelling of eddy current in a conductive magnetic flux tube.
   - `A`: [m^2] Cross sectional area of eddy current path
   - `Phi_start`: [Wb] Initial magnetic flux flowing into the port_p
 """
-function EddyCurrent(; name, rho = 0.098e-6, l = 1, A = 1, Phi_start = 0.0)
+@component function EddyCurrent(; name, rho = 0.098e-6, l = 1, A = 1, Phi_start = 0.0)
     @named two_port = TwoPort(Phi_start = Phi_start)
     @unpack V_m, Phi = two_port
     @parameters R = rho * l / A # Electrical resistance of eddy current path
