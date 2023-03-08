@@ -56,7 +56,7 @@ This model defines a fixed temperature `T` at its port in kelvin, i.e., it defin
 end
 
 """
-    PrescribedHeatFlow(; name, Q_flow=1.0, T_ref=293.15, alpha=0.0)
+    PrescribedHeatFlow(; name, T_ref=293.15, alpha=0.0)
 
 Prescribed heat flow boundary condition.
 
@@ -69,7 +69,7 @@ dependent losses (which are given a reference temperature T_ref).
 # Connectors:
 
   - `port`
-  - `Q_flow` Input for the heat flow
+  - `RealInput` `Q_flow` Input for the heat flow
 
 # Parameters:
 
@@ -91,18 +91,18 @@ dependent losses (which are given a reference temperature T_ref).
 end
 
 """
-    PrescribedTemperature(; name, T)
+    PrescribedTemperature(; name)
 
 This model represents a variable temperature boundary condition.
 
-The temperature in kelvin is given as input signal `T` to the model. The effect is that an instance of
+The temperature in kelvin is given as input signal to the `RealInput` `T`. The effect is that an instance of
 this model acts as an infinite reservoir, able to absorb or generate as much energy as required to keep
 the temperature at the specified value.
 
 # Connectors:
 
   - `port`
-  - `T` input for the temperature
+  - `RealInput` `T` input for the temperature
 """
 @component function PrescribedTemperature(; name)
     @named port = HeatPort()
