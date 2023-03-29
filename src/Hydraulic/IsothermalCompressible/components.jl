@@ -52,6 +52,36 @@ Fixed pressure source
 end
 
 """
+    Cap(; p_int, name)
+
+Caps a hydrualic port to prevent mass flow in or out.
+
+# Parameters:
+- `p_int`: [Pa] initial pressure (set by `p_int` argument)
+
+# Connectors:
+- `port`: hydraulic port
+"""
+@component function Cap(; p_int, name)
+    pars = @parameters p_int = p_int 
+
+    vars = @variables p(t) = p_int
+
+    systems = @named begin port = HydraulicPort(; p_int = p_int) end
+
+    eqs = [
+        port.p ~ p
+        port.dm ~ 0
+    ]
+
+    ODESystem(eqs, t, vars, pars; name, systems)
+end
+
+
+
+
+
+"""
     FixedVolume(; vol, p_int, name)
 
 Fixed fluid volume.
@@ -205,12 +235,17 @@ end
     DynamicVolume(; p_int, x_int=0, area, dead_volume=0, direction=+1, name)
 
 Volume with moving wall.  The `direction` argument aligns the mechanical port with the hydraulic port, useful when connecting two dynamic volumes together in oppsing directions to create an actuator.
-     _________
-    |         |
-   --> d.v.   |
-    |_________|         
-              └─► x (= ∫ flange.v * direction)
-
+```
+     ┌─────────────────┐ ───
+     │                 │  ▲
+                       │  │
+dm ────►  dead volume  │  │ area
+                       │  │  
+     │                 │  ▼
+     └─────────────────┤ ───
+                       │
+                       └─► x (= flange.v * direction)
+```
 
 # Parameters:
 - `p_int`: [Pa] initial pressure (set by `p_int` argument)
@@ -233,16 +268,16 @@ Volume with moving wall.  The `direction` argument aligns the mechanical port wi
         dead_volume = dead_volume
     end
 
-    vars = @variables begin
-        x(t) = x_int
-        dx(t) = 0
-        rho(t) = density(fluid, p_int)
-        drho(t) = 0
-    end
-
     systems = @named begin
         port = HydraulicPort(; p_int)
         flange = MechanicalPort()
+    end
+
+    vars = @variables begin
+        x(t) = x_int
+        dx(t) = 0
+        rho(t) = density(port, p_int)
+        drho(t) = 0
     end
 
     # let -------------
@@ -251,7 +286,7 @@ Volume with moving wall.  The `direction` argument aligns the mechanical port wi
     eqs = [D(x) ~ dx
            D(rho) ~ drho
            dx ~ flange.v * direction
-           rho ~ density(fluid, port.p)
+           rho ~ density(port, port.p)
            port.dm ~ drho * vol + rho * area * dx
            flange.f ~ -port.p * area * direction]
 

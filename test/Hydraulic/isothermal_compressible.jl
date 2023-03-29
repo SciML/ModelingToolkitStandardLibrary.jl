@@ -6,128 +6,130 @@ import ModelingToolkitStandardLibrary.Mechanical.Translational as T
 @parameters t
 D = Differential(t)
 
-function system(N; name, fluid)
-    pars = @parameters begin fluid = fluid end
+function system(N; bulk_modulus, name)
+    pars = @parameters begin
+        bulk_modulus = bulk_modulus
+    end
 
     systems = @named begin
-        stp = B.Step(; height = 10e5, offset = 0, start_time = 0.005, duration = Inf,
-                     smooth = 0)
+        fluid = IC.HydraulicFluid(;bulk_modulus)
+        stp = B.Step(; height = 10e5, offset = 0, start_time = 0.005, duration = Inf, smooth = true)
         src = IC.InputSource(; p_int = 0)
-        vol = IC.FixedVolume(; p_int = 0, vol = 10.0, fluid)
+        vol = IC.FixedVolume(; p_int = 0, vol = 10.0)
     end
 
     if N == 1
-        @named res = IC.PipeBase(; p_int = 0, area = 0.01, length = 500.0, fluid)
+        @named res = IC.PipeBase(; p_int = 0, area = 0.01, length = 500.0)
     else
-        @named res = IC.Pipe(N; p_int = 0, area = 0.01, length = 500.0, fluid)
+        @named res = IC.Pipe(N; p_int = 0, area = 0.01, length = 500.0)
     end
     push!(systems, res)
 
-    eqs = [connect(stp.output, src.input)
-           connect(src.port, res.port_a)
-           connect(res.port_b, vol.port)]
+    eqs = [ connect(stp.output, src.input)
+            connect(fluid, src.port)
+            connect(src.port, res.port_a)
+            connect(res.port_b, vol.port)]
 
     ODESystem(eqs, t, [], pars; name, systems)
 end
 
-@named user_oil = IC.FluidType()
-user_oil_type = typeof(IC.get_fluid(user_oil))
-IC.density(::user_oil_type) = 876
-IC.bulk_modulus(::user_oil_type) = 1.2e9
-IC.viscosity(::user_oil_type) = 0.034
+@named sys1_2 = system(1; bulk_modulus=2e9)
+@named sys1_1 = system(1; bulk_modulus=1e9)
+@named sys5_1 = system(5; bulk_modulus=1e9)
 
-@named sys1 = system(1; fluid = IC.water_20C)
-@named sys2 = system(2; fluid = IC.water_20C)
-@named sys5 = system(5; fluid = IC.water_20C)
-@named sys25 = system(25; fluid = IC.water_20C)
-
-cc1 = structural_simplify(sys1; allow_parameter = false)
-cc2 = structural_simplify(sys2; allow_parameter = false)
-cc5 = structural_simplify(sys5; allow_parameter = false)
-cc25 = structural_simplify(sys25; allow_parameter = false)
-
-t_end = 0.2
-prob0 = ODEProblem(cc1, [], (0, t_end), [complete(sys1).fluid => user_oil])
-prob1 = ODEProblem(cc1, [], (0, t_end))
-prob2 = ODEProblem(cc2, [], (0, t_end))
-prob5 = ODEProblem(cc5, [], (0, t_end))
-prob25 = ODEProblem(cc25, [], (0, t_end))
-
-dt = 1e-4
 NEWTON = NLNewton(check_div = false, always_new = true, max_iter = 100, relax = 4 // 10)
-# sol0 = solve(prob0, ImplicitEuler(nlsolve=NEWTON); adaptive=false, dt, initializealg=NoInit())  
-# sol1 = solve(prob1, ImplicitEuler(nlsolve=NEWTON); adaptive=false, dt, initializealg=NoInit())  
-# sol2 = solve(prob2, ImplicitEuler(nlsolve=NEWTON); adaptive=false, dt, initializealg=NoInit())  
-# sol5 = solve(prob5, ImplicitEuler(nlsolve=NEWTON); adaptive=false, dt, initializealg=NoInit())  
-# sol25 = solve(prob25, ImplicitEuler(nlsolve=NEWTON); adaptive=false, dt, initializealg=NoInit())  
 
-# using GLMakie
+syss = structural_simplify.([sys1_2, sys1_1, sys5_1])
+probs = [ODEProblem(sys, [], (0, 0.2)) for sys in syss];
+sols = [solve(prob, ImplicitEuler(nlsolve=NEWTON); initializealg=NoInit()) for prob in probs];
+
+s1_2 = complete(sys1_2)
+s1_1 = complete(sys1_1)
+s5_1 = complete(sys5_1)
+
+# higher stiffness should compress more quickly and give a higher pressure
+@test sols[1][s1_2.vol.port.p][end] > sols[2][s1_1.vol.port.p][end]
+
+# N=5 pipe is compressible, will pressurize more slowly
+@test sols[2][s1_1.vol.port.p][end] > sols[3][s5_1.vol.port.p][end]
+
+# using CairoMakie
 # fig = Figure()
 # ax = Axis(fig[1,1])
-# lines!(ax, sol0.t, sol0[sys1.res.port_a.p] .- sol0[sys1.res.port_b.p]; label="pipe base, oil", linestyle=:dash)
-# lines!(ax, sol1.t, sol1[sys1.res.port_a.p] .- sol1[sys1.res.port_b.p]; label="pipe base")
-# lines!(ax, sol2.t, sol2[sys2.res.port_a.p] .- sol2[sys2.res.port_b.p]; label="pipe N=2")
-# lines!(ax, sol5.t, sol5[sys5.res.port_a.p] .- sol5[sys5.res.port_b.p]; label="pipe N=5")
-# lines!(ax, sol25.t, sol25[sys25.res.port_a.p] .- sol25[sys25.res.port_b.p]; label="pipe N=25")
-# axislegend(ax)
+# lines!(ax, sols[1].t, sols[1][s1_2.src.port.p]; label="sorce", color=:black)
+# # lines!(ax, sols[2].t, sols[2][s1_1.src.port.p])
+# scatterlines!(ax, sols[1].t, sols[1][s1_2.vol.port.p]; label="bulk=2e9")
+# scatterlines!(ax, sols[2].t, sols[2][s1_1.vol.port.p]; label="bulk=1e9")
+# scatterlines!(ax, sols[3].t, sols[3][s5_1.vol.port.p]; label="bulk=1e9, N=5")
+# Legend(fig[1,2], ax)
 # fig
 
-function actuator_system(; name, fluid_a, fluid_b = fluid_a)
+
+
+
+function system(; bulk_modulus, name)
     pars = @parameters begin
-        fluid_a = fluid_a
-        fluid_b = fluid_b
+        bulk_modulus = bulk_modulus
     end
 
     systems = @named begin
-        stp = B.Step(; height = 10e5, offset = 0, start_time = 0.005, duration = Inf,
-                     smooth = 0)
-
-        src_a = IC.InputSource(; p_int = 0)
-        res_a = IC.Pipe(5; p_int = 0, area = 0.01, length = 500.0, fluid = fluid_a)
-        act_a = IC.Actuator(+1; fluid = fluid_a, p_int = 0, x_int = 0, area = 0.1,
-                            dead_volume = 100)
-
-        src_b = IC.InputSource(; p_int = 0)
-        res_b = IC.Pipe(5; p_int = 0, area = 0.01, length = 500.0, fluid = fluid_b)
-        act_b = IC.Actuator(-1; fluid = fluid_b, p_int = 0, x_int = 0, area = 0.1,
-                            dead_volume = 100)
-
-        m = T.Mass(; m = 1000)
+        fluid = IC.HydraulicFluid(;bulk_modulus)
+        stp = B.Step(; height = 10e5, offset = 0, start_time = 0.05, duration = Inf, smooth = 0.001)
+        src = IC.InputSource(; p_int = 0)
+        vol1 = IC.DynamicVolume(; p_int = 0, area=0.01, direction=+1)
+        vol2 = IC.DynamicVolume(; p_int = 0, area=0.01, direction=-1, x_int=1.0)
+        mass = T.Mass(; m=1000, s_0=0)
+        res = IC.PipeBase(; p_int = 0, area = 0.001, length = 50.0)
+        cap = IC.Cap(;p_int=0)
     end
 
-    eqs = [connect(stp.output, src_a.input, src_b.input)
-           connect(src_a.port, res_a.port_a)
-           connect(res_a.port_b, act_a.port)
-           connect(src_b.port, res_b.port_a)
-           connect(res_b.port_b, act_b.port)
-           connect(act_a.flange, act_b.flange, m.flange)]
+    eqs = [ connect(stp.output, src.input)
+            connect(fluid, src.port, cap.port)
+            connect(src.port, res.port_a)
+            connect(res.port_b, vol1.port)
+            connect(vol1.flange, mass.flange, vol2.flange)
+            connect(vol2.port, cap.port)]
 
     ODESystem(eqs, t, [], pars; name, systems)
 end
 
-@named act_sys = actuator_system(; fluid_a = IC.water_20C)
-cc = structural_simplify(act_sys; allow_parameter = false)
+@named sys1 = system(; bulk_modulus=1e9)
+@named sys2 = system(; bulk_modulus=2e9)
 
-t_end = 0.5
-prob1 = ODEProblem(cc, [], (0, t_end), [complete(act_sys).fluid_b => user_oil])
-prob2 = ODEProblem(cc, [], (0, t_end))
+syss = structural_simplify.([sys1, sys2])
+probs = [ODEProblem(sys, [], (0, 0.2)) for sys in syss];
+dt = 1e-4
+sols = [solve(prob, ImplicitEuler(nlsolve=NEWTON); adaptive=false, dt, initializealg=NoInit()) for prob in probs];
 
-sol1 = solve(prob1, ImplicitEuler(nlsolve = NEWTON); adaptive = false, dt,
-             initializealg = NoInit())
-sol2 = solve(prob2, ImplicitEuler(nlsolve = NEWTON); adaptive = false, dt,
-             initializealg = NoInit())
+s1 = complete(sys1)
+s2 = complete(sys2)
 
-using GLMakie
-fig = Figure()
-ax = Axis(fig[1, 1])
-lines!(ax, sol1.t, sol1[act_sys.act_a.x]; color = :red)
-lines!(ax, sol1.t, sol1[act_sys.act_b.x]; color = :red, linestyle = :dash)
-lines!(ax, sol2.t, sol2[act_sys.act_a.x]; color = :blue)
-lines!(ax, sol2.t, sol2[act_sys.act_b.x]; color = :blue, linestyle = :dash)
+# less stiff will compress more
+@test maximum(sols[1][s1.mass.s]) > maximum(sols[2][s2.mass.s])
 
-ax = Axis(fig[2, 1])
-lines!(ax, sol1.t, (sol1[act_sys.act_a.port.p] .- sol1[act_sys.act_b.port.p]) / 1e5;
-       color = :red)
-lines!(ax, sol2.t, (sol2[act_sys.act_a.port.p] .- sol2[act_sys.act_b.port.p]) / 1e5;
-       color = :blue)
-fig
+
+# fig = Figure()
+# ax = Axis(fig[1,1])
+# lines!(ax, sols[1].t, sols[1][s1.src.port.p]; label="sorce", color=:black)
+# # lines!(ax, sols[2].t, sols[2][s1_1.src.port.p])
+# scatterlines!(ax, sols[1].t, sols[1][s1.vol1.port.p]; label="bulk=1e9")
+# scatterlines!(ax, sols[2].t, sols[2][s2.vol1.port.p]; label="bulk=2e9")
+# Legend(fig[1,2], ax)
+# fig
+
+
+# fig = Figure()
+# ax = Axis(fig[1,1])
+# scatterlines!(ax, sols[1].t, sols[1][s1.mass.s]; label="bulk=1e9")
+# scatterlines!(ax, sols[2].t, sols[2][s2.mass.s]; label="bulk=2e9")
+# Legend(fig[1,2], ax)
+# fig
+
+
+# fig = Figure()
+# ax = Axis(fig[1,1])
+# lines!(ax, sols[1].t, sols[1][s1.vol1.dx]; label="bulk=2e9")
+# lines!(ax, sols[1].t, sols[1][s1.vol2.dx]; label="bulk=2e9")
+# lines!(ax, sols[1].t, sols[1][s1.mass.v]; label="bulk=2e9")
+# Legend(fig[1,2], ax)
+# fig
