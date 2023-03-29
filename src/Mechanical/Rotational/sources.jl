@@ -1,5 +1,5 @@
 """
-    Torque(; name, use_support=false) 
+    Torque(; name, use_support=false)
 
 Input signal acting as external torque on a flange
 
@@ -16,7 +16,7 @@ Input signal acting as external torque on a flange
 
   - `use_support`
 """
-function Torque(; name, use_support = false)
+@component function Torque(; name, use_support = false)
     @named partial_element = PartialElementaryOneFlangeAndSupport2(use_support = use_support)
     @unpack flange = partial_element
     @named tau = RealInput()
@@ -25,7 +25,7 @@ function Torque(; name, use_support = false)
 end
 
 """
-    Speed(; name, use_support=false, exact=false, f_crit=50) 
+    Speed(; name, use_support=false, exact=false, f_crit=50)
 
 Forced movement of a flange according to a reference angular velocity signal
 
@@ -44,7 +44,7 @@ Forced movement of a flange according to a reference angular velocity signal
   - `exact`: true/false exact treatment/filtering the input signal
   - `tau_filt`: [`rad/s`] if exact=false, Time constant of low-pass filter to filter input signal
 """
-function Speed(; name, use_support = false, exact = false, tau_filt = 50)
+@component function Speed(; name, use_support = false, exact = false, tau_filt = 50)
     @named partial_element = PartialElementaryOneFlangeAndSupport2(use_support = use_support)
     @unpack flange, phi_support = partial_element
     @named w_ref = RealInput()

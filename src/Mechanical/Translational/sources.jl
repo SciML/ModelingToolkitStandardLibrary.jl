@@ -1,6 +1,6 @@
 using ModelingToolkitStandardLibrary.Blocks
 
-function Force(; name)
+@component function Force(; name)
     @named flange = MechanicalPort()
     @named f = RealInput()
 

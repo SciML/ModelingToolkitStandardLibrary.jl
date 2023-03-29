@@ -35,7 +35,7 @@ Component with two electrical pins `p` and `n` and current `i` flows from `p` to
   - `p` Positive pin
   - `n` Negative pin
 """
-function OnePort(; name, v_start = 0.0, i_start = 0.0)
+@component function OnePort(; name, v_start = 0.0, i_start = 0.0)
     @named p = Pin()
     @named n = Pin()
     sts = @variables begin
@@ -73,7 +73,8 @@ Current `i1` flows from `p1` to `n1` and `i2` from `p2` to `n2`.
 - `n2` Second Negative pin
 """
 
-function TwoPort(; name, v1_start = 0.0, v2_start = 0.0, i1_start = 0.0, i2_start = 0.0)
+@component function TwoPort(; name, v1_start = 0.0, v2_start = 0.0, i1_start = 0.0,
+                            i2_start = 0.0)
     @named p1 = Pin()
     @named n1 = Pin()
     @named p2 = Pin()

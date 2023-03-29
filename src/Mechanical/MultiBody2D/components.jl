@@ -1,4 +1,4 @@
-function Link(; name, m, l, I, g, x1_0 = 0, y1_0 = 0)
+@component function Link(; name, m, l, I, g, x1_0 = 0, y1_0 = 0)
     pars = @parameters begin
         m = m
         l = l

@@ -11,7 +11,7 @@ Flange fixed in housing at a given position.
 
   - `flange: 1-dim. translational flange`
 """
-function Fixed(; name, s_0 = 0.0)
+@component function Fixed(; name, s_0 = 0.0)
     pars = @parameters s_0 = s_0
     vars = []
 
@@ -43,7 +43,7 @@ Sliding mass with inertia
 
   - `flange: 1-dim. translational flange of mass`
 """
-function Mass(; name, m, s_0 = 0.0, v_0 = 0.0)
+@component function Mass(; name, m, s_0 = 0.0, v_0 = 0.0)
     @named flange = Flange()
     pars = @parameters begin
         m = m
@@ -64,9 +64,10 @@ function Mass(; name, m, s_0 = 0.0, v_0 = 0.0)
 end
 
 const REL = Val(:relative)
-function Spring(::Val{:relative}; name, k, v_a_0 = 0.0, v_b_0 = 0.0, delta_s_0 = 0,
-                s_a_0 = 0,
-                s_b_0 = 0)
+@component function Spring(::Val{:relative}; name, k, v_a_0 = 0.0, v_b_0 = 0.0,
+                           delta_s_0 = 0,
+                           s_a_0 = 0,
+                           s_b_0 = 0)
     pars = @parameters begin
         k = k
         v_a_0 = v_a_0
@@ -122,7 +123,7 @@ Linear 1D translational spring
 """
 Spring(; name, k, s_a_0 = 0, s_b_0 = 0, l = 0) = Spring(ABS; name, k, s_a_0, s_b_0, l) #default function
 
-function Spring(::Val{:absolute}; name, k, s_a_0 = 0, s_b_0 = 0, l = 0)
+@component function Spring(::Val{:absolute}; name, k, s_a_0 = 0, s_b_0 = 0, l = 0)
     pars = @parameters begin
         k = k
         s_a_0 = s_a_0
@@ -168,7 +169,7 @@ Linear 1D translational damper
   - `flange_a: 1-dim. translational flange on one side of damper`
   - `flange_b: 1-dim. translational flange on opposite side of damper`
 """
-function Damper(; name, d, v_a_0 = 0.0, v_b_0 = 0.0, s_a_0 = 0, s_b_0 = 0)
+@component function Damper(; name, d, v_a_0 = 0.0, v_b_0 = 0.0, s_a_0 = 0, s_b_0 = 0)
     pars = @parameters begin
         d = d
         s_a_0 = s_a_0

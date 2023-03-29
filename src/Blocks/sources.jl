@@ -69,7 +69,7 @@ Generate constant signal.
 
   - `output`
 """
-function Constant(; name, k = 1)
+@component function Constant(; name, k = 1)
     @named output = RealOutput()
     pars = @parameters k=k [description = "Constant output value of block $name"]
     eqs = [
@@ -88,7 +88,7 @@ The input variable `t` can be changed by passing a different variable as the key
 # Connectors:
 - `output`
 """
-function TimeVaryingFunction(f; t = t, name)
+@component function TimeVaryingFunction(f; t = t, name)
     @named output = RealOutput()
     eqs = [
         output.u ~ f(t),
@@ -113,13 +113,13 @@ Generate sine signal.
 
   - `output`
 """
-function Sine(; name,
-              frequency,
-              amplitude = 1,
-              phase = 0,
-              offset = 0,
-              start_time = 0,
-              smooth = false)
+@component function Sine(; name,
+                         frequency,
+                         amplitude = 1,
+                         phase = 0,
+                         offset = 0,
+                         start_time = 0,
+                         smooth = false)
     @named output = RealOutput()
     pars = @parameters offset=offset start_time=start_time amplitude=amplitude frequency=frequency phase=phase
     equation = if smooth == false
@@ -153,13 +153,13 @@ Generate cosine signal.
 - `output`
 """
 
-function Cosine(; name,
-                frequency,
-                amplitude = 1,
-                phase = 0,
-                offset = 0,
-                start_time = 0,
-                smooth = false)
+@component function Cosine(; name,
+                           frequency,
+                           amplitude = 1,
+                           phase = 0,
+                           offset = 0,
+                           start_time = 0,
+                           smooth = false)
     @named output = RealOutput()
     pars = @parameters offset=offset start_time=start_time amplitude=amplitude frequency=frequency phase=phase
     equation = if smooth == false
@@ -188,7 +188,7 @@ Generate current time signal.
 
   - `output`
 """
-function ContinuousClock(; name, offset = 0, start_time = 0)
+@component function ContinuousClock(; name, offset = 0, start_time = 0)
     @named output = RealOutput()
     pars = @parameters offset=offset start_time=start_time
     eqs = [
@@ -214,12 +214,12 @@ Generate ramp signal.
 
   - `output`
 """
-function Ramp(; name,
-              height = 1,
-              duration = 1,
-              offset = 0,
-              start_time = 0,
-              smooth = false)
+@component function Ramp(; name,
+                         height = 1,
+                         duration = 1,
+                         offset = 0,
+                         start_time = 0,
+                         smooth = false)
     @named output = RealOutput()
     pars = @parameters offset=offset start_time=start_time height=height duration=duration
     equation = if smooth == false
@@ -254,8 +254,8 @@ Generate smooth square signal.
 
   - `output`
 """
-function Square(; name, frequency = 1.0, amplitude = 1.0,
-                offset = 0.0, start_time = 0.0, smooth = false)
+@component function Square(; name, frequency = 1.0, amplitude = 1.0,
+                           offset = 0.0, start_time = 0.0, smooth = false)
     @named output = RealOutput()
     pars = @parameters begin
         frequency = frequency
@@ -296,7 +296,8 @@ Generate step signal.
 
   - `output`
 """
-function Step(; name, height = 1, offset = 0, start_time = 0, duration = Inf, smooth = 1e-5)
+@component function Step(; name, height = 1, offset = 0, start_time = 0, duration = Inf,
+                         smooth = 1e-5)
     @named output = RealOutput()
     duration_numeric = duration
     pars = @parameters offset=offset start_time=start_time height=height duration=duration
@@ -337,14 +338,14 @@ Generate exponentially damped sine signal.
 
   - `output`
 """
-function ExpSine(; name,
-                 frequency,
-                 amplitude = 1,
-                 damping = 0.1,
-                 phase = 0,
-                 offset = 0,
-                 start_time = 0,
-                 smooth = false)
+@component function ExpSine(; name,
+                            frequency,
+                            amplitude = 1,
+                            damping = 0.1,
+                            phase = 0,
+                            offset = 0,
+                            start_time = 0,
+                            smooth = false)
     @named output = RealOutput()
     pars = @parameters offset=offset start_time=start_time amplitude=amplitude frequency=frequency phase=phase damping=damping
 
@@ -381,8 +382,8 @@ Generate smooth triangular signal for frequencies less than or equal to 25 Hz
 
   - `output`
 """
-function Triangular(; name, amplitude = 1.0, frequency = 1.0,
-                    offset = 0.0, start_time = 0.0, smooth = false)
+@component function Triangular(; name, amplitude = 1.0, frequency = 1.0,
+                               offset = 0.0, start_time = 0.0, smooth = false)
     @named output = RealOutput()
     pars = @parameters begin
         amplitude = amplitude

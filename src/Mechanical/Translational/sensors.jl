@@ -1,4 +1,4 @@
-function PositionSensor(; name, s_0 = 0.0)
+@component function PositionSensor(; name, s_0 = 0.0)
     @named flange = MechanicalPort()
 
     pars = @parameters s_0 = s_0

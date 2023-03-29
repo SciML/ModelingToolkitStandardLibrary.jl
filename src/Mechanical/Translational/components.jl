@@ -7,7 +7,7 @@ Fixes a flange position (velocity = 0)
 
   - `flange`: 1-dim. translational flange
 """
-function Fixed(; name)
+@component function Fixed(; name)
     @named flange = MechanicalPort()
     eqs = [flange.v ~ 0]
     return compose(ODESystem(eqs, t, [], []; name = name, defaults = [flange.v => 0]),
@@ -35,7 +35,7 @@ Sliding mass with inertia
 
   - `flange`: 1-dim. translational flange
 """
-function Mass(; name, v_0 = 0.0, m, s_0 = nothing, g = nothing)
+@component function Mass(; name, v_0 = 0.0, m, s_0 = nothing, g = nothing)
     pars = @parameters begin
         m = m
         v_0 = v_0
@@ -93,11 +93,12 @@ Linear 1D translational spring
   - `flange_a`: 1-dim. translational flange on one side of spring
   - `flange_b`: 1-dim. translational flange on opposite side of spring
 """
-function Spring(; name, k, delta_s_0 = 0.0, v_a_0 = 0.0, v_b_0 = 0.0)
+@component function Spring(; name, k, delta_s_0 = 0.0, v_a_0 = 0.0, v_b_0 = 0.0)
     Spring(REL; name, k, delta_s_0, v_a_0, v_b_0)
 end # default
 
-function Spring(::Val{:relative}; name, k, delta_s_0 = 0.0, v_a_0 = 0.0, v_b_0 = 0.0)
+@component function Spring(::Val{:relative}; name, k, delta_s_0 = 0.0, v_a_0 = 0.0,
+                           v_b_0 = 0.0)
     pars = @parameters begin
         k = k
         delta_s_0 = delta_s_0
@@ -123,8 +124,9 @@ function Spring(::Val{:relative}; name, k, delta_s_0 = 0.0, v_a_0 = 0.0, v_b_0 =
 end
 
 const ABS = Val(:absolute)
-function Spring(::Val{:absolute}; name, k, s_a_0 = 0, s_b_0 = 0, v_a_0 = 0.0, v_b_0 = 0.0,
-                l = 0)
+@component function Spring(::Val{:absolute}; name, k, s_a_0 = 0, s_b_0 = 0, v_a_0 = 0.0,
+                           v_b_0 = 0.0,
+                           l = 0)
     pars = @parameters begin
         k = k
         s_a_0 = s_a_0
@@ -169,7 +171,7 @@ Linear 1D translational damper
   - `flange_a`: 1-dim. translational flange on one side of damper
   - `flange_b`: 1-dim. translational flange on opposite side of damper
 """
-function Damper(; name, d, v_a_0 = 0.0, v_b_0 = 0.0)
+@component function Damper(; name, d, v_a_0 = 0.0, v_b_0 = 0.0)
     pars = @parameters begin
         d = d
         v_a_0 = v_a_0

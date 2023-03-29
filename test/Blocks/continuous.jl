@@ -133,7 +133,7 @@ end
 """
 Second order demo plant
 """
-function Plant(; name, x_start = zeros(2))
+@component function Plant(; name, x_start = zeros(2))
     @named input = RealInput()
     @named output = RealOutput()
     D = Differential(t)

@@ -16,7 +16,7 @@ Limit the range of a signal.
   - `input`
   - `output`
 """
-function Limiter(; name, y_max, y_min = y_max > 0 ? -y_max : -Inf)
+@component function Limiter(; name, y_max, y_min = y_max > 0 ? -y_max : -Inf)
     y_max ≥ y_min || throw(ArgumentError("`y_min` must be smaller than `y_max`"))
     @named siso = SISO()
     @unpack u, y = siso
@@ -56,7 +56,7 @@ If the input is within `u_min` ... `u_max`, the output is zero. Outside of this 
   - `input`
   - `output`
 """
-function DeadZone(; name, u_max, u_min = -u_max)
+@component function DeadZone(; name, u_max, u_min = -u_max)
     if !ModelingToolkit.isvariable(u_max)
         u_max ≥ u_min || throw(ArgumentError("`u_min` must be smaller than `u_max`"))
     end
@@ -87,7 +87,8 @@ Limits the slew rate of a signal.
   - `input`
   - `output`
 """
-function SlewRateLimiter(; name, rising = 1, falling = -rising, Td = 0.001, y_start = 0.0)
+@component function SlewRateLimiter(; name, rising = 1, falling = -rising, Td = 0.001,
+                                    y_start = 0.0)
     rising ≥ falling || throw(ArgumentError("`rising` must be smaller than `falling`"))
     Td > 0 || throw(ArgumentError("Time constant `Td` must be strictly positive"))
     @named siso = SISO(y_start = y_start)

@@ -13,7 +13,7 @@ Outputs `y = ∫k*u dt`, corresponding to the transfer function `1/s`.
   - `k`: Gain of integrator
   - `x_start`: Initial value of integrator
 """
-function Integrator(; name, k = 1, x_start = 0.0)
+@component function Integrator(; name, k = 1, x_start = 0.0)
     @named siso = SISO()
     @unpack u, y = siso
     sts = @variables x(t)=x_start [description = "State of Integrator $name"]
@@ -51,7 +51,7 @@ A smaller `T` leads to a more ideal approximation of the derivative.
   - `input`
   - `output`
 """
-function Derivative(; name, k = 1, T, x_start = 0.0)
+@component function Derivative(; name, k = 1, T, x_start = 0.0)
     T > 0 || throw(ArgumentError("Time constant `T` has to be strictly positive"))
     @named siso = SISO()
     @unpack u, y = siso
@@ -97,7 +97,7 @@ sT + 1 - k
 
 See also [`SecondOrder`](@ref)
 """
-function FirstOrder(; name, k = 1, T, x_start = 0.0, lowpass = true)
+@component function FirstOrder(; name, k = 1, T, x_start = 0.0, lowpass = true)
     T > 0 || throw(ArgumentError("Time constant `T` has to be strictly positive"))
     @named siso = SISO()
     @unpack u, y = siso
@@ -138,7 +138,7 @@ Critical damping corresponds to `d=1`, which yields the fastest step response wi
   - `input`
   - `output`
 """
-function SecondOrder(; name, k = 1, w, d, x_start = 0.0, xd_start = 0.0)
+@component function SecondOrder(; name, k = 1, w, d, x_start = 0.0, xd_start = 0.0)
     @named siso = SISO()
     @unpack u, y = siso
     @variables x(t)=x_start [description = "State of SecondOrder filter $name"]
@@ -170,7 +170,7 @@ Textbook version of a PI-controller without actuator saturation and anti-windup 
 
 See also [`LimPI`](@ref)
 """
-function PI(; name, k = 1, T, x_start = 0.0)
+@component function PI(; name, k = 1, T, x_start = 0.0)
     T > 0 || throw(ArgumentError("Time constant `T` has to be strictly positive"))
     @named err_input = RealInput() # control error
     @named ctr_output = RealOutput() # control signal
@@ -209,7 +209,8 @@ Text-book version of a PID-controller without actuator saturation and anti-windu
 
 See also [`LimPID`](@ref)
 """
-function PID(; name, k = 1, Ti = false, Td = false, Nd = 10, xi_start = 0, xd_start = 0)
+@component function PID(; name, k = 1, Ti = false, Td = false, Nd = 10, xi_start = 0,
+                        xd_start = 0)
     with_I = !isequal(Ti, false)
     with_D = !isequal(Td, false)
     @named err_input = RealInput() # control error
@@ -280,7 +281,7 @@ Text-book version of a PI-controller with actuator saturation and anti-windup me
   - `err_input`
   - `ctr_output`
 """
-function LimPI(; name, k = 1, T, u_max, u_min = -u_max, Ta, x_start = 0.0)
+@component function LimPI(; name, k = 1, T, u_max, u_min = -u_max, Ta, x_start = 0.0)
     Ta > 0 || throw(ArgumentError("Time constant `Ta` has to be strictly positive"))
     T > 0 || throw(ArgumentError("Time constant `T` has to be strictly positive"))
     u_max ≥ u_min || throw(ArgumentError("u_min must be smaller than u_max"))
@@ -343,14 +344,14 @@ where the transfer function for the derivative includes additional filtering, se
   - `measurement`
   - `ctr_output`
 """
-function LimPID(; name, k = 1, Ti = false, Td = false, wp = 1, wd = 1,
-                Ni = Ti == 0 ? Inf : √(max(Td / Ti, 1e-6)),
-                Nd = 10,
-                u_max = Inf,
-                u_min = u_max > 0 ? -u_max : -Inf,
-                gains = false,
-                xi_start = 0.0,
-                xd_start = 0.0)
+@component function LimPID(; name, k = 1, Ti = false, Td = false, wp = 1, wd = 1,
+                           Ni = Ti == 0 ? Inf : √(max(Td / Ti, 1e-6)),
+                           Nd = 10,
+                           u_max = Inf,
+                           u_min = u_max > 0 ? -u_max : -Inf,
+                           gains = false,
+                           xi_start = 0.0,
+                           xd_start = 0.0)
     with_I = !isequal(Ti, false)
     with_D = !isequal(Td, false)
     with_AWM = Ni != Inf
@@ -478,8 +479,8 @@ y &= h(x, u)
 
 linearized around the operating point `x₀, u₀`, we have `y0, u0 = h(x₀, u₀), u₀`.
 """
-function StateSpace(; A, B, C, D = nothing, x_start = zeros(size(A, 1)), name,
-                    u0 = zeros(size(B, 2)), y0 = zeros(size(C, 1)))
+@component function StateSpace(; A, B, C, D = nothing, x_start = zeros(size(A, 1)), name,
+                               u0 = zeros(size(B, 2)), y0 = zeros(size(C, 1)))
     nx, nu, ny = size(A, 1), size(B, 2), size(C, 1)
     size(A, 2) == nx || error("`A` has to be a square matrix.")
     size(B, 1) == nx || error("`B` has to be of dimension ($nx x $nu).")

@@ -5,7 +5,7 @@ Parameters:
 
   - `V_m`: [A] Magnetic potential difference
 """
-function ConstantMagneticPotentialDifference(; name, V_m = 1.0)
+@component function ConstantMagneticPotentialDifference(; name, V_m = 1.0)
     port_p = PositiveMagneticPort()
     port_n = NegativeMagneticPort()
     @parameters V_m = V_m
@@ -23,7 +23,7 @@ Parameters:
 
   - `Phi`: [Wb] Magnetic flux
 """
-function ConstantMagneticFlux(; name, Phi = 1.0)
+@component function ConstantMagneticFlux(; name, Phi = 1.0)
     port_p = PositiveMagneticPort()
     port_n = NegativeMagneticPort()
     @parameters Phi = Phi

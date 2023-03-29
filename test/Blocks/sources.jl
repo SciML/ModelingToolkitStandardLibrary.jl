@@ -39,7 +39,7 @@ end
     prob = ODEProblem(sys, Pair[int.x => 0.0], (0.0, 10.0))
 
     sol = solve(prob, Rodas4())
-    @test sol.retcode == :Success
+    @test sol.retcode == Success
     @test sol[src.output.u]≈f.(sol.t) atol=1e-3
     @test sol[int.output.u][end]≈1 / 3 * 10^3 atol=1e-3 # closed-form solution to integral
 end

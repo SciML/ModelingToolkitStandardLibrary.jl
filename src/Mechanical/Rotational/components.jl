@@ -11,7 +11,7 @@ Flange fixed in housing at a given angle.
 
   - `phi0`: [`rad`] Fixed offset angle of housing
 """
-function Fixed(; name, phi0 = 0.0)
+@component function Fixed(; name, phi0 = 0.0)
     @named flange = Flange()
     @parameters phi0=phi0 [description = "Fixed offset angle of flange"]
     eqs = [flange.phi ~ phi0]
@@ -41,7 +41,7 @@ end
   - `w_start`: [`rad/s`] Initial value of absolute angular velocity of component
   - `a_start`: [`rad/s²`] Initial value of absolute angular acceleration of component
 """
-function Inertia(; name, J, phi_start = 0.0, w_start = 0.0, a_start = 0.0)
+@component function Inertia(; name, J, phi_start = 0.0, w_start = 0.0, a_start = 0.0)
     @named flange_a = Flange()
     @named flange_b = Flange()
     J > 0 || throw(ArgumentError("Expected `J` to be positive"))
@@ -78,7 +78,7 @@ Linear 1D rotational spring
   - `c`: [`N.m/rad`] Spring constant
   - `phi_rel0`: [`rad`] Unstretched spring angle
 """
-function Spring(; name, c, phi_rel0 = 0.0)
+@component function Spring(; name, c, phi_rel0 = 0.0)
     @named partial_comp = PartialCompliant()
     @unpack phi_rel, tau = partial_comp
     c > 0 || throw(ArgumentError("Expected `c` to be positive"))
@@ -90,7 +90,7 @@ function Spring(; name, c, phi_rel0 = 0.0)
 end
 
 """
-    Damper(;name, d) 
+    Damper(;name, d)
 
 Linear 1D rotational damper
 
@@ -110,7 +110,7 @@ Linear 1D rotational damper
 
   - `d`: [`N.m.s/rad`] Damping constant
 """
-function Damper(; name, d)
+@component function Damper(; name, d)
     @named partial_comp = PartialCompliantWithRelativeStates()
     @unpack w_rel, tau = partial_comp
     d > 0 || throw(ArgumentError("Expected `d` to be positive"))
@@ -120,7 +120,7 @@ function Damper(; name, d)
 end
 
 """
-    IdealGear(;name, ratio, use_support=false) 
+    IdealGear(;name, ratio, use_support=false)
 
 Ideal gear without inertia.
 
@@ -142,7 +142,7 @@ This element characterizes any type of gear box which is fixed in the ground and
   - `ratio`: Transmission ratio (flange_a.phi/flange_b.phi)
   - `use_support`: If support flange enabled, otherwise implicitly grounded
 """
-function IdealGear(; name, ratio, use_support = false)
+@component function IdealGear(; name, ratio, use_support = false)
     @named partial_element = PartialElementaryTwoFlangesAndSupport2(use_support = use_support)
     @unpack phi_support, flange_a, flange_b = partial_element
     ratio > 0 || throw(ArgumentError("Expected `ratio` to be positive"))
@@ -158,7 +158,7 @@ function IdealGear(; name, ratio, use_support = false)
 end
 
 """
-    RotationalFriction(;name, f, tau_c, w_brk, tau_brk) 
+    RotationalFriction(;name, f, tau_c, w_brk, tau_brk)
 
 Models rotational friction with Stribeck effect, Coulomb friction and viscous friction between the two flanges.
 The friction torque is a function of the relative angular velocity between flange_a and flange_b.
@@ -184,7 +184,7 @@ Friction model: "Armstrong, B. and C.C. de Wit, Friction Modeling and Compensati
   - `w_brk`: [`rad/s`] Breakaway friction velocity
   - `tau_brk`: [`N⋅m`] Breakaway friction torque
 """
-function RotationalFriction(; name, f, tau_c, w_brk, tau_brk)
+@component function RotationalFriction(; name, f, tau_c, w_brk, tau_brk)
     @named partial_comp = PartialCompliantWithRelativeStates()
     @unpack w_rel, tau = partial_comp
     pars = @parameters(f=f, [description = "Viscous friction coefficient of $name"],
