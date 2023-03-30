@@ -63,23 +63,17 @@ Caps a hydrualic port to prevent mass flow in or out.
 - `port`: hydraulic port
 """
 @component function Cap(; p_int, name)
-    pars = @parameters p_int = p_int 
+    pars = @parameters p_int = p_int
 
     vars = @variables p(t) = p_int
 
     systems = @named begin port = HydraulicPort(; p_int = p_int) end
 
-    eqs = [
-        port.p ~ p
-        port.dm ~ 0
-    ]
+    eqs = [port.p ~ p
+           port.dm ~ 0]
 
     ODESystem(eqs, t, vars, pars; name, systems)
 end
-
-
-
-
 
 """
     FixedVolume(; vol, p_int, name)
