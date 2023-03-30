@@ -5,7 +5,7 @@ Fixes a flange position (velocity = 0)
 
 # Connectors:
 
-  - `flange: 1-dim. translational flange`
+  - `flange`: 1-dim. translational flange
 """
 @component function Fixed(; name)
     @named flange = MechanicalPort()
@@ -33,7 +33,7 @@ Sliding mass with inertia
 
 # Connectors:
 
-  - `flange: 1-dim. translational flange`
+  - `flange`: 1-dim. translational flange
 """
 @component function Mass(; name, v_0 = 0.0, m, s_0 = nothing, g = nothing)
     pars = @parameters begin
@@ -90,8 +90,8 @@ Linear 1D translational spring
 
 # Connectors:
 
-  - `flange_a: 1-dim. translational flange on one side of spring`
-  - `flange_b: 1-dim. translational flange on opposite side of spring`
+  - `flange_a`: 1-dim. translational flange on one side of spring
+  - `flange_b`: 1-dim. translational flange on opposite side of spring
 """
 @component function Spring(; name, k, delta_s_0 = 0.0, v_a_0 = 0.0, v_b_0 = 0.0)
     Spring(REL; name, k, delta_s_0, v_a_0, v_b_0)
@@ -168,8 +168,8 @@ Linear 1D translational damper
 
 # Connectors:
 
-  - `flange_a: 1-dim. translational flange on one side of damper`
-  - `flange_b: 1-dim. translational flange on opposite side of damper`
+  - `flange_a`: 1-dim. translational flange on one side of damper
+  - `flange_b`: 1-dim. translational flange on opposite side of damper
 """
 @component function Damper(; name, d, v_a_0 = 0.0, v_b_0 = 0.0)
     pars = @parameters begin
