@@ -251,8 +251,7 @@ dm ────►  dead volume  │  │ area
 - `port`: hydraulic port
 - `flange`: mechanical translational port
 """
-@component function DynamicVolume(; p_int, x_int = 0, area, dead_volume = 0, direction = +1,
-                                  name)
+@component function DynamicVolume(; p_int, x_int = 0, area, dead_volume = 0, direction = +1, minimum_volume = 0, name)
     @assert (direction == +1)||(direction == -1) "direction arument must be +/-1, found $direction"
 
     pars = @parameters begin
@@ -272,17 +271,22 @@ dm ────►  dead volume  │  │ area
         dx(t) = 0
         rho(t) = density(port, p_int)
         drho(t) = 0
+        vol(t) = dead_volume + area*x_int
+        p(t) = p_int
     end
 
-    # let -------------
-    vol = dead_volume + area * x
 
-    eqs = [D(x) ~ dx
+    eqs = [
+    
+           0 ~ IfElse.ifelse(vol >= minimum_volume, (p - port.p) - (port.dm*0), (port.dm) - (0.0))
+    
+           vol ~ dead_volume + area * x
+           D(x) ~ dx
            D(rho) ~ drho
            dx ~ flange.v * direction
-           rho ~ density(port, port.p)
+           rho ~ density(port, p)
            port.dm ~ drho * vol + rho * area * dx
-           flange.f ~ -port.p * area * direction]
+           flange.f ~ -p * area * direction] #TODO: update to dynamic pressure
 
-    ODESystem(eqs, t, vars, pars; name, systems)
+    ODESystem(eqs, t, vars, pars; name, systems, defaults=[flange.v => 0])
 end

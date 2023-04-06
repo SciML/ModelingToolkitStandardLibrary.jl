@@ -53,16 +53,6 @@ s5_1 = complete(sys5_1)
 # N=5 pipe is compressible, will pressurize more slowly
 @test sols[2][s1_1.vol.port.p][end] > sols[3][s5_1.vol.port.p][end]
 
-# using CairoMakie
-# fig = Figure()
-# ax = Axis(fig[1,1])
-# lines!(ax, sols[1].t, sols[1][s1_2.src.port.p]; label="sorce", color=:black)
-# # lines!(ax, sols[2].t, sols[2][s1_1.src.port.p])
-# scatterlines!(ax, sols[1].t, sols[1][s1_2.vol.port.p]; label="bulk=2e9")
-# scatterlines!(ax, sols[2].t, sols[2][s1_1.vol.port.p]; label="bulk=1e9")
-# scatterlines!(ax, sols[3].t, sols[3][s5_1.vol.port.p]; label="bulk=1e9, N=5")
-# Legend(fig[1,2], ax)
-# fig
 
 function system(; bulk_modulus, name)
     pars = @parameters begin bulk_modulus = bulk_modulus end
@@ -103,27 +93,3 @@ s2 = complete(sys2)
 
 # less stiff will compress more
 @test maximum(sols[1][s1.mass.s]) > maximum(sols[2][s2.mass.s])
-
-# fig = Figure()
-# ax = Axis(fig[1,1])
-# lines!(ax, sols[1].t, sols[1][s1.src.port.p]; label="sorce", color=:black)
-# # lines!(ax, sols[2].t, sols[2][s1_1.src.port.p])
-# scatterlines!(ax, sols[1].t, sols[1][s1.vol1.port.p]; label="bulk=1e9")
-# scatterlines!(ax, sols[2].t, sols[2][s2.vol1.port.p]; label="bulk=2e9")
-# Legend(fig[1,2], ax)
-# fig
-
-# fig = Figure()
-# ax = Axis(fig[1,1])
-# scatterlines!(ax, sols[1].t, sols[1][s1.mass.s]; label="bulk=1e9")
-# scatterlines!(ax, sols[2].t, sols[2][s2.mass.s]; label="bulk=2e9")
-# Legend(fig[1,2], ax)
-# fig
-
-# fig = Figure()
-# ax = Axis(fig[1,1])
-# lines!(ax, sols[1].t, sols[1][s1.vol1.dx]; label="bulk=2e9")
-# lines!(ax, sols[1].t, sols[1][s1.vol2.dx]; label="bulk=2e9")
-# lines!(ax, sols[1].t, sols[1][s1.mass.v]; label="bulk=2e9")
-# Legend(fig[1,2], ax)
-# fig
