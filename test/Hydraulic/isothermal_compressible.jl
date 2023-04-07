@@ -81,7 +81,7 @@ end
 s = complete(valve_system)
 sys = structural_simplify(valve_system)
 prob = ODEProblem(sys, [], (0, 0.01))
-sol = solve(prob, ImplicitEuler(nlsolve = NEWTON); adaptive = false, dt,
+sol = solve(prob, ImplicitEuler(nlsolve = NEWTON); adaptive = false, dt = 1e-4,
             initializealg = NoInit())
 
 # the volume should discharge to 10bar
@@ -127,7 +127,7 @@ s = complete(min_vol_system)
 sys = structural_simplify(min_vol_system)
 prob = ODEProblem(sys, [], (0, 5.0))
 
-sol = solve(prob, ImplicitEuler(nlsolve = NEWTON); adaptive = false, dt,
+sol = solve(prob, ImplicitEuler(nlsolve = NEWTON); adaptive = false, dt = 1e-4,
             initializealg = NoInit())
 
 # begin
