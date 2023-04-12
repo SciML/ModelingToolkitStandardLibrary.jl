@@ -24,3 +24,6 @@ using SafeTestsets
 @safetestset "Mechanical Rotation" begin include("Mechanical/rotational.jl") end
 @safetestset "Mechanical Translation" begin include("Mechanical/translational.jl") end
 @safetestset "Multi-Domain" begin include("multi_domain.jl") end
+
+# Hydraulic
+@safetestset "Hydraulic IsothermalCompressible" begin include("Hydraulic/isothermal_compressible.jl") end

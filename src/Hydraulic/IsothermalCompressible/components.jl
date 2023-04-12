@@ -226,7 +226,7 @@ Pipe modeled with `N` segements which models the fully developed flow friction a
 end
 
 """
-    DynamicVolume(; p_int, x_int=0, area, dead_volume=0, direction=+1, name)
+    DynamicVolume(; p_int, x_int=0, area, dead_volume=0, direction=+1, minimum_volume=0, name)
 
 Volume with moving wall.  The `direction` argument aligns the mechanical port with the hydraulic port, useful when connecting two dynamic volumes together in oppsing directions to create an actuator.
 ```
@@ -242,17 +242,18 @@ dm ────►  dead volume  │  │ area
 ```
 
 # Parameters:
-- `p_int`: [Pa] initial pressure (set by `p_int` argument)
-- `x_int`: [m] initial position of the moving wall (set by the `x_int` argument)
-- `area`: [m^2] moving wall area (set by the `area` argument)
-- `dead_volume`: [m^3] perimeter of the pipe cross section (set by optional `perimeter` argument, needed only for non-circular pipes)
+- `p_int`: [Pa] initial pressure
+- `x_int`: [m] initial position of the moving wall
+- `area`: [m^2] moving wall area
+- `dead_volume`: [m^3] perimeter of the pipe cross section
+- `minimum_volume`: [m^3] if `x`*`area` <= `minimum_volume` then mass flow `dm` shuts off
 
 # Connectors:
 - `port`: hydraulic port
 - `flange`: mechanical translational port
 """
 @component function DynamicVolume(; p_int, x_int = 0, area, dead_volume = 0, direction = +1,
-                                  name)
+                                  minimum_volume = 0, name)
     @assert (direction == +1)||(direction == -1) "direction arument must be +/-1, found $direction"
 
     pars = @parameters begin
@@ -272,17 +273,62 @@ dm ────►  dead volume  │  │ area
         dx(t) = 0
         rho(t) = density(port, p_int)
         drho(t) = 0
+        vol(t) = dead_volume + area * x_int
+        p(t) = p_int
     end
 
-    # let -------------
-    vol = dead_volume + area * x
-
-    eqs = [D(x) ~ dx
+    eqs = [0 ~ IfElse.ifelse(vol >= minimum_volume, p - port.p, port.dm)
+           vol ~ dead_volume + area * x
+           D(x) ~ dx
            D(rho) ~ drho
            dx ~ flange.v * direction
-           rho ~ density(port, port.p)
+           rho ~ density(port, p)
            port.dm ~ drho * vol + rho * area * dx
-           flange.f ~ -port.p * area * direction]
+           flange.f ~ -p * area * direction] #TODO: update to dynamic pressure
 
-    ODESystem(eqs, t, vars, pars; name, systems)
+    ODESystem(eqs, t, vars, pars; name, systems, defaults = [flange.v => 0])
+end
+
+"""
+    Valve(; p_a_int, p_b_int, area_int, Cd, name)
+
+Valve with area input and discharge coefficient `Cd` defined by https://en.wikipedia.org/wiki/Discharge_coefficient
+
+# Parameters:
+- `p_a_int`: [Pa] initial pressure for `port_a`
+- `p_b_int`: [Pa] initial pressure for `port_b`
+- `area_int`: [m^2] initial valve opening
+- `Cd`: discharge coefficient 
+
+# Connectors:
+- `port_a`: hydraulic port
+- `port_b`: hydraulic port
+- `input`: real input setting the valve `area`.  Note: absolute value taken
+"""
+@component function Valve(; p_a_int, p_b_int, area_int, Cd, name)
+    pars = @parameters begin
+        p_a_int = p_a_int
+        p_b_int = p_b_int
+        area_int = area_int
+        Cd = Cd
+    end
+
+    systems = @named begin
+        port_a = HydraulicPort(; p_int = p_a_int)
+        port_b = HydraulicPort(; p_int = p_b_int)
+        input = RealInput()
+    end
+
+    vars = []
+
+    # let
+    ρ = (density(port_a, port_a.p) + density(port_b, port_b.p)) / 2
+    Δp = port_a.p - port_b.p
+    dm = port_a.dm
+    area = abs(input.u)
+
+    eqs = [sign(Δp) * dm ~ sqrt(2 * abs(Δp) * ρ / Cd) * area
+           0 ~ port_a.dm + port_b.dm]
+
+    ODESystem(eqs, t, vars, pars; name, systems, defaults = [input.u => area_int])
 end

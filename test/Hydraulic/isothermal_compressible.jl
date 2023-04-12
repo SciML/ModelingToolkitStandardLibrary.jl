@@ -6,7 +6,9 @@ import ModelingToolkitStandardLibrary.Mechanical.Translational as T
 @parameters t
 D = Differential(t)
 
-function system(N; bulk_modulus, name)
+# ------------------------------------------------------------
+# Test fluid domain and Pipe
+function System(N; bulk_modulus, name)
     pars = @parameters begin bulk_modulus = bulk_modulus end
 
     systems = @named begin
@@ -32,9 +34,9 @@ function system(N; bulk_modulus, name)
     ODESystem(eqs, t, [], pars; name, systems)
 end
 
-@named sys1_2 = system(1; bulk_modulus = 2e9)
-@named sys1_1 = system(1; bulk_modulus = 1e9)
-@named sys5_1 = system(5; bulk_modulus = 1e9)
+@named sys1_2 = System(1; bulk_modulus = 2e9)
+@named sys1_1 = System(1; bulk_modulus = 1e9)
+@named sys5_1 = System(5; bulk_modulus = 1e9)
 
 NEWTON = NLNewton(check_div = false, always_new = true, max_iter = 100, relax = 4 // 10)
 
@@ -53,77 +55,97 @@ s5_1 = complete(sys5_1)
 # N=5 pipe is compressible, will pressurize more slowly
 @test sols[2][s1_1.vol.port.p][end] > sols[3][s5_1.vol.port.p][end]
 
-# using CairoMakie
-# fig = Figure()
-# ax = Axis(fig[1,1])
-# lines!(ax, sols[1].t, sols[1][s1_2.src.port.p]; label="sorce", color=:black)
-# # lines!(ax, sols[2].t, sols[2][s1_1.src.port.p])
-# scatterlines!(ax, sols[1].t, sols[1][s1_2.vol.port.p]; label="bulk=2e9")
-# scatterlines!(ax, sols[2].t, sols[2][s1_1.vol.port.p]; label="bulk=1e9")
-# scatterlines!(ax, sols[3].t, sols[3][s5_1.vol.port.p]; label="bulk=1e9, N=5")
-# Legend(fig[1,2], ax)
-# fig
-
-function system(; bulk_modulus, name)
-    pars = @parameters begin bulk_modulus = bulk_modulus end
+# ------------------------------------------------------------
+# Test the Valve 
+function System(; name)
+    pars = []
 
     systems = @named begin
-        fluid = IC.HydraulicFluid(; bulk_modulus)
-        stp = B.Step(; height = 10e5, offset = 0, start_time = 0.05, duration = Inf,
-                     smooth = 0.001)
-        src = IC.InputSource(; p_int = 0)
-        vol1 = IC.DynamicVolume(; p_int = 0, area = 0.01, direction = +1)
-        vol2 = IC.DynamicVolume(; p_int = 0, area = 0.01, direction = -1, x_int = 1.0)
-        mass = T.Mass(; m = 1000, s_0 = 0)
-        res = IC.PipeBase(; p_int = 0, area = 0.001, length = 50.0)
-        cap = IC.Cap(; p_int = 0)
+        fluid = IC.HydraulicFluid()
+        sink = IC.Source(; p = 10e5)
+        vol = IC.FixedVolume(; vol = 0.1, p_int = 100e5)
+        valve = IC.Valve(; p_a_int = 10e5, p_b_int = 100e5, area_int = 0, Cd = 1e6)
+        ramp = B.Ramp(; height = 1, duration = 0.001, offset = 0, start_time = 0.001,
+                      smooth = true)
     end
 
-    eqs = [connect(stp.output, src.input)
-           connect(fluid, src.port, cap.port)
-           connect(src.port, res.port_a)
-           connect(res.port_b, vol1.port)
-           connect(vol1.flange, mass.flange, vol2.flange)
-           connect(vol2.port, cap.port)]
+    eqs = [connect(fluid, sink.port)
+           connect(sink.port, valve.port_a)
+           connect(valve.port_b, vol.port)
+           connect(valve.input, ramp.output)]
 
     ODESystem(eqs, t, [], pars; name, systems)
 end
 
-@named sys1 = system(; bulk_modulus = 1e9)
-@named sys2 = system(; bulk_modulus = 2e9)
+@named valve_system = System()
+s = complete(valve_system)
+sys = structural_simplify(valve_system)
+prob = ODEProblem(sys, [], (0, 0.01))
+sol = solve(prob, ImplicitEuler(nlsolve = NEWTON); adaptive = false, dt = 1e-4,
+            initializealg = NoInit())
 
-syss = structural_simplify.([sys1, sys2])
-probs = [ODEProblem(sys, [], (0, 0.2)) for sys in syss];
-dt = 1e-4
-sols = [solve(prob, ImplicitEuler(nlsolve = NEWTON); adaptive = false, dt,
-              initializealg = NoInit()) for prob in probs];
+# the volume should discharge to 10bar
+@test sol[s.vol.port.p][end] ≈ 10e5
 
-s1 = complete(sys1)
-s2 = complete(sys2)
+# ------------------------------------------------------------
+# Test DynmaicVolume and minimum_volume feature
+function System(; name)
+    pars = []
 
-# less stiff will compress more
-@test maximum(sols[1][s1.mass.s]) > maximum(sols[2][s2.mass.s])
+    # DynamicVolume values
+    area = 0.01
+    length = 0.1
 
-# fig = Figure()
-# ax = Axis(fig[1,1])
-# lines!(ax, sols[1].t, sols[1][s1.src.port.p]; label="sorce", color=:black)
-# # lines!(ax, sols[2].t, sols[2][s1_1.src.port.p])
-# scatterlines!(ax, sols[1].t, sols[1][s1.vol1.port.p]; label="bulk=1e9")
-# scatterlines!(ax, sols[2].t, sols[2][s2.vol1.port.p]; label="bulk=2e9")
-# Legend(fig[1,2], ax)
-# fig
+    systems = @named begin
+        fluid = IC.HydraulicFluid()
+        src1 = IC.InputSource(; p_int = 10e5)
+        src2 = IC.InputSource(; p_int = 10e5)
 
-# fig = Figure()
-# ax = Axis(fig[1,1])
-# scatterlines!(ax, sols[1].t, sols[1][s1.mass.s]; label="bulk=1e9")
-# scatterlines!(ax, sols[2].t, sols[2][s2.mass.s]; label="bulk=2e9")
-# Legend(fig[1,2], ax)
-# fig
+        vol1 = IC.DynamicVolume(; p_int = 10e5, area, direction = +1, dead_volume = 2e-4,
+                                minimum_volume = 2e-4)
+        vol2 = IC.DynamicVolume(; p_int = 10e5, area, direction = -1, dead_volume = 2e-4,
+                                minimum_volume = 2e-4, x_int = length)
 
-# fig = Figure()
-# ax = Axis(fig[1,1])
-# lines!(ax, sols[1].t, sols[1][s1.vol1.dx]; label="bulk=2e9")
-# lines!(ax, sols[1].t, sols[1][s1.vol2.dx]; label="bulk=2e9")
-# lines!(ax, sols[1].t, sols[1][s1.mass.v]; label="bulk=2e9")
-# Legend(fig[1,2], ax)
-# fig
+        mass = T.Mass(; m = 100)
+
+        sin1 = B.Sine(; frequency = 0.5, amplitude = +1e5, offset = 10e5)
+        sin2 = B.Sine(; frequency = 0.5, amplitude = -1e5, offset = 10e5)
+    end
+
+    eqs = [connect(fluid, src1.port, src2.port)
+           connect(src1.port, vol1.port)
+           connect(src2.port, vol2.port)
+           connect(vol1.flange, mass.flange, vol2.flange)
+           connect(src1.input, sin1.output)
+           connect(src2.input, sin2.output)]
+
+    ODESystem(eqs, t, [], pars; name, systems)
+end
+
+@named min_vol_system = System()
+s = complete(min_vol_system)
+sys = structural_simplify(min_vol_system)
+prob = ODEProblem(sys, [], (0, 5.0))
+
+sol = solve(prob, ImplicitEuler(nlsolve = NEWTON); adaptive = false, dt = 1e-4,
+            initializealg = NoInit())
+
+# begin
+#     fig = Figure()
+
+#     ax = Axis(fig[1,1], ylabel="position [m]", xlabel="time [s]")
+#     lines!(ax, sol.t, sol[s.vol1.x]; label="vol1")
+#     lines!(ax, sol.t, sol[s.vol2.x]; label="vol2")
+
+#     ax = Axis(fig[2,1], ylabel="pressure [bar]", xlabel="time [s]")
+#     lines!(ax, sol.t, sol[s.vol1.port.p]/1e5; label="vol1")
+#     lines!(ax, sol.t, sol[s.vol2.port.p]/1e5; label="vol2")
+#     Legend(fig[2,2], ax)
+#     fig    
+# end
+
+# volume/mass should stop moving at opposite ends
+@test round(sol[s.vol1.x][1]; digits = 2) == 0.0
+@test round(sol[s.vol2.x][1]; digits = 2) == 0.1
+@test round(sol[s.vol1.x][end]; digits = 2) == 0.1
+@test round(sol[s.vol2.x][end]; digits = 2) == 0.0
