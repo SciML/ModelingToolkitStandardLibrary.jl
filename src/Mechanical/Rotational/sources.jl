@@ -1,3 +1,13 @@
+
+function PartialTorque(; name, use_support = false)
+  @named partial_element = PartialElementaryOneFlangeAndSupport2(use_support = use_support)
+  @unpack flange, phi_support = partial_element
+  @variables phi(t) [description = "Angle of flange with respect to support (= flange.phi - support.phi)"]
+  eqs = [phi ~ flange.phi - phi_support]
+  return extend(ODESystem(eqs, t; name = name), partial_element)
+end
+
+
 """
     Torque(; name, use_support=false) 
 
@@ -22,6 +32,23 @@ function Torque(; name, use_support = false)
     @named tau = RealInput()
     eqs = [flange.tau ~ -tau.u]
     return extend(ODESystem(eqs, t, [], []; name = name, systems = [tau]), partial_element)
+end
+
+
+
+function ConstantTorque(; name, tau_constant, use_support = false)
+  # NOTE: The use_support option is not specified for modelica ConstantTorque and defaults to false in the definition of PartialElementaryOneFlangeAndSupport2. If we do not set it to true, we will get a structurally singular system, and in the comment attached to the phi variable, they mention "flange.phi - support.phi", indicating that the support is used. 
+  @named partial_element = PartialTorque(; use_support)
+  @unpack flange, phi = partial_element
+  @parameters tau_constant=tau_constant [description = "Constant torque (if negative, torque is acting as load in positive direction of rotation)"]
+  @variables tau(t) [description = "Accelerating torque acting at flange (= -flange.tau)"]
+  @variables w(t) [description = "Angular velocity of flange with respect to support (= der(phi))"]
+  eqs = [
+    w ~ D(phi)
+    tau ~ -flange.tau
+    tau ~ tau_constant
+  ]
+  return extend(ODESystem(eqs, t; name = name), partial_element)
 end
 
 """
