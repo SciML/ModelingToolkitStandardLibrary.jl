@@ -15,7 +15,7 @@ include("utils.jl")
 export Fixed, Inertia, Spring, Damper, IdealGear, RotationalFriction
 include("components.jl")
 
-export Torque, Speed
+export Torque, ConstantTorque, Speed
 include("sources.jl")
 
 export AngleSensor, SpeedSensor, TorqueSensor, RelSpeedSensor

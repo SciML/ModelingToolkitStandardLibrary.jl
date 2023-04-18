@@ -16,7 +16,7 @@ Input signal acting as external torque on a flange
 
 # States:
 
-  - `phi_support(t)`: [`rad`] Absolute angle of support flange"
+  - `phi_support(t)`: [`rad`] Absolute angle of support flange
 
 # Connectors:
 
@@ -35,6 +35,24 @@ function Torque(; name, use_support = false)
     return extend(ODESystem(eqs, t, [], []; name = name, systems = [tau]), partial_element)
 end
 
+"""
+    ConstantTorque(; name, tau_constant, use_support = false)
+
+Constant torque source
+
+# State variables:
+  
+- `phi_support(t)`: [`rad`] Absolute angle of support flange, only available if `use_support = true`
+- `tau`: Accelerating torque acting at flange (= -flange.tau)
+- `w`: Angular velocity of flange with respect to support (= der(phi))
+
+# Connectors:
+- `flange` [Flange](@ref)
+
+# Arguments:
+- `tau_constant`: The constant torque applied by the source
+- `use_support`: Whether or not an internal support flange is added, defaults to false.
+"""
 function ConstantTorque(; name, tau_constant, use_support = false)
     @named partial_element = PartialTorque(; use_support)
     @unpack flange, phi = partial_element
