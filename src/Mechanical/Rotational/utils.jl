@@ -18,7 +18,6 @@ Base.@doc """
     extend(ODESystem(Equation[], t, [], [], name = name), flange)
 end
 
-
 Base.@doc """
     InternalSupport(;name, tau)
 
@@ -35,11 +34,9 @@ Base.@doc """
     @named flange = Flange()
     @variables phi(t)=0 [description = "Rotation angle of support $name"]
     # tau(t), [connect = Flow, description = "Cut torque in support $name"],)
-    equations = [
-        flange.tau ~ tau
-        flange.phi ~ phi
-    ]
-    ODESystem(equations, t, [phi], [], name = name, systems=[flange]) # NOTE: tau not included since it belongs elsewhere
+    equations = [flange.tau ~ tau
+                 flange.phi ~ phi]
+    ODESystem(equations, t, [phi], [], name = name, systems = [flange]) # NOTE: tau not included since it belongs elsewhere
 end
 
 Base.@doc """
