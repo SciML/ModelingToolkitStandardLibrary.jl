@@ -39,7 +39,7 @@ Base.@doc """
         flange.tau ~ tau
         flange.phi ~ phi
     ]
-    ODESystem(equations, t, name = name, systems=[flange])
+    ODESystem(equations, t, [phi], [], name = name, systems=[flange]) # NOTE: tau not included since it belongs elsewhere
 end
 
 Base.@doc """
