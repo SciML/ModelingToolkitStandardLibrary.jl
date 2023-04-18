@@ -1,9 +1,9 @@
 """
-    Force(;name) 
+    Force(;name)
 
 Input signal acting as external force on a flange
 """
-function Force(; name, use_support = false)
+@component function Force(; name, use_support = false)
     @named partial_element = PartialElementaryOneFlangeAndSupport2(use_support = use_support)
     @unpack flange = partial_element
     @named f = RealInput() # Accelerating force acting at flange (= -flange.tau)

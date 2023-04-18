@@ -17,7 +17,7 @@ the component FixedHeatFlow is connected, if parameter `Q_flow` is positive.
   - `T_ref`: [K] Reference temperature
   - `alpha`: [1/K] Temperature coefficient of heat flow rate
 """
-function FixedHeatFlow(; name, Q_flow = 1.0, T_ref = 293.15, alpha = 0.0)
+@component function FixedHeatFlow(; name, Q_flow = 1.0, T_ref = 293.15, alpha = 0.0)
     pars = @parameters begin
         Q_flow = Q_flow
         T_ref = T_ref
@@ -46,7 +46,7 @@ This model defines a fixed temperature `T` at its port in kelvin, i.e., it defin
 
   - `T`: [K] Fixed temperature boundary condition
 """
-function FixedTemperature(; name, T)
+@component function FixedTemperature(; name, T)
     @named port = HeatPort()
     pars = @parameters T = T
     eqs = [
@@ -56,7 +56,7 @@ function FixedTemperature(; name, T)
 end
 
 """
-    PrescribedHeatFlow(; name, Q_flow=1.0, T_ref=293.15, alpha=0.0)
+    PrescribedHeatFlow(; name, T_ref=293.15, alpha=0.0)
 
 Prescribed heat flow boundary condition.
 
@@ -69,14 +69,14 @@ dependent losses (which are given a reference temperature T_ref).
 # Connectors:
 
   - `port`
-  - `Q_flow` Input for the heat flow
+  - `RealInput` `Q_flow` Input for the heat flow
 
 # Parameters:
 
   - `T_ref`: [K] Reference temperature
   - `alpha`: [1/K] Temperature coefficient of heat flow rate
 """
-function PrescribedHeatFlow(; name, T_ref = 293.15, alpha = 0.0)
+@component function PrescribedHeatFlow(; name, T_ref = 293.15, alpha = 0.0)
     pars = @parameters begin
         T_ref = T_ref
         alpha = alpha
@@ -91,20 +91,20 @@ function PrescribedHeatFlow(; name, T_ref = 293.15, alpha = 0.0)
 end
 
 """
-    PrescribedTemperature(; name, T)
+    PrescribedTemperature(; name)
 
 This model represents a variable temperature boundary condition.
 
-The temperature in kelvin is given as input signal `T` to the model. The effect is that an instance of
+The temperature in kelvin is given as input signal to the `RealInput` `T`. The effect is that an instance of
 this model acts as an infinite reservoir, able to absorb or generate as much energy as required to keep
 the temperature at the specified value.
 
 # Connectors:
 
   - `port`
-  - `T` input for the temperature
+  - `RealInput` `T` input for the temperature
 """
-function PrescribedTemperature(; name)
+@component function PrescribedTemperature(; name)
     @named port = HeatPort()
     @named T = RealInput()
     eqs = [

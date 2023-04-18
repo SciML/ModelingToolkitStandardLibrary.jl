@@ -1,7 +1,7 @@
 name = "ModelingToolkitStandardLibrary"
 uuid = "16a59e39-deab-5bd0-87e4-056b12336739"
 authors = ["Chris Rackauckas and Julia Computing"]
-version = "1.11.0"
+version = "1.13.0"
 
 [deps]
 IfElse = "615f187c-cbe4-4ef1-ba3b-2fcf58d6d173"
@@ -11,7 +11,7 @@ Symbolics = "0c5d862f-8b57-4792-8d23-62f2024744c7"
 
 [compat]
 IfElse = "0.1"
-ModelingToolkit = "8.26"
+ModelingToolkit = "8.50"
 Symbolics = "4.9, 5"
 julia = "1.6"
 

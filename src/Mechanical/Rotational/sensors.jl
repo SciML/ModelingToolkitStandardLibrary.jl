@@ -8,7 +8,7 @@ Ideal sensor to measure the absolute flange angle
   - `flange`: [Flange](@ref) Flange of shaft from which sensor information shall be measured
   - `phi`: [RealOutput](@ref) Absolute angle of flange
 """
-function AngleSensor(; name)
+@component function AngleSensor(; name)
     @named flange = Flange()
     @named phi = RealOutput()
     eqs = [phi.u ~ flange.phi
@@ -26,7 +26,7 @@ Ideal sensor to measure the absolute flange angular velocity
   - `flange`: [Flange](@ref) Flange of shaft from which sensor information shall be measured
   - `w`: [RealOutput](@ref) Absolute angular velocity of flange
 """
-function SpeedSensor(; name)
+@component function SpeedSensor(; name)
     @named flange = Flange()
     @named w = RealOutput()
     eqs = [D(flange.phi) ~ w.u
@@ -45,7 +45,7 @@ Ideal sensor to measure the torque between two flanges (`= flange_a.tau`)
   - `flange_b`: [Flange](@ref) Left flange of shaft
   - `tau`: [RealOutput](@ref) Torque in flange flange_a and flange_b (`tau = flange_a.tau = -flange_b.tau`)
 """
-function TorqueSensor(; name)
+@component function TorqueSensor(; name)
     @named flange_a = Flange()
     @named flange_b = Flange()
     @named tau = RealOutput()
@@ -65,7 +65,7 @@ Ideal sensor to measure the relative angular velocity
   - `flange_b`: [Flange](@ref) Flange of shaft from which sensor information shall be measured
   - `w`: [RealOutput](@ref) Absolute angular velocity of flange
 """
-function RelSpeedSensor(; name)
+@component function RelSpeedSensor(; name)
     @named flange_a = Flange()
     @named flange_b = Flange()
     @named w_rel = RealOutput()

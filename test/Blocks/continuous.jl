@@ -133,7 +133,7 @@ end
 """
 Second order demo plant
 """
-function Plant(; name, x_start = zeros(2))
+@component function Plant(; name, x_start = zeros(2))
     @named input = RealInput()
     @named output = RealOutput()
     D = Differential(t)
@@ -169,7 +169,7 @@ end
 @testset "PID" begin
     re_val = 2
     @named ref = Constant(; k = re_val)
-    @named pid_controller = PID(k = 3, Ti = 0.5, Td = 100)
+    @named pid_controller = PID(k = 3, Ti = 0.5, Td = 1 / 100)
     @named plant = Plant()
     @named fb = Feedback()
     @named model = ODESystem([
@@ -280,7 +280,7 @@ end
 @testset "LimPID" begin
     re_val = 1
     @named ref = Constant(; k = re_val)
-    @named pid_controller = LimPID(k = 3, Ti = 0.5, Td = 100, u_max = 1.5, u_min = -1.5,
+    @named pid_controller = LimPID(k = 3, Ti = 0.5, Td = 1 / 100, u_max = 1.5, u_min = -1.5,
                                    Ni = 0.1 / 0.5)
     @named plant = Plant()
     @named model = ODESystem([
@@ -342,7 +342,7 @@ end
     end
     @testset "set-point weights" begin
         @testset "wp" begin
-            @named pid_controller = LimPID(k = 3, Ti = 0.5, Td = 100, u_max = 1.5,
+            @named pid_controller = LimPID(k = 3, Ti = 0.5, Td = 1 / 100, u_max = 1.5,
                                            u_min = -1.5, Ni = 0.1 / 0.5, wp = 0, wd = 1)
             @named model = ODESystem([
                                          connect(ref.output, pid_controller.reference),
@@ -363,7 +363,7 @@ end
             @test all(-1.5 .<= sol[pid_controller.ctr_output.u] .<= 1.5) # test limit
         end
         @testset "wd" begin
-            @named pid_controller = LimPID(k = 3, Ti = 0.5, Td = 100, u_max = 1.5,
+            @named pid_controller = LimPID(k = 3, Ti = 0.5, Td = 1 / 100, u_max = 1.5,
                                            u_min = -1.5, Ni = 0.1 / 0.5, wp = 1, wd = 0)
             @named model = ODESystem([
                                          connect(ref.output, pid_controller.reference),

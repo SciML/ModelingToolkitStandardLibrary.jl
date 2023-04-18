@@ -69,7 +69,7 @@ Partial model for the compliant connection of two rotational 1-dim. shaft flange
   - `phi_rel_start`: [`rad`] Initial relative rotation angle
   - `tau_start`: [`N.m`] Initial torque between flanges
 """
-function PartialCompliant(; name, phi_rel_start = 0.0, tau_start = 0.0)
+@component function PartialCompliant(; name, phi_rel_start = 0.0, tau_start = 0.0)
     @named flange_a = Flange()
     @named flange_b = Flange()
     sts = @variables(phi_rel(t)=phi_rel_start,
@@ -105,8 +105,9 @@ Partial model for the compliant connection of two rotational 1-dim. shaft flange
   - `a_rel_start`: [`rad/s²`] Initial relative angular acceleration (= D(w_rel))
   - `tau_start`: [`N.m`] Initial torque between flanges
 """
-function PartialCompliantWithRelativeStates(; name, phi_rel_start = 0.0, w_start = 0.0,
-                                            a_start = 0.0, tau_start = 0.0)
+@component function PartialCompliantWithRelativeStates(; name, phi_rel_start = 0.0,
+                                                       w_start = 0.0,
+                                                       a_start = 0.0, tau_start = 0.0)
     @named flange_a = Flange()
     @named flange_b = Flange()
     sts = @variables(phi_rel(t)=phi_rel_start,
@@ -141,7 +142,7 @@ Partial model for a component with one rotational 1-dim. shaft flange and a supp
 
   - `use_support`: If support flange enabled, otherwise implicitly grounded
 """
-function PartialElementaryOneFlangeAndSupport2(; name, use_support = false)
+@component function PartialElementaryOneFlangeAndSupport2(; name, use_support = false)
     @named flange = Flange()
     sys = [flange]
     @variables phi_support(t)=0.0 [description = "Absolute angle of support flange"]
@@ -175,7 +176,7 @@ Partial model for a component with two rotational 1-dim. shaft flanges and a sup
 
   - `use_support`: If support flange enabled, otherwise implicitly grounded
 """
-function PartialElementaryTwoFlangesAndSupport2(; name, use_support = false)
+@component function PartialElementaryTwoFlangesAndSupport2(; name, use_support = false)
     @named flange_a = Flange()
     @named flange_b = Flange()
     sys = [flange_a, flange_b]

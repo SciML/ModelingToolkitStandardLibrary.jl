@@ -158,7 +158,7 @@ end
 end
 
 @testset "Stick-Slip" begin
-    function VelocityProfile(; name)
+    @component function VelocityProfile(; name)
         @named sine = Blocks.Sine(amplitude = 10, frequency = 0.1)
         @named dz = Blocks.DeadZone(u_max = 2)
         @named lim = Blocks.Limiter(y_max = 6)

@@ -22,7 +22,7 @@ Takes two bits as input, and outputs the sum and the carry
   - `y2`
     Output [`DigitalPin`](@ref) corresponding to the carry
 """
-function HalfAdder(; name)
+@component function HalfAdder(; name)
     @named x1 = DigitalPin()
     @named x2 = DigitalPin()
     @named y1 = DigitalPin()
@@ -59,7 +59,7 @@ Takes three bits as input, and outputs the sum and the carry
   - `y2`
     Output [`DigitalPin`](@ref) corresponding to the carry
 """
-function FullAdder(; name)
+@component function FullAdder(; name)
     @named x1 = DigitalPin()
     @named x2 = DigitalPin()
     @named x3 = DigitalPin()
@@ -97,7 +97,7 @@ of `i`.
   - `y`
     The output, selected from one of the `N` input lines
 """
-function MUX(; name, N = 4)
+@component function MUX(; name, N = 4)
     n = log2(N)
     try
         n = Int(n)
@@ -151,7 +151,7 @@ representation of `i`.
   - `y1`, `y2`, ...
     The `N` output lines
 """
-function DEMUX(; name, N = 4)
+@component function DEMUX(; name, N = 4)
     n = log2(N)
     try
         n = Int(n)
@@ -199,7 +199,7 @@ If the `i`th input is `1`, then the output corresponds to the binary representat
   - `y1`, `y2`, ...
     The `n` output lines
 """
-function Encoder(; name, N = 4)
+@component function Encoder(; name, N = 4)
     n = log2(N)
     try
         n = Int(n)
@@ -256,7 +256,7 @@ the select lines correspond to the binary representation of `1`.
   - `y1`, `y2`, ...
     The `N` output lines
 """
-function Decoder(; name, n = 2)
+@component function Decoder(; name, n = 2)
     N = 2^n
     d = map(0:(n - 1)) do i
         DigitalPin(; name = Symbol(:d, i))

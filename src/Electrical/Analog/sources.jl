@@ -1,5 +1,5 @@
 """
-    Voltage(;name)   
+    Voltage(;name)
 
 Acts as an ideal voltage source with no internal resistance.
 
@@ -13,7 +13,7 @@ See [OnePort](@ref)
   - `n` Negative pin
   - `V` [RealInput](@ref) Input for the voltage control signal, i.e. `V ~ p.v - n.v`
 """
-function Voltage(; name)
+@component function Voltage(; name)
     @named oneport = OnePort()
     @unpack v, i = oneport
     @named V = RealInput()
@@ -25,7 +25,7 @@ function Voltage(; name)
 end
 
 """
-    Current(;name)   
+    Current(;name)
 
 Acts as an ideal current source with no internal resistance.
 
@@ -39,7 +39,7 @@ See [OnePort](@ref)
   - `n` Negative pin
   - `I` [RealInput](@ref) Input for the current control signal, i.e. `I ~ p.i
 """
-function Current(; name)
+@component function Current(; name)
     @named oneport = OnePort()
     @unpack v, i = oneport
     @named I = RealInput()

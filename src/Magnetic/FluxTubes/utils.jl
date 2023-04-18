@@ -1,5 +1,5 @@
 @connector function MagneticPort(; name, V_m_start = 0.0, Phi_start = 0.0)
-    @variables V_m(t) = V_m_start # [Wb] Magnetic potential at the port  
+    @variables V_m(t) = V_m_start # [Wb] Magnetic potential at the port
     @variables Phi(t)=Phi_start [connect = Flow] # [A] Magnetic flux flowing into the port"
     ODESystem(Equation[], t, [V_m, Phi], []; name = name)
 end
@@ -25,7 +25,7 @@ Partial component with magnetic potential difference between two magnetic ports 
   - `V_m_start`: Initial magnetic potential difference between both ports
   - `Phi_start`: Initial magnetic flux from port_p to port_n
 """
-function TwoPort(; name, V_m_start = 0.0, Phi_start = 0.0)
+@component function TwoPort(; name, V_m_start = 0.0, Phi_start = 0.0)
     @named port_p = PositiveMagneticPort()
     @named port_n = NegativeMagneticPort()
     @variables V_m(t)=V_m_start Phi(t)=Phi_start

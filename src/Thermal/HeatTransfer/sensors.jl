@@ -15,7 +15,7 @@ lags are associated with this sensor model.
 
   - `port`
 """
-function TemperatureSensor(; name)
+@component function TemperatureSensor(; name)
     @named port = HeatPort()
     @variables T(t)
     eqs = [T ~ port.T
@@ -40,7 +40,7 @@ output signal in kelvin.
   - `port_a`
   - `port_b`
 """
-function RelativeTemperatureSensor(; name)
+@component function RelativeTemperatureSensor(; name)
     @named port_a = HeatPort()
     @named port_b = HeatPort()
     @variables T(t)
@@ -69,7 +69,7 @@ The output signal is positive, if the heat flows from `port_a` to `port_b`.
   - `port_a`
   - `port_b`
 """
-function HeatFlowSensor(; name)
+@component function HeatFlowSensor(; name)
     @named port_a = HeatPort()
     @named port_b = HeatPort()
     @variables Q_flow(t)
