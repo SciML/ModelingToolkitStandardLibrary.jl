@@ -4,7 +4,7 @@
     ODESystem(Equation[], t, sts, [], name = name, defaults = Dict(phi => 0.0, tau => 0.0))
 end
 Base.@doc """
-    Flange(;name)
+    Support(;name)
 
 1-dim. rotational flange of a shaft.
 
@@ -14,10 +14,31 @@ Base.@doc """
 """ Flange
 
 @connector function Support(; name)
-    sts = @variables(phi(t), [description = "Rotation angle of support $name"],
-                     tau(t), [connect = Flow, description = "Cut torque in support $name"],)
-    ODESystem(Equation[], t, sts, [], name = name, defaults = Dict(phi => 0.0, tau => 0.0))
+    @named flange = Flange()
+    extend(ODESystem(Equation[], t, [], [], name = name), flange)
 end
+
+# Base.@doc """
+#     InternalSupport(;name, tau)
+
+# 1-dim. rotational flange of a shaft.
+
+# - `tau`: External support torque (must be computed via torque balance in model where InternalSupport is used; = flange.tau)
+
+# # States:
+# - `phi(t)`: [`rad`] Absolute rotation angle of flange
+# - `tau(t)`: [`N.m`] Cut torque in the flange
+# """ Flange
+
+# @connector function InternalSupport(; name, tau)
+#     @named flange = Flange()
+#     @variables phi(t)=0 [description = "Rotation angle of support $name"]
+#     # tau(t), [connect = Flow, description = "Cut torque in support $name"],)
+#     equations = [flange.tau ~ tau
+#                  flange.phi ~ phi]
+#     ODESystem(equations, t, [phi], [], name = name, systems = [flange]) # NOTE: tau not included since it belongs elsewhere
+# end
+
 Base.@doc """
     Support(;name)
 
