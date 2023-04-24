@@ -411,3 +411,94 @@ end
 # - Pulse   Generate pulse signal of type Real
 # - SawTooth    Generate saw tooth signal
 # - Trapezoid   Generate trapezoidal signal of type Real
+
+function linear_interpolation(x1::T, x2::T, t1::T, t2::T, t::T) where {T<:Real}
+    if t1 != t2
+        slope = (x2 - x1) / (t2 - t1)
+        intercept = x1 - slope * t1
+
+        return slope * t + intercept
+    else
+        @assert x1==x2 "x1 ($x1) and x2 ($x2) should be equal if t1 == t2"
+
+        return x2
+    end
+end
+
+struct InputMemory{T<:Real}
+    data::Vector{T}
+    sample_time::T
+    n::Int
+end
+
+Base.copy(x::InputMemory{T}) where {T} = InputMemory{T}(copy(x.data), x.sample_time, x.n)
+
+function InputMemory(data::Vector{T}, sample_time::T) where {T<:Real}
+    InputMemory{T}(data, sample_time, length(data))
+end
+
+function input(t, memory::InputMemory)
+    if t < 0
+        t = zero(t)
+    end
+
+    i1 = floor(Int, t / memory.sample_time) + 1 #expensive
+    i2 = i1 + 1
+
+    t1 = i1 * memory.sample_time
+    t2 = i2 * memory.sample_time
+
+    #println("input: t=$t, i1=$i1, i2=$i2, t1=$t1, t2=$t2, Δt = $(memory.sample_time)")
+
+    x1 = memory.data[i1 > memory.n ? memory.n : i1]
+    x2 = memory.data[i2 > memory.n ? memory.n : i2]
+
+    return linear_interpolation(x1, x2, t1, t2, t)
+end
+
+get_sample_time(memory::InputMemory) = memory.sample_time
+Symbolics.@register_symbolic get_sample_time(memory)
+
+Symbolics.@register_symbolic input(t, memory)
+
+function first_order_backwards_difference(t, memory)
+    Δt = get_sample_time(memory)
+    x1 = input(t, memory)
+    x0 = input(t - Δt, memory)
+
+    return (x1 - x0) / Δt
+end
+
+function Symbolics.derivative(::typeof(input), args::NTuple{2, Any}, ::Val{1})
+    first_order_backwards_difference(args[1], args[2])
+end
+
+
+
+Input(T::Type; name) = Input(T[], zero(T); name)
+Input(data::Vector{T}, dt::T; name) where T<:Real = Input(; name, buffer = InputMemory(data, dt))
+
+"""
+    Input(; name, buffer)
+
+data input component.  
+
+# Parameters:
+  - `buffer`: an `InputMemory` parameter which holds the data and sample time
+
+# Connectors:
+  - `output`
+"""
+@component function Input(; name, buffer)
+    pars = @parameters begin 
+        buffer = buffer 
+    end
+    vars = []
+    systems = @named begin 
+        output = RealOutput() 
+    end
+    eqs = [
+        output.u ~ input(t, buffer)
+    ]
+    return ODESystem(eqs, t, vars, pars; name, systems)
+end

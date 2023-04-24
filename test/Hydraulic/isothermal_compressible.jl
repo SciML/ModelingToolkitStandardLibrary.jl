@@ -7,7 +7,7 @@ import ModelingToolkitStandardLibrary.Mechanical.Translational as T
 D = Differential(t)
 
 # ------------------------------------------------------------
-# Test fluid domain and Pipe
+# Test fluid domain and Tube
 function System(N; bulk_modulus, name)
     pars = @parameters begin bulk_modulus = bulk_modulus end
 
@@ -20,9 +20,9 @@ function System(N; bulk_modulus, name)
     end
 
     if N == 1
-        @named res = IC.PipeBase(; p_int = 0, area = 0.01, length = 500.0)
+        @named res = IC.TubeBase(; p_int = 0, area = 0.01, length = 500.0)
     else
-        @named res = IC.Pipe(N; p_int = 0, area = 0.01, length = 500.0)
+        @named res = IC.Tube(N; p_int = 0, area = 0.01, length = 500.0)
     end
     push!(systems, res)
 
@@ -41,7 +41,7 @@ end
 NEWTON = NLNewton(check_div = false, always_new = true, max_iter = 100, relax = 4 // 10)
 
 syss = structural_simplify.([sys1_2, sys1_1, sys5_1])
-probs = [ODEProblem(sys, [], (0, 0.2)) for sys in syss];
+probs = [ODEProblem(sys, ModelingToolkit.dummy_derivative_defaults(sys), (0, 0.2)) for sys in syss];
 sols = [solve(prob, ImplicitEuler(nlsolve = NEWTON); initializealg = NoInit())
         for prob in probs];
 
@@ -149,3 +149,71 @@ sol = solve(prob, ImplicitEuler(nlsolve = NEWTON); adaptive = false, dt = 1e-4,
 @test round(sol[s.vol2.x][1]; digits = 2) == 0.1
 @test round(sol[s.vol1.x][end]; digits = 2) == 0.1
 @test round(sol[s.vol2.x][end]; digits = 2) == 0.0
+
+
+
+# Actuator System
+function System(;name)
+
+    @parameters t
+
+    pars = @parameters begin
+        p_s = 285e5
+        p_r = 5e5
+        p_1 = 17e5
+        p_2 = 42.9
+        A_1 = 908e-4
+        A_2 = 360e-4
+        l_1 = 0.7
+        l_2 = 2.7
+        m_f = 276
+        g = 0
+        x_f_int = 0
+        
+        d = 230e-3
+        
+        
+        Cd= 70e5*2*876/(876*50/(25e-3*2π*230e-3))^2   #50_000 lpm
+
+        m_piston = 880
+        m_sled = 1500
+    end
+    
+    vars = []
+
+    systems = @named begin
+        src = IC.Source(;p=p_s)
+        valve = IC.SpoolValve2Way(; p_s_int=p_s, p_a_int=p_1, p_b_int=p_2, p_r_int=p_r, g, m=m_f, x_int=x_f_int, d, Cd)
+        piston = IC.Actuator(;p_a_int=p_1, p_b_int=p_2, area_a=A_1, area_b=A_2, length_a_int=l_1, length_b_int=l_2, m=m_piston, g=0, x_int = 0, minimum_volume_a = 0, minimum_volume_b = 0)
+        sled = T.Mass(; m=m_sled)
+        pipe = IC.Tube(5; p_int=p_2, area = A_2, length = 2.0)
+        snk = IC.Source(;p=p_r)
+        input = B.Input(Float64)
+        pos = T.Position(; x_int = x_f_int)
+
+        m1 = IC.FlowDivider(; p_int=p_2, n=3)
+        m2 = IC.FlowDivider(; p_int=p_2, n=3)
+
+        fluid = IC.HydraulicFluid()
+    end
+
+    eqs = [
+        connect(input.output, pos.input)
+        connect(valve.flange, pos.flange)
+        connect(valve.port_a, piston.port_a)
+        connect(piston.flange, sled.flange)
+        connect(piston.port_b, m1.port_a)
+        connect(m1.port_b, pipe.port_b)
+        connect(pipe.port_a, m2.port_b)
+        connect(m2.port_a, valve.port_b)
+        connect(src.port, valve.port_s)
+        connect(snk.port, valve.port_r)
+        connect(fluid, src.port)
+    ]
+
+    ODESystem(eqs, t, vars, pars; name, systems)
+end
+
+@named system = System()
+
+sys = expand_connections(system)
