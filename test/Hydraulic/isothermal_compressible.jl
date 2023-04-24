@@ -217,3 +217,12 @@ end
 @named system = System()
 
 sys = expand_connections(system)
+defs = ModelingToolkit.defaults(sys)
+s = complete(system)
+
+@test Symbol(defs[s.src.port.ρ]) == Symbol(s.fluid.ρ)
+@test Symbol(defs[s.valve.port_s.ρ]) == Symbol(s.fluid.ρ)
+@test Symbol(defs[s.valve.port_a.ρ]) == Symbol(s.fluid.ρ)
+@test Symbol(defs[s.valve.port_b.ρ]) == Symbol(s.fluid.ρ)
+@test Symbol(defs[s.valve.port_r.ρ]) == Symbol(s.fluid.ρ)
+@test Symbol(defs[s.snk.port.ρ]) == Symbol(s.fluid.ρ)
