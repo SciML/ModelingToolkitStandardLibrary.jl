@@ -1,4 +1,5 @@
 module ModelingToolkitStandardLibrary
+import Symbolics: unwrap
 
 """
   @symcheck J > 0 || throw(ArgumentError("Expected `J` to be positive"))
@@ -10,11 +11,11 @@ macro symcheck(ex)
         error("Expected an expresion on the form sym > val || error()")
     sym = ex.args[1].args[2]
     quote
+        _issymbolic(x) = !(unwrap(x) isa Real)
         _issymbolic($(esc(sym))) || ($(esc(ex)))
     end
 end
 
-_issymbolic(x) = !(Symbolics.unwrap(x) isa Real)
 
 include("Blocks/Blocks.jl")
 include("Mechanical/Mechanical.jl")
