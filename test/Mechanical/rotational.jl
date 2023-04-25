@@ -24,8 +24,8 @@ D = Differential(t)
     sys = structural_simplify(model)
 
     prob = ODEProblem(sys, Pair[], (0, 10.0))
-    sol = solve(prob, Rodas4())
-    @test SciMLBase.successful_retcode(sol)
+    sol1 = solve(prob, Rodas4())
+    @test SciMLBase.successful_retcode(sol1)
 
     prob = ODAEProblem(sys, Pair[], (0, 10.0))
     sol = solve(prob, Rodas4())
@@ -36,6 +36,23 @@ D = Differential(t)
     @test SciMLBase.successful_retcode(sol)
     @test all(sol[inertia1.w] .== 0)
     @test sol[inertia2.w][end]≈0 atol=1e-3 # all energy has dissipated
+
+
+    @named springdamper = SpringDamper(; c = 1e4, d = 10)
+    connections = [connect(fixed.flange, inertia1.flange_b)
+    connect(inertia1.flange_b, springdamper.flange_a)
+    connect(springdamper.flange_b, inertia2.flange_a)]
+
+    @named model = ODESystem(connections, t,
+                systems = [fixed, inertia1, inertia2, springdamper])
+    sys = structural_simplify(model)
+
+    prob = ODEProblem(sys, Pair[], (0, 10.0))
+    sol2 = solve(prob, Rodas4())
+    @test SciMLBase.successful_retcode(sol)
+
+    @test sol2(0:1:10, idxs=inertia2.w).u ≈ sol1(0:1:10, idxs=inertia2.w).u atol=1e-3
+
 
     # Plots.plot(sol; vars=[inertia1.w, inertia2.w])
 end

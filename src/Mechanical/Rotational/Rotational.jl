@@ -12,7 +12,7 @@ D = Differential(t)
 export Flange, Support
 include("utils.jl")
 
-export Fixed, Inertia, Spring, Damper, IdealGear, RotationalFriction
+export Fixed, Inertia, Spring, Damper, SpringDamper, IdealGear, RotationalFriction
 include("components.jl")
 
 export Torque, ConstantTorque, Speed

@@ -35,6 +35,7 @@ Fixed
 Inertia
 Spring
 Damper
+SpringDamper
 IdealGear
 RotationalFriction
 ```
