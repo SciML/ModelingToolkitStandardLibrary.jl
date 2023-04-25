@@ -5,6 +5,7 @@ module Rotational
 
 using ModelingToolkit, Symbolics, IfElse
 using ...Blocks: RealInput, RealOutput
+using ..ModelingToolkitStandardLibrary: @symcheck
 
 @parameters t
 D = Differential(t)
