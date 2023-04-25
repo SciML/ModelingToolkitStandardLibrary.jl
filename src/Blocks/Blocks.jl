@@ -4,6 +4,7 @@ The module `Blocks` contains common input-output components, referred to as bloc
 module Blocks
 using ModelingToolkit, Symbolics
 using IfElse: ifelse
+import ..@symcheck
 
 @parameters t
 D = Differential(t)
