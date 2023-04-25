@@ -52,7 +52,7 @@ A smaller `T` leads to a more ideal approximation of the derivative.
   - `output`
 """
 @component function Derivative(; name, k = 1, T, x_start = 0.0)
-    T > 0 || throw(ArgumentError("Time constant `T` has to be strictly positive"))
+    @symcheck T > 0 || throw(ArgumentError("Time constant `T` has to be strictly positive"))
     @named siso = SISO()
     @unpack u, y = siso
     sts = @variables x(t)=x_start [description = "State of Derivative $name"]
@@ -98,7 +98,7 @@ sT + 1 - k
 See also [`SecondOrder`](@ref)
 """
 @component function FirstOrder(; name, k = 1, T, x_start = 0.0, lowpass = true)
-    T > 0 || throw(ArgumentError("Time constant `T` has to be strictly positive"))
+    @symcheck T > 0 || throw(ArgumentError("Time constant `T` has to be strictly positive"))
     @named siso = SISO()
     @unpack u, y = siso
     sts = @variables x(t)=x_start [description = "State of FirstOrder filter $name"]
@@ -171,7 +171,7 @@ Textbook version of a PI-controller without actuator saturation and anti-windup 
 See also [`LimPI`](@ref)
 """
 @component function PI(; name, k = 1, T, x_start = 0.0)
-    T > 0 || throw(ArgumentError("Time constant `T` has to be strictly positive"))
+    @symcheck T > 0 || throw(ArgumentError("Time constant `T` has to be strictly positive"))
     @named err_input = RealInput() # control error
     @named ctr_output = RealOutput() # control signal
     @named gainPI = Gain(k)
@@ -282,9 +282,10 @@ Text-book version of a PI-controller with actuator saturation and anti-windup me
   - `ctr_output`
 """
 @component function LimPI(; name, k = 1, T, u_max, u_min = -u_max, Ta, x_start = 0.0)
-    Ta > 0 || throw(ArgumentError("Time constant `Ta` has to be strictly positive"))
-    T > 0 || throw(ArgumentError("Time constant `T` has to be strictly positive"))
-    u_max ≥ u_min || throw(ArgumentError("u_min must be smaller than u_max"))
+    @symcheck Ta > 0 ||
+              throw(ArgumentError("Time constant `Ta` has to be strictly positive"))
+    @symcheck T > 0 || throw(ArgumentError("Time constant `T` has to be strictly positive"))
+    @symcheck u_max ≥ u_min || throw(ArgumentError("u_min must be smaller than u_max"))
     @named err_input = RealInput() # control error
     @named ctr_output = RealOutput() # control signal
     @named gainPI = Gain(k)
@@ -367,8 +368,9 @@ where the transfer function for the derivative includes additional filtering, se
         (Ti ≥ 0 || throw(ArgumentError("Ti out of bounds, got $(Ti) but expected Ti ≥ 0")))
     !isequal(Td, false) &&
         (Td ≥ 0 || throw(ArgumentError("Td out of bounds, got $(Td) but expected Td ≥ 0")))
-    u_max ≥ u_min || throw(ArgumentError("u_min must be smaller than u_max"))
-    Nd > 0 || throw(ArgumentError("Nd out of bounds, got $(Nd) but expected Nd > 0"))
+    @symcheck u_max ≥ u_min || throw(ArgumentError("u_min must be smaller than u_max"))
+    @symcheck Nd > 0 ||
+              throw(ArgumentError("Nd out of bounds, got $(Nd) but expected Nd > 0"))
 
     @named reference = RealInput()
     @named measurement = RealInput()

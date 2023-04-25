@@ -17,7 +17,7 @@ Limit the range of a signal.
   - `output`
 """
 @component function Limiter(; name, y_max, y_min = y_max > 0 ? -y_max : -Inf)
-    y_max ≥ y_min || throw(ArgumentError("`y_min` must be smaller than `y_max`"))
+    @symcheck y_max ≥ y_min || throw(ArgumentError("`y_min` must be smaller than `y_max`"))
     @named siso = SISO()
     @unpack u, y = siso
     pars = @parameters y_max=y_max [description = "Maximum allowed output of Limiter $name"] y_min=y_min [
