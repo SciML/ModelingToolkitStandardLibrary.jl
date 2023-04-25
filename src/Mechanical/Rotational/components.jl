@@ -120,6 +120,42 @@ Linear 1D rotational damper
 end
 
 """
+    SpringDamper(;name, d)
+
+Linear 1D rotational spring and damper
+
+# States:
+
+  - `phi_rel(t)`: [`rad`] Relative rotation angle (= flange_b.phi - flange_a.phi)
+  - `w_rel(t)`: [`rad/s`] Relative angular velocity (= D(phi_rel))
+  - `a_rel(t)`: [`rad/s²`] Relative angular acceleration (= D(w_rel))
+  - `tau(t)`: [`N.m`] Torque between flanges (= flange_b.tau)
+
+# Connectors:
+
+  - `flange_a` [Flange](@ref)
+  - `flange_b` [Flange](@ref)
+
+# Parameters:
+
+  - `d`: [`N.m.s/rad`] Damping constant
+  - `c`: [`N.m/rad`] Spring constant
+"""
+@component function SpringDamper(; name, c, d, phi_rel0 = 0.0)
+    @named partial_comp = PartialCompliantWithRelativeStates()
+    @unpack phi_rel, w_rel, tau = partial_comp
+    @variables tau_c(t) [description = "Spring torque"]
+    @variables tau_d(t) [description = "Damper torque"]
+    @parameters d=d [description = "Damping constant"]
+    @parameters c=c [description = "Spring constant"]
+    @parameters phi_rel0=phi_rel0 [description = "Unstretched spring angle"]
+    eqs = [tau_c ~ c * (phi_rel - phi_rel0)
+           tau_d ~ d * w_rel
+           tau ~ tau_c + tau_d]
+    extend(ODESystem(eqs, t; name = name), partial_comp)
+end
+
+"""
     IdealGear(;name, ratio, use_support=false)
 
 Ideal gear without inertia.
