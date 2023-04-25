@@ -16,7 +16,6 @@ macro symcheck(ex)
     end
 end
 
-
 include("Blocks/Blocks.jl")
 include("Mechanical/Mechanical.jl")
 include("Thermal/Thermal.jl")
