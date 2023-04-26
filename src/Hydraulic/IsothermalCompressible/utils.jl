@@ -44,7 +44,8 @@ Fluid parameter setter for isothermal compressible fluid domain.  Defaults given
 - `p_gas`: [Pa] reference pressure (set by `gas_pressure` argument)
 """
 @connector function HydraulicFluid(; density = 997, bulk_modulus = 2.09e9,
-                                   viscosity = 0.0010016, gas_density = 0.0073955, gas_pressure = -1000, n = 1, name)
+                                   viscosity = 0.0010016, gas_density = 0.0073955,
+                                   gas_pressure = -1000, n = 1, name)
     pars = @parameters begin
         ρ = density
         β = bulk_modulus
@@ -117,5 +118,8 @@ gas_pressure_ref(port) = port.p_gas
 bulk_modulus(port) = port.β
 viscosity(port) = port.μ
 liquid_density(port) = density_ref(port) * (1 + port.p / bulk_modulus(port))
-gas_density(port) = density_ref(port) - port.p*( density_ref(port) - gas_density_ref(port) ) / gas_pressure_ref(port)
+function gas_density(port)
+    density_ref(port) -
+    port.p * (density_ref(port) - gas_density_ref(port)) / gas_pressure_ref(port)
+end
 full_density(port) = liquid_density(port) #ifelse( port.p > 0, liquid_density(port), gas_density(port) )

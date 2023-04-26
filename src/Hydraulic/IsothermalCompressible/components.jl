@@ -178,7 +178,8 @@ Tube modeled with `N` segements which models the fully developed flow friction a
 - `port_a`: hydraulic port
 - `port_b`: hydraulic port
 """
-@component function Tube(N; p_int, area, length, effective_length=length, perimeter = 2 * sqrt(area * pi),
+@component function Tube(N; p_int, area, length, effective_length = length,
+                         perimeter = 2 * sqrt(area * pi),
                          shape_factor = 64, name)
     @assert(N>1,
             "the Tube component must be defined with more than 1 segment (i.e. N>1), found N=$N")
@@ -188,7 +189,7 @@ Tube modeled with `N` segements which models the fully developed flow friction a
         p_int = p_int
         area = area
         length = length
-        effective_length=effective_length
+        effective_length = effective_length
         perimeter = perimeter
         Φ = shape_factor
     end
@@ -241,7 +242,7 @@ Reduces the flow from `port_a` to `port_b` by `n`.  Useful for modeling parallel
 - `port_a`: full flow hydraulic port
 - `port_b`: part flow hydraulic port
 """
-@component function FlowDivider(;p_int, n, name)
+@component function FlowDivider(; p_int, n, name)
 
     #TODO: assert n >= 1
 
@@ -257,14 +258,11 @@ Reduces the flow from `port_a` to `port_b` by `n`.  Useful for modeling parallel
         port_b = HydraulicPort(; p_int)
     end
 
-    eqs = [
-        port_b.dm ~ port_a.dm/n
-        port_b.p  ~ port_a.p
-    ]
+    eqs = [port_b.dm ~ port_a.dm / n
+           port_b.p ~ port_a.p]
 
     ODESystem(eqs, t, vars, pars; name, systems)
 end
-
 
 """
     DynamicVolume(; p_int, x_int=0, area, dead_volume=0, direction=+1, minimum_volume=0, name)
@@ -327,16 +325,17 @@ dm ────►  dead volume  │  │ area
 
     # let
     dm = port.dm
-    u = dm/(rho*area)
+    u = dm / (rho * area)
 
-    eqs = [0 ~ IfElse.ifelse(vol >= minimum_volume, ( p ) - ( port.p - (1/2)*rho*u^2 ), dm)
+    eqs = [0 ~ IfElse.ifelse(vol >= minimum_volume, (p) - (port.p - (1 / 2) * rho * u^2),
+                             dm)
            vol ~ dead_volume + area * x
            D(x) ~ dx
            D(rho) ~ drho
            dx ~ flange.v * direction
            rho ~ full_density(port)
            dm ~ drho * vol + rho * area * dx
-           flange.f ~ -p * area * direction] 
+           flange.f ~ -p * area * direction]
 
     ODESystem(eqs, t, vars, pars; name, systems, defaults = [flange.v => 0])
 end
@@ -357,7 +356,7 @@ Valve with area input and discharge coefficient `Cd` defined by https://en.wikip
 - `port_b`: hydraulic port
 - `input`: real input setting the valve `area`.  Note: absolute value taken
 """
-@component function Valve(reversible=false; p_a_int, p_b_int, area_int, Cd, name)
+@component function Valve(reversible = false; p_a_int, p_b_int, area_int, Cd, name)
     pars = @parameters begin
         p_a_int = p_a_int
         p_b_int = p_b_int
@@ -380,7 +379,7 @@ Valve with area input and discharge coefficient `Cd` defined by https://en.wikip
     area = if reversible
         input.u
     else
-        input.u*(input.u > 0)
+        input.u * (input.u > 0)
     end
 
     eqs = [sign(Δp) * dm ~ sqrt(2 * abs(Δp) * ρ / Cd) * area
@@ -389,9 +388,7 @@ Valve with area input and discharge coefficient `Cd` defined by https://en.wikip
     ODESystem(eqs, t, vars, pars; name, systems, defaults = [input.u => area_int])
 end
 
-
-@component function SpoolValve(reversible=false;p_a_int, p_b_int, x_int, Cd, d, name)
-    
+@component function SpoolValve(reversible = false; p_a_int, p_b_int, x_int, Cd, d, name)
     pars = @parameters begin
         p_a_int = p_a_int
         p_b_int = p_b_int
@@ -399,77 +396,74 @@ end
         x_int = x_int
         Cd = Cd
     end
-    
+
     systems = @named begin
         port_a = HydraulicPort(; p_int = p_a_int)
         port_b = HydraulicPort(; p_int = p_b_int)
         flange = MechanicalPort()
-        valve = Valve(reversible; p_a_int, p_b_int, area_int=ParentScope(x_int)*2π*ParentScope(d), Cd)
-    end 
-    
+        valve = Valve(reversible; p_a_int, p_b_int,
+                      area_int = ParentScope(x_int) * 2π * ParentScope(d), Cd)
+    end
+
     vars = @variables begin
         x(t) = x_int
         dx(t) = 0
     end
-    
-    eqs = [
-        D(x) ~ dx
-        flange.v ~ dx
-        flange.f ~ 0 #TODO: model flow force
-        connect(valve.port_a, port_a)
-        connect(valve.port_b, port_b)
-        valve.input.u ~ x*2π*d
-    ]
+
+    eqs = [D(x) ~ dx
+           flange.v ~ dx
+           flange.f ~ 0 #TODO: model flow force
+           connect(valve.port_a, port_a)
+           connect(valve.port_b, port_b)
+           valve.input.u ~ x * 2π * d]
 
     ODESystem(eqs, t, vars, pars; name, systems, defaults = [flange.v => 0])
 end
 
-@component function SpoolValve2Way(reversible=false; p_s_int, p_a_int, p_b_int, p_r_int, m, g, x_int, Cd, d, name)
-
+@component function SpoolValve2Way(reversible = false; p_s_int, p_a_int, p_b_int, p_r_int,
+                                   m, g, x_int, Cd, d, name)
     pars = @parameters begin
         p_s_int = p_s_int
         p_a_int = p_a_int
         p_b_int = p_b_int
         p_r_int = p_r_int
 
-        m=m
-        g=g
+        m = m
+        g = g
 
         x_int = x_int
 
-        d=d
+        d = d
     end
 
     vars = []
 
     systems = @named begin
-        vSA = SpoolValve(reversible; p_a_int=p_s_int, p_b_int=p_a_int, x_int, Cd, d)
-        vBR = SpoolValve(reversible; p_a_int=p_b_int, p_b_int=p_r_int, x_int, Cd, d)
+        vSA = SpoolValve(reversible; p_a_int = p_s_int, p_b_int = p_a_int, x_int, Cd, d)
+        vBR = SpoolValve(reversible; p_a_int = p_b_int, p_b_int = p_r_int, x_int, Cd, d)
 
         port_s = HydraulicPort(; p_int = p_s_int)
         port_a = HydraulicPort(; p_int = p_a_int)
         port_b = HydraulicPort(; p_int = p_b_int)
         port_r = HydraulicPort(; p_int = p_r_int)
 
-        mass = Mass(; m=m, g=g)
+        mass = Mass(; m = m, g = g)
 
         flange = MechanicalPort()
     end
 
-    eqs = [
-        connect(vSA.port_a, port_s)
-        connect(vSA.port_b, port_a)
-        connect(vBR.port_a, port_b)
-        connect(vBR.port_b, port_r)
-
-        connect(vSA.flange, vBR.flange, mass.flange, flange)
-    ]
+    eqs = [connect(vSA.port_a, port_s)
+           connect(vSA.port_b, port_a)
+           connect(vBR.port_a, port_b)
+           connect(vBR.port_b, port_r)
+           connect(vSA.flange, vBR.flange, mass.flange, flange)]
 
     ODESystem(eqs, t, vars, pars; name, systems, defaults = [flange.v => 0])
 end
 
-@component function Actuator(; p_a_int, p_b_int, area_a, area_b, length_a_int, length_b_int, m, g, x_int = 0, minimum_volume_a = 0, minimum_volume_b = 0, name)
-
+@component function Actuator(; p_a_int, p_b_int, area_a, area_b, length_a_int, length_b_int,
+                             m, g, x_int = 0, minimum_volume_a = 0, minimum_volume_b = 0,
+                             name)
     pars = @parameters begin
         p_a_int = p_a_int
         p_b_int = p_b_int
@@ -478,7 +472,7 @@ end
         x_int = x_int
         length_a_int = length_a_int
         length_b_int = length_b_int
-        minimum_volume_a = minimum_volume_a 
+        minimum_volume_a = minimum_volume_a
         minimum_volume_b = minimum_volume_b
     end
 
@@ -488,21 +482,23 @@ end
     end
 
     systems = @named begin
-        vol_a = DynamicVolume(; p_int = p_a_int, x_int = +x_int, area=area_a, dead_volume = length_a_int*area_a, minimum_volume=minimum_volume_a, direction = +1)
-        vol_b = DynamicVolume(; p_int = p_b_int, x_int = -x_int, area=area_b, dead_volume = length_b_int*area_b, minimum_volume=minimum_volume_b, direction = -1)
+        vol_a = DynamicVolume(; p_int = p_a_int, x_int = +x_int, area = area_a,
+                              dead_volume = length_a_int * area_a,
+                              minimum_volume = minimum_volume_a, direction = +1)
+        vol_b = DynamicVolume(; p_int = p_b_int, x_int = -x_int, area = area_b,
+                              dead_volume = length_b_int * area_b,
+                              minimum_volume = minimum_volume_b, direction = -1)
         mass = Mass(; m, g)
         port_a = HydraulicPort(; p_int = p_a_int)
         port_b = HydraulicPort(; p_int = p_b_int)
         flange = MechanicalPort()
     end
 
-    eqs = [
-        connect(vol_a.port, port_a)
-        connect(vol_b.port, port_b)
-        connect(vol_a.flange, vol_b.flange, mass.flange, flange)
-        x ~ vol_a.x
-        dx ~ vol_a.dx
-    ]
+    eqs = [connect(vol_a.port, port_a)
+           connect(vol_b.port, port_b)
+           connect(vol_a.flange, vol_b.flange, mass.flange, flange)
+           x ~ vol_a.x
+           dx ~ vol_a.dx]
 
     ODESystem(eqs, t, vars, pars; name, systems, defaults = [flange.v => 0])
 end

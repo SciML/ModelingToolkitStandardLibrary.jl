@@ -412,7 +412,7 @@ end
 # - SawTooth    Generate saw tooth signal
 # - Trapezoid   Generate trapezoidal signal of type Real
 
-function linear_interpolation(x1::T, x2::T, t1::T, t2::T, t::T) where {T<:Real}
+function linear_interpolation(x1::T, x2::T, t1::T, t2::T, t::T) where {T <: Real}
     if t1 != t2
         slope = (x2 - x1) / (t2 - t1)
         intercept = x1 - slope * t1
@@ -425,7 +425,7 @@ function linear_interpolation(x1::T, x2::T, t1::T, t2::T, t::T) where {T<:Real}
     end
 end
 
-struct InputMemory{T<:Real}
+struct InputMemory{T <: Real}
     data::Vector{T}
     sample_time::T
     n::Int
@@ -433,7 +433,7 @@ end
 
 Base.copy(x::InputMemory{T}) where {T} = InputMemory{T}(copy(x.data), x.sample_time, x.n)
 
-function InputMemory(data::Vector{T}, sample_time::T) where {T<:Real}
+function InputMemory(data::Vector{T}, sample_time::T) where {T <: Real}
     InputMemory{T}(data, sample_time, length(data))
 end
 
@@ -473,10 +473,10 @@ function Symbolics.derivative(::typeof(input), args::NTuple{2, Any}, ::Val{1})
     first_order_backwards_difference(args[1], args[2])
 end
 
-
-
 Input(T::Type; name) = Input(T[], zero(T); name)
-Input(data::Vector{T}, dt::T; name) where T<:Real = Input(; name, buffer = InputMemory(data, dt))
+function Input(data::Vector{T}, dt::T; name) where {T <: Real}
+    Input(; name, buffer = InputMemory(data, dt))
+end
 
 """
     Input(; name, buffer)
@@ -490,15 +490,11 @@ data input component.
   - `output`
 """
 @component function Input(; name, buffer)
-    pars = @parameters begin 
-        buffer = buffer 
-    end
+    pars = @parameters begin buffer = buffer end
     vars = []
-    systems = @named begin 
-        output = RealOutput() 
-    end
+    systems = @named begin output = RealOutput() end
     eqs = [
-        output.u ~ input(t, buffer)
+        output.u ~ input(t, buffer),
     ]
     return ODESystem(eqs, t, vars, pars; name, systems)
 end

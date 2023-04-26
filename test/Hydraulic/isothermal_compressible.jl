@@ -41,7 +41,7 @@ end
 NEWTON = NLNewton(check_div = false, always_new = true, max_iter = 100, relax = 4 // 10)
 
 syss = structural_simplify.([sys1_2, sys1_1, sys5_1])
-probs = [ODEProblem(sys, ModelingToolkit.dummy_derivative_defaults(sys), (0, 0.2)) for sys in syss];
+probs = [ODEProblem(sys, [], (0, 0.2)) for sys in syss]; #ModelingToolkit.missing_variable_defaults(sys)
 sols = [solve(prob, ImplicitEuler(nlsolve = NEWTON); initializealg = NoInit())
         for prob in probs];
 
@@ -150,11 +150,8 @@ sol = solve(prob, ImplicitEuler(nlsolve = NEWTON); adaptive = false, dt = 1e-4,
 @test round(sol[s.vol1.x][end]; digits = 2) == 0.1
 @test round(sol[s.vol2.x][end]; digits = 2) == 0.0
 
-
-
 # Actuator System
-function System(;name)
-
+function System(; name)
     @parameters t
 
     pars = @parameters begin
@@ -169,54 +166,54 @@ function System(;name)
         m_f = 276
         g = 0
         x_f_int = 0
-        
+
         d = 230e-3
-        
-        
-        Cd= 70e5*2*876/(876*50/(25e-3*2π*230e-3))^2   #50_000 lpm
+
+        Cd = 70e5 * 2 * 876 / (876 * 50 / (25e-3 * 2π * 230e-3))^2   #50_000 lpm
 
         m_piston = 880
         m_sled = 1500
     end
-    
+
     vars = []
 
     systems = @named begin
-        src = IC.Source(;p=p_s)
-        valve = IC.SpoolValve2Way(; p_s_int=p_s, p_a_int=p_1, p_b_int=p_2, p_r_int=p_r, g, m=m_f, x_int=x_f_int, d, Cd)
-        piston = IC.Actuator(;p_a_int=p_1, p_b_int=p_2, area_a=A_1, area_b=A_2, length_a_int=l_1, length_b_int=l_2, m=m_piston, g=0, x_int = 0, minimum_volume_a = 0, minimum_volume_b = 0)
-        sled = T.Mass(; m=m_sled)
-        pipe = IC.Tube(5; p_int=p_2, area = A_2, length = 2.0)
-        snk = IC.Source(;p=p_r)
+        src = IC.Source(; p = p_s)
+        valve = IC.SpoolValve2Way(; p_s_int = p_s, p_a_int = p_1, p_b_int = p_2,
+                                  p_r_int = p_r, g, m = m_f, x_int = x_f_int, d, Cd)
+        piston = IC.Actuator(; p_a_int = p_1, p_b_int = p_2, area_a = A_1, area_b = A_2,
+                             length_a_int = l_1, length_b_int = l_2, m = m_piston, g = 0,
+                             x_int = 0, minimum_volume_a = 0, minimum_volume_b = 0)
+        sled = T.Mass(; m = m_sled)
+        pipe = IC.Tube(5; p_int = p_2, area = A_2, length = 2.0)
+        snk = IC.Source(; p = p_r)
         input = B.Input(Float64)
         pos = T.Position(; x_int = x_f_int)
 
-        m1 = IC.FlowDivider(; p_int=p_2, n=3)
-        m2 = IC.FlowDivider(; p_int=p_2, n=3)
+        m1 = IC.FlowDivider(; p_int = p_2, n = 3)
+        m2 = IC.FlowDivider(; p_int = p_2, n = 3)
 
         fluid = IC.HydraulicFluid()
     end
 
-    eqs = [
-        connect(input.output, pos.input)
-        connect(valve.flange, pos.flange)
-        connect(valve.port_a, piston.port_a)
-        connect(piston.flange, sled.flange)
-        connect(piston.port_b, m1.port_a)
-        connect(m1.port_b, pipe.port_b)
-        connect(pipe.port_a, m2.port_b)
-        connect(m2.port_a, valve.port_b)
-        connect(src.port, valve.port_s)
-        connect(snk.port, valve.port_r)
-        connect(fluid, src.port)
-    ]
+    eqs = [connect(input.output, pos.input)
+           connect(valve.flange, pos.flange)
+           connect(valve.port_a, piston.port_a)
+           connect(piston.flange, sled.flange)
+           connect(piston.port_b, m1.port_a)
+           connect(m1.port_b, pipe.port_b)
+           connect(pipe.port_a, m2.port_b)
+           connect(m2.port_a, valve.port_b)
+           connect(src.port, valve.port_s)
+           connect(snk.port, valve.port_r)
+           connect(fluid, src.port, snk.port)]
 
     ODESystem(eqs, t, vars, pars; name, systems)
 end
 
 @named system = System()
 
-sys = expand_connections(system)
+sys = structural_simplify(system)
 defs = ModelingToolkit.defaults(sys)
 s = complete(system)
 
