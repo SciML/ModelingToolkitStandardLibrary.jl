@@ -3,6 +3,8 @@ import ModelingToolkitStandardLibrary.Hydraulic.IsothermalCompressible as IC
 import ModelingToolkitStandardLibrary.Blocks as B
 import ModelingToolkitStandardLibrary.Mechanical.Translational as T
 
+using ModelingToolkitStandardLibrary.Blocks: Parameter
+
 @parameters t
 D = Differential(t)
 
@@ -248,7 +250,7 @@ defs[s.m_sled] = 1500
 p = Parameter.(ModelingToolkit.varmap_to_vars(defs, parameters(sys); tofloat=false))
 prob = remake(prob; p, tspan=(0, time[end]))
 
-@time sol1 = solve(prob, ImplicitEuler(nlsolve = NEWTON); adaptive = false, dt, initializealg = NoInit());
+@time sol1 = solve(prob, ImplicitEuler(nlsolve = NEWTON) ; adaptive = false, dt, initializealg = NoInit());
 
 
 
@@ -266,3 +268,16 @@ prob = remake(prob; p, tspan=(0, time[end]))
 
 
 
+# #=
+# julia> @time sol2 = solve(prob, ImplicitEuler(nlsolve = NEWTON); adaptive = false, dt, initializealg = NoInit());
+#   0.644283 seconds (8.60 M allocations: 535.142 MiB, 14.96% gc time)
+# =#
+
+
+# # ModelOptimizer
+# # In my real life optimization, I only know the sled acceleration s.ddx
+# trial1 = Experiment(DataFrame(s.ddx => sol1[s.ddx]), sys, tspan = (0,0.055)) # How does this experiment know that s.m_sled = 1500, and s.input.buffer = input curve #1??
+# trial2 = Experiment(DataFrame(s.ddx => sol2[s.ddx]), sys, tspan = (0,0.1))   # How does this experiment know that s.m_sled = 500, and s.input.buffer = input curve #2??
+
+# # How can I change the guess value of Cd to 0.008??
+# invprob = InverseProblem([trial1, trial2], sys, [s.Cd => (0.001, 0.1)]) # this should find that Cd = 0.005

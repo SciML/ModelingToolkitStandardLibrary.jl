@@ -477,13 +477,18 @@ function input(t, memory::Parameter)
     i1 = floor(Int, t / memory.ref) + 1 #expensive
     i2 = i1 + 1
 
+    if i2 > memory.n
+        i2 = memory.n
+        i1 = i2-1
+    end
+
     t1 = i1 * memory.ref
     t2 = i2 * memory.ref
 
     #println("input: t=$t, i1=$i1, i2=$i2, t1=$t1, t2=$t2, Δt = $(memory.ref)")
 
-    x1 = memory.data[i1 > memory.n ? memory.n : i1]
-    x2 = memory.data[i2 > memory.n ? memory.n : i2]
+    x1 = memory.data[i1]
+    x2 = memory.data[i2]
 
     return linear_interpolation(x1, x2, t1, t2, t)
 end
