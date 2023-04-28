@@ -75,6 +75,25 @@ Caps a hydrualic port to prevent mass flow in or out.
     ODESystem(eqs, t, vars, pars; name, systems)
 end
 
+
+@component function Open(; p_int, name)
+    pars = @parameters p_int = p_int
+
+    vars = @variables begin
+        p(t) = p_int
+        dm(t) = 0
+    end
+        
+
+    systems = @named begin port = HydraulicPort(; p_int = p_int) end
+
+    eqs = [port.p ~ p
+           port.dm ~ dm]
+
+    ODESystem(eqs, t, vars, pars; name, systems)
+end
+
+
 """
     FixedVolume(; vol, p_int, name)
 
@@ -251,15 +270,25 @@ Reduces the flow from `port_a` to `port_b` by `n`.  Useful for modeling parallel
         p_int = p_int
     end
 
-    vars = []
+    vars = @variables begin
+        dm_a(t) = 0
+        dm_b(t) = 0
+    end
 
     systems = @named begin
         port_a = HydraulicPort(; p_int)
         port_b = HydraulicPort(; p_int)
+        open = Open(; p_int)
+
     end
 
-    eqs = [port_b.dm ~ port_a.dm / n
-           port_b.p ~ port_a.p]
+    eqs = [
+        connect(port_a, port_b, open.port)
+        dm_a ~ port_a.dm
+        dm_b ~ dm_a/n
+        open.dm ~ dm_a - dm_b # extra flow dumps into an open port
+        # port_b.dm ~ dm_b # divided flow goes to port_b
+    ]
 
     ODESystem(eqs, t, vars, pars; name, systems)
 end
@@ -434,6 +463,8 @@ end
         x_int = x_int
 
         d = d
+
+        Cd=Cd
     end
 
     vars = []
@@ -474,6 +505,8 @@ end
         length_b_int = length_b_int
         minimum_volume_a = minimum_volume_a
         minimum_volume_b = minimum_volume_b
+        m=m
+        g=g
     end
 
     vars = @variables begin

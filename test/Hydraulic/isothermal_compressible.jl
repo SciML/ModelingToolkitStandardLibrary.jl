@@ -157,10 +157,13 @@ function System(; name)
     pars = @parameters begin
         p_s = 285e5
         p_r = 5e5
-        p_1 = 17e5
-        p_2 = 42.9
+        
         A_1 = 908e-4
         A_2 = 360e-4
+
+        p_1 = 17e5
+        p_2 = p_1*A_1/A_2
+        
         l_1 = 0.7
         l_2 = 2.7
         m_f = 276
@@ -175,7 +178,9 @@ function System(; name)
         m_sled = 1500
     end
 
-    vars = []
+    vars = @variables begin
+        ddx(t) = 0
+    end
 
     systems = @named begin
         src = IC.Source(; p = p_s)
@@ -206,7 +211,8 @@ function System(; name)
            connect(m2.port_a, valve.port_b)
            connect(src.port, valve.port_s)
            connect(snk.port, valve.port_r)
-           connect(fluid, src.port, snk.port)]
+           connect(fluid, src.port, snk.port)
+           D(sled.v) ~ ddx]
 
     ODESystem(eqs, t, vars, pars; name, systems)
 end
@@ -223,3 +229,40 @@ s = complete(system)
 @test Symbol(defs[s.valve.port_b.ρ]) == Symbol(s.fluid.ρ)
 @test Symbol(defs[s.valve.port_r.ρ]) == Symbol(s.fluid.ρ)
 @test Symbol(defs[s.snk.port.ρ]) == Symbol(s.fluid.ρ)
+
+prob = ODEProblem(sys, [], (0, 0.1); tofloat=false)
+
+# Generate Optimization Data
+
+dt = 1e-4
+defs[s.Cd] = 0.005
+
+
+# Data Set #1
+time = 0:dt:0.055
+x = @. 0.9*(time>0.015)*(time - 0.015)^2 - 25*(time>0.02)*(time - 0.02)^3
+
+defs[s.input.buffer] = Parameter(x, dt)
+defs[s.m_sled] = 1500
+
+p = Parameter.(ModelingToolkit.varmap_to_vars(defs, parameters(sys); tofloat=false))
+prob = remake(prob; p, tspan=(0, time[end]))
+
+@time sol1 = solve(prob, ImplicitEuler(nlsolve = NEWTON); adaptive = false, dt, initializealg = NoInit());
+
+
+
+# Data Set #2
+time = 0:dt:0.1
+x = @. 5*((time>0.015)*(time - 0.015))^(3) - 650.0 * ((time>0.02)*(time - 0.02))^5
+
+defs[s.input.buffer] = Parameter(x, dt)
+defs[s.m_sled] = 500
+
+p = Parameter.(ModelingToolkit.varmap_to_vars(defs, parameters(sys); tofloat=false))
+prob = remake(prob; p, tspan=(0, time[end]))
+
+@time sol2 = solve(prob, ImplicitEuler(nlsolve = NEWTON); adaptive = false, dt, initializealg = NoInit());
+
+
+

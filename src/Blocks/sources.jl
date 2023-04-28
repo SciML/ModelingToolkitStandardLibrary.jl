@@ -425,30 +425,62 @@ function linear_interpolation(x1::T, x2::T, t1::T, t2::T, t::T) where {T <: Real
     end
 end
 
-struct InputMemory{T <: Real}
+struct Parameter{T <: Real}
     data::Vector{T}
-    sample_time::T
+    ref::T
     n::Int
 end
 
-Base.copy(x::InputMemory{T}) where {T} = InputMemory{T}(copy(x.data), x.sample_time, x.n)
+Base.:*(x::Number, y::Parameter) = x*y.ref
+Base.:*(y::Parameter, x::Number) = Base.:*(x,y)
+Base.:*(x::Parameter, y::Parameter) = x.ref*y.ref
 
-function InputMemory(data::Vector{T}, sample_time::T) where {T <: Real}
-    InputMemory{T}(data, sample_time, length(data))
+Base.:/(x::Number, y::Parameter) = x/y.ref
+Base.:/(y::Parameter, x::Number) = y.ref/x
+Base.:/(x::Parameter, y::Parameter) = x.ref/y.ref
+
+Base.:+(x::Number, y::Parameter) = x + y.ref
+Base.:+(y::Parameter, x::Number) = Base.:+(x,y)
+Base.:+(x::Parameter, y::Parameter) = x.ref + y.ref
+
+Base.:-(x::Number, y::Parameter) = x - y.ref
+Base.:-(y::Parameter, x::Number) = y.ref - x
+Base.:-(x::Parameter, y::Parameter) = x.ref - y.ref
+
+Base.:^(x::Number, y::Parameter) = Base.power_by_squaring(x, y.ref)
+Base.:^(y::Parameter, x::Number) = Base.power_by_squaring(y.ref, x)
+Base.:^(x::Parameter, y::Parameter) = Base.power_by_squaring(x.ref, y.ref)
+
+Base.isless(x::Parameter, y::Number) = Base.isless(x.ref, y)
+Base.isless(y::Number, x::Parameter) = Base.isless(y, x.ref)
+
+
+Base.copy(x::Parameter{T}) where {T} = Parameter{T}(copy(x.data), x.ref, x.n)
+
+function Base.show(io::IO, m::MIME"text/plain", p::Parameter)
+    if !isempty(p.data)
+	    print(io, p.data)
+    else
+        print(io, p.ref)
+    end
 end
 
-function input(t, memory::InputMemory)
+Parameter(x::Parameter) = x
+Parameter(x::T) where T <: Real = Parameter(T[], x, 0)
+Parameter(x::Vector{T}, dt::T) where T <: Real = Parameter(x, dt, length(x))
+
+function input(t, memory::Parameter)
     if t < 0
         t = zero(t)
     end
 
-    i1 = floor(Int, t / memory.sample_time) + 1 #expensive
+    i1 = floor(Int, t / memory.ref) + 1 #expensive
     i2 = i1 + 1
 
-    t1 = i1 * memory.sample_time
-    t2 = i2 * memory.sample_time
+    t1 = i1 * memory.ref
+    t2 = i2 * memory.ref
 
-    #println("input: t=$t, i1=$i1, i2=$i2, t1=$t1, t2=$t2, Δt = $(memory.sample_time)")
+    #println("input: t=$t, i1=$i1, i2=$i2, t1=$t1, t2=$t2, Δt = $(memory.ref)")
 
     x1 = memory.data[i1 > memory.n ? memory.n : i1]
     x2 = memory.data[i2 > memory.n ? memory.n : i2]
@@ -456,7 +488,7 @@ function input(t, memory::InputMemory)
     return linear_interpolation(x1, x2, t1, t2, t)
 end
 
-get_sample_time(memory::InputMemory) = memory.sample_time
+get_sample_time(memory::Parameter) = memory.ref
 Symbolics.@register_symbolic get_sample_time(memory)
 
 Symbolics.@register_symbolic input(t, memory)
@@ -475,7 +507,7 @@ end
 
 Input(T::Type; name) = Input(T[], zero(T); name)
 function Input(data::Vector{T}, dt::T; name) where {T <: Real}
-    Input(; name, buffer = InputMemory(data, dt))
+    Input(; name, buffer = Parameter(data, dt))
 end
 
 """
@@ -484,17 +516,17 @@ end
 data input component.  
 
 # Parameters:
-  - `buffer`: an `InputMemory` parameter which holds the data and sample time
+  - `buffer`: a `Parameter` type which holds the data and sample time
 
 # Connectors:
   - `output`
 """
 @component function Input(; name, buffer)
     pars = @parameters begin buffer = buffer end
-    vars = []
+    vars = [] 
     systems = @named begin output = RealOutput() end
     eqs = [
-        output.u ~ input(t, buffer),
+        output.u ~ input(t, buffer)
     ]
-    return ODESystem(eqs, t, vars, pars; name, systems)
+    return ODESystem(eqs, t, vars, pars; name, systems, defaults=[output.u => 0.0]) #TODO: get initial value from buffer
 end
