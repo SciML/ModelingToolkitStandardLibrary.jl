@@ -257,19 +257,7 @@ defs[s.m_sled] = 1500
 
 p = Parameter.(ModelingToolkit.varmap_to_vars(defs, parameters(sys); tofloat=false))
 prob = remake(prob; p, tspan=(0, time[end]))
-
 @time sol1 = solve(prob, ImplicitEuler(nlsolve = NEWTON) ; adaptive = false, dt, initializealg = NoInit());
-
-
-@register_symbolic xf(time)
-Symbolics.derivative(::typeof(xf), args::NTuple{1, Any}, ::Val{1}) = 0
-@named system_ = System(false, xf)
-s_ = complete(system_)
-sys_ = structural_simplify(system_)
-
-prob_ = ODEProblem(sys_, [], (0, 0.055))
-@time sol_ = solve(prob_, ImplicitEuler(nlsolve = NEWTON); adaptive = false, dt, initializealg = NoInit());
-
 
 
 # Data Set #2
@@ -285,17 +273,16 @@ prob = remake(prob; p, tspan=(0, time[end]))
 @time sol2 = solve(prob, ImplicitEuler(nlsolve = NEWTON); adaptive = false, dt, initializealg = NoInit());
 
 
+# Fast Solve ------------
+@register_symbolic xf(time)
+Symbolics.derivative(::typeof(xf), args::NTuple{1, Any}, ::Val{1}) = 0
+@named system_ = System(false, xf)
+s_ = complete(system_)
+sys_ = structural_simplify(system_)
 
-# #=
-# julia> @time sol2 = solve(prob, ImplicitEuler(nlsolve = NEWTON); adaptive = false, dt, initializealg = NoInit());
-#   0.644283 seconds (8.60 M allocations: 535.142 MiB, 14.96% gc time)
-# =#
+prob_ = ODEProblem(sys_, [], (0, 0.055))
+@time sol_ = solve(prob_, ImplicitEuler(nlsolve = NEWTON); adaptive = false, dt, initializealg = NoInit());
 
-
-# # ModelOptimizer
-# # In my real life optimization, I only know the sled acceleration s.ddx
-# trial1 = Experiment(DataFrame(s.ddx => sol1[s.ddx]), sys, tspan = (0,0.055)) # How does this experiment know that s.m_sled = 1500, and s.input.buffer = input curve #1??
-# trial2 = Experiment(DataFrame(s.ddx => sol2[s.ddx]), sys, tspan = (0,0.1))   # How does this experiment know that s.m_sled = 500, and s.input.buffer = input curve #2??
-
-# # How can I change the guess value of Cd to 0.008??
-# invprob = InverseProblem([trial1, trial2], sys, [s.Cd => (0.001, 0.1)]) # this should find that Cd = 0.005
+p_ = Parameter.(prob_.p)
+prob_ = remake(prob_; p=p_)
+@time sol_ = solve(prob_, ImplicitEuler(nlsolve = NEWTON); adaptive = false, dt, initializealg = NoInit());
