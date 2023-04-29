@@ -153,7 +153,7 @@ sol = solve(prob, ImplicitEuler(nlsolve = NEWTON); adaptive = false, dt = 1e-4,
 @test round(sol[s.vol2.x][end]; digits = 2) == 0.0
 
 # Actuator System
-function System(; name)
+function System(use_input, f; name)
     @parameters t
 
     pars = @parameters begin
@@ -194,7 +194,6 @@ function System(; name)
         sled = T.Mass(; m = m_sled)
         pipe = IC.Tube(5; p_int = p_2, area = A_2, length = 2.0)
         snk = IC.Source(; p = p_r)
-        input = B.Input(Float64)
         pos = T.Position(; x_int = x_f_int)
 
         m1 = IC.FlowDivider(; p_int = p_2, n = 3)
@@ -202,6 +201,14 @@ function System(; name)
 
         fluid = IC.HydraulicFluid()
     end
+
+    if use_input
+        @named input = B.Input(Float64)
+    else
+        @named input = B.TimeVaryingFunction(f;t)
+    end
+
+    push!(systems, input)
 
     eqs = [connect(input.output, pos.input)
            connect(valve.flange, pos.flange)
@@ -219,7 +226,7 @@ function System(; name)
     ODESystem(eqs, t, vars, pars; name, systems)
 end
 
-@named system = System()
+@named system = System(true, nothing)
 
 sys = structural_simplify(system)
 defs = ModelingToolkit.defaults(sys)
@@ -242,7 +249,8 @@ defs[s.Cd] = 0.005
 
 # Data Set #1
 time = 0:dt:0.055
-x = @. 0.9*(time>0.015)*(time - 0.015)^2 - 25*(time>0.02)*(time - 0.02)^3
+xf(time) = 0.9*(time>0.015)*(time - 0.015)^2 - 25*(time>0.02)*(time - 0.02)^3 
+x = xf.(time)
 
 defs[s.input.buffer] = Parameter(x, dt)
 defs[s.m_sled] = 1500
@@ -251,6 +259,16 @@ p = Parameter.(ModelingToolkit.varmap_to_vars(defs, parameters(sys); tofloat=fal
 prob = remake(prob; p, tspan=(0, time[end]))
 
 @time sol1 = solve(prob, ImplicitEuler(nlsolve = NEWTON) ; adaptive = false, dt, initializealg = NoInit());
+
+
+@register_symbolic xf(time)
+Symbolics.derivative(::typeof(xf), args::NTuple{1, Any}, ::Val{1}) = 0
+@named system_ = System(false, xf)
+s_ = complete(system_)
+sys_ = structural_simplify(system_)
+
+prob_ = ODEProblem(sys_, [], (0, 0.055))
+@time sol_ = solve(prob_, ImplicitEuler(nlsolve = NEWTON); adaptive = false, dt, initializealg = NoInit());
 
 
 
