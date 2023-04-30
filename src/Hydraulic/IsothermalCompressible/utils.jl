@@ -99,6 +99,8 @@ function friction_factor(dm, area, d_h, density, viscosity, shape_factor)
     return f
 end
 @register_symbolic friction_factor(dm, area, d_h, density, viscosity, shape_factor)
+Symbolics.derivative(::typeof(friction_factor), args, ::Val{1}) = 0
+Symbolics.derivative(::typeof(friction_factor), args, ::Val{4}) = 0
 
 function transition(x1, x2, y1, y2, x)
     if x < x1

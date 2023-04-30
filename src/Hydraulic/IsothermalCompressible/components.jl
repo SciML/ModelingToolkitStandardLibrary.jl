@@ -408,7 +408,7 @@ Valve with area input and discharge coefficient `Cd` defined by https://en.wikip
     area = if reversible
         input.u
     else
-        input.u * (input.u > 0)
+        ifelse(input.u > 0, input.u , 0) 
     end
 
     eqs = [sign(Δp) * dm ~ sqrt(2 * abs(Δp) * ρ / Cd) * area

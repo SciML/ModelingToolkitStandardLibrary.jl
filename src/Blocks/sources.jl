@@ -479,8 +479,18 @@ function Base.show(io::IO, m::MIME"text/plain", p::Parameter)
 end
 
 Parameter(x::Parameter) = x
-Parameter(x::T) where T <: Real = Parameter(T[], x, 0)
+function Parameter(x::T; tofloat=true) where T <: Real 
+    if tofloat
+        x = float(x)
+        P = typeof(x)
+    else
+        P = T
+    end
+
+    return Parameter(P[], x, 0)
+end
 Parameter(x::Vector{T}, dt::T) where T <: Real = Parameter(x, dt, length(x))
+
 
 function input(t, memory::Parameter)
     if t < 0
@@ -496,12 +506,17 @@ function input(t, memory::Parameter)
     end
 
     t1 = i1 * memory.ref
-    t2 = i2 * memory.ref
-
     x1 = @inbounds getindex(memory.data, i1)
-    x2 = @inbounds getindex(memory.data, i2)
 
-    return linear_interpolation(x1, x2, t1, t2, t)
+    if t == t1
+        return x1
+    else
+
+        t2 = i2 * memory.ref
+        x2 = @inbounds getindex(memory.data, i2)
+        return linear_interpolation(x1, x2, t1, t2, t)
+    end
+    
 end
 
 get_sample_time(memory::Parameter) = memory.ref

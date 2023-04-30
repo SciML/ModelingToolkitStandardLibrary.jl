@@ -231,6 +231,7 @@ end
 sys = structural_simplify(system)
 defs = ModelingToolkit.defaults(sys)
 s = complete(system)
+prob = ODEProblem(sys, [], (0, 1.0); tofloat=false, jac=true)
 
 @test Symbol(defs[s.src.port.ρ]) == Symbol(s.fluid.ρ)
 @test Symbol(defs[s.valve.port_s.ρ]) == Symbol(s.fluid.ρ)
@@ -239,7 +240,7 @@ s = complete(system)
 @test Symbol(defs[s.valve.port_r.ρ]) == Symbol(s.fluid.ρ)
 @test Symbol(defs[s.snk.port.ρ]) == Symbol(s.fluid.ρ)
 
-prob = ODEProblem(sys, [], (0, 0.1); tofloat=false)
+
 
 # Generate Optimization Data
 
@@ -257,8 +258,11 @@ defs[s.m_sled] = 1500
 
 p = Parameter.(ModelingToolkit.varmap_to_vars(defs, parameters(sys); tofloat=false))
 prob = remake(prob; p, tspan=(0, time[end]))
-@time sol1 = solve(prob, ImplicitEuler(nlsolve = NEWTON) ; adaptive = false, dt, initializealg = NoInit());
-
+solve(prob, ImplicitEuler(nlsolve = NEWTON); adaptive = false, dt, initializealg = NoInit()); # precompile
+@time "p is Vector{Parameter{Float64}}" sol1 = solve(prob, ImplicitEuler(nlsolve = NEWTON) ; adaptive = false, dt, initializealg = NoInit());
+u = copy(prob.u0)
+prob.f.f(u,prob.u0, prob.p, 0.0)
+@time "f()" prob.f.f(u,prob.u0, prob.p, 0.0)
 
 # Data Set #2
 time = 0:dt:0.1
@@ -270,7 +274,7 @@ defs[s.m_sled] = 500
 p = Parameter.(ModelingToolkit.varmap_to_vars(defs, parameters(sys); tofloat=false))
 prob = remake(prob; p, tspan=(0, time[end]))
 
-@time sol2 = solve(prob, ImplicitEuler(nlsolve = NEWTON); adaptive = false, dt, initializealg = NoInit());
+sol2 = solve(prob, ImplicitEuler(nlsolve = NEWTON); adaptive = false, dt, initializealg = NoInit());
 
 
 # Fast Solve ------------
@@ -279,10 +283,9 @@ Symbolics.derivative(::typeof(xf), args::NTuple{1, Any}, ::Val{1}) = 0
 @named system_ = System(false, xf)
 s_ = complete(system_)
 sys_ = structural_simplify(system_)
-
-prob_ = ODEProblem(sys_, [], (0, 0.055), [s.Cd => 0.005])
-@time sol_ = solve(prob_, ImplicitEuler(nlsolve = NEWTON); adaptive = false, dt, initializealg = NoInit());
-
-p_ = Parameter.(prob_.p)
-prob_ = remake(prob_; p=p_)
-@time sol_ = solve(prob_, ImplicitEuler(nlsolve = NEWTON); adaptive = false, dt, initializealg = NoInit());
+prob_ = ODEProblem(sys_, [], (0, 0.055), [s_.Cd => 0.005])
+solve(prob_, ImplicitEuler(nlsolve = NEWTON); adaptive = false, dt, initializealg = NoInit()); #precompile
+@time "p is Vector{Float64}" sol_ = solve(prob_, ImplicitEuler(nlsolve = NEWTON); adaptive = false, dt, initializealg = NoInit());
+u = copy(prob_.u0)
+prob_.f.f(u,prob_.u0, prob_.p, 0.0)
+@time "f()" prob_.f.f(u,prob_.u0, prob_.p, 0.0)
