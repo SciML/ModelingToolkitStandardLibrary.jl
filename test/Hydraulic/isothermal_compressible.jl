@@ -280,7 +280,7 @@ Symbolics.derivative(::typeof(xf), args::NTuple{1, Any}, ::Val{1}) = 0
 s_ = complete(system_)
 sys_ = structural_simplify(system_)
 
-prob_ = ODEProblem(sys_, [], (0, 0.055))
+prob_ = ODEProblem(sys_, [], (0, 0.055), [s.Cd => 0.005])
 @time sol_ = solve(prob_, ImplicitEuler(nlsolve = NEWTON); adaptive = false, dt, initializealg = NoInit());
 
 p_ = Parameter.(prob_.p)

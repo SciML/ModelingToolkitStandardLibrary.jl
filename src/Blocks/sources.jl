@@ -431,6 +431,17 @@ struct Parameter{T <: Real}
     n::Int
 end
 
+function Base.isequal(x::Parameter, y::Parameter) 
+    b0 = x.n == y.n
+    if b0
+        b1 = all(x.data .== y.data)
+        b2 = x.ref == y.ref
+        return b1 & b2
+    else
+        return false
+    end
+end
+
 Base.:*(x::Number, y::Parameter) = x*y.ref
 Base.:*(y::Parameter, x::Number) = Base.:*(x,y)
 Base.:*(x::Parameter, y::Parameter) = x.ref*y.ref
@@ -453,6 +464,8 @@ Base.:^(x::Parameter, y::Parameter) = Base.power_by_squaring(x.ref, y.ref)
 
 Base.isless(x::Parameter, y::Number) = Base.isless(x.ref, y)
 Base.isless(y::Number, x::Parameter) = Base.isless(y, x.ref)
+
+
 
 
 Base.copy(x::Parameter{T}) where {T} = Parameter{T}(copy(x.data), x.ref, x.n)
@@ -485,10 +498,8 @@ function input(t, memory::Parameter)
     t1 = i1 * memory.ref
     t2 = i2 * memory.ref
 
-    #println("input: t=$t, i1=$i1, i2=$i2, t1=$t1, t2=$t2, Δt = $(memory.ref)")
-
-    x1 = memory.data[i1]
-    x2 = memory.data[i2]
+    x1 = @inbounds getindex(memory.data, i1)
+    x2 = @inbounds getindex(memory.data, i2)
 
     return linear_interpolation(x1, x2, t1, t2, t)
 end
