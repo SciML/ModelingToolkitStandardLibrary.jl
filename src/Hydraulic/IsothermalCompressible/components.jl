@@ -351,7 +351,7 @@ dm ────►  dead volume  │  │ area
     dm = port.dm
     u = dm / (rho * area)
 
-    eqs = [0 ~ IfElse.ifelse(vol >= minimum_volume, (p) - (port.p - (1 / 2) * rho * u^2),
+    eqs = [0 ~ ifelse(vol >= minimum_volume, (p) - (port.p - (1 / 2) * rho * u^2),
                              dm)
            vol ~ dead_volume + area * x
            D(x) ~ dx
