@@ -411,3 +411,160 @@ end
 # - Pulse   Generate pulse signal of type Real
 # - SawTooth    Generate saw tooth signal
 # - Trapezoid   Generate trapezoidal signal of type Real
+
+function linear_interpolation(x1::T, x2::T, t1::T, t2::T, t) where {T <: Real}
+    if t1 != t2
+        slope = (x2 - x1) / (t2 - t1)
+        intercept = x1 - slope * t1
+
+        return slope * t + intercept
+    else
+        @assert x1==x2 "x1 ($x1) and x2 ($x2) should be equal if t1 == t2"
+
+        return x2
+    end
+end
+
+struct Parameter{T <: Real}
+    data::Vector{T}
+    ref::T
+    n::Int
+end
+
+function Base.isequal(x::Parameter, y::Parameter)
+    b0 = x.n == y.n
+    if b0
+        b1 = all(x.data .== y.data)
+        b2 = x.ref == y.ref
+        return b1 & b2
+    else
+        return false
+    end
+end
+
+Base.:*(x::Number, y::Parameter) = x * y.ref
+Base.:*(y::Parameter, x::Number) = Base.:*(x, y)
+Base.:*(x::Parameter, y::Parameter) = x.ref * y.ref
+
+Base.:/(x::Number, y::Parameter) = x / y.ref
+Base.:/(y::Parameter, x::Number) = y.ref / x
+Base.:/(x::Parameter, y::Parameter) = x.ref / y.ref
+
+Base.:+(x::Number, y::Parameter) = x + y.ref
+Base.:+(y::Parameter, x::Number) = Base.:+(x, y)
+Base.:+(x::Parameter, y::Parameter) = x.ref + y.ref
+
+Base.:-(x::Number, y::Parameter) = x - y.ref
+Base.:-(y::Parameter, x::Number) = y.ref - x
+Base.:-(x::Parameter, y::Parameter) = x.ref - y.ref
+
+Base.:^(x::Number, y::Parameter) = Base.power_by_squaring(x, y.ref)
+Base.:^(y::Parameter, x::Number) = Base.power_by_squaring(y.ref, x)
+Base.:^(x::Parameter, y::Parameter) = Base.power_by_squaring(x.ref, y.ref)
+
+Base.isless(x::Parameter, y::Number) = Base.isless(x.ref, y)
+Base.isless(y::Number, x::Parameter) = Base.isless(y, x.ref)
+
+Base.copy(x::Parameter{T}) where {T} = Parameter{T}(copy(x.data), x.ref, x.n)
+
+function Base.show(io::IO, m::MIME"text/plain", p::Parameter)
+    if !isempty(p.data)
+        print(io, p.data)
+    else
+        print(io, p.ref)
+    end
+end
+
+Parameter(x::Parameter) = x
+function Parameter(x::T; tofloat = true) where {T <: Real}
+    if tofloat
+        x = float(x)
+        P = typeof(x)
+    else
+        P = T
+    end
+
+    return Parameter(P[], x, 0)
+end
+Parameter(x::Vector{T}, dt::T) where {T <: Real} = Parameter(x, dt, length(x))
+
+function input(t, memory::Parameter{T}) where {T}
+    if t < 0
+        t = zero(t)
+    end
+
+    if isempty(memory.data)
+        if T isa Float16
+            return NaN16
+        elseif T isa Float32
+            return NaN32
+        elseif T isa Float64
+            return NaN64
+        else
+            return zero(T)
+        end
+    end
+
+    i1 = floor(Int, t / memory.ref) + 1 #expensive
+    i2 = i1 + 1
+
+    t1 = (i1 - 1) * memory.ref
+    x1 = @inbounds getindex(memory.data, i1)
+
+    if t == t1
+        return x1
+    else
+        if i2 > memory.n
+            i2 = memory.n
+            i1 = i2 - 1
+        end
+
+        t2 = (i2 - 1) * memory.ref
+        x2 = @inbounds getindex(memory.data, i2)
+        return linear_interpolation(x1, x2, t1, t2, t)
+    end
+end
+
+get_sample_time(memory::Parameter) = memory.ref
+Symbolics.@register_symbolic get_sample_time(memory)
+
+Symbolics.@register_symbolic input(t, memory)
+
+function first_order_backwards_difference(t, memory)
+    Δt = get_sample_time(memory)
+    x1 = input(t, memory)
+    x0 = input(t - Δt, memory)
+
+    return (x1 - x0) / Δt
+end
+
+function Symbolics.derivative(::typeof(input), args::NTuple{2, Any}, ::Val{1})
+    first_order_backwards_difference(args[1], args[2])
+end
+
+Input(T::Type; name) = Input(T[], zero(T); name)
+function Input(data::Vector{T}, dt::T; name) where {T <: Real}
+    Input(; name, buffer = Parameter(data, dt))
+end
+
+"""
+    Input(; name, buffer)
+
+data input component.  
+
+# Parameters:
+  - `buffer`: a `Parameter` type which holds the data and sample time
+
+# Connectors:
+  - `output`
+"""
+@component function Input(; name, buffer)
+    pars = @parameters begin buffer = buffer end
+    vars = []
+    systems = @named begin output = RealOutput() end
+    eqs = [
+        output.u ~ input(t, buffer),
+    ]
+    return ODESystem(eqs, t, vars, pars; name, systems,
+                     defaults = [output.u => input(0.0, buffer)]) #TODO: get initial value from buffer
+end
