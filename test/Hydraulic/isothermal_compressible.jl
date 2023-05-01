@@ -242,6 +242,7 @@ end
     @test Symbol(defs[s.valve.port_r.ρ]) == Symbol(s.fluid.ρ)
     @test Symbol(defs[s.snk.port.ρ]) == Symbol(s.fluid.ρ)
 
+    dt = 1e-4
     time = 0:dt:0.055
     x = @. 0.9 * (time > 0.015) * (time - 0.015)^2 - 25 * (time > 0.02) * (time - 0.02)^3
 
