@@ -352,7 +352,7 @@ dm ────►  dead volume  │  │ area
     u = dm / (rho * area)
 
     eqs = [0 ~ ifelse(vol >= minimum_volume, (p) - (port.p - (1 / 2) * rho * u^2),
-                             dm)
+                      dm)
            vol ~ dead_volume + area * x
            D(x) ~ dx
            D(rho) ~ drho
