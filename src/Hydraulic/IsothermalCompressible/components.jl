@@ -75,7 +75,6 @@ Caps a hydrualic port to prevent mass flow in or out.
     ODESystem(eqs, t, vars, pars; name, systems)
 end
 
-
 @component function Open(; p_int, name)
     pars = @parameters p_int = p_int
 
@@ -83,7 +82,6 @@ end
         p(t) = p_int
         dm(t) = 0
     end
-        
 
     systems = @named begin port = HydraulicPort(; p_int = p_int) end
 
@@ -92,7 +90,6 @@ end
 
     ODESystem(eqs, t, vars, pars; name, systems)
 end
-
 
 """
     FixedVolume(; vol, p_int, name)
@@ -279,16 +276,14 @@ Reduces the flow from `port_a` to `port_b` by `n`.  Useful for modeling parallel
         port_a = HydraulicPort(; p_int)
         port_b = HydraulicPort(; p_int)
         open = Open(; p_int)
-
     end
 
-    eqs = [
-        connect(port_a, port_b, open.port)
-        dm_a ~ port_a.dm
-        dm_b ~ dm_a/n
-        open.dm ~ dm_a - dm_b # extra flow dumps into an open port
-        # port_b.dm ~ dm_b # divided flow goes to port_b
-    ]
+    eqs = [connect(port_a, port_b, open.port)
+           dm_a ~ port_a.dm
+           dm_b ~ dm_a / n
+           open.dm ~ dm_a - dm_b # extra flow dumps into an open port
+           # port_b.dm ~ dm_b # divided flow goes to port_b
+           ]
 
     ODESystem(eqs, t, vars, pars; name, systems)
 end
@@ -408,7 +403,7 @@ Valve with area input and discharge coefficient `Cd` defined by https://en.wikip
     area = if reversible
         input.u
     else
-        ifelse(input.u > 0, input.u , 0) 
+        ifelse(input.u > 0, input.u, 0)
     end
 
     eqs = [sign(Δp) * dm ~ sqrt(2 * abs(Δp) * ρ / Cd) * area
@@ -464,7 +459,7 @@ end
 
         d = d
 
-        Cd=Cd
+        Cd = Cd
     end
 
     vars = []
@@ -505,8 +500,8 @@ end
         length_b_int = length_b_int
         minimum_volume_a = minimum_volume_a
         minimum_volume_b = minimum_volume_b
-        m=m
-        g=g
+        m = m
+        g = g
     end
 
     vars = @variables begin

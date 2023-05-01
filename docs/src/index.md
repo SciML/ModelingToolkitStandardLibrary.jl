@@ -18,6 +18,7 @@ Pkg.add("ModelingToolkitStandardLibrary")
   - [Custom Component](https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/tutorials/custom_component/)
   - [Thermal Model](https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/tutorials/thermal_model/)
   - [DC Motor with PI-controller](https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/tutorials/dc_motor_pi/)
+  - [Input Component](https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/tutorials/input_component/)
 
 ## Libraries
 

@@ -412,7 +412,7 @@ end
 # - SawTooth    Generate saw tooth signal
 # - Trapezoid   Generate trapezoidal signal of type Real
 
-function linear_interpolation(x1::T, x2::T, t1::T, t2::T, t::T) where {T <: Real}
+function linear_interpolation(x1::T, x2::T, t1::T, t2::T, t) where {T <: Real}
     if t1 != t2
         slope = (x2 - x1) / (t2 - t1)
         intercept = x1 - slope * t1
@@ -431,7 +431,7 @@ struct Parameter{T <: Real}
     n::Int
 end
 
-function Base.isequal(x::Parameter, y::Parameter) 
+function Base.isequal(x::Parameter, y::Parameter)
     b0 = x.n == y.n
     if b0
         b1 = all(x.data .== y.data)
@@ -442,16 +442,16 @@ function Base.isequal(x::Parameter, y::Parameter)
     end
 end
 
-Base.:*(x::Number, y::Parameter) = x*y.ref
-Base.:*(y::Parameter, x::Number) = Base.:*(x,y)
-Base.:*(x::Parameter, y::Parameter) = x.ref*y.ref
+Base.:*(x::Number, y::Parameter) = x * y.ref
+Base.:*(y::Parameter, x::Number) = Base.:*(x, y)
+Base.:*(x::Parameter, y::Parameter) = x.ref * y.ref
 
-Base.:/(x::Number, y::Parameter) = x/y.ref
-Base.:/(y::Parameter, x::Number) = y.ref/x
-Base.:/(x::Parameter, y::Parameter) = x.ref/y.ref
+Base.:/(x::Number, y::Parameter) = x / y.ref
+Base.:/(y::Parameter, x::Number) = y.ref / x
+Base.:/(x::Parameter, y::Parameter) = x.ref / y.ref
 
 Base.:+(x::Number, y::Parameter) = x + y.ref
-Base.:+(y::Parameter, x::Number) = Base.:+(x,y)
+Base.:+(y::Parameter, x::Number) = Base.:+(x, y)
 Base.:+(x::Parameter, y::Parameter) = x.ref + y.ref
 
 Base.:-(x::Number, y::Parameter) = x - y.ref
@@ -465,21 +465,18 @@ Base.:^(x::Parameter, y::Parameter) = Base.power_by_squaring(x.ref, y.ref)
 Base.isless(x::Parameter, y::Number) = Base.isless(x.ref, y)
 Base.isless(y::Number, x::Parameter) = Base.isless(y, x.ref)
 
-
-
-
 Base.copy(x::Parameter{T}) where {T} = Parameter{T}(copy(x.data), x.ref, x.n)
 
 function Base.show(io::IO, m::MIME"text/plain", p::Parameter)
     if !isempty(p.data)
-	    print(io, p.data)
+        print(io, p.data)
     else
         print(io, p.ref)
     end
 end
 
 Parameter(x::Parameter) = x
-function Parameter(x::T; tofloat=true) where T <: Real 
+function Parameter(x::T; tofloat = true) where {T <: Real}
     if tofloat
         x = float(x)
         P = typeof(x)
@@ -489,34 +486,43 @@ function Parameter(x::T; tofloat=true) where T <: Real
 
     return Parameter(P[], x, 0)
 end
-Parameter(x::Vector{T}, dt::T) where T <: Real = Parameter(x, dt, length(x))
+Parameter(x::Vector{T}, dt::T) where {T <: Real} = Parameter(x, dt, length(x))
 
-
-function input(t, memory::Parameter)
+function input(t, memory::Parameter{T}) where {T}
     if t < 0
         t = zero(t)
+    end
+
+    if isempty(memory.data)
+        if T isa Float16
+            return NaN16
+        elseif T isa Float32
+            return NaN32
+        elseif T isa Float64
+            return NaN64
+        else
+            return zero(T)
+        end
     end
 
     i1 = floor(Int, t / memory.ref) + 1 #expensive
     i2 = i1 + 1
 
-    if i2 > memory.n
-        i2 = memory.n
-        i1 = i2-1
-    end
-
-    t1 = i1 * memory.ref
+    t1 = (i1 - 1) * memory.ref
     x1 = @inbounds getindex(memory.data, i1)
 
     if t == t1
         return x1
     else
+        if i2 > memory.n
+            i2 = memory.n
+            i1 = i2 - 1
+        end
 
-        t2 = i2 * memory.ref
+        t2 = (i2 - 1) * memory.ref
         x2 = @inbounds getindex(memory.data, i2)
         return linear_interpolation(x1, x2, t1, t2, t)
     end
-    
 end
 
 get_sample_time(memory::Parameter) = memory.ref
@@ -554,10 +560,11 @@ data input component.
 """
 @component function Input(; name, buffer)
     pars = @parameters begin buffer = buffer end
-    vars = [] 
+    vars = []
     systems = @named begin output = RealOutput() end
     eqs = [
-        output.u ~ input(t, buffer)
+        output.u ~ input(t, buffer),
     ]
-    return ODESystem(eqs, t, vars, pars; name, systems, defaults=[output.u => 0.0]) #TODO: get initial value from buffer
+    return ODESystem(eqs, t, vars, pars; name, systems,
+                     defaults = [output.u => input(0.0, buffer)]) #TODO: get initial value from buffer
 end

@@ -17,7 +17,7 @@ export Log, Log10
 include("math.jl")
 
 export Constant, TimeVaryingFunction, Sine, Cosine, ContinuousClock, Ramp, Step, ExpSine,
-       Square, Triangular, InputMemory, Input
+       Square, Triangular, Parameter, Input
 include("sources.jl")
 
 export Limiter, DeadZone, SlewRateLimiter

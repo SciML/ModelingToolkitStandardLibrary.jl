@@ -25,7 +25,7 @@ using OrdinaryDiffEq: ReturnCode.Success
 end
 
 @testset "TimeVaryingFunction" begin
-    f(t) = t^2
+    f(t) = t^2 + 1
 
     @named src = TimeVaryingFunction(f)
     @named int = Integrator()
@@ -41,7 +41,7 @@ end
     sol = solve(prob, Rodas4())
     @test sol.retcode == Success
     @test sol[src.output.u]≈f.(sol.t) atol=1e-3
-    @test sol[int.output.u][end]≈1 / 3 * 10^3 atol=1e-3 # closed-form solution to integral
+    @test sol[int.output.u][end]≈1 / 3 * 10^3 + 10 atol=1e-3 # closed-form solution to integral
 end
 
 @testset "Sine" begin
@@ -405,4 +405,31 @@ end
     @test smooth_sol[smooth_src.output.u]≈smooth_damped_sin.(smooth_sol.t, δ, frequency,
                                                              amplitude, damping, phase,
                                                              offset, start_time) atol=1e-3
+end
+
+@testset "Input" begin
+    dt = 4e-4
+    t_end = 10.0
+    time = 0:dt:t_end
+    x = @. time^2 + 1.0
+
+    @named src = Input(Float64)
+    @named int = Integrator()
+    @named iosys = ODESystem([
+                                 connect(src.output, int.input),
+                             ],
+                             t,
+                             systems = [int, src])
+    sys = structural_simplify(iosys)
+    s = complete(iosys)
+    prob = ODEProblem(sys, [], (0.0, t_end), [s.src.buffer => Parameter(x, dt)];
+                      tofloat = false)
+    prob = remake(prob; p = Parameter.(prob.p))
+
+    sol = solve(prob, Rodas4(); initializealg = NoInit())
+    @test sol.retcode == Success
+    @test sol[src.output.u][1] == 1.0 #check correct initial condition
+
+    @test sol(time)[src.output.u]≈x atol=1e-3
+    @test sol[int.output.u][end]≈1 / 3 * 10^3 + 10.0 atol=1e-3 # closed-form solution to integral
 end
