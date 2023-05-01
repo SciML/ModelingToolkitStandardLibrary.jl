@@ -65,7 +65,7 @@ end
     @named source = Sine(frequency = 3, amplitude = 2)
 
     function simplify_and_solve(damping, spring, body, ground, f, source)
-        eqs = [connect(f.f, source.output)
+        eqs = [connect(f.input, source.output)
                connect(f.flange, body.flange)
                connect(spring.flange_a, body.flange, damping.flange_a)
                connect(spring.flange_b, damping.flange_b, ground.flange)]
