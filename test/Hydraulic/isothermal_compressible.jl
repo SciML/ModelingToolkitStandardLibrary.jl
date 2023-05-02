@@ -204,7 +204,7 @@ end
         end
 
         if use_input
-            @named input = B.Input(Float64)
+            @named input = B.SampledData(Float64)
         else
             @named input = B.TimeVaryingFunction(f; t)
         end
