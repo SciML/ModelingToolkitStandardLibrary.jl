@@ -181,7 +181,6 @@ This element characterizes any type of gear box which is fixed in the ground and
 @component function IdealGear(; name, ratio, use_support = false)
     @named partial_element = PartialElementaryTwoFlangesAndSupport2(use_support = use_support)
     @unpack phi_support, flange_a, flange_b = partial_element
-    @symcheck ratio > 0 || throw(ArgumentError("Expected `ratio` to be positive"))
     @parameters ratio=ratio [description = "Transmission ratio of $name"]
     sts = @variables phi_a(t)=0.0 [
         description = "Relative angle between shaft a and the support of $name",
