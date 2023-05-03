@@ -29,7 +29,7 @@ NEWTON = NLNewton(check_div = false, always_new = true, max_iter = 100, relax = 
         end
         push!(systems, res)
 
-        eqs = [connect(stp.output, src.input)
+        eqs = [connect(stp.output, src.p)
                connect(fluid, src.port)
                connect(src.port, res.port_a)
                connect(res.port_b, vol.port)]
@@ -119,8 +119,8 @@ end
                connect(src1.port, vol1.port)
                connect(src2.port, vol2.port)
                connect(vol1.flange, mass.flange, vol2.flange)
-               connect(src1.input, sin1.output)
-               connect(src2.input, sin2.output)]
+               connect(src1.p, sin1.output)
+               connect(src2.p, sin2.output)]
 
         ODESystem(eqs, t, [], pars; name, systems)
     end
@@ -211,7 +211,7 @@ end
 
         push!(systems, input)
 
-        eqs = [connect(input.output, pos.input)
+        eqs = [connect(input.output, pos.s)
                connect(valve.flange, pos.flange)
                connect(valve.port_a, piston.port_a)
                connect(piston.flange, body.flange)

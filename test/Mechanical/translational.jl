@@ -63,7 +63,7 @@ end
     @named source = Sine(frequency = 3, amplitude = 2)
 
     function System(damping, spring, body, ground, f, source)
-        eqs = [connect(f.input, source.output)
+        eqs = [connect(f.f, source.output)
                connect(f.flange, body.flange)
                connect(spring.flange_a, body.flange, damping.flange_a)
                connect(spring.flange_b, damping.flange_b, ground.flange)]
@@ -108,8 +108,8 @@ end
             force_output = RealOutput()
         end
 
-        eqs = [connect(pos.input, src1.output)
-               connect(force.input, src2.output)
+        eqs = [connect(pos.s, src1.output)
+               connect(force.f, src2.output)
                connect(spring.flange_a, pos.flange, force_sensor.flange)
                connect(spring.flange_b, force.flange, pos_sensor.flange)
                connect(pos_value, pos_sensor.output)
