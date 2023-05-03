@@ -99,6 +99,10 @@ matrices, _ = linearize(sys, :plant_input, :plant_output)
 @test matrices.B[] * matrices.C[] == 1 # both positive
 @test matrices.D[] == 0
 
+# Test with output given by symbolic variable instead of analysis point
+matrices2, _ = linearize(sys, :plant_input, [P.output.u])
+@test matrices2 == matrices
+
 ## Test with subsystems
 
 @named P = FirstOrder(k = 1, T = 1)
