@@ -28,8 +28,6 @@ D = Differential(t)
 
         sys = structural_simplify(model)
 
-        println.(full_equations(sys))
-
         prob = ODEProblem(sys, [], (0, 20.0), [])
         sol = solve(prob, ImplicitMidpoint(), dt = 0.01)
 
@@ -64,7 +62,7 @@ end
 
     @named source = Sine(frequency = 3, amplitude = 2)
 
-    function simplify_and_solve(damping, spring, body, ground, f, source)
+    function System(damping, spring, body, ground, f, source)
         eqs = [connect(f.input, source.output)
                connect(f.flange, body.flange)
                connect(spring.flange_a, body.flange, damping.flange_a)
@@ -73,22 +71,61 @@ end
         @named model = ODESystem(eqs, t;
                                  systems = [ground, body, spring, damping, f, source])
 
-        sys = structural_simplify(model)
-
-        println.(full_equations(sys))
-
-        prob = ODEProblem(sys, [], (0, 20.0), [])
-        sol = solve(prob, Rodas4())
-
-        return sol
+        return model
     end
 
-    solv = simplify_and_solve(dv, sv, bv, gv, fv, source)
-    solp = simplify_and_solve(dp, sp, bp, gp, fp, source)
+    model = System(dv, sv, bv, gv, fv, source)
+    sys = structural_simplify(model)
+    prob = ODEProblem(sys, [], (0, 20.0), [])
+    solv = solve(prob, Rodas4())
+
+    model = System(dp, sp, bp, gp, fp, source)
+    sys = structural_simplify(model)
+    prob = ODEProblem(sys, [], (0, 20.0), [])
+    solp = solve(prob, Rodas4())
 
     for sol in (solv, solp)
         lb, ub = extrema(solv(15:0.05:20, idxs = bv.v).u)
         @test -lb≈ub atol=1e-2
         @test -0.11 < lb < -0.1
     end
+end
+
+@testset "sources & sensors" begin
+    function System(; name)
+        systems = @named begin
+            pos = TV.Position(; s_0 = 0)
+            pos_sensor = TV.PositionSensor(; s_0 = 1)
+            force = TV.Force()
+            force_sensor = TV.ForceSensor()
+
+            spring = TV.Spring(; k = 1000)
+
+            src1 = Sine(frequency = 100, amplitude = 2)
+            src2 = Sine(frequency = 100, amplitude = -1)
+
+            pos_value = RealInput()
+            force_output = RealOutput()
+        end
+
+        eqs = [connect(pos.input, src1.output)
+               connect(force.input, src2.output)
+               connect(spring.flange_a, pos.flange, force_sensor.flange)
+               connect(spring.flange_b, force.flange, pos_sensor.flange)
+               connect(pos_value, pos_sensor.output)
+               connect(force_output, force_sensor.output)]
+
+        ODESystem(eqs, t, [], []; name, systems)
+    end
+
+    @named system = System()
+    s = complete(system)
+    sys = structural_simplify(system)
+    prob = ODEProblem(sys, [], (0, 1 / 400))
+    sol = solve(prob, Rosenbrock23())
+
+    delta_s = 1 / 1000
+    s_b = 2 - delta_s + 1
+
+    @test sol[s.pos_value.u][end]≈s_b atol=1e-3
 end

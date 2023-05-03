@@ -562,5 +562,6 @@ data input component.
         output.u ~ get_sampled_data(t, buffer),
     ]
     return ODESystem(eqs, t, vars, pars; name, systems,
-                     defaults = [output.u => get_sampled_data(0.0, buffer)]) #TODO: get initial value from buffer
+                     defaults = [output.u => get_sampled_data(0.0, buffer)])
 end
+@deprecate Input SampledData

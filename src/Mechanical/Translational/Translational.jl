@@ -3,7 +3,10 @@ Library to model 1-dimensional, translational mechanical systems
 """
 module Translational
 
-using ModelingToolkit, Symbolics, IfElse
+using ModelingToolkit, Symbolics
+
+using ModelingToolkitStandardLibrary.Blocks: RealInput, RealOutput
+using IfElse: ifelse
 
 @parameters t
 D = Differential(t)
@@ -14,10 +17,10 @@ include("utils.jl")
 export Mass, Spring, Damper, Fixed
 include("components.jl")
 
-export PositionSensor
-include("sensors.jl")
-
-export Force
+export Force, Position
 include("sources.jl")
+
+export ForceSensor, PositionSensor
+include("sensors.jl")
 
 end
