@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Input Component · ModelingToolkitStandardLibrary.jl</title><script data-outdated-warner src="../../assets/warner.js"></script><link rel="canonical" href="https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/tutorials/input_component/"/><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.045/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.24/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script><link href="../../assets/favicon.ico" rel="icon" type="image/x-icon"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img src="../../assets/logo.png" alt="ModelingToolkitStandardLibrary.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">ModelingToolkitStandardLibrary.jl</a></span></div><form class="docs-search" action="../../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../../">ModelingToolkitStandardLibrary.jl: A Standard Library for ModelingToolkit</a></li><li><span class="tocitem">Tutorials</span><ul><li><a class="tocitem" href="../rc_circuit/">RC Circuit</a></li><li><a class="tocitem" href="../custom_component/">Custom Components</a></li><li><a class="tocitem" href="../thermal_model/">Thermal Conduction Model</a></li><li><a class="tocitem" href="../dc_motor_pi/">DC Motor with Speed Controller</a></li><li class="is-active"><a class="tocitem" href>Input Component</a><ul class="internal"><li><a class="tocitem" href="#TimeVaryingFunction-Component"><span>TimeVaryingFunction Component</span></a></li><li><a class="tocitem" href="#Custom-Component-with-External-Data"><span>Custom Component with External Data</span></a></li><li><a class="tocitem" href="#Input-Component"><span>Input Component</span></a></li></ul></li></ul></li><li><a class="tocitem" href="../../connectors/connections/">About Acausal Connections</a></li><li><span class="tocitem">API</span><ul><li><a class="tocitem" href="../../API/blocks/">Basic Blocks</a></li><li><a class="tocitem" href="../../API/electrical/">Electrical Components</a></li><li><a class="tocitem" href="../../API/magnetic/">Magnetic Components</a></li><li><a class="tocitem" href="../../API/mechanical/">Mechanical Components</a></li><li><a class="tocitem" href="../../API/thermal/">Thermal Components</a></li><li><a class="tocitem" href="../../API/linear_analysis/">Linear Analysis</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Tutorials</a></li><li class="is-active"><a href>Input Component</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Input Component</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/SciML/ModelingToolkitStandardLibrary.jl/blob/main/docs/src/tutorials/input_component.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Running-Models-with-Discrete-Data"><a class="docs-heading-anchor" href="#Running-Models-with-Discrete-Data">Running Models with Discrete Data</a><a id="Running-Models-with-Discrete-Data-1"></a><a class="docs-heading-anchor-permalink" href="#Running-Models-with-Discrete-Data" title="Permalink"></a></h1><p>There are 2 ways to include data as part of a model.</p><ol><li>using <code>ModelingToolkitStandardLibrary.Blocks.TimeVaryingFunction</code></li><li>using a custom component with external data or sensor</li><li>using <code>ModelingToolkitStandardLibrary.Blocks.Input</code></li></ol><p>This tutorial demonstrate each case and explain the pros and cons of each.</p><h2 id="TimeVaryingFunction-Component"><a class="docs-heading-anchor" href="#TimeVaryingFunction-Component">TimeVaryingFunction Component</a><a id="TimeVaryingFunction-Component-1"></a><a class="docs-heading-anchor-permalink" href="#TimeVaryingFunction-Component" title="Permalink"></a></h2><p>This component is easy to use and is performative.  However the data is locked to the <code>ODESystem</code> and can only be changed by building a new <code>ODESystem</code>.  Therefore, running a batch of data would not be efficient.  Below is an example of how to use the <code>TimeVaryingFunction</code> with <code>DataInterpolations</code> to build the function from discrete data.</p><pre><code class="language-julia hljs">using ModelingToolkit
+using ModelingToolkitStandardLibrary.Blocks
+using DataInterpolations
+using OrdinaryDiffEq
+
+@parameters t
+D = Differential(t)
+
+function System(f; name)
+    src = TimeVaryingFunction(f)
+
+    vars = @variables f(t)=0 x(t)=0 dx(t)=0 ddx(t)=0
+    pars = @parameters m=10 k=1000 d=1
+
+    eqs = [f ~ src.output.u
+           ddx * 10 ~ k * x + d * dx + f
+           D(x) ~ dx
+           D(dx) ~ ddx]
+
+    ODESystem(eqs, t, vars, pars; systems = [src], name)
+end
+
+dt = 4e-4
+time = 0:dt:0.1
+data = sin.(2 * pi * time * 100) # example data
+
+f = LinearInterpolation(data, time)
+
+@named system = System(f)
+sys = structural_simplify(system)
+prob = ODEProblem(sys, [], (0, time[end]))
+sol = solve(prob, ImplicitEuler())</code></pre><p>If we want to run a new data set, this requires building a new <code>LinearInterpolation</code> and <code>ODESystem</code> followed by running <code>structural_simplify</code>, all of which takes time.  Therefore, to run serveral pieces of data it&#39;s better to re-use an <code>ODESystem</code>.  The next couple methods will demonstrate this.</p><h2 id="Custom-Component-with-External-Data"><a class="docs-heading-anchor" href="#Custom-Component-with-External-Data">Custom Component with External Data</a><a id="Custom-Component-with-External-Data-1"></a><a class="docs-heading-anchor-permalink" href="#Custom-Component-with-External-Data" title="Permalink"></a></h2><p>The below code shows how to include data using a <code>Ref</code> and registered <code>input</code> function.  This example uses a very basic function which requires non-adaptive solving and sampled data.  As can be seen, the data can easily be set and changed before solving.</p><pre><code class="language-julia hljs">const rdata = Ref{Vector{Float64}}()
+
+# Data Sets
+data1 = sin.(2 * pi * time * 100)
+data2 = cos.(2 * pi * time * 50)
+
+function input(t)
+    i = floor(Int, t / dt) + 1
+    x = rdata[][i]
+
+    return x
+end
+
+Symbolics.@register_symbolic input(t)
+
+function System(; name)
+    vars = @variables f(t)=0 x(t)=0 dx(t)=0 ddx(t)=0
+    pars = @parameters m=10 k=1000 d=1
+
+    eqs = [f ~ input(t)
+           ddx * 10 ~ k * x + d * dx + f
+           D(x) ~ dx
+           D(dx) ~ ddx]
+
+    ODESystem(eqs, t, vars, pars; name)
+end
+
+@named system = System()
+sys = structural_simplify(system)
+prob = ODEProblem(sys, [], (0, time[end]))
+
+rdata[] = data1
+sol1 = solve(prob, ImplicitEuler(); dt, adaptive = false);
+ddx1 = sol1[sys.ddx]
+
+rdata[] = data2
+sol2 = solve(prob, ImplicitEuler(); dt, adaptive = false)
+ddx2 = sol2[sys.ddx]</code></pre><p>The drawback of this method is that the solution observables can be linked to the data <code>Ref</code>, which means that if the data changes then the observables are no longer valid.  In this case <code>ddx</code> is an observable that is derived directly from the data.  Therefore, <code>sol1[sys.ddx]</code> is no longer correct after the data is changed for <code>sol2</code>.  Additional code could be added to resolve this issue, for example by using a <code>Ref{Dict}</code> that could link a parameter of the model to the data source.  This would also be necessary for parallel processing.</p><pre><code class="language-julia hljs"># the following test will fail
+@test all(ddx1 .== sol1[sys.ddx]) #returns false</code></pre><h2 id="Input-Component"><a class="docs-heading-anchor" href="#Input-Component">Input Component</a><a id="Input-Component-1"></a><a class="docs-heading-anchor-permalink" href="#Input-Component" title="Permalink"></a></h2><p>To resolve the issues presented above, the <code>Input</code> component can be used which allows for a resusable <code>ODESystem</code> and self contained data which ensures a solution which remains valid for it&#39;s lifetime.  Now it&#39;s possible to also parallize the solving.</p><pre><code class="language-julia hljs">function System(; name)
+    src = Input(Float64)
+
+    vars = @variables f(t)=0 x(t)=0 dx(t)=0 ddx(t)=0
+    pars = @parameters m=10 k=1000 d=1
+
+    eqs = [f ~ src.output.u
+           ddx * 10 ~ k * x + d * dx + f
+           D(x) ~ dx
+           D(dx) ~ ddx]
+
+    ODESystem(eqs, t, vars, pars; systems = [src], name)
+end
+
+@named system = System()
+sys = structural_simplify(system)
+s = complete(system)
+prob = ODEProblem(sys, [], (0, time[end]); tofloat = false)
+defs = ModelingToolkit.defaults(sys)
+
+function get_prob(data)
+    defs[s.src.buffer] = Parameter(data, dt)
+    # ensure p is a uniform type of Vector{Parameter{Float64}} (converting from Vector{Any})
+    p = Parameter.(ModelingToolkit.varmap_to_vars(defs, parameters(sys); tofloat = false))
+    remake(prob; p)
+end
+
+prob1 = get_prob(data1)
+prob2 = get_prob(data2)
+
+sol1 = Ref{ODESolution}()
+sol2 = Ref{ODESolution}()
+@sync begin
+    @async sol1[] = solve(prob1, ImplicitEuler())
+    @async sol2[] = solve(prob2, ImplicitEuler())
+end</code></pre><p>Note, in the above example, we can build the system with an empty <code>Input</code> component, only setting the expected data type: <code>@named src = Input(Float64)</code>.  It&#39;s also possible to initialize the component with real data: <code>@named src = Input(data, dt)</code>.  Additionally note that before running an <code>ODEProblem</code> using the <code>Input</code> component that the parameter vector should be a uniform type so that Julia is not slowed down by type instability.  Because the <code>Input</code> component contains the <code>buffer</code> parameter of type <code>Parameter</code>, we must generate the problem using <code>tofloat=false</code>.  This will initially give a parameter vector of type <code>Vector{Any}</code> with a mix of numbers and <code>Parameter</code> type.  We can convert the vector to all <code>Parameter</code> type by running <code>p = Parameter.(p)</code>.  This will wrap all the single values in a <code>Parameter</code> type which will be mathmatically equivalent to a <code>Number</code>.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../dc_motor_pi/">« DC Motor with Speed Controller</a><a class="docs-footer-nextpage" href="../../connectors/connections/">About Acausal Connections »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.24 on <span class="colophon-date" title="Wednesday 3 May 2023 07:26">Wednesday 3 May 2023</span>. Using Julia version 1.8.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
