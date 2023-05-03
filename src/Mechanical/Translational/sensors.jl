@@ -4,6 +4,6 @@
     pars = @parameters s_0 = s_0
     vars = @variables s(t) = s_0
     eqs = [D(s) ~ flange.v
-           0 ~ p.f]
+           0 ~ flange.f]
     compose(ODESystem(eqs, t, vars, pars; name = name), flange)
 end
