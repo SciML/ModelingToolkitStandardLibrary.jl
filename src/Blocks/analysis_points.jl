@@ -380,13 +380,17 @@ function open_loop(sys, ap_name::Symbol; ground_input = false, kwargs...)
 end
 
 function ModelingToolkit.linearization_function(sys::ModelingToolkit.AbstractSystem,
-                                                input_name::SymOrVec, output_name::SymOrVec;
+                                                input_name::SymOrVec, output_name;
                                                 loop_openings = nothing,
                                                 kwargs...)
     t = get_iv(sys)
     @variables u(t)=0 [input = true]
-    @variables y(t)=0 [output = true]
-    find = namespaced_ap_match([input_name; output_name], loop_openings)
+    names = [input_name;]
+    if output_name isa SymOrVec
+        @variables y(t)=0 [output = true]
+        names = [names; output_name]
+    end
+    find = namespaced_ap_match(names, loop_openings)
 
     u = []
     y = []
@@ -406,7 +410,7 @@ function ModelingToolkit.linearization_function(sys::ModelingToolkit.AbstractSys
             append!(u, ui)
             [ap_var(ap.out) .~ ap_var(ap.in) + ui;], ui
             #input.in.u ~ 0] # We only need to ground one of the ends, hence not including this equation
-        elseif namespaced_ap_match(ap, ns, output_name, nothing)
+        elseif output_name isa SymOrVec && namespaced_ap_match(ap, ns, output_name, nothing)
             push!(namespace_y, ns) # Save the namespace to make it available for renamespace below
             push!(aps_y, ap)
             yi = get_perturbation_var(ap_var(ap.in), "y")
@@ -420,11 +424,15 @@ function ModelingToolkit.linearization_function(sys::ModelingToolkit.AbstractSys
     end
 
     sys = expand_connections(sys, find, replace)
-    permutation_u = _check_and_sort!(input_name, aps_u, namespace_u, multiplicities_u)
-    permutation_y = _check_and_sort!(output_name, aps_y, namespace_y, multiplicities_y)
 
-    yn = ModelingToolkit.renamespace.(namespace_y, y) # permutation applied in _check_and_sort
+    permutation_u = _check_and_sort!(input_name, aps_u, namespace_u, multiplicities_u)
     un = ModelingToolkit.renamespace.(namespace_u, u)
+    if output_name isa SymOrVec
+        permutation_y = _check_and_sort!(output_name, aps_y, namespace_y, multiplicities_y)
+        yn = ModelingToolkit.renamespace.(namespace_y, y) # permutation applied in _check_and_sort
+    else
+        yn = output_name
+    end
     ModelingToolkit.linearization_function(sys, un, yn; kwargs...)
 end
 
@@ -450,11 +458,13 @@ for f in [:get_sensitivity, :get_comp_sensitivity, :get_looptransfer]
 end
 
 """
-    ModelingToolkit.linearize(sys, input_name::Symbol, output_name::Symbol; kwargs...)
+    ModelingToolkit.linearize(sys, input_name::Symbol, output_name; kwargs...)
 
-Linearize a system between two analysis points. To get a loop-transfer function, see [`get_looptransfer`](@ref)
+Linearize a system between two analysis points. To get a loop-transfer function, see [`get_looptransfer`](@ref).
+
+The output is allowed to be either an analysis-point name, or a vector of symbolic variables like the standard interface to `linearize`. The input must be an analysis-point name.
 """
-function ModelingToolkit.linearize(sys, input_name::SymOrVec, output_name::SymOrVec;
+function ModelingToolkit.linearize(sys, input_name::SymOrVec, output_name;
                                    loop_openings = nothing, kwargs...)
     lin_fun, ssys = linearization_function(sys, input_name, output_name; loop_openings,
                                            kwargs...)
