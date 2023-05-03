@@ -196,16 +196,16 @@ end
     RotationalFriction(;name, f, tau_c, w_brk, tau_brk)
 
 Models rotational friction with Stribeck effect, Coulomb friction and viscous friction between the two flanges.
-The friction torque is a function of the relative angular velocity between flange_a and flange_b.
+The friction torque is a function of the relative angular velocity between `flange_a` and `flange_b`.
 
 Friction model: "Armstrong, B. and C.C. de Wit, Friction Modeling and Compensation, The Control Handbook, CRC Press, 1995."
 
 # States:
 
-  - `phi_rel(t)`: [`rad`] Relative rotation angle (= flange_b.phi - flange_a.phi)
-  - `w_rel(t)`: [`rad/s`] Relative angular velocity (= D(phi_rel))
-  - `a_rel(t)`: [`rad/s²`] Relative angular acceleration (= D(w_rel))
-  - `tau(t)`: [`N.m`] Torque between flanges (= flange_b.tau)
+  - `phi_rel(t)`: [`rad`] Relative rotation angle `(= flange_b.phi - flange_a.phi)`
+  - `w_rel(t)`: [`rad/s`] Relative angular velocity `(= D(phi_rel))`
+  - `a_rel(t)`: [`rad/s²`] Relative angular acceleration `(= D(w_rel))`
+  - `tau(t)`: [`N.m`] Torque between flanges `(= flange_b.tau)`
 
 # Connectors:
 
