@@ -18,7 +18,7 @@ NEWTON = NLNewton(check_div = false, always_new = true, max_iter = 100, relax = 
             fluid = IC.HydraulicFluid(; bulk_modulus)
             stp = B.Step(; height = 10e5, offset = 0, start_time = 0.005, duration = Inf,
                          smooth = true)
-            src = IC.InputSource(; p_int = 0)
+            src = IC.Pressure(; p_int = 0)
             vol = IC.FixedVolume(; p_int = 0, vol = 10.0)
         end
 
@@ -29,7 +29,7 @@ NEWTON = NLNewton(check_div = false, always_new = true, max_iter = 100, relax = 
         end
         push!(systems, res)
 
-        eqs = [connect(stp.output, src.input)
+        eqs = [connect(stp.output, src.p)
                connect(fluid, src.port)
                connect(src.port, res.port_a)
                connect(res.port_b, vol.port)]
@@ -63,7 +63,7 @@ end
 
         systems = @named begin
             fluid = IC.HydraulicFluid()
-            sink = IC.Source(; p = 10e5)
+            sink = IC.FixedPressure(; p = 10e5)
             vol = IC.FixedVolume(; vol = 0.1, p_int = 100e5)
             valve = IC.Valve(; p_a_int = 10e5, p_b_int = 100e5, area_int = 0, Cd = 1e6)
             ramp = B.Ramp(; height = 1, duration = 0.001, offset = 0, start_time = 0.001,
@@ -99,13 +99,13 @@ end
 
         systems = @named begin
             fluid = IC.HydraulicFluid()
-            src1 = IC.InputSource(; p_int = 10e5)
-            src2 = IC.InputSource(; p_int = 10e5)
+            src1 = IC.Pressure(; p_int = 10e5)
+            src2 = IC.Pressure(; p_int = 10e5)
 
-            vol1 = IC.DynamicVolume(; p_int = 10e5, area, direction = +1,
+            vol1 = IC.DynamicVolume(+1; p_int = 10e5, area,
                                     dead_volume = 2e-4,
                                     minimum_volume = 2e-4)
-            vol2 = IC.DynamicVolume(; p_int = 10e5, area, direction = -1,
+            vol2 = IC.DynamicVolume(-1; p_int = 10e5, area,
                                     dead_volume = 2e-4,
                                     minimum_volume = 2e-4, x_int = length)
 
@@ -119,8 +119,8 @@ end
                connect(src1.port, vol1.port)
                connect(src2.port, vol2.port)
                connect(vol1.flange, mass.flange, vol2.flange)
-               connect(src1.input, sin1.output)
-               connect(src2.input, sin2.output)]
+               connect(src1.p, sin1.output)
+               connect(src2.p, sin2.output)]
 
         ODESystem(eqs, t, [], pars; name, systems)
     end
@@ -148,10 +148,10 @@ end
     # end
 
     # volume/mass should stop moving at opposite ends
-    @test round(sol[s.vol1.x][1]; digits = 2) == 0.0
-    @test round(sol[s.vol2.x][1]; digits = 2) == 0.1
-    @test round(sol[s.vol1.x][end]; digits = 2) == 0.1
-    @test round(sol[s.vol2.x][end]; digits = 2) == 0.0
+    @test round(sol[s.vol1.vol.x][1]; digits = 2) == 0.0
+    @test round(sol[s.vol2.vol.x][1]; digits = 2) == 0.1
+    @test round(sol[s.vol1.vol.x][end]; digits = 2) == 0.1
+    @test round(sol[s.vol2.vol.x][end]; digits = 2) == 0.0
 end
 
 @testset "Actuator System" begin
@@ -185,7 +185,7 @@ end
         vars = @variables begin ddx(t) = 0 end
 
         systems = @named begin
-            src = IC.Source(; p = p_s)
+            src = IC.FixedPressure(; p = p_s)
             valve = IC.SpoolValve2Way(; p_s_int = p_s, p_a_int = p_1, p_b_int = p_2,
                                       p_r_int = p_r, g, m = m_f, x_int = x_f_int, d, Cd)
             piston = IC.Actuator(; p_a_int = p_1, p_b_int = p_2, area_a = A_1, area_b = A_2,
@@ -194,8 +194,8 @@ end
                                  x_int = 0, minimum_volume_a = 0, minimum_volume_b = 0)
             body = T.Mass(; m = m_body)
             pipe = IC.Tube(5; p_int = p_2, area = A_2, length = 2.0)
-            snk = IC.Source(; p = p_r)
-            pos = T.Position(; x_int = x_f_int)
+            snk = IC.FixedPressure(; p = p_r)
+            pos = T.Position(; s_0 = x_f_int)
 
             m1 = IC.FlowDivider(; p_int = p_2, n = 3)
             m2 = IC.FlowDivider(; p_int = p_2, n = 3)
@@ -204,14 +204,14 @@ end
         end
 
         if use_input
-            @named input = B.Input(Float64)
+            @named input = B.SampledData(Float64)
         else
             @named input = B.TimeVaryingFunction(f; t)
         end
 
         push!(systems, input)
 
-        eqs = [connect(input.output, pos.input)
+        eqs = [connect(input.output, pos.s)
                connect(valve.flange, pos.flange)
                connect(valve.port_a, piston.port_a)
                connect(piston.flange, body.flange)

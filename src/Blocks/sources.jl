@@ -488,18 +488,14 @@ function Parameter(x::T; tofloat = true) where {T <: Real}
 end
 Parameter(x::Vector{T}, dt::T) where {T <: Real} = Parameter(x, dt, length(x))
 
-function input(t, memory::Parameter{T}) where {T}
+function get_sampled_data(t, memory::Parameter{T}) where {T}
     if t < 0
         t = zero(t)
     end
 
     if isempty(memory.data)
-        if T isa Float16
-            return NaN16
-        elseif T isa Float32
-            return NaN32
-        elseif T isa Float64
-            return NaN64
+        if T <: AbstractFloat
+            return T(NaN)
         else
             return zero(T)
         end
@@ -528,27 +524,27 @@ end
 get_sample_time(memory::Parameter) = memory.ref
 Symbolics.@register_symbolic get_sample_time(memory)
 
-Symbolics.@register_symbolic input(t, memory)
+Symbolics.@register_symbolic get_sampled_data(t, memory)
 
 function first_order_backwards_difference(t, memory)
     Δt = get_sample_time(memory)
-    x1 = input(t, memory)
-    x0 = input(t - Δt, memory)
+    x1 = get_sampled_data(t, memory)
+    x0 = get_sampled_data(t - Δt, memory)
 
     return (x1 - x0) / Δt
 end
 
-function Symbolics.derivative(::typeof(input), args::NTuple{2, Any}, ::Val{1})
+function Symbolics.derivative(::typeof(get_sampled_data), args::NTuple{2, Any}, ::Val{1})
     first_order_backwards_difference(args[1], args[2])
 end
 
-Input(T::Type; name) = Input(T[], zero(T); name)
-function Input(data::Vector{T}, dt::T; name) where {T <: Real}
-    Input(; name, buffer = Parameter(data, dt))
+SampledData(T::Type; name) = SampledData(T[], zero(T); name)
+function SampledData(data::Vector{T}, dt::T; name) where {T <: Real}
+    SampledData(; name, buffer = Parameter(data, dt))
 end
 
 """
-    Input(; name, buffer)
+    SampledData(; name, buffer)
 
 data input component.  
 
@@ -558,13 +554,14 @@ data input component.
 # Connectors:
   - `output`
 """
-@component function Input(; name, buffer)
+@component function SampledData(; name, buffer)
     pars = @parameters begin buffer = buffer end
     vars = []
     systems = @named begin output = RealOutput() end
     eqs = [
-        output.u ~ input(t, buffer),
+        output.u ~ get_sampled_data(t, buffer),
     ]
     return ODESystem(eqs, t, vars, pars; name, systems,
-                     defaults = [output.u => input(0.0, buffer)]) #TODO: get initial value from buffer
+                     defaults = [output.u => get_sampled_data(0.0, buffer)])
 end
+@deprecate Input SampledData

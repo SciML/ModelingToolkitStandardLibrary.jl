@@ -407,13 +407,13 @@ end
                                                              offset, start_time) atol=1e-3
 end
 
-@testset "Input" begin
+@testset "SampledData" begin
     dt = 4e-4
     t_end = 10.0
     time = 0:dt:t_end
     x = @. time^2 + 1.0
 
-    @named src = Input(Float64)
+    @named src = SampledData(Float64)
     @named int = Integrator()
     @named iosys = ODESystem([
                                  connect(src.output, int.input),
