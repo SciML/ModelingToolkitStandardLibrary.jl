@@ -89,7 +89,7 @@ end
     @test sol[s.vol.port.p][end] ≈ 10e5
 end
 
-@testset "DynamicVolume and minimum_volume feature" begin
+# @testset "DynamicVolume and minimum_volume feature" begin
     function System(; name)
         pars = []
 
@@ -98,24 +98,28 @@ end
         length = 0.1
 
         systems = @named begin
-            fluid = IC.HydraulicFluid()
+            fluid = IC.HydraulicFluid(; bulk_modulus=1e9)
             src1 = IC.Pressure(; p_int = 10e5)
             src2 = IC.Pressure(; p_int = 10e5)
 
             vol1 = IC.DynamicVolume(+1; p_int = 10e5, area,
-                                    dead_volume = 2e-4,
-                                    minimum_volume = 2e-4)
+                                    dead_volume = 0,
+                                    minimum_volume = area*length*0.1,
+                                    x_int = length)
             vol2 = IC.DynamicVolume(-1; p_int = 10e5, area,
-                                    dead_volume = 2e-4,
-                                    minimum_volume = 2e-4, x_int = length)
+                                    dead_volume = 0,
+                                    minimum_volume = area*length*0.1, 
+                                    x_int = length)
 
-            mass = T.Mass(; m = 100)
+            mass = T.Mass(; m = 10)
 
-            sin1 = B.Sine(; frequency = 0.5, amplitude = +1e5, offset = 10e5)
-            sin2 = B.Sine(; frequency = 0.5, amplitude = -1e5, offset = 10e5)
+            sin1 = B.Sine(; frequency = 0.25, amplitude = +1e4, offset = 10e5)
+            sin2 = B.Sine(; frequency = 0.25, amplitude = -1e4, offset = 10e5)
         end
 
-        eqs = [connect(fluid, src1.port, src2.port)
+        eqs = [
+                connect(fluid, src1.port)
+                connect(fluid, src2.port)
                connect(src1.port, vol1.port)
                connect(src2.port, vol2.port)
                connect(vol1.flange, mass.flange, vol2.flange)
@@ -128,31 +132,57 @@ end
     @named min_vol_system = System()
     s = complete(min_vol_system)
     sys = structural_simplify(min_vol_system)
-    prob = ODEProblem(sys, [], (0, 5.0))
+    prob = ODEProblem(sys, [], (0, 5))
 
-    sol = solve(prob, ImplicitEuler(nlsolve = NEWTON); adaptive = false, dt = 1e-4,
+    sol = solve(prob, ImplicitEuler(nlsolve=NEWTON); adaptive = false, dt = 1e-4,
                 initializealg = NoInit())
 
-    # begin
-    #     fig = Figure()
+    begin
+        fig = Figure()
 
-    #     ax = Axis(fig[1,1], ylabel="position [m]", xlabel="time [s]")
-    #     lines!(ax, sol.t, sol[s.vol1.x]; label="vol1")
-    #     lines!(ax, sol.t, sol[s.vol2.x]; label="vol2")
+        ax = Axis(fig[1,1], ylabel="position [m]", xlabel="time [s]")
+        lines!(ax, sol.t, sol[s.vol1.vol.x]; label="vol1")
+        lines!(ax, sol.t, sol[s.vol2.vol.x]; label="vol2")
 
-    #     ax = Axis(fig[2,1], ylabel="pressure [bar]", xlabel="time [s]")
-    #     lines!(ax, sol.t, sol[s.vol1.port.p]/1e5; label="vol1")
-    #     lines!(ax, sol.t, sol[s.vol2.port.p]/1e5; label="vol2")
-    #     Legend(fig[2,2], ax)
-    #     fig    
-    # end
+        ax = Axis(fig[2,1], ylabel="pressure [bar]", xlabel="time [s]")
+        
+        lines!(ax, sol.t, sol[s.vol1.damper.port_a.p]/1e5; label="vol1 port", color=:blue)
+        lines!(ax, sol.t, sol[s.vol2.damper.port_a.p]/1e5; label="vol2 port", color=:red)
+
+        lines!(ax, sol.t, sol[s.vol1.vol.p]/1e5; label="vol1 port", color=:blue, linestyle=:dash)
+        lines!(ax, sol.t, sol[s.vol2.vol.p]/1e5; label="vol2 port", color=:red, linestyle=:dash)
+
+
+        Legend(fig[2,2], ax)
+        ylims!(ax, 10-0.25, 10+0.25)
+
+        ax = Axis(fig[3,1], ylabel="area", xlabel="time [s]")
+        lines!(ax, sol.t, sol[s.vol1.damper.area]; label="area 1")
+        lines!(ax, sol.t, sol[s.vol2.damper.area]; label="area 2")
+        Legend(fig[3,2], ax)
+        
+
+        fig
+    end
+
+    i1 = round(Int, 1/1e-4)
+    i2 = round(Int, 4/1e-4)
+    i3 = round(Int, 6/1e-4)
+    i4 = round(Int, 7.5/1e-4)
+    
 
     # volume/mass should stop moving at opposite ends
-    @test round(sol[s.vol1.vol.x][1]; digits = 2) == 0.0
+    @test round(sol[s.vol1.vol.x][1]; digits = 2) == 0.1
     @test round(sol[s.vol2.vol.x][1]; digits = 2) == 0.1
-    @test round(sol[s.vol1.vol.x][end]; digits = 2) == 0.1
-    @test round(sol[s.vol2.vol.x][end]; digits = 2) == 0.0
-end
+    @test round(sol[s.vol1.vol.x][i1]; digits = 2) == 0.15
+    @test round(sol[s.vol2.vol.x][i1]; digits = 2) == 0.05
+    @test round(sol[s.vol1.vol.x][i2]; digits = 2) == 0.05
+    @test round(sol[s.vol2.vol.x][i2]; digits = 2) == 0.15
+    @test round(sol[s.vol1.vol.x][i3]; digits = 2) == 0.15
+    @test round(sol[s.vol2.vol.x][i3]; digits = 2) == 0.05
+    @test round(sol[s.vol1.vol.x][i4]; digits = 2) == 0.05
+    @test round(sol[s.vol2.vol.x][i4]; digits = 2) == 0.15
+# end
 
 @testset "Actuator System" begin
     function System(use_input, f; name)

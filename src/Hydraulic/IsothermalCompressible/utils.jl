@@ -119,9 +119,10 @@ gas_density_ref(port) = port.ρ_gas
 gas_pressure_ref(port) = port.p_gas
 bulk_modulus(port) = port.β
 viscosity(port) = port.μ
-liquid_density(port) = density_ref(port) * (1 + port.p / bulk_modulus(port))
-function gas_density(port)
-    density_ref(port) -
-    port.p * (density_ref(port) - gas_density_ref(port)) / gas_pressure_ref(port)
+liquid_density(port, p) = density_ref(port) * (1 + p / bulk_modulus(port))
+liquid_density(port) = liquid_density(port, port.p)
+function gas_density(port, p)
+    density_ref(port) - p * (density_ref(port) - gas_density_ref(port)) / gas_pressure_ref(port)
 end
-full_density(port) = liquid_density(port) #ifelse( port.p > 0, liquid_density(port), gas_density(port) )
+full_density(port, p) = liquid_density(port, p)  #ifelse( p > 0, liquid_density(port, p), gas_density(port, p) )
+full_density(port) = full_density(port, port.p)
