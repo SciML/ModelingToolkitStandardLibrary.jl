@@ -39,80 +39,6 @@ end
     ODESystem(eqs, t, vars, pars; name, systems)
 end
 
-@component function VolumeBase(; p_int, x_int = 0, area, dead_volume = 0, minimum_volume = 0, name)
-
-    pars = @parameters begin
-        p_int = p_int
-        x_int = x_int
-        area = area
-        dead_volume = dead_volume
-        minimum_volume = minimum_volume
-    end
-
-    systems = @named begin 
-        port = HydraulicPort(; p_int) 
-    end
-
-    vars = @variables begin
-        x(t) = x_int
-        dx(t) = 0
-        rho(t) = liquid_density(port)
-        drho(t) = 0
-        vol(t) = dead_volume + area * x_int
-        p(t) = p_int
-    end
-
-    # let
-    dm = port.dm
-
-    
-
-    
-
-    eqs = [
-    
-           0 ~ ifelse( vol > minimum_volume, p - port.p, dm) 
-
-           vol ~ dead_volume + area * x
-           D(x) ~ dx
-           D(rho) ~ drho
-           rho ~ full_density(port, p)
-           dm ~ drho * vol + rho * area * dx
-           
-           ]
-
-    ODESystem(eqs, t, vars, pars; name, systems)
-end
-
-"""
-    FixedVolume(; vol, p_int, name)
-
-Fixed fluid volume.
-
-# Parameters:
-- `vol`: [m^3] fixed volume
-- `p_int`: [Pa] initial pressure
-
-# Connectors:
-- `port`: hydraulic port
-"""
-@component function FixedVolume(; vol, p_int, name)
-    pars = @parameters begin
-        vol = vol
-        p_int = p_int
-    end
-
-    systems = @named begin
-        port = HydraulicPort(; p_int)
-        vol = VolumeBase(; p_int, x_int = 0, area = 0.0, dead_volume = vol) #area set to 0.0, not needed or used here
-    end
-
-    eqs = [connect(vol.port, port)
-           vol.dx ~ 0]
-
-    ODESystem(eqs, t, [], pars; name, systems)
-end
-
 """
     TubeBase(; p_int, area, length, perimeter=2*sqrt(area*pi), shape_factor=64, name)
 
@@ -129,17 +55,17 @@ Internal flow model of the fully developed flow friction, ignoring any compressi
 - `port_a`: hydraulic port
 - `port_b`: hydraulic port
 """
-@component function TubeBase(; p_int, area, length, perimeter = 2 * sqrt(area * pi),
+@component function TubeBase(; p_int, area, length_int, perimeter = 2 * sqrt(area * pi),
                              shape_factor = 64, name)
     pars = @parameters begin
         p_int = p_int
         area = area
-        length = length
+        length_int=length_int
         perimeter = perimeter
         Φ = shape_factor
     end
 
-    vars = []
+    vars = @variables length(t) = length_int
 
     systems = @named begin
         port_a = HydraulicPort(; p_int)
@@ -208,7 +134,7 @@ Tube modeled with `N` segements which models the fully developed flow friction a
     for i in 1:(N - 1)
         x = TubeBase(; name = Symbol("p$i"), shape_factor = ParentScope(Φ),
                      p_int = ParentScope(p_int), area = ParentScope(area),
-                     length = ParentScope(effective_length) / (N - 1),
+                     length_int = ParentScope(effective_length) / (N - 1),
                      perimeter = ParentScope(perimeter))
         push!(pipe_bases, x)
     end
@@ -225,8 +151,11 @@ Tube modeled with `N` segements which models the fully developed flow friction a
            connect(volumes[end].port, pipe_bases[end].port_b, port_b)]
 
     for i in 2:(N - 1)
-        eq = connect(volumes[i].port, pipe_bases[i - 1].port_b, pipe_bases[i].port_a)
-        push!(eqs, eq)
+        push!(eqs, connect(volumes[i].port, pipe_bases[i - 1].port_b, pipe_bases[i].port_a)) 
+    end
+
+    for i = 1:(N-1)
+        push!(eqs, pipe_bases[i].length ~ effective_length / (N - 1) )
     end
 
     ODESystem(eqs, t, vars, pars; name, systems = [ports; pipe_bases; volumes])
@@ -276,76 +205,8 @@ Reduces the flow from `port_a` to `port_b` by `n`.  Useful for modeling parallel
     ODESystem(eqs, t, vars, pars; name, systems)
 end
 
-
-"""
-    DynamicVolume(; p_int, x_int=0, area, dead_volume=0, direction=+1, minimum_volume=0, name)
-
-Volume with moving wall.  The `direction` argument aligns the mechanical port with the hydraulic port, useful when connecting two dynamic volumes together in oppsing directions to create an actuator.
-```
-     ┌─────────────────┐ ───
-     │                 │  ▲
-                       │  │
-dm ────►  dead volume  │  │ area
-                       │  │  
-     │                 │  ▼
-     └─────────────────┤ ───
-                       │
-                       └─► x (= flange.v * direction)
-```
-# States:
-- `x(t)`: [m] moving wall position
-- `dx(t)`: [m/s] moving wall velocity
-- `rho(t)`: [kg/m^3] density
-- `drho(t)`: [kg/s-m^3] density derivative
-- `vol(t)`: [m^3] volume
-- `p(t)`: [Pa] dynamic pressure
-
-# Parameters:
-- `p_int`: [Pa] initial pressure
-- `x_int`: [m] initial position of the moving wall
-- `area`: [m^2] moving wall area
-- `dead_volume`: [m^3] starting volume
-- `minimum_volume`: [m^3] if `x`*`area` <= `minimum_volume` then mass flow `dm` shuts off
-
-# Connectors:
-- `port`: hydraulic port
-- `flange`: mechanical translational port
-"""
-@component function DynamicVolume(direction = +1; p_int, x_int = 0, area, dead_volume = 0,
-                                  minimum_volume = 0, name)
-    @assert (direction == +1)||(direction == -1) "direction arument must be +/-1, found $direction"
-
-    pars = @parameters begin
-        p_int = p_int
-        x_int = x_int
-        area = area
-        dead_volume = dead_volume
-        minimum_volume = minimum_volume
-    end
-
-    systems = @named begin
-        port = HydraulicPort(; p_int)
-        flange = MechanicalPort()
-        vol = VolumeBase(; p_int, x_int, area, dead_volume, minimum_volume)
-        damper = ValveBase(; p_a_int=p_int, p_b_int=p_int, area_int=1, Cd=1e6)
-    end
-
-    vars = []
-
-    damping_volume = minimum_volume
-    vol_ratio = (vol.vol - minimum_volume)/damping_volume
-    damper_area = ifelse(vol_ratio >= 1, 1, ifelse((vol_ratio < 1) & (vol_ratio > 1e-6), vol_ratio, 1e-6))
-
-    eqs = [connect(port, damper.port_b)
-           connect(vol.port, damper.port_a) 
-           damper.area ~ damper_area
-           vol.dx ~ flange.v * direction
-           flange.f ~ - vol.p * area * direction]
-
-    ODESystem(eqs, t, vars, pars; name, systems, defaults = [flange.v => 0])
-end
-
-@component function ValveBase(reversible = false; p_a_int, p_b_int, area_int, Cd, name)
+@component function ValveBase(reversible = false, directional = false; p_a_int, p_b_int,
+                              area_int, Cd, name)
     pars = @parameters begin
         p_a_int = p_a_int
         p_b_int = p_b_int
@@ -371,16 +232,23 @@ end
         ifelse(area > 0, area, 0)
     end
 
-    eqs = [sign(Δp) * dm ~ sqrt(2 * abs(Δp) * abs(ρ) / Cd) * x
-           0 ~ port_a.dm + port_b.dm]
+    eqs = [
+        0 ~ port_a.dm + port_b.dm,
+    ]
+
+    if directional
+        push!(eqs, 0 ~ ifelse(Δp > 0, (dm) - (sqrt(2 * abs(Δp) * abs(ρ) / Cd) * x), Δp))
+    else
+        push!(eqs, sign(Δp) * dm ~ sqrt(2 * abs(Δp) * abs(ρ) / Cd) * x)
+    end
 
     ODESystem(eqs, t, vars, pars; name, systems)
 end
 
 """
-    Valve(; p_a_int, p_b_int, area_int, Cd, name)
+    Valve(reversible = false, directional=false; p_a_int, p_b_int, area_int, Cd, name)
 
-Valve with area input and discharge coefficient `Cd` defined by https://en.wikipedia.org/wiki/Discharge_coefficient
+Valve with `area` input and discharge coefficient `Cd` defined by https://en.wikipedia.org/wiki/Discharge_coefficient.  The input `directional` allows for 2 way flow restriction when `false`, and only applies restriction from `port_a` to `port_b` when true, making it like a check valve.
 
 # Parameters:
 - `p_a_int`: [Pa] initial pressure for `port_a`
@@ -391,9 +259,10 @@ Valve with area input and discharge coefficient `Cd` defined by https://en.wikip
 # Connectors:
 - `port_a`: hydraulic port
 - `port_b`: hydraulic port
-- `input`: real input setting the valve `area`.  Note: absolute value taken
+- `area`: real input setting the valve `area`.  When `reversible = true`, negative input reverses flow direction, otherwise a floor of 0 is enforced.
 """
-@component function Valve(reversible = false; p_a_int, p_b_int, area_int, Cd, name)
+@component function Valve(reversible = false, directional = false; p_a_int, p_b_int,
+                          area_int, Cd, name)
     pars = @parameters begin
         p_a_int = p_a_int
         p_b_int = p_b_int
@@ -404,7 +273,7 @@ Valve with area input and discharge coefficient `Cd` defined by https://en.wikip
     systems = @named begin
         port_a = HydraulicPort(; p_int = p_a_int)
         port_b = HydraulicPort(; p_int = p_b_int)
-        input = RealInput()
+        area = RealInput()
         base = ValveBase(reversible; p_a_int, p_b_int, area_int, Cd)
     end
 
@@ -412,9 +281,144 @@ Valve with area input and discharge coefficient `Cd` defined by https://en.wikip
 
     eqs = [connect(base.port_a, port_a)
            connect(base.port_b, port_b)
-           base.area ~ input.u]
+           base.area ~ area.u]
 
-    ODESystem(eqs, t, vars, pars; name, systems, defaults = [input.u => area_int])
+    ODESystem(eqs, t, vars, pars; name, systems, defaults = [area.u => area_int])
+end
+
+@component function VolumeBase(; p_int, x_int = 0, area, dead_volume = 0, name)
+    pars = @parameters begin
+        p_int = p_int
+        x_int = x_int
+        area = area
+        dead_volume = dead_volume
+    end
+
+    systems = @named begin port = HydraulicPort(; p_int) end
+
+    vars = @variables begin
+        x(t) = x_int
+        dx(t) = 0
+        rho(t) = liquid_density(port)
+        drho(t) = 0
+        vol(t) = dead_volume + area * x_int
+    end
+
+    # let
+    dm = port.dm
+    p = port.p
+
+    eqs = [
+           vol ~ dead_volume + area * x
+           D(x) ~ dx
+           D(rho) ~ drho
+           rho ~ full_density(port, p)
+           dm ~ drho * vol + rho * area * dx]
+
+    ODESystem(eqs, t, vars, pars; name, systems)
+end
+
+"""
+    FixedVolume(; vol, p_int, name)
+
+Fixed fluid volume.
+
+# Parameters:
+- `vol`: [m^3] fixed volume
+- `p_int`: [Pa] initial pressure
+
+# Connectors:
+- `port`: hydraulic port
+"""
+@component function FixedVolume(; vol, p_int, name)
+    pars = @parameters begin
+        vol = vol
+        p_int = p_int
+    end
+
+    systems = @named begin
+        port = HydraulicPort(; p_int)
+        vol = VolumeBase(; p_int, x_int = 0, area = 0.0, dead_volume = vol) #area set to 0.0, not needed or used here
+    end
+
+    eqs = [connect(vol.port, port)
+           vol.dx ~ 0]
+
+    ODESystem(eqs, t, [], pars; name, systems)
+end
+
+"""
+    DynamicVolume(direction = +1; p_int, x_int = 0, area, dead_volume =0, minimum_volume = 0, damping_volume = 5*minimum_volume, Cd=1e4, name)
+
+Volume with moving wall.  The `direction` argument aligns the mechanical port with the hydraulic port, useful when connecting two dynamic volumes together in oppsing directions to create an actuator.
+```
+     ┌─────────────────┐ ───
+     │                 │  ▲
+                       │  │
+dm ────►  dead volume  │  │ area
+                       │  │  
+     │                 │  ▼
+     └─────────────────┤ ───
+                       │
+                       └─► x (= flange.v * direction)
+```
+# States:
+- `x(t)`: [m] moving wall position
+- `dx(t)`: [m/s] moving wall velocity
+- `rho(t)`: [kg/m^3] density
+- `drho(t)`: [kg/s-m^3] density derivative
+- `vol(t)`: [m^3] volume `= x(t)*area + dead_volume`
+- `p(t)`: [Pa] dynamic pressure
+
+# Parameters:
+- `p_int`: [Pa] initial pressure
+- `x_int`: [m] initial position of the moving wall
+- `area`: [m^2] moving wall area
+- `dead_volume`: [m^3] starting volume
+- `minimum_volume`: [m^3] if `vol(t) < minimum_volume` then mass flow `port.dm(t)` shuts off for exiting flow.
+- `damping_volume`: [m^3] if `vol(t)` is between `damping_volume + minimum_volume` and `minimum_volume`, then a valve with restriction `Cd` closes linearly with area changing from 1 to 0 [m^2].  Restriction is applied to exiting flow only. 
+- `Cd`: discharge coefficient (see Valve) for damping region
+
+# Connectors:
+- `port`: hydraulic port
+- `flange`: mechanical translational port
+"""
+@component function DynamicVolume(direction = +1; p_int, x_int = 0, area, dead_volume = 0,
+                                  minimum_volume = 0, damping_volume = 5 * minimum_volume,
+                                  Cd = 1e4, name)
+    @assert (direction == +1)||(direction == -1) "direction arument must be +/-1, found $direction"
+
+    pars = @parameters begin
+        p_int = p_int
+        x_int = x_int
+        area = area
+        dead_volume = dead_volume
+        minimum_volume = minimum_volume
+        damping_volume = damping_volume
+        Cd = Cd
+    end
+
+    systems = @named begin
+        port = HydraulicPort(; p_int)
+        flange = MechanicalPort()
+        vol = VolumeBase(; p_int, x_int, area, dead_volume)
+        damper = ValveBase(false, true; p_a_int = p_int, p_b_int = p_int, area_int = 1, Cd)
+    end
+
+    vars = []
+
+    vol_ratio = (vol.vol - minimum_volume) / damping_volume
+    damper_area = ifelse(vol.vol >= damping_volume + minimum_volume, 1,
+                         ifelse((vol.vol < damping_volume + minimum_volume) &
+                                (vol.vol > minimum_volume), vol_ratio, 0))
+
+    eqs = [connect(port, damper.port_b)
+           connect(vol.port, damper.port_a)
+           damper.area ~ damper_area
+           vol.dx ~ flange.v * direction
+           flange.f ~ -vol.port.p * area * direction]
+
+    ODESystem(eqs, t, vars, pars; name, systems, defaults = [flange.v => 0])
 end
 
 @component function SpoolValve(reversible = false; p_a_int, p_b_int, x_int, Cd, d, name)
@@ -494,6 +498,7 @@ end
 
 @component function Actuator(; p_a_int, p_b_int, area_a, area_b, length_a_int, length_b_int,
                              m, g, x_int = 0, minimum_volume_a = 0, minimum_volume_b = 0,
+                             damping_volume_a = 0, damping_volume_b = 0,
                              name)
     pars = @parameters begin
         p_a_int = p_a_int
@@ -505,6 +510,8 @@ end
         length_b_int = length_b_int
         minimum_volume_a = minimum_volume_a
         minimum_volume_b = minimum_volume_b
+        damping_volume_a = damping_volume_a
+        damping_volume_b = damping_volume_b
         m = m
         g = g
     end
@@ -517,10 +524,12 @@ end
     systems = @named begin
         vol_a = DynamicVolume(+1; p_int = p_a_int, x_int = +x_int, area = area_a,
                               dead_volume = length_a_int * area_a,
-                              minimum_volume = minimum_volume_a)
+                              minimum_volume = minimum_volume_a,
+                              damping_volume = damping_volume_a)
         vol_b = DynamicVolume(-1; p_int = p_b_int, x_int = -x_int, area = area_b,
                               dead_volume = length_b_int * area_b,
-                              minimum_volume = minimum_volume_b)
+                              minimum_volume = minimum_volume_b,
+                              damping_volume = damping_volume_b)
         mass = Mass(; m, g)
         port_a = HydraulicPort(; p_int = p_a_int)
         port_b = HydraulicPort(; p_int = p_b_int)
