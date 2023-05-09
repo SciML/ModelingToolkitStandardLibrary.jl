@@ -222,7 +222,8 @@ end
                                  minimum_volume_a = A_1 * 1e-3,
                                  minimum_volume_b = A_2 * 1e-3,
                                  damping_volume_a = A_1 * 5e-3,
-                                 damping_volume_b = A_2 * 5e-3)
+                                 damping_volume_b = A_2 * 5e-3,
+                                 fluid_inertia_factor = 0.7)
             body = T.Mass(; m = m_body)
             pipe = IC.Tube(5; p_int = p_2, area = A_2, length = 2.0)
             snk = IC.FixedPressure(; p = p_r)
