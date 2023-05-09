@@ -57,12 +57,13 @@ Internal flow model of the fully developed flow friction, ignoring any compressi
 - `port_a`: hydraulic port
 - `port_b`: hydraulic port
 """
-@component function TubeBase(; p_int, area, length_int, effective_length_multiplier = 1, perimeter = 2 * sqrt(area * pi),
+@component function TubeBase(; p_int, area, length_int, effective_length_multiplier = 1,
+                             perimeter = 2 * sqrt(area * pi),
                              shape_factor = 64, fluid_inertia_factor = 0, name)
     pars = @parameters begin
         p_int = p_int
         area = area
-        length_int=length_int
+        length_int = length_int
         perimeter = perimeter
         Φ = shape_factor
         Ε = effective_length_multiplier
@@ -72,7 +73,7 @@ Internal flow model of the fully developed flow friction, ignoring any compressi
     vars = @variables begin
         length(t) = length_int
         ddm(t) = 0
-    end 
+    end
 
     systems = @named begin
         port_a = HydraulicPort(; p_int)
@@ -91,11 +92,10 @@ Internal flow model of the fully developed flow friction, ignoring any compressi
     f = friction_factor(dm, area, d_h, ρ, μ, Φ)
     u = dm / (ρ * area)
 
-    eqs = [
-        D(dm) ~ ddm
-        Δp ~ 1 / 2 * ρ * u^2 * f * (length*Ε / d_h) + (length/area)*ddm*fluid_inertia_factor
-        0 ~ port_a.dm + port_b.dm
-        ]
+    eqs = [D(dm) ~ ddm
+           Δp ~ 1 / 2 * ρ * u^2 * f * (length * Ε / d_h) +
+                (length / area) * ddm * fluid_inertia_factor
+           0 ~ port_a.dm + port_b.dm]
 
     ODESystem(eqs, t, vars, pars; name, systems)
 end
@@ -142,14 +142,13 @@ Tube modeled with `N` segements which models the fully developed flow friction a
     end
 
     if N == 1
+        @named pipe_base = TubeBase(; shape_factor = Φ, p_int, area, length_int = length,
+                                    effective_length_multiplier = effective_length / length,
+                                    fluid_inertia_factor, perimeter)
 
-        @named pipe_base = TubeBase(; shape_factor=Φ, p_int, area, length_int=length, effective_length_multiplier=effective_length/length, fluid_inertia_factor, perimeter)
-
-        eqs = [
-            connect(pipe_base.port_a, port_a)
-            connect(pipe_base.port_b, port_b)
-            pipe_base.length ~ effective_length
-            ]
+        eqs = [connect(pipe_base.port_a, port_a)
+               connect(pipe_base.port_b, port_b)
+               pipe_base.length ~ effective_length]
 
         return ODESystem(eqs, t, vars, pars; name, systems = [ports; pipe_base])
     else
@@ -158,12 +157,13 @@ Tube modeled with `N` segements which models the fully developed flow friction a
             x = TubeBase(; name = Symbol("p$i"), shape_factor = ParentScope(Φ),
                          p_int = ParentScope(p_int), area = ParentScope(area),
                          length_int = ParentScope(length) / (N - 1),
-                         effective_length_multiplier = ParentScope(effective_length)/ParentScope(length),
+                         effective_length_multiplier = ParentScope(effective_length) /
+                                                       ParentScope(length),
                          fluid_inertia_factor = ParentScope(fluid_inertia_factor),
                          perimeter = ParentScope(perimeter))
             push!(pipe_bases, x)
         end
-    
+
         volumes = []
         for i in 1:N
             x = FixedVolume(; name = Symbol("v$i"),
@@ -171,22 +171,21 @@ Tube modeled with `N` segements which models the fully developed flow friction a
                             p_int = ParentScope(p_int))
             push!(volumes, x)
         end
-    
+
         eqs = [connect(volumes[1].port, pipe_bases[1].port_a, port_a)
                connect(volumes[end].port, pipe_bases[end].port_b, port_b)]
-    
+
         for i in 2:(N - 1)
-            push!(eqs, connect(volumes[i].port, pipe_bases[i - 1].port_b, pipe_bases[i].port_a)) 
+            push!(eqs,
+                  connect(volumes[i].port, pipe_bases[i - 1].port_b, pipe_bases[i].port_a))
         end
-    
-        for i = 1:(N-1)
-            push!(eqs, pipe_bases[i].length ~ effective_length / (N - 1) )
+
+        for i in 1:(N - 1)
+            push!(eqs, pipe_bases[i].length ~ effective_length / (N - 1))
         end
-    
+
         return ODESystem(eqs, t, vars, pars; name, systems = [ports; pipe_bases; volumes])
     end
-
-    
 end
 @deprecate Pipe Tube
 
@@ -233,13 +232,15 @@ Reduces the flow from `port_a` to `port_b` by `n`.  Useful for modeling parallel
     ODESystem(eqs, t, vars, pars; name, systems)
 end
 
-@component function ValveBase(reversible = false, directional = false; p_a_int, p_b_int,
-                              area_int, Cd, name)
+@component function ValveBase(reversible = false; p_a_int, p_b_int, minimum_area = 0,
+                              area_int, Cd, Cd_reverse = Cd, name)
     pars = @parameters begin
         p_a_int = p_a_int
         p_b_int = p_b_int
         area_int = area_int
         Cd = Cd
+        Cd_reverse = Cd_reverse
+        minimum_area = minimum_area
     end
 
     systems = @named begin
@@ -247,28 +248,27 @@ end
         port_b = HydraulicPort(; p_int = p_b_int)
     end
 
-    vars = @variables area(t) = area_int
+    vars = @variables begin
+        area(t) = area_int
+        Χ(t) = Cd
+    end
 
     # let
     ρ = full_density(port_a) # (full_density(port_a) + full_density(port_b)) / 2
-    Δp = port_a.p - port_b.p
-    dm = port_a.dm
 
     x = if reversible
         area
     else
-        ifelse(area > 0, area, 0)
+        ifelse(area > minimum_area, area, minimum_area)
     end
 
-    eqs = [
-        0 ~ port_a.dm + port_b.dm,
-    ]
+    Δp = port_a.p - port_b.p
+    dm = port_a.dm
 
-    if directional
-        push!(eqs, 0 ~ ifelse(Δp > 0, (dm) - (sqrt(2 * abs(Δp) * abs(ρ) / Cd) * x), Δp))
-    else
-        push!(eqs, sign(Δp) * dm ~ sqrt(2 * abs(Δp) * abs(ρ) / Cd) * x)
-    end
+    eqs = [0 ~ port_a.dm + port_b.dm
+           Χ ~ ifelse(Δp > 0, Cd, Cd_reverse)
+           dm ~ ifelse(abs(Δp) > 1.0, sign(Δp) * sqrt(2 * abs(Δp) * ρ / Χ) * x,
+                       (2 * Δp * ρ / Χ) * x)]
 
     ODESystem(eqs, t, vars, pars; name, systems)
 end
@@ -289,20 +289,25 @@ Valve with `area` input and discharge coefficient `Cd` defined by https://en.wik
 - `port_b`: hydraulic port
 - `area`: real input setting the valve `area`.  When `reversible = true`, negative input reverses flow direction, otherwise a floor of 0 is enforced.
 """
-@component function Valve(reversible = false, directional = false; p_a_int, p_b_int,
-                          area_int, Cd, name)
+@component function Valve(reversible = false; p_a_int, p_b_int,
+                          area_int, Cd, Cd_reverse = Cd,
+                          minimum_area = 0,
+                          name)
     pars = @parameters begin
         p_a_int = p_a_int
         p_b_int = p_b_int
         area_int = area_int
         Cd = Cd
+        Cd_reverse = Cd_reverse
+        minimum_area = minimum_area
     end
 
     systems = @named begin
         port_a = HydraulicPort(; p_int = p_a_int)
         port_b = HydraulicPort(; p_int = p_b_int)
         area = RealInput()
-        base = ValveBase(reversible; p_a_int, p_b_int, area_int, Cd)
+        base = ValveBase(reversible; p_a_int, p_b_int, area_int, Cd, Cd_reverse,
+                         minimum_area)
     end
 
     vars = []
@@ -336,8 +341,7 @@ end
     dm = port.dm
     p = port.p
 
-    eqs = [
-           vol ~ dead_volume + area * x
+    eqs = [vol ~ dead_volume + area * x
            D(x) ~ dx
            D(rho) ~ drho
            rho ~ full_density(port, p)
@@ -360,23 +364,27 @@ Fixed fluid volume.
 """
 @component function FixedVolume(; vol, p_int, name)
     pars = @parameters begin
-        vol = vol
         p_int = p_int
+        vol = vol
     end
 
-    systems = @named begin
-        port = HydraulicPort(; p_int)
-        vol = VolumeBase(; p_int, x_int = 0, area = 0.0, dead_volume = vol) #area set to 0.0, not needed or used here
+    systems = @named begin port = HydraulicPort(; p_int) end
+
+    vars = @variables begin
+        rho(t) = liquid_density(port)
+        drho(t) = 0
     end
 
-    eqs = [connect(vol.port, port)
-           vol.dx ~ 0]
+    # let
+    dm = port.dm
+    p = port.p
 
-    ODESystem(eqs, t, [], pars; name, systems)
+    eqs = [D(rho) ~ drho
+           rho ~ full_density(port, p)
+           dm ~ drho * vol]
+
+    ODESystem(eqs, t, vars, pars; name, systems)
 end
-
-
-
 
 """
     DynamicVolume(N, direction=+1; p_int, area, length, effective_length = length, fluid_inertia_factor = 0, perimeter = 2 * sqrt(area * pi), shape_factor = 64, minimum_volume = 0, damping_volume = 5 * minimum_volume, Cd = 1e4, name)
@@ -419,95 +427,131 @@ dm ────►               │  │ area
 - `port`: hydraulic port
 - `flange`: mechanical translational port
 """
-@component function DynamicVolume(N, direction=+1; p_int, area, length, effective_length = length, fluid_inertia_factor = 0,
-    perimeter = 2 * sqrt(area * pi),
-    shape_factor = 64, minimum_volume = 0, damping_volume = 5 * minimum_volume,
-    Cd = 1e4, name)
+@component function DynamicVolume(N, direction = +1;
+                                  p_int,
+                                  area,
+                                  x_int = 0,
+                                  x_max,
+                                  x_min = 0,
+                                  x_damp = x_min,
 
-    @assert(N>0, "the Tube component must be defined with more than 1 segment (i.e. N>1), found N=$N")
+                                  # Tube
+                                  effective_length_multiplier = 1.0,
+                                  fluid_inertia_factor = 0,
+                                  perimeter = 2 * sqrt(area * pi),
+                                  shape_factor = 64,
+
+                                  # Valve
+                                  Cd = 1e4,
+                                  Cd_reverse = Cd,
+                                  name)
+    @assert(N>0,
+            "the Tube component must be defined with more than 1 segment (i.e. N>1), found N=$N")
     @assert (direction == +1)||(direction == -1) "direction arument must be +/-1, found $direction"
 
     #TODO: How to set an assert effective_length >= length ??
     pars = @parameters begin
         p_int = p_int
         area = area
-        length = length
-        effective_length = effective_length
+
+        x_int = x_int
+        x_max = x_max
+        x_min = x_min
+        x_damp = x_damp
+
         perimeter = perimeter
         Φ = shape_factor
+        Ε = effective_length_multiplier
         fluid_inertia_factor = fluid_inertia_factor
-        minimum_volume = minimum_volume
-        damping_volume = damping_volume
+
         Cd = Cd
+        Cd_reverse = Cd_reverse
     end
 
-    vars = @variables x(t)=0 vol(t)=length*area
+    vars = @variables x(t)=x_int vol(t)=x_int * area
 
     ports = @named begin
         port = HydraulicPort(; p_int)
         flange = MechanicalPort()
-        damper = ValveBase(false, true; p_a_int = p_int, p_b_int = p_int, area_int = 1, Cd)
+        damper = ValveBase(true; p_a_int = p_int, p_b_int = p_int, area_int = 1, Cd,
+                           Cd_reverse)
     end
 
-    
-    vol_ratio = (vol - minimum_volume) / damping_volume
-    damper_area = ifelse(vol >= damping_volume + minimum_volume, 1,
-                    ifelse((vol < damping_volume + minimum_volume) &
-                        (vol > minimum_volume), vol_ratio, 0))  
-
     pipe_bases = []
-    for i = 1:(N - 1)
+    for i in 1:(N - 1)
         comp = TubeBase(; name = Symbol("p$i"), shape_factor = ParentScope(Φ),
-                p_int = ParentScope(p_int), area = ParentScope(area),
-                length_int = ParentScope(length) / (N - 1),
-                effective_length_multiplier = ParentScope(effective_length)/ParentScope(length),
-                fluid_inertia_factor = ParentScope(fluid_inertia_factor),
-                perimeter = ParentScope(perimeter))
+                        p_int = ParentScope(p_int), area = ParentScope(area),
+                        length_int = 0, #set in equations
+                        effective_length_multiplier = ParentScope(Ε),
+                        fluid_inertia_factor = ParentScope(fluid_inertia_factor),
+                        perimeter = ParentScope(perimeter))
         push!(pipe_bases, comp)
     end
 
     #TODO: How to handle x_int?
     #TODO: Handle direction
 
+    Δx = ParentScope(x_max) / N
+    x₀ = ParentScope(x_int)
     volumes = []
-    for i = 1:N
-        comp = VolumeBase(; name = Symbol("v$i"), p_int=ParentScope(p_int), x_int = 0, area=ParentScope(area), dead_volume = ParentScope(area)*ParentScope(length)/N)
+    for i in 1:N
+        length = ifelse(x₀ > Δx * i,
+                        Δx,
+                        ifelse(x₀ - Δx * (i - 1) > 0,
+                               x₀ - Δx * (i - 1),
+                               0))
+
+        comp = VolumeBase(; name = Symbol("v$i"), p_int = ParentScope(p_int), x_int = 0,
+                          area = ParentScope(area),
+                          dead_volume = ParentScope(area) * length)
+
         push!(volumes, comp)
     end
 
-    eqs = [
-        vol ~ (x + length)*area
-        D(x) ~ flange.v*direction
-        damper.area ~ damper_area
-        connect(port, damper.port_b)
-    ]
+    ratio = (x - x_min) / (x_damp - x_min)
+    damper_area = ifelse(x >= x_damp, 1,
+                         ifelse((x < x_damp) &
+                                (x > x_min), ratio, 0))
+
+    eqs = [vol ~ x * area
+           D(x) ~ flange.v * direction
+           damper.area ~ damper_area
+           connect(port, damper.port_b)]
 
     if N == 1
-        push!(eqs, connect(volumes[1].port, damper.port_a))
+        push!(eqs, connect(volumes[1].port, damper.port_a)) # 
     else
         push!(eqs, connect(volumes[1].port, pipe_bases[1].port_a))
-        push!(eqs, connect(volumes[end].port, pipe_bases[end].port_b, damper.port_a))
+        push!(eqs, connect(volumes[end].port, pipe_bases[end].port_b, damper.port_a)) #
     end
 
     for i in 2:(N - 1)
         push!(eqs, connect(volumes[i].port, pipe_bases[i - 1].port_b, pipe_bases[i].port_a))
     end
 
+    Δx = x_max / N
     parts = []
-    for i = 1:N
-        push!(eqs, volumes[i].dx ~ ifelse( ( abs(x) >= (i-1)*(length/N) ) & ( abs(x) < (i)*(length/N) ) , +flange.v*direction, 0 ))
-
-        push!(parts, ifelse( ( abs(x) >= (i-1)*(length/N) ) & ( abs(x) < (i)*(length/N) ) , (volumes[i].port.p)*(volumes[i].area),  0 ) )
-        
+    if N == 1
+        push!(eqs, volumes[1].dx ~ flange.v * direction)
+        push!(eqs, -flange.f * direction ~ volumes[1].port.p * volumes[1].area)
+    else
+        for i in 1:N
+            push!(eqs,
+                  volumes[i].dx ~ ifelse((vol > (i - 1) * Δx * area) &
+                                         (vol <= (i) * Δx * area), +flange.v * direction, 0))
+            push!(parts,
+                  ifelse((vol > (i - 1) * Δx * area) & (vol <= (i) * Δx * area),
+                         (volumes[i].port.p) * (volumes[i].area), 0))
+        end
+        push!(eqs, -flange.f * direction ~ +(parts...))
     end
 
-    for i=1:(N-1)
-        push!(eqs, pipe_bases[i].length ~ volumes[i].vol/volumes[i].area)
+    for i in 1:(N - 1)
+        push!(eqs, pipe_bases[i].length ~ volumes[i].vol / volumes[i].area)
     end
 
-    push!(eqs, -flange.f*direction ~ +(parts...) ) 
-
-    ODESystem(eqs, t, vars, pars; name, systems = [ports; pipe_bases; volumes])
+    ODESystem(eqs, t, vars, pars; name, systems = [ports; pipe_bases; volumes],
+              defaults = [flange.v => 0])
 end
 
 @component function SpoolValve(reversible = false; p_a_int, p_b_int, x_int, Cd, d, name)
@@ -585,14 +629,28 @@ end
     ODESystem(eqs, t, vars, pars; name, systems, defaults = [flange.v => 0])
 end
 
-@component function Actuator(N; p_a_int, p_b_int, area_a, area_b, perimeter_a = 2 * sqrt(area_a * pi), perimeter_b = 2 * sqrt(area_b * pi), length_a_int, length_b_int,
-                             shape_factor_a = 64, shape_factor_b = 64,
-                             m, g, x_int = 0, minimum_volume_a = 0, minimum_volume_b = 0,
-                             damping_volume_a = 0, damping_volume_b = 0,
-                             fluid_inertia_factor = 0, 
+@component function Actuator(N;
+                             p_a_int,
+                             p_b_int,
+                             area_a,
+                             area_b,
+                             perimeter_a = 2 * sqrt(area_a * pi),
+                             perimeter_b = 2 * sqrt(area_b * pi),
+                             length_a_int,
+                             length_b_int,
+                             shape_factor_a = 64,
+                             shape_factor_b = 64,
+                             m,
+                             g,
+                             x_int = 0,
+                             minimum_volume_a = 0,
+                             minimum_volume_b = 0,
+                             damping_volume_a = minimum_volume_a,
+                             damping_volume_b = minimum_volume_b,
+                             fluid_inertia_factor = 0,
                              Cd = 1e4,
+                             Cd_reverse = Cd,
                              name)
-                             
     pars = @parameters begin
         p_a_int = p_a_int
         p_b_int = p_b_int
@@ -610,7 +668,8 @@ end
         damping_volume_a = damping_volume_a
         damping_volume_b = damping_volume_b
         fluid_inertia_factor = fluid_inertia_factor
-        Cd=Cd
+        Cd = Cd
+        Cd_reverse = Cd_reverse
         m = m
         g = g
     end
@@ -620,17 +679,33 @@ end
         dx(t) = 0
     end
 
+    total_length = length_a_int + length_b_int
 
     #TODO: include effective_length
     systems = @named begin
-        vol_a = DynamicVolume(N, +1; p_int = p_a_int, area = area_a, perimeter = perimeter_a, shape_factor=shape_factor_a,
-                              length = length_a_int,
-                              minimum_volume = minimum_volume_a,
-                              damping_volume = damping_volume_a, fluid_inertia_factor, Cd)
-        vol_b = DynamicVolume(N, -1; p_int = p_b_int, area = area_b, perimeter = perimeter_b, shape_factor = shape_factor_b,
-                              length = length_b_int,
-                              minimum_volume = minimum_volume_b, perimeter = perimeter_b
-                              damping_volume = damping_volume_b, fluid_inertia_factor, Cd)
+        vol_a = DynamicVolume(N, +1;
+                              p_int = p_a_int,
+                              area = area_a,
+                              x_int = length_a_int,
+                              x_max = total_length,
+                              x_min = minimum_volume_a / area_a,
+                              x_damp = damping_volume_a / area_a, fluid_inertia_factor,
+                              perimeter = perimeter_a,
+                              shape_factor = shape_factor_a,
+                              Cd,
+                              Cd_reverse)
+
+        vol_b = DynamicVolume(N, -1;
+                              p_int = p_b_int,
+                              area = area_b,
+                              x_int = length_b_int,
+                              x_max = total_length,
+                              x_min = minimum_volume_b / area_b,
+                              x_damp = damping_volume_b / area_b, fluid_inertia_factor,
+                              perimeter = perimeter_b,
+                              shape_factor = shape_factor_b,
+                              Cd,
+                              Cd_reverse)
         mass = Mass(; m, g)
         port_a = HydraulicPort(; p_int = p_a_int)
         port_b = HydraulicPort(; p_int = p_b_int)

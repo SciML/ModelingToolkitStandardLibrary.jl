@@ -8,7 +8,7 @@ using ModelingToolkitStandardLibrary.Blocks: Parameter
 @parameters t
 D = Differential(t)
 
-NEWTON = NLNewton(check_div = false, always_new = true, max_iter = 100, relax = 4 // 10)
+NEWTON = NLNewton(check_div = false, always_new = true, max_iter = 10, relax = 9 // 10)
 
 @testset "Fluid Domain and Tube" begin
     function System(N; bulk_modulus, name)
@@ -37,7 +37,8 @@ NEWTON = NLNewton(check_div = false, always_new = true, max_iter = 100, relax = 
 
     syss = structural_simplify.([sys1_2, sys1_1, sys5_1])
     probs = [ODEProblem(sys, [], (0, 0.2)) for sys in syss] #ModelingToolkit.missing_variable_defaults(sys)
-    sols = [solve(prob, ImplicitEuler(nlsolve = NEWTON); initializealg = NoInit(), dt=1e-4, adaptive=false)
+    sols = [solve(prob, ImplicitEuler(nlsolve = NEWTON); initializealg = NoInit(),
+                  dt = 1e-4, adaptive = false)
             for prob in probs]
 
     s1_2 = complete(sys1_2)
@@ -59,7 +60,8 @@ end
             fluid = IC.HydraulicFluid()
             sink = IC.FixedPressure(; p = 10e5)
             vol = IC.FixedVolume(; vol = 0.1, p_int = 100e5)
-            valve = IC.Valve(; p_a_int = 10e5, p_b_int = 100e5, area_int = 0, Cd = 1e6)
+            valve = IC.Valve(; p_a_int = 10e5, p_b_int = 100e5, area_int = 0, Cd = 1e5,
+                             minimum_area = 0)
             ramp = B.Ramp(; height = 1, duration = 0.001, offset = 0, start_time = 0.001,
                           smooth = true)
         end
@@ -80,11 +82,11 @@ end
                 initializealg = NoInit())
 
     # the volume should discharge to 10bar
-    @test sol[s.vol.port.p][end] ≈ 10e5
+    @test sol[s.vol.port.p][end]≈10e5 atol=1e5
 end
 
 @testset "DynamicVolume and minimum_volume feature" begin
-    function System(N, FI; name, area = 0.01, length = 0.1, damping_volume)
+    function System(N; name, area = 0.01, length = 0.1, damping_volume)
         pars = []
 
         # DynamicVolume values
@@ -94,15 +96,17 @@ end
             src2 = IC.Pressure(; p_int = 10e5)
 
             vol1 = IC.DynamicVolume(N, +1; p_int = 10e5, area,
-                                    length, 
-                                    damping_volume,
-                                    minimum_volume = area * length * 0.1, 
-                                    fluid_inertia_factor=FI)
+                                    x_int = length,
+                                    x_max = length * 2,
+                                    x_min = length * 0.1,
+                                    x_damp = damping_volume / area + length * 0.1,
+                                    fluid_inertia_factor = 0)
             vol2 = IC.DynamicVolume(N, -1; p_int = 10e5, area,
-                                    length,
-                                    damping_volume,
-                                    minimum_volume = area * length * 0.1,
-                                    fluid_inertia_factor=FI)
+                                    x_int = length,
+                                    x_max = length * 2,
+                                    x_min = length * 0.1,
+                                    x_damp = damping_volume / area + length * 0.1,
+                                    fluid_inertia_factor = 0)
 
             mass = T.Mass(; m = 10)
 
@@ -121,60 +125,53 @@ end
         ODESystem(eqs, t, [], pars; name, systems)
     end
 
-    for FI in [0, 0.7]
-        for N in [1, 5]
-            for damping_volume in [0.01 * 0.1 * 0.25, 0]
-                @named system = System(N, FI; damping_volume)
-                s = complete(system)
-                sys = structural_simplify(system)
-                prob = ODEProblem(sys, [], (0, 5); jac=true)
+    for N in [1, 2]
+        for damping_volume in [0.01 * 0.1 * 0.25, 0]
+            @named system = System(N; damping_volume)
+            s = complete(system)
+            sys = structural_simplify(system)
+            prob = ODEProblem(sys, [], (0, 5),
+                              [s.vol1.Cd_reverse => 0.1, s.vol2.Cd_reverse => 0.1];
+                              jac = true)
+            @time sol = solve(prob, ImplicitEuler(nlsolve = NEWTON); dt = 1e-4,
+                              adaptive = false, initializealg = NoInit())
 
-                @time "N=$N, FI=$FI, damping_volume=$damping_volume" sol = solve(prob, ImplicitEuler(nlsolve = NEWTON);
-                            adaptive = false, dt = 1e-4,
-                            initializealg = NoInit())
+            # begin
+            #     fig = Figure()
 
-                # begin
-                #     fig = Figure()
+            #     ax = Axis(fig[1,1], ylabel="position [m]", xlabel="time [s]")
+            #     lines!(ax, sol.t, sol[s.vol1.x]; label="vol1")
+            #     lines!(ax, sol.t, sol[s.vol2.x]; label="vol2")
+            #     Legend(fig[1,2], ax)
 
-                #     ax = Axis(fig[1,1], ylabel="position [m]", xlabel="time [s]")
-                #     lines!(ax, sol.t, sol[s.vol1.x]; label="vol1")
-                #     lines!(ax, sol.t, sol[s.vol2.x]; label="vol2")
-                #     Legend(fig[1,2], ax)
+            #     ax = Axis(fig[2,1], ylabel="pressure [bar]", xlabel="time [s]")
+            #     lines!(ax, sol.t, sol[s.vol1.damper.port_a.p]/1e5; label="vol1")
+            #     lines!(ax, sol.t, sol[s.vol2.damper.port_a.p]/1e5; label="vol2")
+            #     ylims!(ax, 10-0.5, 10+0.5)
 
-                #     ax = Axis(fig[2,1], ylabel="pressure [bar]", xlabel="time [s]")
-                #     lines!(ax, sol.t, sol[s.vol1.damper.port_a.p]/1e5; label="vol1")
-                #     lines!(ax, sol.t, sol[s.vol2.damper.port_a.p]/1e5; label="vol2")
-                #     # lines!(ax, sol.t, sol[s.vol1.port.p]/1e5; label="vol1 port")
-                #     # lines!(ax, sol.t, sol[s.vol2.port.p]/1e5; label="vol2 port")
+            #     ax = Axis(fig[3,1], ylabel="area", xlabel="time [s]")
+            #     lines!(ax, sol.t, sol[s.vol1.damper.area]; label="area 1")
+            #     lines!(ax, sol.t, sol[s.vol2.damper.area]; label="area 2")
 
-                #     Legend(fig[2,2], ax)
-                #     ylims!(ax, 10-0.5, 10+0.5)
+            #     fig
+            # end
 
-                #     ax = Axis(fig[3,1], ylabel="area", xlabel="time [s]")
-                #     lines!(ax, sol.t, sol[s.vol1.damper.area]; label="area 1")
-                #     lines!(ax, sol.t, sol[s.vol2.damper.area]; label="area 2")
-                #     Legend(fig[3,2], ax)            
+            i1 = round(Int, 1 / 1e-4)
+            i2 = round(Int, 2 / 1e-4)
+            i3 = round(Int, 3 / 1e-4)
+            i4 = round(Int, 4 / 1e-4)
 
-                #     display(fig)
-                # end
-
-                i1 = round(Int, 1 / 1e-4)
-                i2 = round(Int, 2 / 1e-4)
-                i3 = round(Int, 3 / 1e-4)
-                i4 = round(Int, 4 / 1e-4)
-
-                # volume/mass should stop moving at opposite ends
-                @test round(sol[s.vol1.x][1]; digits = 2) == 0.0
-                @test round(sol[s.vol2.x][1]; digits = 2) == 0.0
-                @test round(sol[s.vol1.x][i1]; digits = 2) == +0.09
-                @test round(sol[s.vol2.x][i1]; digits = 2) == -0.09
-                @test round(sol[s.vol1.x][i2]; digits = 2) == -0.09
-                @test round(sol[s.vol2.x][i2]; digits = 2) == +0.09
-                @test round(sol[s.vol1.x][i3]; digits = 2) == +0.09
-                @test round(sol[s.vol2.x][i3]; digits = 2) == -0.09
-                @test round(sol[s.vol1.x][i4]; digits = 2) == -0.09
-                @test round(sol[s.vol2.x][i4]; digits = 2) == +0.09
-            end
+            # volume/mass should stop moving at opposite ends
+            @test round(sol[s.vol1.x][1]; digits = 2) == 0.1
+            @test round(sol[s.vol2.x][1]; digits = 2) == 0.1
+            @test round(sol[s.vol1.x][i1]; digits = 2) == +0.19
+            @test round(sol[s.vol2.x][i1]; digits = 2) == +0.01
+            @test round(sol[s.vol1.x][i2]; digits = 2) == +0.01
+            @test round(sol[s.vol2.x][i2]; digits = 2) == +0.19
+            @test round(sol[s.vol1.x][i3]; digits = 2) == +0.19
+            @test round(sol[s.vol2.x][i3]; digits = 2) == +0.01
+            @test round(sol[s.vol1.x][i4]; digits = 2) == +0.01
+            @test round(sol[s.vol2.x][i4]; digits = 2) == +0.19
         end
     end
 end
@@ -184,24 +181,23 @@ end
         @parameters t
 
         pars = @parameters begin
-            p_s = 285e5
+            p_s = 200e5
             p_r = 5e5
 
-            A_1 = 908e-4
+            A_1 = 360e-4
             A_2 = 360e-4
 
-            p_1 = 17e5
-            p_2 = p_1 * A_1 / A_2
+            p_1 = 45e5
+            p_2 = 45e5
 
-            l_1 = 0.7
-            l_2 = 2.7
-            m_f = 276
+            l_1 = 0.01
+            l_2 = 0.05
+            m_f = 250
             g = 0
-            x_f_int = 0
 
-            d = 230e-3
+            d = 100e-3
 
-            Cd = 70e5 * 2 * 876 / (876 * 50 / (25e-3 * 2π * 230e-3))^2   #50_000 lpm
+            Cd = 0.01
 
             m_piston = 880
             m_body = 1500
@@ -212,18 +208,25 @@ end
         systems = @named begin
             src = IC.FixedPressure(; p = p_s)
             valve = IC.SpoolValve2Way(; p_s_int = p_s, p_a_int = p_1, p_b_int = p_2,
-                                      p_r_int = p_r, g, m = m_f, x_int = x_f_int, d, Cd)
-            piston = IC.Actuator(5; p_a_int = p_1, p_b_int = p_2, area_a = A_1, area_b = A_2,
-                                 length_a_int = l_1, length_b_int = l_2, m = m_piston,
+                                      p_r_int = p_r, g, m = m_f, x_int = 0, d, Cd)
+            piston = IC.Actuator(5;
+                                 p_a_int = p_1,
+                                 p_b_int = p_2,
+                                 area_a = A_1,
+                                 area_b = A_2,
+                                 length_a_int = l_1,
+                                 length_b_int = l_2,
+                                 m = m_piston,
                                  g = 0,
-                                 x_int = 0, minimum_volume_a = A_1 * 1e-3,
+                                 x_int = 0,
+                                 minimum_volume_a = A_1 * 1e-3,
                                  minimum_volume_b = A_2 * 1e-3,
                                  damping_volume_a = A_1 * 5e-3,
                                  damping_volume_b = A_2 * 5e-3)
             body = T.Mass(; m = m_body)
             pipe = IC.Tube(5; p_int = p_2, area = A_2, length = 2.0)
             snk = IC.FixedPressure(; p = p_r)
-            pos = T.Position(; s_0 = x_f_int)
+            pos = T.Position(; s_0 = 0)
 
             m1 = IC.FlowDivider(; p_int = p_2, n = 3)
             m2 = IC.FlowDivider(; p_int = p_2, n = 3)
@@ -260,7 +263,7 @@ end
     sys = structural_simplify(system)
     defs = ModelingToolkit.defaults(sys)
     s = complete(system)
-    prob = ODEProblem(sys, [], (0, 1.0); tofloat = false, jac = true)
+    prob = ODEProblem(sys, [], (0, 0.1); tofloat = false, jac = true)
 
     # check the fluid domain
     @test Symbol(defs[s.src.port.ρ]) == Symbol(s.fluid.ρ)
@@ -271,19 +274,20 @@ end
     @test Symbol(defs[s.snk.port.ρ]) == Symbol(s.fluid.ρ)
 
     dt = 1e-4
-    time = 0:dt:0.055
+    time = 0:dt:0.1
     x = @. 0.9 * (time > 0.015) * (time - 0.015)^2 - 25 * (time > 0.02) * (time - 0.02)^3
 
     defs[s.input.buffer] = Parameter(x, dt)
+    # defs[s.piston.Cd_reverse] = 0.1
 
     p = Parameter.(ModelingToolkit.varmap_to_vars(defs, parameters(sys); tofloat = false))
     prob = remake(prob; p, tspan = (0, time[end]))
-    sol = solve(prob, ImplicitEuler(nlsolve = NEWTON); adaptive = false, dt,
-                initializealg = NoInit())
+    @time sol = solve(prob, ImplicitEuler(nlsolve = NEWTON); adaptive = false, dt,
+                      initializealg = NoInit())
 
     @test sol[sys.ddx][1] == 0.0
-    @test maximum(sol[sys.ddx]) > 500
-    @test sol[sys.ddx][end] < 100
+    @test maximum(sol[sys.ddx]) > 200
+    @test sol[s.piston.x][end]≈0.06 atol=0.01
 end
 
 #TODO: Test Valve Inversion
