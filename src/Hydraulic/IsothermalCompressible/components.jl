@@ -92,9 +92,12 @@ Internal flow model of the fully developed flow friction, ignoring any compressi
     f = friction_factor(dm, area, d_h, ρ, μ, Φ)
     u = dm / (ρ * area)
 
-    eqs = [D(dm) ~ ddm
-           Δp ~ 1 / 2 * ρ * u^2 * f * (length * Ε / d_h) +
-                (length / area) * ddm * fluid_inertia_factor
+
+    eqs = [
+            D(dm) ~ ddm
+
+           Δp ~ ifelse(length > 0, sign(u)*(1 / 2) * ρ * u^2 * f * (length * Ε / d_h) + (length / area) * ddm * fluid_inertia_factor, 0)
+                
            0 ~ port_a.dm + port_b.dm]
 
     ODESystem(eqs, t, vars, pars; name, systems)
@@ -142,13 +145,13 @@ Tube modeled with `N` segements which models the fully developed flow friction a
     end
 
     if N == 1
-        @named pipe_base = TubeBase(; shape_factor = Φ, p_int, area, length_int = length,
+        @named pipe_base = TubeBase(; shape_factor = Φ, p_int = p_int, area = area, length_int = length,
                                     effective_length_multiplier = effective_length / length,
-                                    fluid_inertia_factor, perimeter)
+                                    fluid_inertia_factor = fluid_inertia_factor, perimeter = perimeter)
 
         eqs = [connect(pipe_base.port_a, port_a)
                connect(pipe_base.port_b, port_b)
-               pipe_base.length ~ effective_length]
+               pipe_base.length ~ length]
 
         return ODESystem(eqs, t, vars, pars; name, systems = [ports; pipe_base])
     else
@@ -181,7 +184,7 @@ Tube modeled with `N` segements which models the fully developed flow friction a
         end
 
         for i in 1:(N - 1)
-            push!(eqs, pipe_bases[i].length ~ effective_length / (N - 1))
+            push!(eqs, pipe_bases[i].length ~ length / (N - 1))
         end
 
         return ODESystem(eqs, t, vars, pars; name, systems = [ports; pipe_bases; volumes])
@@ -267,8 +270,8 @@ end
 
     eqs = [0 ~ port_a.dm + port_b.dm
            Χ ~ ifelse(Δp > 0, Cd, Cd_reverse)
-           dm ~ ifelse(abs(Δp) > 1.0, sign(Δp) * sqrt(2 * abs(Δp) * ρ / Χ) * x,
-                       (2 * Δp * ρ / Χ) * x)]
+           dm ~ ifelse(abs(Δp) > 1.0, sign(Δp) * sqrt(abs(2 * Δp * ρ / Χ)) * x, (2 * Δp * ρ / Χ) * x)
+           ]
 
     ODESystem(eqs, t, vars, pars; name, systems)
 end
@@ -319,12 +322,14 @@ Valve with `area` input and discharge coefficient `Cd` defined by https://en.wik
     ODESystem(eqs, t, vars, pars; name, systems, defaults = [area.u => area_int])
 end
 
-@component function VolumeBase(; p_int, x_int = 0, area, dead_volume = 0, name)
+@component function VolumeBase(; p_int, x_int = 0, area, dead_volume = 0, Χ1 = 1, Χ2 = 1, name)
     pars = @parameters begin
         p_int = p_int
         x_int = x_int
         area = area
         dead_volume = dead_volume
+        Χ1 = Χ1
+        Χ2 = Χ2
     end
 
     systems = @named begin port = HydraulicPort(; p_int) end
@@ -345,7 +350,7 @@ end
            D(x) ~ dx
            D(rho) ~ drho
            rho ~ full_density(port, p)
-           dm ~ drho * vol + rho * area * dx]
+           dm ~ drho * vol * Χ1 + rho * area * dx * Χ2]
 
     ODESystem(eqs, t, vars, pars; name, systems)
 end
@@ -493,6 +498,11 @@ dm ────►               │  │ area
 
     Δx = ParentScope(x_max) / N
     x₀ = ParentScope(x_int)
+
+    
+
+    @named moving_volume = VolumeBase(; p_int, x_int = 0, area, dead_volume = 0, Χ1 = 0, Χ2 = 1)
+
     volumes = []
     for i in 1:N
         length = ifelse(x₀ > Δx * i,
@@ -503,7 +513,7 @@ dm ────►               │  │ area
 
         comp = VolumeBase(; name = Symbol("v$i"), p_int = ParentScope(p_int), x_int = 0,
                           area = ParentScope(area),
-                          dead_volume = ParentScope(area) * length)
+                          dead_volume = ParentScope(area) * length, Χ1 = 1, Χ2 = 0)
 
         push!(volumes, comp)
     end
@@ -518,10 +528,12 @@ dm ────►               │  │ area
            damper.area ~ damper_area
            connect(port, damper.port_b)]
 
+    
+
     if N == 1
-        push!(eqs, connect(volumes[1].port, damper.port_a)) # 
+        push!(eqs, connect(moving_volume.port, volumes[1].port, damper.port_a)) # 
     else
-        push!(eqs, connect(volumes[1].port, pipe_bases[1].port_a))
+        push!(eqs, connect(moving_volume.port, volumes[1].port, pipe_bases[1].port_a))
         push!(eqs, connect(volumes[end].port, pipe_bases[end].port_b, damper.port_a)) #
     end
 
@@ -529,28 +541,28 @@ dm ────►               │  │ area
         push!(eqs, connect(volumes[i].port, pipe_bases[i - 1].port_b, pipe_bases[i].port_a))
     end
 
+    push!(eqs, moving_volume.dx ~ flange.v * direction)
+    push!(eqs, moving_volume.port.p*area ~ -flange.f * direction)
+
     Δx = x_max / N
     parts = []
     if N == 1
         push!(eqs, volumes[1].dx ~ flange.v * direction)
-        push!(eqs, -flange.f * direction ~ volumes[1].port.p * volumes[1].area)
     else
+
         for i in 1:N
             push!(eqs,
-                  volumes[i].dx ~ ifelse((vol > (i - 1) * Δx * area) &
-                                         (vol <= (i) * Δx * area), +flange.v * direction, 0))
-            push!(parts,
-                  ifelse((vol > (i - 1) * Δx * area) & (vol <= (i) * Δx * area),
-                         (volumes[i].port.p) * (volumes[i].area), 0))
+                  volumes[i].dx ~ ifelse((vol >= (i - 1) * Δx * area) &
+                                         (vol < (i) * Δx * area), flange.v * direction, 0))    
         end
-        push!(eqs, -flange.f * direction ~ +(parts...))
+        
     end
 
     for i in 1:(N - 1)
         push!(eqs, pipe_bases[i].length ~ volumes[i].vol / volumes[i].area)
     end
 
-    ODESystem(eqs, t, vars, pars; name, systems = [ports; pipe_bases; volumes],
+    ODESystem(eqs, t, vars, pars; name, systems = [ports; pipe_bases; volumes; moving_volume],
               defaults = [flange.v => 0])
 end
 
