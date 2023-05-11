@@ -1,3 +1,6 @@
+regPow(x, a, delta=0.01) = x*(x*x + delta*delta)^((a-1)/2);
+regRoot(x, delta=0.01) = regPow(x, 0.5, delta)
+
 """
     HydraulicPort(;p_int, name)
 
@@ -93,6 +96,7 @@ function friction_factor(dm, area, d_h, density, viscosity, shape_factor)
 
     f_laminar = shape_factor / Re
     f_turbulent = (shape_factor / 64) * (0.79 * log(Re) - 1.64)^(-2)
+    # f_turbulent = (shape_factor / 64) * regPow(0.79 * log(Re) - 1.64, -2)
 
     f = transition(2000, 3000, f_laminar, f_turbulent, Re)
 

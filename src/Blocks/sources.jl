@@ -565,3 +565,5 @@ data input component.
                      defaults = [output.u => get_sampled_data(0.0, buffer)])
 end
 @deprecate Input SampledData
+
+Base.convert(::Type{T}, x::Parameter{T}) where T <: Real = x.ref

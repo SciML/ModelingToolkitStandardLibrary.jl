@@ -59,7 +59,7 @@ Internal flow model of the fully developed flow friction, ignoring any compressi
 """
 @component function TubeBase(; p_int, area, length_int, effective_length_multiplier = 1,
                              perimeter = 2 * sqrt(area * pi),
-                             shape_factor = 64, fluid_inertia_factor = 0, name)
+                             shape_factor = 64, inertia_1 = 0, inertia_2 = 1, name)
     pars = @parameters begin
         p_int = p_int
         area = area
@@ -67,7 +67,8 @@ Internal flow model of the fully developed flow friction, ignoring any compressi
         perimeter = perimeter
         Φ = shape_factor
         Ε = effective_length_multiplier
-        fluid_inertia_factor = fluid_inertia_factor
+        Ι1 = inertia_1
+        Ι2 = inertia_2
     end
 
     vars = @variables begin
@@ -93,12 +94,9 @@ Internal flow model of the fully developed flow friction, ignoring any compressi
     u = dm / (ρ * area)
 
 
-    eqs = [
-            D(dm) ~ ddm
-
-           Δp ~ ifelse(length > 0, sign(u)*(1 / 2) * ρ * u^2 * f * (length * Ε / d_h) + (length / area) * ddm * fluid_inertia_factor, 0)
-                
-           0 ~ port_a.dm + port_b.dm]
+    eqs =  [D(dm) ~ ddm
+            Δp ~ ifelse(length > 0, sign(u)*(1 / 2) * ρ * u^2 * f * (length * Ε / d_h) + (length/area) * regPow(ddm, Ι2) * Ι1 , 0)    
+            0 ~ port_a.dm + port_b.dm]
 
     ODESystem(eqs, t, vars, pars; name, systems)
 end
@@ -121,7 +119,7 @@ Tube modeled with `N` segements which models the fully developed flow friction a
 - `port_b`: hydraulic port
 """
 @component function Tube(N; p_int, area, length, effective_length = length,
-                         perimeter = 2 * sqrt(area * pi), fluid_inertia_factor = 0,
+                         perimeter = 2 * sqrt(area * pi), inertia_1 = 0, inertia_2 = 1,
                          shape_factor = 64, name)
     @assert(N>0,
             "the Tube component must be defined with at least 1 segment (i.e. N>0), found N=$N")
@@ -134,7 +132,8 @@ Tube modeled with `N` segements which models the fully developed flow friction a
         effective_length = effective_length
         perimeter = perimeter
         Φ = shape_factor
-        fluid_inertia_factor = fluid_inertia_factor
+        inertia_1 = inertia_1
+        inertia_2 = inertia_2
     end
 
     vars = []
@@ -147,7 +146,7 @@ Tube modeled with `N` segements which models the fully developed flow friction a
     if N == 1
         @named pipe_base = TubeBase(; shape_factor = Φ, p_int = p_int, area = area, length_int = length,
                                     effective_length_multiplier = effective_length / length,
-                                    fluid_inertia_factor = fluid_inertia_factor, perimeter = perimeter)
+                                    inertia_1, inertia_2, perimeter = perimeter)
 
         eqs = [connect(pipe_base.port_a, port_a)
                connect(pipe_base.port_b, port_b)
@@ -162,8 +161,9 @@ Tube modeled with `N` segements which models the fully developed flow friction a
                          length_int = ParentScope(length) / (N - 1),
                          effective_length_multiplier = ParentScope(effective_length) /
                                                        ParentScope(length),
-                         fluid_inertia_factor = ParentScope(fluid_inertia_factor),
-                         perimeter = ParentScope(perimeter))
+                                                       inertia_1 = ParentScope(inertia_1),
+                                                       inertia_2 = ParentScope(inertia_2),
+                                                       perimeter = ParentScope(perimeter))
             push!(pipe_bases, x)
         end
 
@@ -270,7 +270,8 @@ end
 
     eqs = [0 ~ port_a.dm + port_b.dm
            Χ ~ ifelse(Δp > 0, Cd, Cd_reverse)
-           dm ~ ifelse(abs(Δp) > 1.0, sign(Δp) * sqrt(abs(2 * Δp * ρ / Χ)) * x, (2 * Δp * ρ / Χ) * x)
+          dm ~ ifelse(abs(Δp) > 1.0, sign(Δp) * sqrt(abs(2 * Δp * ρ / Χ)) * x, (2 * Δp * ρ / Χ) * x)
+        #    dm ~ regRoot(2*Δp*ρ/Χ)*x
            ]
 
     ODESystem(eqs, t, vars, pars; name, systems)
@@ -442,12 +443,13 @@ dm ────►               │  │ area
 
                                   # Tube
                                   effective_length_multiplier = 1.0,
-                                  fluid_inertia_factor = 0,
+                                  inertia_1 = 0,
+                                  inertia_2 = 1,
                                   perimeter = 2 * sqrt(area * pi),
                                   shape_factor = 64,
 
                                   # Valve
-                                  Cd = 1e4,
+                                  Cd = 1e2,
                                   Cd_reverse = Cd,
                                   name)
     @assert(N>0,
@@ -467,7 +469,8 @@ dm ────►               │  │ area
         perimeter = perimeter
         Φ = shape_factor
         Ε = effective_length_multiplier
-        fluid_inertia_factor = fluid_inertia_factor
+        inertia_1 = inertia_1
+        inertia_2 = inertia_2
 
         Cd = Cd
         Cd_reverse = Cd_reverse
@@ -488,7 +491,8 @@ dm ────►               │  │ area
                         p_int = ParentScope(p_int), area = ParentScope(area),
                         length_int = 0, #set in equations
                         effective_length_multiplier = ParentScope(Ε),
-                        fluid_inertia_factor = ParentScope(fluid_inertia_factor),
+                        inertia_1 = ParentScope(inertia_1),
+                        inertia_2 = ParentScope(inertia_2),
                         perimeter = ParentScope(perimeter))
         push!(pipe_bases, comp)
     end
