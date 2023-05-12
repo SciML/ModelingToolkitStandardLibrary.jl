@@ -127,7 +127,6 @@ end
 
     for N in [1, 2]
         for damping_volume in [0.01 * 0.1 * 0.25, 0]
-            
             @named system = System(N; damping_volume)
             s = complete(system)
             sys = structural_simplify(system)

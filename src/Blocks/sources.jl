@@ -566,4 +566,4 @@ data input component.
 end
 @deprecate Input SampledData
 
-Base.convert(::Type{T}, x::Parameter{T}) where T <: Real = x.ref
+Base.convert(::Type{T}, x::Parameter{T}) where {T <: Real} = x.ref
