@@ -95,18 +95,18 @@ end
             src1 = IC.Pressure(; p_int = 10e5)
             src2 = IC.Pressure(; p_int = 10e5)
 
-            vol1 = IC.DynamicVolume(N, +1; p_int = 10e5, area,
+            vol1 = IC.DynamicVolume(N; direction = +1,
+                                    p_int = 10e5, area,
                                     x_int = length,
                                     x_max = length * 2,
                                     x_min = length * 0.1,
-                                    x_damp = damping_volume / area + length * 0.1,
-                                    fluid_inertia_factor = 0)
-            vol2 = IC.DynamicVolume(N, -1; p_int = 10e5, area,
+                                    x_damp = damping_volume / area + length * 0.1)
+            vol2 = IC.DynamicVolume(N; direction = -1,
+                                    p_int = 10e5, area,
                                     x_int = length,
                                     x_max = length * 2,
                                     x_min = length * 0.1,
-                                    x_damp = damping_volume / area + length * 0.1,
-                                    fluid_inertia_factor = 0)
+                                    x_damp = damping_volume / area + length * 0.1)
 
             mass = T.Mass(; m = 10)
 
@@ -127,6 +127,7 @@ end
 
     for N in [1, 2]
         for damping_volume in [0.01 * 0.1 * 0.25, 0]
+            
             @named system = System(N; damping_volume)
             s = complete(system)
             sys = structural_simplify(system)
@@ -222,8 +223,7 @@ end
                                  minimum_volume_a = A_1 * 1e-3,
                                  minimum_volume_b = A_2 * 1e-3,
                                  damping_volume_a = A_1 * 5e-3,
-                                 damping_volume_b = A_2 * 5e-3,
-                                 fluid_inertia_factor = 0.7)
+                                 damping_volume_b = A_2 * 5e-3)
             body = T.Mass(; m = m_body)
             pipe = IC.Tube(5; p_int = p_2, area = A_2, length = 2.0)
             snk = IC.FixedPressure(; p = p_r)
