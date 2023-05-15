@@ -189,7 +189,7 @@ end
     sol = solve(prob, Tsit5())
     y(x, st) = (x .> st) .* abs.(collect(x) .- st)
     @test sol.retcode == Success
-    @test sum(reduce(vcat, sol.u) .- y(sol.t, start_time))≈0 atol=1e-2
+    @test sum(reduce(vcat, sol[capacitor.v]) .- y(sol.t, start_time))≈0 atol=1e-2
 end
 
 @testset "Integrator" begin
