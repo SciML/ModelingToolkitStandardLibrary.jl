@@ -182,7 +182,7 @@ end
            connect(mass.port, th_ground.port)]
     @named coll = ODESystem(eqs, t,
                             systems = [hf_sensor, flow_src, tem_src,
-                                collector, th_resistor, mass])
+                                collector, th_resistor, mass, th_ground])
     sys = structural_simplify(coll)
 
     u0 = [
