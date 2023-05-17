@@ -70,12 +70,11 @@ Variable length internal flow model of the fully developed flow friction, ignori
 
     @variables begin
         x(t) = length_int
-        dx(t) = 0
         ddm(t) = 0
     end
 
     vars = if add_inertia
-        [x, dx, ddm]
+        [x, ddm]
     else
         [x]
     end
@@ -99,7 +98,7 @@ Variable length internal flow model of the fully developed flow friction, ignori
 
     shear = sign(u) * (1 / 2) * ρ * u^2 * f * head_factor * (x / d_h)
     inertia = if add_inertia
-        (x / area) * ddm + (dx / area) * dm
+        (x / area) * ddm
     else
         0
     end
@@ -109,7 +108,6 @@ Variable length internal flow model of the fully developed flow friction, ignori
 
     if add_inertia
         push!(eqs, D(dm) ~ ddm)
-        push!(eqs, D(x) ~ dx)
     end
 
     ODESystem(eqs, t, vars, pars; name, systems)
