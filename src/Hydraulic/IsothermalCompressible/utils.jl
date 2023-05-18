@@ -94,7 +94,7 @@ function friction_factor(dm, area, d_h, density, viscosity, shape_factor)
     u = abs(dm) / (density * area)
 
     Re = density * u * d_h / viscosity
-    f_laminar = shape_factor / Re
+    f_laminar = shape_factor * regPow(Re, -1, 1e-6)
 
     Re = maximum([Re, 1])
     f_turbulent = (shape_factor / 64) * (0.79 * log(Re) - 1.64)^(-2)
