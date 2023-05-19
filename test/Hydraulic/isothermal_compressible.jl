@@ -20,7 +20,7 @@ NEWTON = NLNewton(check_div = false, always_new = true, max_iter = 10, relax = 9
                          smooth = true)
             src = IC.Pressure(; p_int = 0)
             vol = IC.FixedVolume(; p_int = 0, vol = 10.0)
-            res = IC.Tube(N; p_int = 0, area = 0.01, length = 500.0)
+            res = IC.Tube(N; p_int = 0, area = 0.01, length = 50.0)
         end
 
         eqs = [connect(stp.output, src.p)
@@ -36,7 +36,7 @@ NEWTON = NLNewton(check_div = false, always_new = true, max_iter = 10, relax = 9
     @named sys5_1 = System(5; bulk_modulus = 1e9)
 
     syss = structural_simplify.([sys1_2, sys1_1, sys5_1])
-    probs = [ODEProblem(sys, [], (0, 0.2)) for sys in syss] #ModelingToolkit.missing_variable_defaults(sys)
+    probs = [ODEProblem(sys, ModelingToolkit.missing_variable_defaults(sys), (0, 0.05)) for sys in syss] #
     sols = [solve(prob, ImplicitEuler(nlsolve = NEWTON); initializealg = NoInit(),
                   dt = 1e-4, adaptive = false)
             for prob in probs]
@@ -50,7 +50,17 @@ NEWTON = NLNewton(check_div = false, always_new = true, max_iter = 10, relax = 9
 
     # N=5 pipe is compressible, will pressurize more slowly
     @test sols[2][s1_1.vol.port.p][end] > sols[3][s5_1.vol.port.p][end]
+
+    # fig = Figure()
+    # ax = Axis(fig[1,1])
+    # # hlines!(ax, 10e5)
+    # lines!(ax, sols[1][s1_2.vol.port.p])
+    # lines!(ax, sols[2][s1_1.vol.port.p])
+    # lines!(ax, sols[3][s5_1.vol.port.p])
+    # fig
+
 end
+
 
 @testset "Valve" begin
     function System(; name)
