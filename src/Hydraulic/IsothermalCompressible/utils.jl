@@ -1,3 +1,6 @@
+regPow(x, a, delta = 0.01) = x * (x * x + delta * delta)^((a - 1) / 2);
+regRoot(x, delta = 0.01) = regPow(x, 0.5, delta)
+
 """
     HydraulicPort(;p_int, name)
 
@@ -89,9 +92,11 @@ Reference: Introduction to Fluid Mechanics, Fox & McDonald, 5th Edition, equatio
 """
 function friction_factor(dm, area, d_h, density, viscosity, shape_factor)
     u = abs(dm) / (density * area)
-    Re = maximum([density * u * d_h / viscosity, 1])
 
-    f_laminar = shape_factor / Re
+    Re = density * u * d_h / viscosity
+    f_laminar = shape_factor * regPow(Re, -1, 1e-6)
+
+    Re = maximum([Re, 1])
     f_turbulent = (shape_factor / 64) * (0.79 * log(Re) - 1.64)^(-2)
 
     f = transition(2000, 3000, f_laminar, f_turbulent, Re)
@@ -119,9 +124,11 @@ gas_density_ref(port) = port.ρ_gas
 gas_pressure_ref(port) = port.p_gas
 bulk_modulus(port) = port.β
 viscosity(port) = port.μ
-liquid_density(port) = density_ref(port) * (1 + port.p / bulk_modulus(port))
-function gas_density(port)
+liquid_density(port, p) = density_ref(port) * (1 + p / bulk_modulus(port))
+liquid_density(port) = liquid_density(port, port.p)
+function gas_density(port, p)
     density_ref(port) -
-    port.p * (density_ref(port) - gas_density_ref(port)) / gas_pressure_ref(port)
+    p * (density_ref(port) - gas_density_ref(port)) / gas_pressure_ref(port)
 end
-full_density(port) = liquid_density(port) #ifelse( port.p > 0, liquid_density(port), gas_density(port) )
+full_density(port, p) = liquid_density(port, p)  #ifelse( p > 0, liquid_density(port, p), gas_density(port, p) )
+full_density(port) = full_density(port, port.p)
