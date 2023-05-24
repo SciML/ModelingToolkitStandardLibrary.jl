@@ -42,7 +42,11 @@ end
 """
     TubeBase(add_inertia = true; p_int, area, length_int, head_factor = 1, perimeter = 2 * sqrt(area * pi), shape_factor = 64, name)
 
-Variable length internal flow model of the fully developed flow friction, ignoring any compressibility.  Includes optional inertia term when `add_inertia = true` to model wave propagation.
+Variable length internal flow model of the fully developed incompressible flow friction.  Includes optional inertia term when `add_inertia = true` to model wave propagation.  Hydraulic ports have equal flow but variable pressure.  Density is averaged over the pressures, used to calculated average flow velocity and flow friction.  
+
+# States:
+- `x`: [m] length of the pipe
+- `ddm`: [kg/s^2] Rate of change of mass flow rate in control volume.
 
 # Parameters:
 - `p_int`: [Pa] initial pressure
