@@ -15,10 +15,10 @@ uuid = "a4c015fc-c6ff-483c-b24f-f7ea428134e9"
 version = "0.0.1"
 
 [[deps.AbstractAlgebra]]
-deps = ["GroupsCore", "InteractiveUtils", "LinearAlgebra", "MacroTools", "Random", "RandomExtensions", "SparseArrays", "Test"]
-git-tree-sha1 = "3ee5c58774f4487a5bf2bb05e39d91ff5022b4cc"
+deps = ["GroupsCore", "InteractiveUtils", "LinearAlgebra", "MacroTools", "Preferences", "Random", "RandomExtensions", "SparseArrays", "Test"]
+git-tree-sha1 = "18750c35460d72cab868efb87ff9825568bb4eb8"
 uuid = "c3fe647b-3220-5bb0-a1ea-a7954cac585d"
-version = "0.29.4"
+version = "0.30.3"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -266,9 +266,16 @@ version = "0.6.2"
 
 [[deps.ControlSystemsBase]]
 deps = ["DSP", "ForwardDiff", "IterTools", "LaTeXStrings", "LinearAlgebra", "MacroTools", "MatrixEquations", "MatrixPencils", "Polyester", "Polynomials", "PrecompileTools", "Printf", "Random", "RecipesBase", "SparseArrays", "StaticArrays", "UUIDs"]
-git-tree-sha1 = "d92e02e6b8b2d9b1d715d0dc403c6f45add3745f"
+git-tree-sha1 = "2b6fc72b953df5e69165e4e7bdc9d717034e9f25"
 uuid = "aaaaaaaa-a6ca-5380-bf3e-84a91bcd477e"
-version = "1.5.0"
+version = "1.5.1"
+
+    [deps.ControlSystemsBase.extensions]
+    ControlSystemsBaseImplicitDifferentiationExt = ["ImplicitDifferentiation", "ComponentArrays"]
+
+    [deps.ControlSystemsBase.weakdeps]
+    ComponentArrays = "b0b7db55-cfe3-40fc-9ded-d10e2dbeff66"
+    ImplicitDifferentiation = "57b37032-215b-411a-8a7c-41a003a55207"
 
 [[deps.CpuId]]
 deps = ["Markdown"]
@@ -641,9 +648,9 @@ version = "1.0.2"
 
 [[deps.Groebner]]
 deps = ["AbstractAlgebra", "Combinatorics", "Logging", "MultivariatePolynomials", "Primes", "Random", "SnoopPrecompile"]
-git-tree-sha1 = "b6c3e9e1eb8dcc6fd9bc68fe08dcc7ab22710de6"
+git-tree-sha1 = "06022d793870e05b9cb34046125539f43d289f51"
 uuid = "0b43b601-686d-58a3-8a1c-6623616c7cd4"
-version = "0.3.4"
+version = "0.3.5"
 
 [[deps.GroupsCore]]
 deps = ["Markdown", "Random"]
