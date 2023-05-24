@@ -14,7 +14,7 @@ pages = [
         "Magnetic Components" => "API/magnetic.md",
         "Mechanical Components" => "API/mechanical.md",
         "Thermal Components" => "API/thermal.md",
-        "Hydraulic Components" => "API/hydrualic.md",
+        "Hydraulic Components" => "API/hydraulic.md",
         "Linear Analysis" => "API/linear_analysis.md",
     ],
 ]
