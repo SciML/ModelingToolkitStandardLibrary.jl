@@ -1,4 +1,23 @@
 """
+    Free(; name)
+
+Use to close a system that has un-connected `MechanicalPort`'s.  
+
+# Connectors:
+
+  - `flange`: 1-dim. translational flange
+"""
+@component function Free(; name)
+    @named flange = MechanicalPort()
+    vars = []
+    eqs = [
+        flange.f ~ 0,
+    ]
+    return compose(ODESystem(eqs, t, vars, []; name, defaults = [flange.v => 0]),
+                   flange)
+end
+
+"""
     Fixed(;name)
 
 Fixes a flange position (velocity = 0)
