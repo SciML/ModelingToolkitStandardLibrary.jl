@@ -120,7 +120,7 @@ end
 """
     Tube(N, add_inertia=true; p_int, area, length, head_factor=1, perimeter = 2 * sqrt(area * pi), shape_factor = 64, name)
 
-Constant length internal flow model with volume discretized by `N` which models the fully developed flow friction, compressibility, and inertia effects when `add_inertia = true`
+Constant length internal flow model discretized by `N` (`FixedVolume`: `N`, `TubeBase`:`N-1`) which models the fully developed flow friction, compressibility (when `N>1`), and inertia effects when `add_inertia = true`.  See `TubeBase` and `FixedVolume` for more information.  
 
 # Parameters:
 - `p_int`: [Pa] initial pressure
