@@ -95,7 +95,7 @@ Reference: Introduction to Fluid Mechanics, Fox & McDonald, 5th Edition, equatio
 """
 function friction_factor(dm, area, d_h, density, viscosity, shape_factor)
     u = abs(dm) / (density * area)
-    
+
     Re = density * u * d_h / viscosity
     f_laminar = shape_factor * regPow(Re, -1, 1e-6)
 

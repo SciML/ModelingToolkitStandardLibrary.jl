@@ -263,8 +263,8 @@ end
     end
 
     vars = @variables begin
-        area(t) = area_int 
-        y(t) = area_int 
+        area(t) = area_int
+        y(t) = area_int
     end
 
     # let
@@ -539,13 +539,11 @@ dm ────►               │  │ area
     end
 
     ratio = (x - x_min) / (x_damp - x_min)
-    damper_area = ifelse(x >= x_damp, 
-                                        one(x),
-                         ifelse((x < x_damp) & (x > x_min), 
-                                        ratio, 
-                                        zero(x)
-                                )
-                        )
+    damper_area = ifelse(x >= x_damp,
+                         one(x),
+                         ifelse((x < x_damp) & (x > x_min),
+                                ratio,
+                                zero(x)))
 
     eqs = [vol ~ x * area
            D(x) ~ flange.v * direction
