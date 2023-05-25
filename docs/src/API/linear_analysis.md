@@ -148,3 +148,7 @@ Pages   = ["Blocks/analysis_points.jl"]
 Order   = [:function, :type]
 Private = false
 ```
+
+```@docs
+ModelingToolkit.linearize
+```

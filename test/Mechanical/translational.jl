@@ -7,6 +7,27 @@ import ModelingToolkitStandardLibrary.Mechanical.TranslationalPosition as TP
 @parameters t
 D = Differential(t)
 
+@testset "Free" begin
+    function System(; name)
+        systems = @named begin
+            mass = TV.Mass(; m = 100, g = -10)
+            free = TV.Free()
+        end
+
+        eqs = [connect(mass.flange, free.flange)]
+
+        ODESystem(eqs, t, [], []; name, systems)
+    end
+
+    @named system = System()
+    s = complete(system)
+    sys = structural_simplify(system)
+    prob = ODEProblem(sys, [], (0, 0.1))
+    sol = solve(prob, Rosenbrock23())
+
+    @test sol[s.mass.flange.v][end]≈-0.1 * 10 atol=1e-3
+end
+
 @testset "spring damper mass fixed" begin
     @named dv = TV.Damper(d = 1, v_a_0 = 1)
     @named dp = TP.Damper(d = 1, v_a_0 = 1, s_a_0 = 3, s_b_0 = 1)

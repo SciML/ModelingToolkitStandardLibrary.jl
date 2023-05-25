@@ -57,22 +57,20 @@ D = Differential(t)
                              ])
     sys = structural_simplify(model)
 
-    @test_broken prob = ODAEProblem(sys, Pair[], (0, 6.0))
-    @test_skip begin
-        sol = solve(prob, Rodas4())
-        @test sol.retcode == Success
-        # EMF equations
-        @test -0.5 .* sol[emf.i] == sol[emf.flange.tau]
-        @test sol[emf.v] == 0.5 .* sol[emf.w]
-        # test steady-state values
-        dc_gain = [f/(k^2 + f * R) k/(k^2 + f * R); k/(k^2 + f * R) -R/(k^2 + f * R)]
-        idx_t = findfirst(sol.t .> 2.5)
-        @test sol[inertia.w][idx_t]≈(dc_gain * [V_step; 0])[2] rtol=1e-3
-        @test sol[emf.i][idx_t]≈(dc_gain * [V_step; 0])[1] rtol=1e-3
-        idx_t = findfirst(sol.t .> 5.5)
-        @test sol[inertia.w][idx_t]≈(dc_gain * [V_step; -tau_L_step])[2] rtol=1e-3
-        @test sol[emf.i][idx_t]≈(dc_gain * [V_step; -tau_L_step])[1] rtol=1e-3
-    end
+    prob = ODEProblem(sys, [], (0, 6.0))
+    sol = solve(prob, Rodas4())
+    @test sol.retcode == Success
+    # EMF equations
+    @test -0.5 .* sol[emf.i] == sol[emf.flange.tau]
+    @test sol[emf.v] == 0.5 .* sol[emf.w]
+    # test steady-state values
+    dc_gain = [f/(k^2 + f * R) k/(k^2 + f * R); k/(k^2 + f * R) -R/(k^2 + f * R)]
+    idx_t = findfirst(sol.t .> 2.5)
+    @test sol[inertia.w][idx_t]≈(dc_gain * [V_step; 0])[2] rtol=1e-3
+    @test sol[emf.i][idx_t]≈(dc_gain * [V_step; 0])[1] rtol=1e-3
+    idx_t = findfirst(sol.t .> 5.5)
+    @test sol[inertia.w][idx_t]≈(dc_gain * [V_step; -tau_L_step])[2] rtol=1e-3
+    @test sol[emf.i][idx_t]≈(dc_gain * [V_step; -tau_L_step])[1] rtol=1e-3
 
     prob = DAEProblem(sys, D.(states(sys)) .=> 0.0, Pair[], (0, 6.0))
     sol = solve(prob, DFBDF())
@@ -144,27 +142,24 @@ end
                              ])
     sys = structural_simplify(model)
 
-    @test_broken prob = ODAEProblem(sys, Pair[], (0, 6.0)) # KeyError: key 17 not found
-    @test_skip begin
-        sol = solve(prob, Rodas4())
+    prob = ODEProblem(sys, Pair[], (0, 6.0))
+    sol = solve(prob, Rodas4())
 
-        @test sol.retcode == Success
-        # EMF equations
-        @test -0.5 .* sol[emf.i] == sol[emf.flange.tau]
-        @test sol[emf.v] == 0.5 .* sol[emf.w]
+    @test sol.retcode == Success
+    # EMF equations
+    @test -0.5 .* sol[emf.i] == sol[emf.flange.tau]
+    @test sol[emf.v] == 0.5 .* sol[emf.w]
 
-        # test steady-state values
-        dc_gain = [f/(k^2 + f * R) k/(k^2 + f * R); k/(k^2 + f * R) -R/(k^2 + f * R)]
-        idx_t = findfirst(sol.t .> 2.5)
-        @test sol[inertia.w][idx_t]≈(dc_gain * [V_step; 0])[2] rtol=1e-3
-        @test sol[emf.i][idx_t]≈(dc_gain * [V_step; 0])[1] rtol=1e-3
-        idx_t = findfirst(sol.t .> 5.5)
-        @test sol[inertia.w][idx_t]≈(dc_gain * [V_step; -tau_L_step])[2] rtol=1e-3
-        @test sol[emf.i][idx_t]≈(dc_gain * [V_step; -tau_L_step])[1] rtol=1e-3
+    # test steady-state values
+    dc_gain = [f/(k^2 + f * R) k/(k^2 + f * R); k/(k^2 + f * R) -R/(k^2 + f * R)]
+    idx_t = findfirst(sol.t .> 2.5)
+    @test sol[inertia.w][idx_t]≈(dc_gain * [V_step; 0])[2] rtol=1e-3
+    @test sol[emf.i][idx_t]≈(dc_gain * [V_step; 0])[1] rtol=1e-3
+    idx_t = findfirst(sol.t .> 5.5)
+    @test sol[inertia.w][idx_t]≈(dc_gain * [V_step; -tau_L_step])[2] rtol=1e-3
+    @test sol[emf.i][idx_t]≈(dc_gain * [V_step; -tau_L_step])[1] rtol=1e-3
 
-        #
-        @test all(sol[inertia.w] .== sol[speed_sensor.w.u])
-    end
+    @test all(sol[inertia.w] .== sol[speed_sensor.w.u])
 
     prob = DAEProblem(sys, D.(states(sys)) .=> 0.0, Pair[], (0, 6.0))
     sol = solve(prob, DFBDF())

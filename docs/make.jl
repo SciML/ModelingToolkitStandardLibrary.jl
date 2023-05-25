@@ -1,4 +1,5 @@
 using Documenter, ModelingToolkitStandardLibrary
+using ModelingToolkit
 using ModelingToolkitStandardLibrary.Blocks
 using ModelingToolkitStandardLibrary.Mechanical
 using ModelingToolkitStandardLibrary.Mechanical.Rotational
@@ -26,7 +27,8 @@ makedocs(sitename = "ModelingToolkitStandardLibrary.jl",
              :doctest,
              :example_block,
          ],
-         modules = [ModelingToolkitStandardLibrary,
+         modules = [ModelingToolkit,
+             ModelingToolkitStandardLibrary,
              ModelingToolkitStandardLibrary.Blocks,
              ModelingToolkitStandardLibrary.Mechanical,
              ModelingToolkitStandardLibrary.Mechanical.Rotational,
