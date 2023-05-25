@@ -8,7 +8,7 @@ using ModelingToolkitStandardLibrary.Blocks: Parameter
 @parameters t
 D = Differential(t)
 
-NEWTON = NLNewton(check_div = false, always_new = true, max_iter = 10, relax = 9 // 10)
+NEWTON = NLNewton(check_div = false, always_new = true, max_iter = 100, relax = 9 // 10)
 
 @testset "Fluid Domain and Tube" begin
     function System(N; bulk_modulus, name)
@@ -20,7 +20,7 @@ NEWTON = NLNewton(check_div = false, always_new = true, max_iter = 10, relax = 9
                          smooth = true)
             src = IC.Pressure(; p_int = 0)
             vol = IC.FixedVolume(; p_int = 0, vol = 10.0)
-            res = IC.Tube(N; p_int = 0, area = 0.01, length = 500.0)
+            res = IC.Tube(N; p_int = 0, area = 0.01, length = 50.0)
         end
 
         eqs = [connect(stp.output, src.p)
@@ -36,8 +36,8 @@ NEWTON = NLNewton(check_div = false, always_new = true, max_iter = 10, relax = 9
     @named sys5_1 = System(5; bulk_modulus = 1e9)
 
     syss = structural_simplify.([sys1_2, sys1_1, sys5_1])
-    probs = [ODEProblem(sys, ModelingToolkit.missing_variable_defaults(sys), (0, 0.2))
-             for sys in syss]
+    probs = [ODEProblem(sys, ModelingToolkit.missing_variable_defaults(sys), (0, 0.05))
+             for sys in syss] #
     sols = [solve(prob, ImplicitEuler(nlsolve = NEWTON); initializealg = NoInit(),
                   dt = 1e-4, adaptive = false)
             for prob in probs]
@@ -51,6 +51,15 @@ NEWTON = NLNewton(check_div = false, always_new = true, max_iter = 10, relax = 9
 
     # N=5 pipe is compressible, will pressurize more slowly
     @test sols[2][s1_1.vol.port.p][end] > sols[3][s5_1.vol.port.p][end]
+
+    # fig = Figure()
+    # ax = Axis(fig[1,1])
+    # # hlines!(ax, 10e5)
+    # lines!(ax, sols[1][s1_2.vol.port.p])
+    # lines!(ax, sols[2][s1_1.vol.port.p])
+    # lines!(ax, sols[3][s5_1.vol.port.p])
+    # fig
+
 end
 
 @testset "Valve" begin
@@ -131,11 +140,16 @@ end
             @named system = System(N; damping_volume)
             s = complete(system)
             sys = structural_simplify(system)
-            prob = ODEProblem(sys, [], (0, 5),
+            prob = ODEProblem(sys, ModelingToolkit.missing_variable_defaults(sys), (0, 5),
                               [s.vol1.Cd_reverse => 0.1, s.vol2.Cd_reverse => 0.1];
                               jac = true)
-            @time sol = solve(prob, ImplicitEuler(nlsolve = NEWTON); dt = 1e-4,
-                              adaptive = false, initializealg = NoInit())
+
+            @time sol = solve(prob,
+                              ImplicitEuler(nlsolve = NLNewton(check_div = false,
+                                                               always_new = true,
+                                                               max_iter = 10,
+                                                               relax = 9 // 10));
+                              dt = 0.0001, adaptive = false, initializealg = NoInit())
 
             # begin
             #     fig = Figure()
@@ -154,7 +168,7 @@ end
             #     lines!(ax, sol.t, sol[s.vol1.damper.area]; label="area 1")
             #     lines!(ax, sol.t, sol[s.vol2.damper.area]; label="area 2")
 
-            #     fig
+            #     display(fig)
             # end
 
             i1 = round(Int, 1 / 1e-4)
@@ -264,7 +278,8 @@ end
     sys = structural_simplify(system)
     defs = ModelingToolkit.defaults(sys)
     s = complete(system)
-    prob = ODEProblem(sys, [], (0, 0.1); tofloat = false, jac = true)
+    prob = ODEProblem(sys, ModelingToolkit.missing_variable_defaults(sys), (0, 0.1);
+                      tofloat = false, jac = true)
 
     # check the fluid domain
     @test Symbol(defs[s.src.port.ρ]) == Symbol(s.fluid.ρ)
@@ -289,6 +304,54 @@ end
     @test sol[sys.ddx][1] == 0.0
     @test maximum(sol[sys.ddx]) > 200
     @test sol[s.piston.x][end]≈0.06 atol=0.01
+end
+
+@testset "Prevent Negative Pressure" begin
+    @component function System(; name)
+        pars = @parameters let_gas = 1
+
+        systems = @named begin
+            fluid = IC.HydraulicFluid(; let_gas)
+            vol = IC.DynamicVolume(5; p_int = 100e5, area = 0.001, x_int = 0.05,
+                                   x_max = 0.1, x_damp = 0.02, x_min = 0.01, direction = +1)
+            mass = T.Mass(; m = 100, g = -9.807, s_0 = 0.05)
+            cap = IC.Cap(; p_int = 100e5)
+        end
+
+        eqs = [connect(fluid, cap.port, vol.port)
+               connect(vol.flange, mass.flange)]
+
+        ODESystem(eqs, t, [], pars; name, systems)
+    end
+
+    @named system = System()
+    s = complete(system)
+    sys = structural_simplify(system)
+    prob1 = ODEProblem(sys, ModelingToolkit.missing_variable_defaults(sys), (0, 0.05))
+    prob2 = ODEProblem(sys, ModelingToolkit.missing_variable_defaults(sys), (0, 0.05),
+                       [s.let_gas => 0])
+
+    @time sol1 = solve(prob1, ImplicitEuler(nlsolve = NEWTON); adaptive = false, dt = 1e-4)
+    @time sol2 = solve(prob2, Rodas4())
+
+    # case 1: no negative pressure will only have gravity pulling mass back down
+    # case 2: with negative pressure, added force pulling mass back down
+    # - case 1 should push the mass higher
+    @test maximum(sol1[s.mass.s]) > maximum(sol2[s.mass.s])
+
+    # case 1 should prevent negative pressure less than -1000
+    @test minimum(sol1[s.vol.port.p]) > -1000
+    @test minimum(sol2[s.vol.port.p]) < -1000
+
+    # fig = Figure()
+    # ax = Axis(fig[1,1])
+    # lines!(ax, sol1.t, sol1[s.vol.port.p])
+    # lines!(ax, sol2.t, sol2[s.vol.port.p])
+
+    # ax = Axis(fig[1,2])
+    # lines!(ax, sol1.t, sol1[s.mass.s])
+    # lines!(ax, sol2.t, sol2[s.mass.s])
+    # fig
 end
 
 #TODO: Test Valve Inversion

@@ -28,6 +28,7 @@ The following are the constituant libraries of the ModelingToolkit Standard Libr
   - [Electrical Components](https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/API/electrical/)
   - [Magnetic Components](https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/API/magnetic/)
   - [Thermal Components](https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/API/thermal/)
+  - [Hydraulic Components](https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/API/hydraulic/)
 
 ## Contributing
 

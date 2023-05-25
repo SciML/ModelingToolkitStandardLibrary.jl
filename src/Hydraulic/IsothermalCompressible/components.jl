@@ -42,7 +42,11 @@ end
 """
     TubeBase(add_inertia = true; p_int, area, length_int, head_factor = 1, perimeter = 2 * sqrt(area * pi), shape_factor = 64, name)
 
-Variable length internal flow model of the fully developed flow friction, ignoring any compressibility.  Includes optional inertia equation when `add_inertia = true` to model wave propogation which includes change in flow and length terms.
+Variable length internal flow model of the fully developed incompressible flow friction.  Includes optional inertia term when `add_inertia = true` to model wave propagation.  Hydraulic ports have equal flow but variable pressure.  Density is averaged over the pressures, used to calculated average flow velocity and flow friction.  
+
+# States:
+- `x`: [m] length of the pipe
+- `ddm`: [kg/s^2] Rate of change of mass flow rate in control volume.
 
 # Parameters:
 - `p_int`: [Pa] initial pressure
@@ -104,7 +108,7 @@ Variable length internal flow model of the fully developed flow friction, ignori
     end
 
     eqs = [0 ~ port_a.dm + port_b.dm
-           Δp ~ ifelse(x > 0, shear + inertia, 0)]
+           Δp ~ ifelse(x > 0, shear + inertia, zero(x))]
 
     if add_inertia
         push!(eqs, D(dm) ~ ddm)
@@ -116,7 +120,7 @@ end
 """
     Tube(N, add_inertia=true; p_int, area, length, head_factor=1, perimeter = 2 * sqrt(area * pi), shape_factor = 64, name)
 
-Constant length internal flow model with volume discretized by `N` which models the fully developed flow friction, compressibility, and inertia effects when `add_inertia = true`
+Constant length internal flow model discretized by `N` (`FixedVolume`: `N`, `TubeBase`:`N-1`) which models the fully developed flow friction, compressibility (when `N>1`), and inertia effects when `add_inertia = true`.  See `TubeBase` and `FixedVolume` for more information.  
 
 # Parameters:
 - `p_int`: [Pa] initial pressure
@@ -258,7 +262,10 @@ end
         port_b = HydraulicPort(; p_int = p_b_int)
     end
 
-    vars = @variables begin area(t) = area_int end
+    vars = @variables begin
+        area(t) = area_int
+        y(t) = area_int
+    end
 
     # let
     ρ = (full_density(port_a) + full_density(port_b)) / 2
@@ -275,7 +282,8 @@ end
     Cd = ifelse(Δp > 0, Cd, Cd_reverse)
 
     eqs = [0 ~ port_a.dm + port_b.dm
-           dm ~ regRoot(2 * Δp * ρ / Cd) * x]
+           dm ~ regRoot(2 * Δp * ρ / Cd) * x
+           y ~ x]
 
     ODESystem(eqs, t, vars, pars; name, systems)
 end
@@ -459,6 +467,7 @@ dm ────►               │  │ area
                                   # Valve
                                   Cd = 1e2,
                                   Cd_reverse = Cd,
+                                  minimum_area = 0,
                                   name)
     @assert(N>0,
             "the Tube component must be defined with more than 1 segment (i.e. N>1), found N=$N")
@@ -482,6 +491,7 @@ dm ────►               │  │ area
 
         Cd = Cd
         Cd_reverse = Cd_reverse
+        minimum_area = minimum_area
     end
 
     vars = @variables x(t)=x_int vol(t)=x_int * area
@@ -489,8 +499,8 @@ dm ────►               │  │ area
     ports = @named begin
         port = HydraulicPort(; p_int)
         flange = MechanicalPort()
-        damper = ValveBase(true; p_a_int = p_int, p_b_int = p_int, area_int = 1, Cd,
-                           Cd_reverse)
+        damper = ValveBase(; p_a_int = p_int, p_b_int = p_int, area_int = 1, Cd,
+                           Cd_reverse, minimum_area)
     end
 
     pipe_bases = []
@@ -519,7 +529,7 @@ dm ────►               │  │ area
                         Δx,
                         ifelse(x₀ - Δx * (i - 1) > 0,
                                x₀ - Δx * (i - 1),
-                               0))
+                               zero(Δx)))
 
         comp = VolumeBase(; name = Symbol("v$i"), p_int = ParentScope(p_int), x_int = 0,
                           area = ParentScope(area),
@@ -529,9 +539,11 @@ dm ────►               │  │ area
     end
 
     ratio = (x - x_min) / (x_damp - x_min)
-    damper_area = ifelse(x >= x_damp, 1,
-                         ifelse((x < x_damp) &
-                                (x > x_min), ratio, 0))
+    damper_area = ifelse(x >= x_damp,
+                         one(x),
+                         ifelse((x < x_damp) & (x > x_min),
+                                ratio,
+                                zero(x)))
 
     eqs = [vol ~ x * area
            D(x) ~ flange.v * direction

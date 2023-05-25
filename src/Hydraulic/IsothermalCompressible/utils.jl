@@ -20,6 +20,7 @@ Connector port for hydraulic components.
         β
         μ
         n
+        let_gas
         ρ_gas
         p_gas
     end
@@ -35,7 +36,7 @@ end
 """
     HydraulicFluid(; density=997, bulk_modulus=2.09e9, viscosity=0.0010016, name)
 
-Fluid parameter setter for isothermal compressible fluid domain.  Defaults given for water at 20°C and 0Pa gage (1atm absolute) reference pressure. Density is modeled using the Tait equation of state.  For pressures below the reference pressure, density is linearly interpolated to the gas state, this helps prevent pressures from going below the reference pressure.  
+Fluid parameter setter for isothermal compressible fluid domain.  Defaults given for water at 20°C and 0Pa gage (1atm absolute) reference pressure. Density is modeled using the Tait equation of state.  For pressures below the reference pressure, density is linearly interpolated to the gas state (when `let_gas` is set to 1), this helps prevent pressures from going below the reference pressure.  
 
 # Parameters:
 
@@ -43,17 +44,19 @@ Fluid parameter setter for isothermal compressible fluid domain.  Defaults given
 - `Β`: [Pa] fluid bulk modulus describing the compressibility (set by `bulk_modulus` argument)
 - `μ`: [Pa*s] or [kg/m-s] fluid dynamic viscosity  (set by `viscosity` argument)
 - `n`: density exponent
+- `let_gas`: set to 1 to allow fluid to transition from liquid to gas (for density calculation only)  
 - `ρ_gas`: [kg/m^3] density of fluid in gas state at reference gage pressure `p_gas` (set by `gas_density` argument)
 - `p_gas`: [Pa] reference pressure (set by `gas_pressure` argument)
 """
 @connector function HydraulicFluid(; density = 997, bulk_modulus = 2.09e9,
                                    viscosity = 0.0010016, gas_density = 0.0073955,
-                                   gas_pressure = -1000, n = 1, name)
+                                   gas_pressure = -1000, n = 1, let_gas = 1, name)
     pars = @parameters begin
         ρ = density
         β = bulk_modulus
         μ = viscosity
         n = n
+        let_gas = let_gas
         ρ_gas = gas_density
         p_gas = gas_pressure
     end
@@ -96,7 +99,7 @@ function friction_factor(dm, area, d_h, density, viscosity, shape_factor)
     Re = density * u * d_h / viscosity
     f_laminar = shape_factor * regPow(Re, -1, 1e-6)
 
-    Re = maximum([Re, 1])
+    Re = max(Re, one(Re))
     f_turbulent = (shape_factor / 64) * (0.79 * log(Re) - 1.64)^(-2)
 
     f = transition(2000, 3000, f_laminar, f_turbulent, Re)
@@ -120,15 +123,26 @@ function transition(x1, x2, y1, y2, x)
 end
 
 density_ref(port) = port.ρ
+density_exp(port) = port.n
 gas_density_ref(port) = port.ρ_gas
 gas_pressure_ref(port) = port.p_gas
 bulk_modulus(port) = port.β
 viscosity(port) = port.μ
-liquid_density(port, p) = density_ref(port) * (1 + p / bulk_modulus(port))
+
+function liquid_density(port, p)
+    density_ref(port) *
+    regPow(1 + density_exp(port) * p / bulk_modulus(port), 1 / density_exp(port))
+end #Tait-Murnaghan equation of state
 liquid_density(port) = liquid_density(port, port.p)
 function gas_density(port, p)
-    density_ref(port) -
-    p * (density_ref(port) - gas_density_ref(port)) / gas_pressure_ref(port)
+    slope = (density_ref(port) - gas_density_ref(port)) / (0 - gas_pressure_ref(port))
+    b = density_ref(port)
+
+    return b + p * slope
 end
-full_density(port, p) = liquid_density(port, p)  #ifelse( p > 0, liquid_density(port, p), gas_density(port, p) )
+function full_density(port, p)
+    ifelse(port.let_gas == 1,
+           ifelse(p > 0, liquid_density(port, p), gas_density(port, p)),
+           liquid_density(port, p))
+end
 full_density(port) = full_density(port, port.p)
