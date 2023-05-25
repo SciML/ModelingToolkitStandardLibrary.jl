@@ -70,6 +70,10 @@ Fluid parameter setter for isothermal compressible fluid domain.  Defaults given
     ODESystem(eqs, t, vars, pars; name, defaults = [dm => 0])
 end
 
+f_laminar(shape_factor, Re) = shape_factor * regPow(Re, -1, 1e-6) #regPow used to avoid dividing by 0, min value is 1e-6
+f_turbulent(shape_factor, Re) = (shape_factor / 64) / (0.79 * log(Re) - 1.64)^2
+
+
 """
     friction_factor(dm, area, d_h, density, viscosity, shape_factor)
 
@@ -97,12 +101,14 @@ function friction_factor(dm, area, d_h, density, viscosity, shape_factor)
     u = abs(dm) / (density * area)
 
     Re = density * u * d_h / viscosity
-    f_laminar = shape_factor * regPow(Re, -1, 1e-6)
-
-    Re = max(Re, one(Re))
-    f_turbulent = (shape_factor / 64) * (0.79 * log(Re) - 1.64)^(-2)
-
-    f = transition(2000, 3000, f_laminar, f_turbulent, Re)
+    
+    if Re<2000
+        return f_laminar(shape_factor, Re)
+    elseif 2000 <= Re < 3000
+        return transition(2000, 3000, f_laminar(shape_factor, Re), f_turbulent(shape_factor, Re), Re)
+    else
+        return f_turbulent(shape_factor, Re)
+    end
 
     return f
 end
@@ -117,7 +123,7 @@ function transition(x1, x2, y1, y2, x)
         return y2
     else
         u = (x - x1) / (x2 - x1)
-        blend = 3 * u^2 - 2 * u^3
+        blend = u^2*(3 - 2 * u)
         return (1 - blend) * y1 + blend * y2
     end
 end
