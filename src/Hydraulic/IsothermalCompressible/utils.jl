@@ -73,7 +73,6 @@ end
 f_laminar(shape_factor, Re) = shape_factor * regPow(Re, -1, 1e-6) #regPow used to avoid dividing by 0, min value is 1e-6
 f_turbulent(shape_factor, Re) = (shape_factor / 64) / (0.79 * log(Re) - 1.64)^2
 
-
 """
     friction_factor(dm, area, d_h, density, viscosity, shape_factor)
 
@@ -99,13 +98,13 @@ Reference: Introduction to Fluid Mechanics, Fox & McDonald, 5th Edition, equatio
 """
 function friction_factor(dm, area, d_h, density, viscosity, shape_factor)
     u = abs(dm) / (density * area)
-
     Re = density * u * d_h / viscosity
-    
-    if Re<2000
+
+    if Re <= 2000
         return f_laminar(shape_factor, Re)
-    elseif 2000 <= Re < 3000
-        return transition(2000, 3000, f_laminar(shape_factor, Re), f_turbulent(shape_factor, Re), Re)
+    elseif 2000 < Re < 3000
+        return transition(2000, 3000, f_laminar(shape_factor, Re),
+                          f_turbulent(shape_factor, Re), Re)
     else
         return f_turbulent(shape_factor, Re)
     end
@@ -117,15 +116,9 @@ Symbolics.derivative(::typeof(friction_factor), args, ::Val{1}) = 0
 Symbolics.derivative(::typeof(friction_factor), args, ::Val{4}) = 0
 
 function transition(x1, x2, y1, y2, x)
-    if x < x1
-        return y1
-    elseif x > x2
-        return y2
-    else
-        u = (x - x1) / (x2 - x1)
-        blend = u^2*(3 - 2 * u)
-        return (1 - blend) * y1 + blend * y2
-    end
+    u = (x - x1) / (x2 - x1)
+    blend = u^2 * (3 - 2 * u)
+    return (1 - blend) * y1 + blend * y2
 end
 
 density_ref(port) = port.ρ
