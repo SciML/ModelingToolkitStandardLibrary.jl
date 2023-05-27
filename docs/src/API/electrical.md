@@ -46,22 +46,8 @@ MultiSensor
 ## Analog Sources
 
 ```@docs
-ConstantVoltage
-SineVoltage
-StepVoltage
-RampVoltage
-SquareVoltage
-TriangularVoltage
-CosineVoltage
-ExpSineVoltage
-ConstantCurrent
-SineCurrent
-StepCurrent
-RampCurrent
-SquareCurrent
-TriangularCurrent
-CosineCurrent
-ExpSineCurrent
+Voltage
+Current
 ```
 
 ## Digital Gates
