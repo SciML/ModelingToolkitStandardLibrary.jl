@@ -117,7 +117,7 @@ Lumped thermal element for heat convection.
     eqs = [dT ~ solid.T - fluid.T
            solid.Q_flow ~ Q_flow
            fluid.Q_flow ~ -Q_flow
-           dT ~ G * Q_flow]
+           Q_flow ~ G * dT]
     ODESystem(eqs, t, sts, [G]; systems = [solid, fluid], name = name)
 end
 
