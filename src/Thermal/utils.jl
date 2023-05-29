@@ -18,7 +18,7 @@ Port for a thermal system.
 """ HeatPort
 
 """
-    Element1D(;name, dT0=0.0, Q_flow0=0.0)
+    Element1D(; name, dT_start = 0.0, Q_flow_start = 0.0)
 
 This partial model contains the basic connectors and variables to allow heat transfer models to be created that do not
 store energy. This model defines and includes equations for the temperature drop across the element, `dT`, and the heat
@@ -51,4 +51,41 @@ flow rate through the element from `port_a` to `port_b`, `Q_flow`.
            port_a.Q_flow + port_b.Q_flow ~ 0]
 
     return compose(ODESystem(eqs, t, sts, []; name = name), port_a, port_b)
+end
+
+"""
+    ConvectiveElement1D(; name, dT_start = 0.0, Q_flow_start = 0.0)
+
+This partial model contains the basic connectors and variables to allow heat
+transfer models to be created that do not store energy. This model defines and
+includes equations for the temperature drop across the element, `dT`, and the heat
+flow rate through the element from `solid` to `fluid`, `Q_flow`.
+
+# States:
+
+  - `dT`:  [`K`] Temperature difference across the component `solid.T` - `fluid.T`
+  - `Q_flow`: [`W`] Heat flow rate from `solid` -> `fluid`
+
+# Connectors:
+
+`solid`
+`fluid`
+
+# Parameters:
+
+  - `dT_start`:  [K] Initial temperature difference across the component `solid.T` - `fluid.T`
+  - `Q_flow_start`: [W] Initial heat flow rate from `solid` -> `fluid`
+"""
+@component function ConvectiveElement1D(; name, dT_start = 0.0, Q_flow_start = 0.0)
+    @named solid = HeatPort()
+    @named fluid = HeatPort()
+    sts = @variables begin
+        dT(t) = dT_start
+        Q_flow(t) = Q_flow_start
+    end
+    eqs = [dT ~ solid.T - fluid.T
+           solid.Q_flow ~ Q_flow
+           solid.Q_flow + fluid.Q_flow ~ 0]
+
+    return compose(ODESystem(eqs, t, sts, []; name = name), solid, fluid)
 end
