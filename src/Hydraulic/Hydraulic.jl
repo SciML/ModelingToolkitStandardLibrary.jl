@@ -1,5 +1,5 @@
 """
-Library of hydrualic models.
+Library of hydraulic models.
 """
 module Hydraulic
 
