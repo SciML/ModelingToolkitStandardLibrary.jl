@@ -148,7 +148,7 @@ lsyso = sminreal(ss(matrices_So...))
 ## A more complicated test case
 using ModelingToolkit, OrdinaryDiffEq, LinearAlgebra
 using ModelingToolkitStandardLibrary.Mechanical.Rotational
-using ModelingToolkitStandardLibrary.Blocks: t, Sine, PID, SecondOrder, Step, RealOutput
+using ModelingToolkitStandardLibrary.Blocks: Sine, PID, SecondOrder, Step, RealOutput
 using ModelingToolkit: connect
 # Parameters
 m1 = 1
