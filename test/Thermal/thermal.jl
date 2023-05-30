@@ -168,7 +168,6 @@ end
 @testset "Thermal Collector" begin
     @named flow_src = FixedHeatFlow(Q_flow = 50, alpha = 100)
     @named hf_sensor = HeatFlowSensor()
-    @named th_ground = FixedTemperature(T = 0)
     @named collector = ThermalCollector(m = 2)
     @named th_resistor = ThermalResistor(R = 10)
     @named tem_src = FixedTemperature(T = 10)
@@ -178,8 +177,7 @@ end
     eqs = [connect(flow_src.port, collector.port_a1, th_resistor.port_a)
            connect(tem_src.port, collector.port_a2)
            connect(hf_sensor.port_a, collector.port_b)
-           connect(hf_sensor.port_b, mass.port, th_resistor.port_b)
-           connect(mass.port, th_ground.port)]
+           connect(hf_sensor.port_b, mass.port, th_resistor.port_b)]
     @named coll = ODESystem(eqs, t,
                             systems = [hf_sensor, flow_src, tem_src,
                                 collector, th_resistor, mass])
