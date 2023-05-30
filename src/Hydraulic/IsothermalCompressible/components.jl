@@ -2,7 +2,7 @@
 """
     Cap(; p_int, name)
 
-Caps a hydrualic port to prevent mass flow in or out.
+Caps a hydraulic port to prevent mass flow in or out.
 
 # Parameters:
 - `p_int`: [Pa] initial pressure (set by `p_int` argument)
@@ -42,7 +42,7 @@ end
 """
     TubeBase(add_inertia = true; p_int, area, length_int, head_factor = 1, perimeter = 2 * sqrt(area * pi), shape_factor = 64, name)
 
-Variable length internal flow model of the fully developed incompressible flow friction.  Includes optional inertia term when `add_inertia = true` to model wave propagation.  Hydraulic ports have equal flow but variable pressure.  Density is averaged over the pressures, used to calculated average flow velocity and flow friction.  
+Variable length internal flow model of the fully developed incompressible flow friction.  Includes optional inertia term when `add_inertia = true` to model wave propagation.  Hydraulic ports have equal flow but variable pressure.  Density is averaged over the pressures, used to calculated average flow velocity and flow friction.
 
 # States:
 - `x`: [m] length of the pipe
@@ -53,7 +53,7 @@ Variable length internal flow model of the fully developed incompressible flow f
 - `area`: [m^2] tube cross sectional area
 - `length_int`: [m] initial tube length
 - `perimeter`: [m] perimeter of the pipe cross section (needed only for non-circular pipes)
-- `shape_factor`: shape factor, see `friction_factor` function 
+- `shape_factor`: shape factor, see `friction_factor` function
 - `head_factor`: effective length multiplier, used to account for addition friction from flow development and additional friction such as pipe bends, entrance/exit lossses, etc.
 
 # Connectors:
@@ -120,14 +120,14 @@ end
 """
     Tube(N, add_inertia=true; p_int, area, length, head_factor=1, perimeter = 2 * sqrt(area * pi), shape_factor = 64, name)
 
-Constant length internal flow model discretized by `N` (`FixedVolume`: `N`, `TubeBase`:`N-1`) which models the fully developed flow friction, compressibility (when `N>1`), and inertia effects when `add_inertia = true`.  See `TubeBase` and `FixedVolume` for more information.  
+Constant length internal flow model discretized by `N` (`FixedVolume`: `N`, `TubeBase`:`N-1`) which models the fully developed flow friction, compressibility (when `N>1`), and inertia effects when `add_inertia = true`.  See `TubeBase` and `FixedVolume` for more information.
 
 # Parameters:
 - `p_int`: [Pa] initial pressure
 - `area`: [m^2] tube cross sectional area
 - `length`: [m] real length of the tube
 - `perimeter`: [m] perimeter of the pipe cross section (needed only for non-circular pipes)
-- `shape_factor`: shape factor, see `friction_factor` function 
+- `shape_factor`: shape factor, see `friction_factor` function
 - `head_factor`: effective length multiplier, used to account for addition friction from flow development and additional friction such as pipe bends, entrance/exit lossses, etc.
 
 # Connectors:
@@ -209,7 +209,7 @@ end
 Reduces the flow from `port_a` to `port_b` by `n`.  Useful for modeling parallel tubes efficiently by placing a `FlowDivider` on each end of a tube.
 
 # Parameters:
-- `p_int`: [Pa] initial pressure 
+- `p_int`: [Pa] initial pressure
 - `n`: divide flow from `port_a` to `port_b` by `n`
 
 # Connectors:
@@ -407,14 +407,14 @@ end
 """
 DynamicVolume(N, add_inertia=true; p_int,  area, x_int = 0, x_max, x_min = 0, x_damp = x_min, direction = +1, perimeter = 2 * sqrt(area * pi), shape_factor = 64, head_factor = 1, Cd = 1e2, Cd_reverse = Cd, name)
 
-Volume with moving wall with `flange` connector for converting hydraulic energy to 1D mechanical.  The `direction` argument aligns the mechanical port with the hydraulic port, useful when connecting two dynamic volumes together in oppsing directions to create an actuator.  
+Volume with moving wall with `flange` connector for converting hydraulic energy to 1D mechanical.  The `direction` argument aligns the mechanical port with the hydraulic port, useful when connecting two dynamic volumes together in oppsing directions to create an actuator.
 
 ```
      ┌─────────────────┐ ───
      │                 │  ▲
                        │  │
 dm ────►               │  │ area
-                       │  │  
+                       │  │
      │                 │  ▼
      └─────────────────┤ ───
                        │
@@ -431,14 +431,14 @@ dm ────►               │  │ area
 - `area`: [m^2] moving wall area
 - `x_int`: [m] initial wall position
 - `x_max`: [m] max wall position, needed for volume discretization to apply the correct volume sizing as a function of `x`
-- `x_min`: [m] wall position that shuts off flow and prevents negative volume.  
+- `x_min`: [m] wall position that shuts off flow and prevents negative volume.
 - `x_damp`: [m] wall position that initiates a linear damping region before reaching full flow shut off.  Helps provide a smooth end stop.
 
 - `direction`: [+/-1] applies the direction conversion from the `flange` to `x`
 
 ## flow resistance
 - `perimeter`: [m] perimeter of the cross section (needed only for non-circular volumes)
-- `shape_factor`: shape factor, see `friction_factor` function 
+- `shape_factor`: shape factor, see `friction_factor` function
 - `head_factor`: effective length multiplier, used to account for addition friction from flow development and additional friction such as pipe bends, entrance/exit lossses, etc.
 
 ## flow shut off and damping

@@ -97,7 +97,7 @@ Lumped thermal element for heat convection.
 
 # States:
 
-  - `dT`:  [`K`] Temperature difference across the component solid.T - fluid.T
+  - `dT`:  [`K`] Temperature difference across the component `solid.T` - `fluid.T`
   - `Q_flow`: [`W`] Heat flow rate from `solid` -> `fluid`
 
 # Connectors:
@@ -110,15 +110,13 @@ Lumped thermal element for heat convection.
   - `G`: [W/K] Convective thermal conductance
 """
 @component function ConvectiveConductor(; name, G)
-    @named solid = HeatPort()
-    @named fluid = HeatPort()
+    @named convective_element1d = ConvectiveElement1D()
+    @unpack Q_flow, dT = convective_element1d
     @parameters G = G
-    sts = @variables Q_flow(t)=0.0 dT(t)=0.0
-    eqs = [dT ~ solid.T - fluid.T
-           solid.Q_flow ~ Q_flow
-           fluid.Q_flow ~ -Q_flow
-           dT ~ G * Q_flow]
-    ODESystem(eqs, t, sts, [G]; systems = [solid, fluid], name = name)
+    eqs = [
+        Q_flow ~ G * dT,
+    ]
+    extend(ODESystem(eqs, t, [], [G]; name = name), convective_element1d)
 end
 
 """
@@ -128,7 +126,7 @@ Lumped thermal element for heat convection.
 
 # States:
 
-  - `dT`:  [`K`] Temperature difference across the component solid.T - fluid.T
+  - `dT`:  [`K`] Temperature difference across the component `solid.T` - `fluid.T`
   - `Q_flow`: [`W`] Heat flow rate from `solid` -> `fluid`
 
 # Connectors:
@@ -141,15 +139,13 @@ Lumped thermal element for heat convection.
   - `R`: [`K/W`] Constant thermal resistance of material
 """
 @component function ConvectiveResistor(; name, R)
-    @named solid = HeatPort()
-    @named fluid = HeatPort()
+    @named convective_element1d = ConvectiveElement1D()
+    @unpack Q_flow, dT = convective_element1d
     @parameters R = R
-    sts = @variables Q_flow(t)=0.0 dT(t)=0.0
-    eqs = [dT ~ solid.T - fluid.T
-           solid.Q_flow ~ Q_flow
-           fluid.Q_flow ~ -Q_flow
-           dT ~ R * Q_flow]
-    ODESystem(eqs, t, sts, [R]; systems = [solid, fluid], name = name)
+    eqs = [
+        dT ~ R * Q_flow,
+    ]
+    extend(ODESystem(eqs, t, [], [R]; name = name), convective_element1d)
 end
 
 """

@@ -1,4 +1,4 @@
-# ModelingToolkit Standard Library: Hydrualic Components
+# ModelingToolkit Standard Library: Hydraulic Components
 
 ```@contents
 Pages = ["hydraulic.md"]
