@@ -108,8 +108,6 @@ function friction_factor(dm, area, d_h, density, viscosity, shape_factor)
     else
         return f_turbulent(shape_factor, Re)
     end
-
-    return f
 end
 @register_symbolic friction_factor(dm, area, d_h, density, viscosity, shape_factor)
 Symbolics.derivative(::typeof(friction_factor), args, ::Val{1}) = 0
