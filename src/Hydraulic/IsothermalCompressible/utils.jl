@@ -34,7 +34,7 @@ Connector port for hydraulic components.
 end
 
 """
-    HydraulicFluid(; density=997, bulk_modulus=2.09e9, viscosity=0.0010016, name)
+    HydraulicFluid(; density = 997, bulk_modulus = 2.09e9, viscosity = 0.0010016, gas_density = 0.0073955, gas_pressure = -1000, n = 1, let_gas = 1, name)
 
 Fluid parameter setter for isothermal compressible fluid domain.  Defaults given for water at 20°C and 0Pa gage (1atm absolute) reference pressure. Density is modeled using the Tait equation of state.  For pressures below the reference pressure, density is linearly interpolated to the gas state (when `let_gas` is set to 1), this helps prevent pressures from going below the reference pressure.  
 
