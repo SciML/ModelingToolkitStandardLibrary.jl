@@ -189,7 +189,7 @@ end
     sol = solve(prob, Tsit5())
     y(x, st) = (x .> st) .* abs.(collect(x) .- st)
     @test sol.retcode == Success
-    @test sum(reduce(vcat, sol.u) .- y(sol.t, start_time))≈0 atol=1e-2
+    @test sum(reduce(vcat, sol[capacitor.v]) .- y(sol.t, start_time))≈0 atol=1e-2
 end
 
 @testset "Integrator" begin
@@ -201,11 +201,11 @@ end
     @named R2 = Resistor(R = 100 * R)
     @named C1 = Capacitor(C = 1 / (2 * pi * f * R))
     @named opamp = IdealOpAmp()
-    @named square = Square(amplitude = Vin)
+    @named square_source = Square(amplitude = Vin)
     @named voltage = Voltage()
     @named sensor = VoltageSensor()
 
-    connections = [connect(square.output, voltage.V)
+    connections = [connect(square_source.output, voltage.V)
                    connect(voltage.p, R1.p)
                    connect(R1.n, C1.n, R2.p, opamp.n1)
                    connect(opamp.p2, C1.p, R2.n)
@@ -213,7 +213,16 @@ end
                    connect(opamp.p2, sensor.p)
                    connect(sensor.n, ground.g)]
     @named model = ODESystem(connections, t,
-                             systems = [R1, R2, opamp, square, voltage, C1, ground, sensor])
+                             systems = [
+                                 R1,
+                                 R2,
+                                 opamp,
+                                 square_source,
+                                 voltage,
+                                 C1,
+                                 ground,
+                                 sensor,
+                             ])
     sys = structural_simplify(model)
     u0 = [C1.v => 0.0
           R1.v => 0.0]

@@ -129,7 +129,7 @@ sys_outer = ODESystem(eqs, t, systems = [F, sys_inner, r], name = :outer)
 
 # test first that the structural_simplify works correctly
 ssys = structural_simplify(sys_outer)
-prob = ODEProblem(ssys, [P.x => 1], (0, 10))
+prob = ODEProblem(ssys, Pair[], (0, 10))
 # sol = solve(prob, Rodas5())
 # plot(sol)
 
@@ -148,7 +148,7 @@ lsyso = sminreal(ss(matrices_So...))
 ## A more complicated test case
 using ModelingToolkit, OrdinaryDiffEq, LinearAlgebra
 using ModelingToolkitStandardLibrary.Mechanical.Rotational
-using ModelingToolkitStandardLibrary.Blocks: t, Sine, PID, SecondOrder, Step, RealOutput
+using ModelingToolkitStandardLibrary.Blocks: Sine, PID, SecondOrder, Step, RealOutput
 using ModelingToolkit: connect
 # Parameters
 m1 = 1
