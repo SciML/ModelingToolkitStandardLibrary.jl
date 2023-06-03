@@ -40,20 +40,25 @@
         ddy_cm(t) = 0
     end
 
-    @named TX1 = MechanicalPort()
-    @named TY1 = MechanicalPort()
+    @named M1 = RigidBody2DPort()
+    @named M2 = RigidBody2DPort()
 
-    @named TX2 = MechanicalPort()
-    @named TY2 = MechanicalPort()
+    # let ----------------------------------
+    Δx = (x2 - x1)/2
+    Δy = (y2 - y1)/2
 
     eqs = [D(A) ~ dA
            D(dA) ~ ddA
+           
            D(x1) ~ dx1
            D(y1) ~ dy1
+           
            D(x2) ~ dx2
            D(y2) ~ dy2
+           
            D(x_cm) ~ dx_cm
            D(dx_cm) ~ ddx_cm
+           
            D(y_cm) ~ dy_cm
            D(dy_cm) ~ ddy_cm
 
@@ -64,23 +69,89 @@
            m * ddy_cm ~ m * g + fy1 + fy2
 
            # torques
-           I * ddA ~ -fy1 * (x2 - x1) / 2 + fy2 * (x2 - x1) / 2 + fx1 * (y2 - y1) / 2 -
-                     fx2 * (y2 - y1) / 2
+           I * ddA ~ Δx*fy2 - Δy*fx2 - Δx*fy1 + Δy*fx1 + M1.T_z + M2.T_z
+           
 
            # geometry
            x2 ~ l * cos(A) + x1
            y2 ~ l * sin(A) + y1
-           x_cm ~ l * cos(A) / 2 + x1
-           y_cm ~ l * sin(A) / 2 + y1
-           TX1.f ~ fx1
-           TX1.v ~ dx1
-           TY1.f ~ fy1
-           TY1.v ~ dy1
-           TX2.f ~ fx2
-           TX2.v ~ dx2
-           TY2.f ~ fy2
-           TY2.v ~ dy2]
+   
+           x_cm ~ Δx + x1
+           y_cm ~ Δy + y1
 
-    return ODESystem(eqs, t, vars, pars; name = name, systems = [TX1, TY1, TX2, TY2],
-                     defaults = [TX1.v => 0, TY1.v => 0, TX2.v => 0, TY2.v => 0])
+           M1.f_x ~ fx1
+           M1.f_y ~ fy1
+           
+           M1.dx ~ dx1
+           M1.dy ~ dy1
+           M1.dA ~ dA
+   
+           M2.f_x ~ fx2
+           M2.f_y ~ fy2
+           
+           M2.dx ~ dx2
+           M2.dy ~ dy2
+           M2.dA ~ dA
+
+           ]
+
+    return ODESystem(eqs, t, vars, pars; name = name, systems = [M1, M2],
+    defaults = [M1.dx => 0, M1.dy => 0, M1.dA => 0, M2.dx => 0, M2.dy => 0, M2.dA => 0])
 end
+
+
+function RevoluteJoint(; name, d=0)
+    pars = @parameters begin
+        d=d
+    end
+
+    vars = @variables begin
+        dA(t) = 0
+        T_z(t) = 0
+    end
+
+    @named M1 = RigidBody2DPort()
+    @named M2 = RigidBody2DPort()
+
+    eqs = [dA ~ M1.dA - M2.dA
+        
+        T_z ~ dA*d
+        
+        M1.T_z ~ +T_z
+        M2.T_z ~ -T_z
+        
+        M1.f_x ~ -M2.f_x
+        M1.f_y ~ -M2.f_y
+        M1.dx ~ M2.dx
+        M1.dy ~ M2.dy]
+
+    return ODESystem(eqs, t, vars, pars; name = name, systems = [M1, M2],
+                     defaults = [M1.dx => 0, M1.dy => 0, M1.dA => 0, M2.dx => 0, M2.dy => 0, M2.dA => 0])
+end
+
+function MultiBody2Translational(; name)
+
+    @named M = RigidBody2DPort()
+    @named T = MechanicalPort()
+
+    eqs = [
+            M.f_x ~ -T.f
+            
+            M.dx ~ T.v
+            M.dy ~ 0
+            M.dA ~ 0
+           ]
+    return compose(ODESystem(eqs, t, [], []; name = name, defaults = [M.dx => 0, M.dy => 0, M.dA => 0, T.v => 0, T.f => 0]),
+                   M, T)
+
+end
+
+# function FixedFrame(; name)
+#     @named T = RigidBody2DPort()
+#     eqs = [T.v_x ~ 0
+#            T.v_y ~ 0
+#            T.dA ~ 0]
+#     return compose(ODESystem(eqs, t, [], []; name = name, defaults = [T.v_x => 0, T.v_y => 0, T.dA => 0]),
+#                    T)
+# end
+
