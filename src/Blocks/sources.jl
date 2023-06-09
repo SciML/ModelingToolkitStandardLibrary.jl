@@ -525,14 +525,10 @@ Symbolics.@register_symbolic get_sample_time(memory)
 
 Symbolics.@register_symbolic get_sampled_data(t, memory)
 
-get_sampled_data_const(t, memory::Parameter) = get_sampled_data(t, memory)
-Symbolics.@register_symbolic get_sampled_data_const(t, memory)
-Symbolics.derivative(::typeof(get_sampled_data_const), args::NTuple{2, Any}, ::Val{1}) = 0
-
 function first_order_backwards_difference(t, memory)
     Δt = get_sample_time(memory)
     x1 = get_sampled_data(t, memory)
-    x0 = get_sampled_data_const(t - Δt, memory)
+    x0 = get_sampled_data(t - Δt, memory)
 
     return (x1 - x0) / Δt
 end
@@ -611,11 +607,11 @@ function Symbolics.derivative(::typeof(set_sampled_data!), args::NTuple{4, Any},
     Δt = @inbounds args[4]
     first_order_backwards_difference(t, x, Δt, memory)
 end
-Symbolics.derivative(::typeof(set_sampled_data!), args::NTuple{4, Any}, ::Val{3}) = 1
+Symbolics.derivative(::typeof(set_sampled_data!), args::NTuple{4, Any}, ::Val{3}) = 1 #set_sampled_data returns x, therefore d/dx (x) = 1
 
 function first_order_backwards_difference(t, x, Δt, memory)
     x1 = set_sampled_data!(memory, t, x, Δt)
-    x0 = get_sampled_data_const(t - Δt, memory)
+    x0 = get_sampled_data(t - Δt, memory)
 
     return (x1 - x0) / Δt
 end
