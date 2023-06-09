@@ -43,10 +43,10 @@ function NonlinearResistor(; name, Ga, Gb, Ve)
     pars = @parameters Ga=Ga Gb=Gb Ve=Ve
     eqs = [
         i ~ ifelse(v < -Ve,
-                   Gb * (v + Ve) - Ga * Ve,
-                   ifelse(v > Ve,
-                          Gb * (v - Ve) + Ga * Ve,
-                          Ga * v)),
+            Gb * (v + Ve) - Ga * Ve,
+            ifelse(v > Ve,
+                Gb * (v - Ve) + Ga * Ve,
+                Ga * v)),
     ]
     extend(ODESystem(eqs, t, [], pars; name = name), oneport)
 end
@@ -97,19 +97,19 @@ The final model can now be created with the components from the library and the 
 @named C1 = Capacitor(C = 10, v_start = 4)
 @named C2 = Capacitor(C = 100)
 @named Nr = NonlinearResistor(Ga = -0.757576,
-                              Gb = -0.409091,
-                              Ve = 1)
+    Gb = -0.409091,
+    Ve = 1)
 @named Gnd = Ground()
 
 connections = [connect(L.p, G.p)
-               connect(G.n, Nr.p)
-               connect(Nr.n, Gnd.g)
-               connect(C1.p, G.n)
-               connect(L.n, Ro.p)
-               connect(G.p, C2.p)
-               connect(C1.n, Gnd.g)
-               connect(C2.n, Gnd.g)
-               connect(Ro.n, Gnd.g)]
+    connect(G.n, Nr.p)
+    connect(Nr.n, Gnd.g)
+    connect(C1.p, G.n)
+    connect(L.n, Ro.p)
+    connect(G.p, C2.p)
+    connect(C1.n, Gnd.g)
+    connect(C2.n, Gnd.g)
+    connect(Ro.n, Gnd.g)]
 
 @named model = ODESystem(connections, t, systems = [L, Ro, G, C1, C2, Nr, Gnd])
 nothing # hide
@@ -127,12 +127,12 @@ prob = ODEProblem(sys, Pair[], (0, 5e4), saveat = 0.01)
 sol = solve(prob, Rodas4())
 
 Plots.plot(sol[C1.v], sol[C2.v], title = "Chaotic Attractor", label = "",
-           ylabel = "C1 Voltage in V", xlabel = "C2 Voltage in V")
+    ylabel = "C1 Voltage in V", xlabel = "C2 Voltage in V")
 Plots.savefig("chua_phase_plane.png")
 nothing # hide
 
 Plots.plot(sol; vars = [C1.v, C2.v, L.i],
-           labels = ["C1 Voltage in V" "C1 Voltage in V" "Inductor Current in A"])
+    labels = ["C1 Voltage in V" "C1 Voltage in V" "Inductor Current in A"])
 Plots.savefig("chua.png")
 nothing # hide
 ```

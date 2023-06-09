@@ -19,7 +19,7 @@ lags are associated with this sensor model.
     @named port = HeatPort()
     @variables T(t)
     eqs = [T ~ port.T
-           port.Q_flow ~ 0]
+        port.Q_flow ~ 0]
     ODESystem(eqs, t, [T], [], systems = [port], name = name)
 end
 
@@ -45,8 +45,8 @@ output signal in kelvin.
     @named port_b = HeatPort()
     @variables T(t)
     eqs = [T ~ port_a.T - port_b.T
-           port_a.Q_flow ~ 0
-           port_b.Q_flow ~ 0]
+        port_a.Q_flow ~ 0
+        port_b.Q_flow ~ 0]
     ODESystem(eqs, t, [T], [], systems = [port_a, port_b], name = name)
 end
 
@@ -74,7 +74,7 @@ The output signal is positive, if the heat flows from `port_a` to `port_b`.
     @named port_b = HeatPort()
     @variables Q_flow(t)
     eqs = [port_a.T ~ port_b.T
-           port_a.Q_flow + port_b.Q_flow ~ 0
-           Q_flow ~ port_a.Q_flow]
+        port_a.Q_flow + port_b.Q_flow ~ 0
+        Q_flow ~ port_a.Q_flow]
     ODESystem(eqs, t, [Q_flow], [], systems = [port_a, port_b], name = name)
 end

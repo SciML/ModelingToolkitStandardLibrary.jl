@@ -49,8 +49,8 @@ Fluid parameter setter for isothermal compressible fluid domain.  Defaults given
 - `p_gas`: [Pa] reference pressure (set by `gas_pressure` argument)
 """
 @connector function HydraulicFluid(; density = 997, bulk_modulus = 2.09e9,
-                                   viscosity = 0.0010016, gas_density = 0.0073955,
-                                   gas_pressure = -1000, n = 1, let_gas = 1, name)
+    viscosity = 0.0010016, gas_density = 0.0073955,
+    gas_pressure = -1000, n = 1, let_gas = 1, name)
     pars = @parameters begin
         ρ = density
         β = bulk_modulus
@@ -61,7 +61,9 @@ Fluid parameter setter for isothermal compressible fluid domain.  Defaults given
         p_gas = gas_pressure
     end
 
-    vars = @variables begin dm(t), [connect = Flow] end
+    vars = @variables begin
+        dm(t), [connect = Flow]
+    end
 
     eqs = [
         dm ~ 0,
@@ -104,7 +106,7 @@ function friction_factor(dm, area, d_h, density, viscosity, shape_factor)
         return f_laminar(shape_factor, Re)
     elseif 2000 < Re < 3000
         return transition(2000, 3000, f_laminar(shape_factor, Re),
-                          f_turbulent(shape_factor, Re), Re)
+            f_turbulent(shape_factor, Re), Re)
     else
         return f_turbulent(shape_factor, Re)
     end
@@ -139,7 +141,7 @@ function gas_density(port, p)
 end
 function full_density(port, p)
     ifelse(port.let_gas == 1,
-           ifelse(p > 0, liquid_density(port, p), gas_density(port, p)),
-           liquid_density(port, p))
+        ifelse(p > 0, liquid_density(port, p), gas_density(port, p)),
+        liquid_density(port, p))
 end
 full_density(port) = full_density(port, port.p)

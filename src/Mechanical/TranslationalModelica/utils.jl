@@ -61,8 +61,8 @@ function PartialCompliant(; name, s_rel_start = 0.0, f_start = 0.0)
     ]
 
     eqs = [s_rel ~ flange_b.s - flange_a.s
-           flange_b.f ~ +f
-           flange_a.f ~ -f]
+        flange_b.f ~ +f
+        flange_a.f ~ -f]
     return extend(ODESystem(eqs, t; name = name), pt)
 end
 
@@ -83,7 +83,7 @@ Partial model for the compliant connection of two translational 1-dim. flanges.
   - `f`: [N] Force between flanges (= flange_b.f)
 """
 function PartialCompliantWithRelativeStates(; name, s_rel_start = 0, v_rel_start = 0,
-                                            f_start = 0)
+    f_start = 0)
     @named pt = PartialTwoFlanges()
     @unpack flange_a, flange_b = pt
     @variables s_rel(t)=s_rel_start [
@@ -93,9 +93,9 @@ function PartialCompliantWithRelativeStates(; name, s_rel_start = 0, v_rel_start
     @variables f(t)=f_start [description = "Forces between flanges (= flange_b.f)"]
 
     eqs = [s_rel ~ flange_b.s - flange_a.s
-           v_rel ~ D(s_rel)
-           flange_b.f ~ f
-           flange_a.f ~ -f]
+        v_rel ~ D(s_rel)
+        flange_b.f ~ f
+        flange_a.f ~ -f]
     return extend(ODESystem(eqs, t; name = name), pt)
 end
 
@@ -150,7 +150,7 @@ function PartialElementaryTwoFlangesAndSupport2(; name, use_support = false)
     @variables s_support(t) [description = "Absolute position of support flange"]
 
     eqs = [s_a ~ flange_a.s - s_support
-           s_b ~ flange_b.s - s_support]
+        s_b ~ flange_b.s - s_support]
     if use_support
         @named support = Support()
         push!(eqs, support.f ~ -flange_a.f - flange_b.f)
@@ -171,6 +171,6 @@ function PartialRigid(; name, L = 0, s0 = 0)
         description = "Length of component, from left flange to right flange (= flange_b.s - flange_a.s)",
     ]
     eqs = [flange_a.s ~ s - L / 2
-           flange_b.s ~ s + L / 2]
+        flange_b.s ~ s + L / 2]
     return extend(ODESystem(eqs, t; name = name), ptf)
 end

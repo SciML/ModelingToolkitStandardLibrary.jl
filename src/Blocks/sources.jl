@@ -114,17 +114,17 @@ Generate sine signal.
   - `output`
 """
 @component function Sine(; name,
-                         frequency,
-                         amplitude = 1,
-                         phase = 0,
-                         offset = 0,
-                         start_time = 0,
-                         smooth = false)
+    frequency,
+    amplitude = 1,
+    phase = 0,
+    offset = 0,
+    start_time = 0,
+    smooth = false)
     @named output = RealOutput()
     pars = @parameters offset=offset start_time=start_time amplitude=amplitude frequency=frequency phase=phase
     equation = if smooth == false
         offset + ifelse(t < start_time, 0,
-               amplitude * sin(2 * pi * frequency * (t - start_time) + phase))
+            amplitude * sin(2 * pi * frequency * (t - start_time) + phase))
     else
         smooth === true && (smooth = 1e-5)
         smooth_sin(t, smooth, frequency, amplitude, phase, offset, start_time)
@@ -154,17 +154,17 @@ Generate cosine signal.
 """
 
 @component function Cosine(; name,
-                           frequency,
-                           amplitude = 1,
-                           phase = 0,
-                           offset = 0,
-                           start_time = 0,
-                           smooth = false)
+    frequency,
+    amplitude = 1,
+    phase = 0,
+    offset = 0,
+    start_time = 0,
+    smooth = false)
     @named output = RealOutput()
     pars = @parameters offset=offset start_time=start_time amplitude=amplitude frequency=frequency phase=phase
     equation = if smooth == false
         offset + ifelse(t < start_time, zero(t),
-               amplitude * cos(2 * pi * frequency * (t - start_time) + phase))
+            amplitude * cos(2 * pi * frequency * (t - start_time) + phase))
     else
         smooth === true && (smooth = 1e-5)
         smooth_cos(t, smooth, frequency, amplitude, phase, offset, start_time)
@@ -215,17 +215,17 @@ Generate ramp signal.
   - `output`
 """
 @component function Ramp(; name,
-                         height = 1,
-                         duration = 1,
-                         offset = 0,
-                         start_time = 0,
-                         smooth = false)
+    height = 1,
+    duration = 1,
+    offset = 0,
+    start_time = 0,
+    smooth = false)
     @named output = RealOutput()
     pars = @parameters offset=offset start_time=start_time height=height duration=duration
     equation = if smooth == false
         offset + ifelse(t < start_time, 0,
-               ifelse(t < (start_time + duration), (t - start_time) * height / duration,
-                      height))
+            ifelse(t < (start_time + duration), (t - start_time) * height / duration,
+                height))
     else
         smooth === true && (smooth = 1e-5)
         smooth_ramp(t, smooth, height, duration, offset, start_time)
@@ -255,7 +255,7 @@ Generate smooth square signal.
   - `output`
 """
 @component function Square(; name, frequency = 1.0, amplitude = 1.0,
-                           offset = 0.0, start_time = 0.0, smooth = false)
+    offset = 0.0, start_time = 0.0, smooth = false)
     @named output = RealOutput()
     pars = @parameters begin
         frequency = frequency
@@ -297,7 +297,7 @@ Generate step signal.
   - `output`
 """
 @component function Step(; name, height = 1, offset = 0, start_time = 0, duration = Inf,
-                         smooth = 1e-5)
+    smooth = 1e-5)
     @named output = RealOutput()
     duration_numeric = duration
     pars = @parameters offset=offset start_time=start_time height=height duration=duration
@@ -339,24 +339,24 @@ Generate exponentially damped sine signal.
   - `output`
 """
 @component function ExpSine(; name,
-                            frequency,
-                            amplitude = 1,
-                            damping = 0.1,
-                            phase = 0,
-                            offset = 0,
-                            start_time = 0,
-                            smooth = false)
+    frequency,
+    amplitude = 1,
+    damping = 0.1,
+    phase = 0,
+    offset = 0,
+    start_time = 0,
+    smooth = false)
     @named output = RealOutput()
     pars = @parameters offset=offset start_time=start_time amplitude=amplitude frequency=frequency phase=phase damping=damping
 
     equation = if smooth == false
         offset + ifelse(t < start_time, 0,
-               amplitude * exp(-damping * (t - start_time)) *
-               sin(2 * pi * frequency * (t - start_time) + phase))
+            amplitude * exp(-damping * (t - start_time)) *
+            sin(2 * pi * frequency * (t - start_time) + phase))
     else
         smooth === true && (smooth = 1e-5)
         smooth_damped_sin(t, smooth, frequency, amplitude, damping, phase, offset,
-                          start_time)
+            start_time)
     end
 
     eqs = [
@@ -383,7 +383,7 @@ Generate smooth triangular signal for frequencies less than or equal to 25 Hz
   - `output`
 """
 @component function Triangular(; name, amplitude = 1.0, frequency = 1.0,
-                               offset = 0.0, start_time = 0.0, smooth = false)
+    offset = 0.0, start_time = 0.0, smooth = false)
     @named output = RealOutput()
     pars = @parameters begin
         amplitude = amplitude
@@ -555,14 +555,18 @@ data input component.
   - `output`
 """
 @component function SampledData(; name, buffer)
-    pars = @parameters begin buffer = buffer end
+    pars = @parameters begin
+        buffer = buffer
+    end
     vars = []
-    systems = @named begin output = RealOutput() end
+    systems = @named begin
+        output = RealOutput()
+    end
     eqs = [
         output.u ~ get_sampled_data(t, buffer),
     ]
     return ODESystem(eqs, t, vars, pars; name, systems,
-                     defaults = [output.u => get_sampled_data(0.0, buffer)])
+        defaults = [output.u => get_sampled_data(0.0, buffer)])
 end
 @deprecate Input SampledData
 

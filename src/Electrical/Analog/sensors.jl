@@ -18,8 +18,8 @@ an ideal ammeter.
     @named n = Pin()
     @variables i(t) = 1.0
     eqs = [p.v ~ n.v
-           i ~ p.i
-           i ~ -n.i]
+        i ~ p.i
+        i ~ -n.i]
     ODESystem(eqs, t, [i], [], systems = [p, n]; name = name)
 end
 
@@ -40,7 +40,7 @@ Creates a circuit component which measures the potential at a pin.
     @named p = Pin()
     @variables phi(t) = 1.0
     eqs = [p.i ~ 0
-           phi ~ p.v]
+        phi ~ p.v]
     ODESystem(eqs, t, [phi], [], systems = [p]; name = name)
 end
 
@@ -63,8 +63,8 @@ Creates a circuit component that measures the voltage across it. Analogous to an
     @named n = Pin()
     @variables v(t) = 1.0
     eqs = [p.i ~ 0
-           n.i ~ 0
-           v ~ p.v - n.v]
+        n.i ~ 0
+        v ~ p.v - n.v]
     ODESystem(eqs, t, [v], []; systems = [p, n], name = name)
 end
 
@@ -96,12 +96,12 @@ consumed by a circuit.
     @named current_sensor = CurrentSensor()
     @variables power(t) = 1.0
     eqs = [connect(voltage_sensor.p, pv)
-           connect(voltage_sensor.n, nv)
-           connect(current_sensor.p, pc)
-           connect(current_sensor.n, nc)
-           power ~ current_sensor.i * voltage_sensor.v]
+        connect(voltage_sensor.n, nv)
+        connect(current_sensor.p, pc)
+        connect(current_sensor.n, nc)
+        power ~ current_sensor.i * voltage_sensor.v]
     ODESystem(eqs, t, [power], [];
-              systems = [pc, nc, pv, nv, voltage_sensor, current_sensor], name = name)
+        systems = [pc, nc, pv, nv, voltage_sensor, current_sensor], name = name)
 end
 
 """
@@ -133,11 +133,11 @@ Combines a [`VoltageSensor`](@ref) and a [`CurrentSensor`](@ref).
         v(t) = 1.0
     end
     eqs = [connect(voltage_sensor.p, pv)
-           connect(voltage_sensor.n, nv)
-           connect(current_sensor.p, pc)
-           connect(current_sensor.n, nc)
-           i ~ current_sensor.i
-           v ~ voltage_sensor.v]
+        connect(voltage_sensor.n, nv)
+        connect(current_sensor.p, pc)
+        connect(current_sensor.n, nc)
+        i ~ current_sensor.i
+        v ~ voltage_sensor.v]
     ODESystem(eqs, t, sts, []; systems = [pc, nc, pv, nv, voltage_sensor, current_sensor],
-              name = name)
+        name = name)
 end

@@ -17,7 +17,7 @@ function Base.getindex(s::LogicTable, i1::Logic, i2::Logic)
     getindex(s.logic, get_logic_level(i1), get_logic_level(i2))
 end
 function Base.getindex(s::LogicTable, i1::Logic, i2::Logic,
-                       I::Logic...)
+    I::Logic...)
     getindex(s.logic, get_logic_level(i1), get_logic_level(i2), get_logic_level(I...)...)
 end
 
@@ -37,16 +37,16 @@ get_logic_level(l::LogicTable) = Int.(l.logic)
 
 # AND gate
 const AndTable = LogicTable([
-                             # U X F0 F1 Z W L H DC
-                             U U F0 U U U F0 U U        # U
-                             U X F0 X X X F0 X X        # X
-                             F0 F0 F0 F0 F0 F0 F0 F0 F0 # F0
-                             U X F0 F1 X X F0 F1 X      # F1
-                             U X F0 X X X F0 X X        # Z
-                             U X F0 X X X F0 X X        # W
-                             F0 F0 F0 F0 F0 F0 F0 F0 F0 # L
-                             U X F0 F1 X X F0 F1 X      # H
-                             U X F0 X X X F0 X X])       # DC
+# U X F0 F1 Z W L H DC
+    U U F0 U U U F0 U U        # U
+    U X F0 X X X F0 X X        # X
+    F0 F0 F0 F0 F0 F0 F0 F0 F0 # F0
+    U X F0 F1 X X F0 F1 X      # F1
+    U X F0 X X X F0 X X        # Z
+    U X F0 X X X F0 X X        # W
+    F0 F0 F0 F0 F0 F0 F0 F0 F0 # L
+    U X F0 F1 X X F0 F1 X      # H
+    U X F0 X X X F0 X X])       # DC
 
 function _and2(a::Logic, b::Logic)
     AndTable[a, b]
@@ -75,16 +75,16 @@ _not(x::Number) = _not(convert(Logic, x))
 
 # OR gate
 const OrTable = LogicTable([
-                            # U X F0 F1 Z W L H DC
-                            U U U F1 U U U F1 U        # U
-                            U X X F1 X X X F1 X        # X
-                            U X F0 F1 X X F0 F1 X      # F0
-                            F1 F1 F1 F1 F1 F1 F1 F1 F1 # F1
-                            U X X F1 X X X F1 X        # Z
-                            U X X F1 X X X F1 X        # W
-                            U X F0 F1 X X F0 F1 X      # L
-                            F1 F1 F1 F1 F1 F1 F1 F1 F1 # H
-                            U X X F1 X X X F1 X])       # DC
+# U X F0 F1 Z W L H DC
+    U U U F1 U U U F1 U        # U
+    U X X F1 X X X F1 X        # X
+    U X F0 F1 X X F0 F1 X      # F0
+    F1 F1 F1 F1 F1 F1 F1 F1 F1 # F1
+    U X X F1 X X X F1 X        # Z
+    U X X F1 X X X F1 X        # W
+    U X F0 F1 X X F0 F1 X      # L
+    F1 F1 F1 F1 F1 F1 F1 F1 F1 # H
+    U X X F1 X X X F1 X])       # DC
 
 function _or2(a::Logic, b::Logic)
     OrTable[a, b]
@@ -105,16 +105,16 @@ end
 
 # XOR gate
 const XorTable = LogicTable([
-                             # U X F0 F1 Z W L H DC
-                             U U U U U U U U U     # U
-                             U X X X X X X X X     # X
-                             U X F0 F1 X X F0 F1 X # F0
-                             U X F1 F0 X X F1 F0 X # F1
-                             U X X X X X X X X     # Z
-                             U X X X X X X X X     # W
-                             U X F0 F1 X X F0 F1 X # L
-                             U X F1 F0 X X F1 F0 X # H
-                             U X X X X X X X X])    # DC
+# U X F0 F1 Z W L H DC
+    U U U U U U U U U     # U
+    U X X X X X X X X     # X
+    U X F0 F1 X X F0 F1 X # F0
+    U X F1 F0 X X F1 F0 X # F1
+    U X X X X X X X X     # Z
+    U X X X X X X X X     # W
+    U X F0 F1 X X F0 F1 X # L
+    U X F1 F0 X X F1 F0 X # H
+    U X X X X X X X X])    # DC
 
 function _xor2(a::Logic, b::Logic)
     XorTable[a, b]

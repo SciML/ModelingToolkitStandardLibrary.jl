@@ -1,6 +1,6 @@
 @connector function Flange(; name)
     sts = @variables(phi(t), [description = "Rotation angle of flange $name"],
-                     tau(t), [connect = Flow, description = "Cut torque in flange $name"],)
+        tau(t), [connect = Flow, description = "Cut torque in flange $name"],)
     ODESystem(Equation[], t, sts, [], name = name, defaults = Dict(phi => 0.0, tau => 0.0))
 end
 Base.@doc """
@@ -73,11 +73,11 @@ Partial model for the compliant connection of two rotational 1-dim. shaft flange
     @named flange_a = Flange()
     @named flange_b = Flange()
     sts = @variables(phi_rel(t)=phi_rel_start,
-                     [description = "Relative rotation angle between flanges"],
-                     tau(t)=tau_start, [description = "Torque between flanges"])
+        [description = "Relative rotation angle between flanges"],
+        tau(t)=tau_start, [description = "Torque between flanges"])
     eqs = [phi_rel ~ flange_b.phi - flange_a.phi
-           flange_b.tau ~ tau
-           flange_a.tau ~ -tau]
+        flange_b.tau ~ tau
+        flange_a.tau ~ -tau]
     return compose(ODESystem(eqs, t, sts, []; name = name), flange_a, flange_b)
 end
 
@@ -106,22 +106,22 @@ Partial model for the compliant connection of two rotational 1-dim. shaft flange
   - `tau_start`: [`N.m`] Initial torque between flanges
 """
 @component function PartialCompliantWithRelativeStates(; name, phi_rel_start = 0.0,
-                                                       w_start = 0.0,
-                                                       a_start = 0.0, tau_start = 0.0)
+    w_start = 0.0,
+    a_start = 0.0, tau_start = 0.0)
     @named flange_a = Flange()
     @named flange_b = Flange()
     sts = @variables(phi_rel(t)=phi_rel_start,
-                     [description = "Relative rotation angle between flanges"],
-                     w_rel(t)=w_start,
-                     [description = "Relative angular velocity between flanges"],
-                     a_rel(t)=a_start,
-                     [description = "Relative angular acceleration between flanges"],
-                     tau(t)=tau_start, [description = "Torque between flanges"],)
+        [description = "Relative rotation angle between flanges"],
+        w_rel(t)=w_start,
+        [description = "Relative angular velocity between flanges"],
+        a_rel(t)=a_start,
+        [description = "Relative angular acceleration between flanges"],
+        tau(t)=tau_start, [description = "Torque between flanges"],)
     eqs = [phi_rel ~ flange_b.phi - flange_a.phi
-           D(phi_rel) ~ w_rel
-           D(w_rel) ~ a_rel
-           flange_b.tau ~ tau
-           flange_a.tau ~ -tau]
+        D(phi_rel) ~ w_rel
+        D(w_rel) ~ a_rel
+        flange_b.tau ~ tau
+        flange_a.tau ~ -tau]
     return compose(ODESystem(eqs, t, sts, []; name = name), flange_a, flange_b)
 end
 
@@ -149,7 +149,7 @@ Partial model for a component with one rotational 1-dim. shaft flange and a supp
     if use_support
         @named support = Support()
         eqs = [support.phi ~ phi_support
-               support.tau ~ -flange.tau]
+            support.tau ~ -flange.tau]
         push!(sys, support)
     else
         eqs = [phi_support ~ 0]
@@ -184,7 +184,7 @@ Partial model for a component with two rotational 1-dim. shaft flanges and a sup
     if use_support
         @named support = Support()
         eqs = [support.phi ~ phi_support
-               support.tau ~ -flange_a.tau - flange_b.tau]
+            support.tau ~ -flange_a.tau - flange_b.tau]
         push!(sys, support)
     else
         eqs = [phi_support ~ 0]

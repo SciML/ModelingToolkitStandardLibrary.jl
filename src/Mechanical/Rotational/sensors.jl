@@ -12,7 +12,7 @@ Ideal sensor to measure the absolute flange angle
     @named flange = Flange()
     @named phi = RealOutput()
     eqs = [phi.u ~ flange.phi
-           flange.tau ~ 0]
+        flange.tau ~ 0]
     return ODESystem(eqs, t, [], []; name = name, systems = [flange, phi])
 end
 
@@ -30,7 +30,7 @@ Ideal sensor to measure the absolute flange angular velocity
     @named flange = Flange()
     @named w = RealOutput()
     eqs = [D(flange.phi) ~ w.u
-           flange.tau ~ 0]
+        flange.tau ~ 0]
     return ODESystem(eqs, t, [], []; name = name, systems = [flange, w])
 end
 
@@ -50,7 +50,7 @@ Ideal sensor to measure the torque between two flanges (`= flange_a.tau`)
     @named flange_b = Flange()
     @named tau = RealOutput()
     eqs = [flange_a.phi ~ flange_b.phi
-           tau.u ~ flange_a.tau]
+        tau.u ~ flange_a.tau]
     return ODESystem(eqs, t, [], []; name = name, systems = [flange_a, flange_b, tau])
 end
 
@@ -71,9 +71,9 @@ Ideal sensor to measure the relative angular velocity
     @named w_rel = RealOutput()
     @variables phi_rel(t) = 0.0
     eqs = [0 ~ flange_a.tau + flange_b.tau
-           phi_rel ~ flange_b.phi - flange_a.phi
-           D(phi_rel) ~ w_rel.u
-           0 ~ flange_a.tau]
+        phi_rel ~ flange_b.phi - flange_a.phi
+        D(phi_rel) ~ w_rel.u
+        0 ~ flange_a.tau]
     return ODESystem(eqs, t, [phi_rel], []; name = name,
-                     systems = [flange_a, flange_b, w_rel])
+        systems = [flange_a, flange_b, w_rel])
 end

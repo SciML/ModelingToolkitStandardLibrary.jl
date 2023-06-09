@@ -47,14 +47,14 @@ end
     @symcheck J > 0 || throw(ArgumentError("Expected `J` to be positive"))
     @parameters J=J [description = "Moment of inertia of $name"]
     sts = @variables(phi(t)=phi_start, [description = "Absolute rotation angle of $name"],
-                     w(t)=w_start, [description = "Absolute angular velocity of $name"],
-                     a(t)=a_start,
-                     [description = "Absolute angular acceleration of $name"],)
+        w(t)=w_start, [description = "Absolute angular velocity of $name"],
+        a(t)=a_start,
+        [description = "Absolute angular acceleration of $name"],)
     eqs = [phi ~ flange_a.phi
-           phi ~ flange_b.phi
-           D(phi) ~ w
-           D(w) ~ a
-           J * a ~ flange_a.tau + flange_b.tau]
+        phi ~ flange_b.phi
+        D(phi) ~ w
+        D(w) ~ a
+        J * a ~ flange_a.tau + flange_b.tau]
     return compose(ODESystem(eqs, t, sts, [J]; name = name), flange_a, flange_b)
 end
 
@@ -83,8 +83,8 @@ Linear 1D rotational spring
     @unpack phi_rel, tau = partial_comp
     @symcheck c > 0 || throw(ArgumentError("Expected `c` to be positive"))
     pars = @parameters(c=c, [description = "Spring constant of $name"],
-                       phi_rel0=phi_rel0,
-                       [description = "Unstretched spring angle of $name"],)
+        phi_rel0=phi_rel0,
+        [description = "Unstretched spring angle of $name"],)
     eqs = [tau ~ c * (phi_rel - phi_rel0)]
     extend(ODESystem(eqs, t, [], pars; name = name), partial_comp)
 end
@@ -150,8 +150,8 @@ Linear 1D rotational spring and damper
     @parameters c=c [description = "Spring constant"]
     @parameters phi_rel0=phi_rel0 [description = "Unstretched spring angle"]
     eqs = [tau_c ~ c * (phi_rel - phi_rel0)
-           tau_d ~ d * w_rel
-           tau ~ tau_c + tau_d]
+        tau_d ~ d * w_rel
+        tau ~ tau_c + tau_d]
     extend(ODESystem(eqs, t; name = name), partial_comp)
 end
 
@@ -186,9 +186,9 @@ This element characterizes any type of gear box which is fixed in the ground and
         description = "Relative angle between shaft a and the support of $name",
     ] phi_b(t)=0.0 [description = "Relative angle between shaft b and the support of $name"]
     eqs = [phi_a ~ flange_a.phi - phi_support
-           phi_b ~ flange_b.phi - phi_support
-           phi_a ~ ratio * phi_b
-           0 ~ ratio * flange_a.tau + flange_b.tau]
+        phi_b ~ flange_b.phi - phi_support
+        phi_a ~ ratio * phi_b
+        0 ~ ratio * flange_a.tau + flange_b.tau]
     extend(ODESystem(eqs, t, sts, [ratio]; name = name), partial_element)
 end
 
@@ -223,10 +223,10 @@ Friction model: "Armstrong, B. and C.C. de Wit, Friction Modeling and Compensati
     @named partial_comp = PartialCompliantWithRelativeStates()
     @unpack w_rel, tau = partial_comp
     pars = @parameters(f=f, [description = "Viscous friction coefficient of $name"],
-                       tau_c=tau_c, [description = "Coulomb friction torque of $name"],
-                       w_brk=w_brk, [description = "Breakaway friction velocity of $name"],
-                       tau_brk=tau_brk,
-                       [description = "Breakaway friction torque of $name"],)
+        tau_c=tau_c, [description = "Coulomb friction torque of $name"],
+        w_brk=w_brk, [description = "Breakaway friction velocity of $name"],
+        tau_brk=tau_brk,
+        [description = "Breakaway friction torque of $name"],)
 
     str_scale = sqrt(2 * exp(1)) * (tau_brk - tau_c)
     w_st = w_brk * sqrt(2)

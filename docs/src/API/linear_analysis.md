@@ -60,7 +60,7 @@ using ModelingToolkitStandardLibrary.Blocks, ModelingToolkit
 @named C = Gain(-1)             # A P controller
 t = ModelingToolkit.get_iv(P)
 eqs = [connect(P.output, :plant_output, C.input)  # Connect with an automatically created analysis point called :plant_output
-       connect(C.output, :plant_input, P.input)]
+    connect(C.output, :plant_input, P.input)]
 sys = ODESystem(eqs, t, systems = [P, C], name = :feedback_system)
 
 matrices_S = get_sensitivity(sys, :plant_input)[1] # Compute the matrices of a state-space representation of the (input)sensitivity function.
@@ -75,7 +75,7 @@ using ControlSystemsBase, Plots
 S = ss(matrices_S...)
 T = ss(matrices_T...)
 bodeplot([S, T], lab = ["S" "" "T" ""], plot_title = "Bode plot of sensitivity functions",
-         margin = 5Plots.mm)
+    margin = 5Plots.mm)
 ```
 
 The sensitivity functions obtained this way should be equivalent to the ones obtained with the code below

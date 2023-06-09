@@ -88,7 +88,7 @@ Limits the slew rate of a signal.
   - `output`
 """
 @component function SlewRateLimiter(; name, rising = 1, falling = -rising, Td = 0.001,
-                                    y_start = 0.0)
+    y_start = 0.0)
     rising ≥ falling || throw(ArgumentError("`rising` must be smaller than `falling`"))
     Td > 0 || throw(ArgumentError("Time constant `Td` must be strictly positive"))
     @named siso = SISO(y_start = y_start)

@@ -47,8 +47,8 @@ flow rate through the element from `port_a` to `port_b`, `Q_flow`.
         Q_flow(t) = Q_flow_start
     end
     eqs = [dT ~ port_a.T - port_b.T
-           port_a.Q_flow ~ Q_flow
-           port_a.Q_flow + port_b.Q_flow ~ 0]
+        port_a.Q_flow ~ Q_flow
+        port_a.Q_flow + port_b.Q_flow ~ 0]
 
     return compose(ODESystem(eqs, t, sts, []; name = name), port_a, port_b)
 end
@@ -84,8 +84,8 @@ flow rate through the element from `solid` to `fluid`, `Q_flow`.
         Q_flow(t) = Q_flow_start
     end
     eqs = [dT ~ solid.T - fluid.T
-           solid.Q_flow ~ Q_flow
-           solid.Q_flow + fluid.Q_flow ~ 0]
+        solid.Q_flow ~ Q_flow
+        solid.Q_flow + fluid.Q_flow ~ 0]
 
     return compose(ODESystem(eqs, t, sts, []; name = name), solid, fluid)
 end

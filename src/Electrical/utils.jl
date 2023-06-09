@@ -43,8 +43,8 @@ Component with two electrical pins `p` and `n` and current `i` flows from `p` to
         i(t) = i_start
     end
     eqs = [v ~ p.v - n.v
-           0 ~ p.i + n.i
-           i ~ p.i]
+        0 ~ p.i + n.i
+        i ~ p.i]
     return compose(ODESystem(eqs, t, sts, []; name = name), p, n)
 end
 
@@ -74,7 +74,7 @@ Current `i1` flows from `p1` to `n1` and `i2` from `p2` to `n2`.
 """
 
 @component function TwoPort(; name, v1_start = 0.0, v2_start = 0.0, i1_start = 0.0,
-                            i2_start = 0.0)
+    i2_start = 0.0)
     @named p1 = Pin()
     @named n1 = Pin()
     @named p2 = Pin()
@@ -86,11 +86,11 @@ Current `i1` flows from `p1` to `n1` and `i2` from `p2` to `n2`.
         i2(t) = i2_start
     end
     eqs = [v1 ~ p1.v - n1.v
-           0 ~ p1.i + n1.i
-           i1 ~ p1.i
-           v2 ~ p2.v - n2.v
-           0 ~ p2.i + n2.i
-           i2 ~ p2.i]
+        0 ~ p1.i + n1.i
+        i1 ~ p1.i
+        v2 ~ p2.v - n2.v
+        0 ~ p2.i + n2.i
+        i2 ~ p2.i]
     return compose(ODESystem(eqs, t, sts, []; name = name), p1, p2, n1, n2)
 end
 
@@ -98,10 +98,10 @@ end
     @variables val(t) v(t) i(t)
     eqs = [
         val ~ IfElse.ifelse((0.0 <= v) & (v <= 0.8) | (2.0 <= v) & (v <= 5.0),
-                            IfElse.ifelse(v > 2.0, 1, 0), X),
+            IfElse.ifelse(v > 2.0, 1, 0), X),
     ]
     ODESystem(Equation[], t, [val, v, i], [], defaults = Dict(val => 0, i => 0),
-              name = name)
+        name = name)
 end
 @doc """
     DigitalPin(; name)
