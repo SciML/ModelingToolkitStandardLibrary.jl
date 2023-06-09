@@ -1,8 +1,8 @@
 using ModelingToolkit, ModelingToolkitStandardLibrary, OrdinaryDiffEq
 using ModelingToolkitStandardLibrary.Blocks
 using ModelingToolkitStandardLibrary.Blocks: smooth_sin, smooth_cos, smooth_damped_sin,
-                                             smooth_square, smooth_step, smooth_ramp,
-                                             smooth_triangular, triangular, square
+    smooth_square, smooth_step, smooth_ramp,
+    smooth_triangular, triangular, square
 using OrdinaryDiffEq: ReturnCode.Success
 
 @parameters t
@@ -11,10 +11,10 @@ using OrdinaryDiffEq: ReturnCode.Success
     @named src = Constant(k = 2)
     @named int = Integrator()
     @named iosys = ODESystem([
-                                 connect(src.output, int.input),
-                             ],
-                             t,
-                             systems = [int, src])
+            connect(src.output, int.input),
+        ],
+        t,
+        systems = [int, src])
     sys = structural_simplify(iosys)
 
     prob = ODEProblem(sys, Pair[int.x => 0.0], (0.0, 10.0))
@@ -30,10 +30,10 @@ end
     @named src = TimeVaryingFunction(f)
     @named int = Integrator()
     @named iosys = ODESystem([
-                                 connect(src.output, int.input),
-                             ],
-                             t,
-                             systems = [int, src])
+            connect(src.output, int.input),
+        ],
+        t,
+        systems = [int, src])
     sys = structural_simplify(iosys)
 
     prob = ODEProblem(sys, Pair[int.x => 0.0], (0.0, 10.0))
@@ -47,7 +47,7 @@ end
 @testset "Sine" begin
     function sine(t, frequency, amplitude, phase, offset, start_time)
         offset + ifelse(t < start_time, 0,
-               amplitude * sin(2 * pi * frequency * (t - start_time) + phase))
+            amplitude * sin(2 * pi * frequency * (t - start_time) + phase))
     end
 
     frequency = 1
@@ -59,12 +59,12 @@ end
     @named int = Integrator()
 
     @named src = Sine(frequency = frequency, amplitude = amplitude, phase = phase,
-                      offset = offset, start_time = start_time)
+        offset = offset, start_time = start_time)
     @named iosys = ODESystem([
-                                 connect(src.output, int.input),
-                             ],
-                             t,
-                             systems = [int, src])
+            connect(src.output, int.input),
+        ],
+        t,
+        systems = [int, src])
     sys = structural_simplify(iosys)
 
     prob = ODEProblem(sys, Pair[int.x => 0.0], (0.0, 10.0))
@@ -74,16 +74,16 @@ end
     @test sol[src.output.u]≈sine.(sol.t, frequency, amplitude, phase, offset, start_time) atol=1e-3
 
     @named smooth_src = Sine(frequency = frequency,
-                             amplitude = amplitude,
-                             phase = phase,
-                             offset = offset,
-                             start_time = start_time,
-                             smooth = true)
+        amplitude = amplitude,
+        phase = phase,
+        offset = offset,
+        start_time = start_time,
+        smooth = true)
     @named smooth_iosys = ODESystem([
-                                        connect(smooth_src.output, int.input),
-                                    ],
-                                    t,
-                                    systems = [int, smooth_src])
+            connect(smooth_src.output, int.input),
+        ],
+        t,
+        systems = [int, smooth_src])
 
     smooth_sys = structural_simplify(smooth_iosys)
     smooth_prob = ODEProblem(smooth_sys, Pair[int.x => 0.0], (0.0, 10.0))
@@ -91,13 +91,13 @@ end
 
     @test sol.retcode == Success
     @test smooth_sol[smooth_src.output.u]≈smooth_sin.(smooth_sol.t, δ, frequency, amplitude,
-                                                      phase, offset, start_time) atol=1e-3
+        phase, offset, start_time) atol=1e-3
 end
 
 @testset "Cosine" begin
     function cosine(t, frequency, amplitude, phase, offset, start_time)
         offset + ifelse(t < start_time, 0,
-               amplitude * cos(2 * pi * frequency * (t - start_time) + phase))
+            amplitude * cos(2 * pi * frequency * (t - start_time) + phase))
     end
 
     frequency = 1
@@ -109,16 +109,16 @@ end
     @named int = Integrator()
 
     @named src = Cosine(frequency = frequency,
-                        amplitude = amplitude,
-                        phase = phase,
-                        offset = offset,
-                        start_time = start_time,
-                        smooth = false)
+        amplitude = amplitude,
+        phase = phase,
+        offset = offset,
+        start_time = start_time,
+        smooth = false)
     @named iosys = ODESystem([
-                                 connect(src.output, int.input),
-                             ],
-                             t,
-                             systems = [int, src])
+            connect(src.output, int.input),
+        ],
+        t,
+        systems = [int, src])
 
     sys = structural_simplify(iosys)
     prob = ODEProblem(sys, Pair[int.x => 0.0], (0.0, 10.0))
@@ -127,16 +127,16 @@ end
     @test sol[src.output.u]≈cosine.(sol.t, frequency, amplitude, phase, offset, start_time) atol=1e-3
 
     @named smooth_src = Cosine(frequency = frequency,
-                               amplitude = amplitude,
-                               phase = phase,
-                               offset = offset,
-                               start_time = start_time,
-                               smooth = true)
+        amplitude = amplitude,
+        phase = phase,
+        offset = offset,
+        start_time = start_time,
+        smooth = true)
     @named smooth_iosys = ODESystem([
-                                        connect(smooth_src.output, int.input),
-                                    ],
-                                    t,
-                                    systems = [int, smooth_src])
+            connect(smooth_src.output, int.input),
+        ],
+        t,
+        systems = [int, smooth_src])
 
     smooth_sys = structural_simplify(smooth_iosys)
     smooth_prob = ODEProblem(smooth_sys, Pair[int.x => 0.0], (0.0, 10.0))
@@ -144,7 +144,7 @@ end
 
     @test smooth_sol.retcode == Success
     @test smooth_sol[smooth_src.output.u]≈smooth_cos.(smooth_sol.t, δ, frequency, amplitude,
-                                                      phase, offset, start_time) atol=1e-3
+        phase, offset, start_time) atol=1e-3
 end
 
 @testset "ContinuousClock" begin
@@ -155,10 +155,10 @@ end
     @named src = ContinuousClock(offset = offset, start_time = start_time)
     @named int = Integrator()
     @named iosys = ODESystem([
-                                 connect(src.output, int.input),
-                             ],
-                             t,
-                             systems = [int, src])
+            connect(src.output, int.input),
+        ],
+        t,
+        systems = [int, src])
     sys = structural_simplify(iosys)
 
     prob = ODEProblem(sys, Pair[int.x => 0.0], (0.0, 10.0))
@@ -171,20 +171,20 @@ end
 @testset "Ramp" begin
     function ramp(t, offset, height, duration, start_time)
         offset + ifelse(t < start_time, 0,
-               ifelse(t < (start_time + duration), (t - start_time) * height / duration,
-                      height))
+            ifelse(t < (start_time + duration), (t - start_time) * height / duration,
+                height))
     end
 
     offset, height, duration, start_time, δ = 1, 2, 2, 0, 1e-5
     @named int = Integrator()
 
     @named src = Ramp(offset = offset, height = height, duration = duration,
-                      start_time = start_time)
+        start_time = start_time)
     @named iosys = ODESystem([
-                                 connect(src.output, int.input),
-                             ],
-                             t,
-                             systems = [int, src])
+            connect(src.output, int.input),
+        ],
+        t,
+        systems = [int, src])
 
     sys = structural_simplify(iosys)
     prob = ODEProblem(sys, Pair[int.x => 0.0], (0.0, 10.0))
@@ -194,12 +194,12 @@ end
 
     start_time = 2
     @named smooth_src = Ramp(offset = offset, height = height, duration = duration,
-                             start_time = start_time, smooth = true)
+        start_time = start_time, smooth = true)
     @named smooth_iosys = ODESystem([
-                                        connect(smooth_src.output, int.input),
-                                    ],
-                                    t,
-                                    systems = [int, smooth_src])
+            connect(smooth_src.output, int.input),
+        ],
+        t,
+        systems = [int, smooth_src])
 
     smooth_sys = structural_simplify(smooth_iosys)
     smooth_prob = ODEProblem(smooth_sys, Pair[int.x => 0.0], (0.0, 10.0))
@@ -207,7 +207,7 @@ end
 
     @test smooth_sol.retcode == Success
     @test smooth_sol[smooth_src.output.u]≈smooth_ramp.(smooth_sol.t, δ, height, duration,
-                                                       offset, start_time) atol=1e-3
+        offset, start_time) atol=1e-3
 end
 
 @testset "Step" begin
@@ -217,12 +217,12 @@ end
     @named int = Integrator()
 
     @named src = Step(offset = offset, height = height, start_time = start_time,
-                      smooth = false)
+        smooth = false)
     @named iosys = ODESystem([
-                                 connect(src.output, int.input),
-                             ],
-                             t,
-                             systems = [int, src])
+            connect(src.output, int.input),
+        ],
+        t,
+        systems = [int, src])
 
     sys = structural_simplify(iosys)
     prob = ODEProblem(sys, Pair[int.x => 0.0], (0.0, 10.0))
@@ -234,12 +234,12 @@ end
     # test with duration
     duration = 1.2
     @named src = Step(offset = offset, height = height, start_time = start_time,
-                      duration = duration, smooth = false)
+        duration = duration, smooth = false)
     @named iosys = ODESystem([
-                                 connect(src.output, int.input),
-                             ],
-                             t,
-                             systems = [int, src])
+            connect(src.output, int.input),
+        ],
+        t,
+        systems = [int, src])
 
     sys = structural_simplify(iosys)
     prob = ODEProblem(sys, Pair[int.x => 0.0], (0.0, 10.0))
@@ -250,12 +250,12 @@ end
                             step.(sol.t, 0, height, start_time + duration) atol=1e-2
 
     @named smooth_src = Step(offset = offset, height = height, start_time = start_time,
-                             smooth = true)
+        smooth = true)
     @named smooth_iosys = ODESystem([
-                                        connect(smooth_src.output, int.input),
-                                    ],
-                                    t,
-                                    systems = [int, smooth_src])
+            connect(smooth_src.output, int.input),
+        ],
+        t,
+        systems = [int, smooth_src])
 
     smooth_sys = structural_simplify(smooth_iosys)
     smooth_prob = ODEProblem(smooth_sys, Pair[int.x => 0.0], (0.0, 10.0))
@@ -267,12 +267,12 @@ end
 
     # with duration
     @named smooth_src = Step(offset = offset, height = height, start_time = start_time,
-                             smooth = true, duration = duration)
+        smooth = true, duration = duration)
     @named smooth_iosys = ODESystem([
-                                        connect(smooth_src.output, int.input),
-                                    ],
-                                    t,
-                                    systems = [int, smooth_src])
+            connect(smooth_src.output, int.input),
+        ],
+        t,
+        systems = [int, smooth_src])
 
     smooth_sys = structural_simplify(smooth_iosys)
     smooth_prob = ODEProblem(smooth_sys, Pair[int.x => 0.0], (0.0, 10.0))
@@ -293,12 +293,12 @@ end
     @named int = Integrator()
 
     @named src = Square(frequency = frequency, amplitude = amplitude,
-                        offset = offset, start_time = start_time)
+        offset = offset, start_time = start_time)
     @named iosys = ODESystem([
-                                 connect(src.output, int.input),
-                             ],
-                             t,
-                             systems = [int, src])
+            connect(src.output, int.input),
+        ],
+        t,
+        systems = [int, src])
 
     sys = structural_simplify(iosys)
     prob = ODEProblem(sys, Pair[int.x => 0.0], (0.0, 10.0))
@@ -308,12 +308,12 @@ end
     @test sol[src.output.u]≈square.(sol.t, frequency, amplitude, offset, start_time) atol=1e-3
 
     @named smooth_src = Square(frequency = frequency, amplitude = amplitude,
-                               offset = offset, start_time = start_time, smooth = true)
+        offset = offset, start_time = start_time, smooth = true)
     @named smooth_iosys = ODESystem([
-                                        connect(smooth_src.output, int.input),
-                                    ],
-                                    t,
-                                    systems = [int, smooth_src])
+            connect(smooth_src.output, int.input),
+        ],
+        t,
+        systems = [int, smooth_src])
 
     smooth_sys = structural_simplify(smooth_iosys)
     smooth_prob = ODEProblem(smooth_sys, Pair[int.x => 0.0], (0.0, 10.0))
@@ -321,7 +321,7 @@ end
 
     @test smooth_sol.retcode == Success
     @test smooth_sol[smooth_src.output.u]≈smooth_square.(smooth_sol.t, δ, frequency,
-                                                         amplitude, offset, start_time) atol=1e-3
+        amplitude, offset, start_time) atol=1e-3
 end
 
 @testset "Triangular" begin
@@ -333,12 +333,12 @@ end
     @named int = Integrator()
 
     @named src = Triangular(frequency = frequency, amplitude = amplitude,
-                            offset = offset, start_time = start_time)
+        offset = offset, start_time = start_time)
     @named iosys = ODESystem([
-                                 connect(src.output, int.input),
-                             ],
-                             t,
-                             systems = [int, src])
+            connect(src.output, int.input),
+        ],
+        t,
+        systems = [int, src])
 
     sys = structural_simplify(iosys)
     prob = ODEProblem(sys, Pair[int.x => 0.0], (0.0, 4.0))
@@ -348,12 +348,12 @@ end
     @test sol[src.output.u]≈triangular.(sol.t, frequency, amplitude, offset, start_time) atol=1e-3
 
     @named smooth_src = Triangular(frequency = frequency, amplitude = amplitude,
-                                   offset = offset, start_time = start_time, smooth = true)
+        offset = offset, start_time = start_time, smooth = true)
     @named smooth_iosys = ODESystem([
-                                        connect(smooth_src.output, int.input),
-                                    ],
-                                    t,
-                                    systems = [int, smooth_src])
+            connect(smooth_src.output, int.input),
+        ],
+        t,
+        systems = [int, smooth_src])
 
     smooth_sys = structural_simplify(smooth_iosys)
     smooth_prob = ODEProblem(smooth_sys, Pair[int.x => 0.0], (0.0, 4.0))
@@ -361,50 +361,50 @@ end
 
     @test smooth_sol.retcode == Success
     @test smooth_sol[smooth_src.output.u]≈smooth_triangular.(smooth_sol.t, δ, frequency,
-                                                             amplitude, offset, start_time) atol=1e-3
+        amplitude, offset, start_time) atol=1e-3
 end
 
 @testset "ExpSine" begin
     function exp_sine(t, amplitude, frequency, damping, phase, start_time)
         offset + ifelse(t < start_time, 0,
-               amplitude * exp(-damping * (t - start_time)) *
-               sin(2 * pi * frequency * (t - start_time) + phase))
+            amplitude * exp(-damping * (t - start_time)) *
+            sin(2 * pi * frequency * (t - start_time) + phase))
     end
 
     frequency, amplitude, damping = 3, 2, 0.10
     phase, offset, start_time, δ = 0, 0, 0, 1e-5
     @named src = ExpSine(frequency = frequency, amplitude = amplitude, damping = damping,
-                         phase = phase, offset = offset, start_time = start_time)
+        phase = phase, offset = offset, start_time = start_time)
     @named int = Integrator()
     @named iosys = ODESystem([
-                                 connect(src.output, int.input),
-                             ],
-                             t,
-                             systems = [int, src])
+            connect(src.output, int.input),
+        ],
+        t,
+        systems = [int, src])
     sys = structural_simplify(iosys)
     prob = ODEProblem(sys, Pair[int.x => 0.0], (0.0, 10.0))
     sol = solve(prob, Rodas4())
     @test sol.retcode == Success
     @test sol[src.output.u]≈exp_sine.(sol.t, amplitude, frequency, damping, phase,
-                                      start_time) atol=1e-3
+        start_time) atol=1e-3
 
     offset, start_time = 1, 2
     @named smooth_src = ExpSine(frequency = frequency, amplitude = amplitude,
-                                damping = damping, phase = phase, offset = offset,
-                                start_time = start_time, smooth = true)
+        damping = damping, phase = phase, offset = offset,
+        start_time = start_time, smooth = true)
     @named smooth_iosys = ODESystem([
-                                        connect(smooth_src.output, int.input),
-                                    ],
-                                    t,
-                                    systems = [int, smooth_src])
+            connect(smooth_src.output, int.input),
+        ],
+        t,
+        systems = [int, smooth_src])
     smooth_sys = structural_simplify(smooth_iosys)
     smooth_prob = ODEProblem(smooth_sys, Pair[int.x => 0.0], (0.0, 10.0))
     smooth_sol = solve(smooth_prob, Rodas4())
 
     @test smooth_sol.retcode == Success
     @test smooth_sol[smooth_src.output.u]≈smooth_damped_sin.(smooth_sol.t, δ, frequency,
-                                                             amplitude, damping, phase,
-                                                             offset, start_time) atol=1e-3
+        amplitude, damping, phase,
+        offset, start_time) atol=1e-3
 end
 
 @testset "SampledData" begin
@@ -416,14 +416,14 @@ end
     @named src = SampledData(Float64)
     @named int = Integrator()
     @named iosys = ODESystem([
-                                 connect(src.output, int.input),
-                             ],
-                             t,
-                             systems = [int, src])
+            connect(src.output, int.input),
+        ],
+        t,
+        systems = [int, src])
     sys = structural_simplify(iosys)
     s = complete(iosys)
     prob = ODEProblem(sys, [], (0.0, t_end), [s.src.buffer => Parameter(x, dt)];
-                      tofloat = false)
+        tofloat = false)
     prob = remake(prob; p = Parameter.(prob.p))
 
     sol = solve(prob, Rodas4(); initializealg = NoInit())

@@ -14,7 +14,7 @@ Use to close a system that has un-connected `MechanicalPort`'s.
         flange.f ~ 0,
     ]
     return compose(ODESystem(eqs, t, vars, []; name, defaults = [flange.v => 0]),
-                   flange)
+        flange)
 end
 
 """
@@ -30,7 +30,7 @@ Fixes a flange position (velocity = 0)
     @named flange = MechanicalPort()
     eqs = [flange.v ~ 0]
     return compose(ODESystem(eqs, t, [], []; name = name, defaults = [flange.v => 0]),
-                   flange)
+        flange)
 end
 
 """
@@ -67,7 +67,7 @@ Sliding mass with inertia
     @named flange = MechanicalPort()
 
     eqs = [flange.v ~ v
-           flange.f ~ f]
+        flange.f ~ f]
 
     # gravity option
     if !isnothing(g)
@@ -90,7 +90,7 @@ Sliding mass with inertia
     end
 
     return compose(ODESystem(eqs, t, vars, pars; name = name, defaults = [flange.v => v_0]),
-                   flange)
+        flange)
 end
 
 const REL = Val(:relative)
@@ -117,7 +117,7 @@ Linear 1D translational spring
 end # default
 
 @component function Spring(::Val{:relative}; name, k, delta_s_0 = 0.0, v_a_0 = 0.0,
-                           v_b_0 = 0.0)
+    v_b_0 = 0.0)
     pars = @parameters begin
         k = k
         delta_s_0 = delta_s_0
@@ -133,19 +133,19 @@ end # default
     @named flange_b = MechanicalPort()
 
     eqs = [D(delta_s) ~ flange_a.v - flange_b.v
-           f ~ k * delta_s
-           flange_a.f ~ +f
-           flange_b.f ~ -f]
+        f ~ k * delta_s
+        flange_a.f ~ +f
+        flange_b.f ~ -f]
     return compose(ODESystem(eqs, t, vars, pars; name = name,
-                             defaults = [flange_a.v => v_a_0, flange_b.v => v_b_0]),
-                   flange_a,
-                   flange_b) #flange_a.f => +k*delta_s_0, flange_b.f => -k*delta_s_0
+            defaults = [flange_a.v => v_a_0, flange_b.v => v_b_0]),
+        flange_a,
+        flange_b) #flange_a.f => +k*delta_s_0, flange_b.f => -k*delta_s_0
 end
 
 const ABS = Val(:absolute)
 @component function Spring(::Val{:absolute}; name, k, s_a_0 = 0, s_b_0 = 0, v_a_0 = 0.0,
-                           v_b_0 = 0.0,
-                           l = 0)
+    v_b_0 = 0.0,
+    l = 0)
     pars = @parameters begin
         k = k
         s_a_0 = s_a_0
@@ -164,14 +164,14 @@ const ABS = Val(:absolute)
     @named flange_b = MechanicalPort()
 
     eqs = [D(s1) ~ flange_a.v
-           D(s2) ~ flange_b.v
-           f ~ k * (s1 - s2 - l) #delta_s
-           flange_a.f ~ +f
-           flange_b.f ~ -f]
+        D(s2) ~ flange_b.v
+        f ~ k * (s1 - s2 - l) #delta_s
+        flange_a.f ~ +f
+        flange_b.f ~ -f]
     return compose(ODESystem(eqs, t, vars, pars; name = name,
-                             defaults = [flange_a.v => v_a_0, flange_b.v => v_b_0]),
-                   flange_a,
-                   flange_b) #, flange_a.f => k * (s_a_0 - s_b_0 - l)
+            defaults = [flange_a.v => v_a_0, flange_b.v => v_b_0]),
+        flange_a,
+        flange_b) #, flange_a.f => k * (s_a_0 - s_b_0 - l)
 end
 
 """
@@ -205,11 +205,11 @@ Linear 1D translational damper
     @named flange_b = MechanicalPort()
 
     eqs = [v ~ flange_a.v - flange_b.v
-           f ~ v * d
-           flange_a.f ~ +f
-           flange_b.f ~ -f]
+        f ~ v * d
+        flange_a.f ~ +f
+        flange_b.f ~ -f]
     return compose(ODESystem(eqs, t, vars, pars; name = name,
-                             defaults = [flange_a.v => v_a_0, flange_b.v => v_b_0]),
-                   flange_a,
-                   flange_b) #flange_a.f => +(v_a_0 - v_b_0)*d, flange_b.f => -(v_a_0 - v_b_0)*d
+            defaults = [flange_a.v => v_a_0, flange_b.v => v_b_0]),
+        flange_a,
+        flange_b) #flange_a.f => +(v_a_0 - v_b_0)*d, flange_b.f => -(v_a_0 - v_b_0)*d
 end

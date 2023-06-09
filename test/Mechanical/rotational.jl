@@ -1,5 +1,6 @@
-using ModelingToolkitStandardLibrary.Mechanical.Rotational, ModelingToolkit, OrdinaryDiffEq,
-      Test
+using ModelingToolkitStandardLibrary.Mechanical.Rotational,
+    ModelingToolkit, OrdinaryDiffEq,
+    Test
 import ModelingToolkitStandardLibrary.Blocks
 using OrdinaryDiffEq: ReturnCode.Success
 
@@ -16,11 +17,11 @@ D = Differential(t)
     @named inertia2 = Inertia(J = 2, phi_start = pi / 2)
 
     connections = [connect(fixed.flange, inertia1.flange_b)
-                   connect(inertia1.flange_b, spring.flange_a, damper.flange_a)
-                   connect(spring.flange_b, damper.flange_b, inertia2.flange_a)]
+        connect(inertia1.flange_b, spring.flange_a, damper.flange_a)
+        connect(spring.flange_b, damper.flange_b, inertia2.flange_a)]
 
     @named model = ODESystem(connections, t,
-                             systems = [fixed, inertia1, inertia2, spring, damper])
+        systems = [fixed, inertia1, inertia2, spring, damper])
     sys = structural_simplify(model)
 
     prob = ODEProblem(sys, Pair[], (0, 10.0))
@@ -39,11 +40,11 @@ D = Differential(t)
 
     @named springdamper = SpringDamper(; c = 1e4, d = 10)
     connections = [connect(fixed.flange, inertia1.flange_b)
-                   connect(inertia1.flange_b, springdamper.flange_a)
-                   connect(springdamper.flange_b, inertia2.flange_a)]
+        connect(inertia1.flange_b, springdamper.flange_a)
+        connect(springdamper.flange_b, inertia2.flange_a)]
 
     @named model = ODESystem(connections, t,
-                             systems = [fixed, inertia1, inertia2, springdamper])
+        systems = [fixed, inertia1, inertia2, springdamper])
     sys = structural_simplify(model)
 
     prob = ODEProblem(sys, Pair[], (0, 10.0))
@@ -69,24 +70,24 @@ end
     @named sine = Blocks.Sine(amplitude = amplitude, frequency = frequency)
 
     connections = [connect(sine.output, torque.tau)
-                   connect(torque.support, fixed.flange)
-                   connect(torque.flange, inertia1.flange_a)
-                   connect(inertia1.flange_b, spring.flange_a, damper.flange_a)
-                   connect(spring.flange_b, damper.flange_b, inertia2.flange_a)]
+        connect(torque.support, fixed.flange)
+        connect(torque.flange, inertia1.flange_a)
+        connect(inertia1.flange_b, spring.flange_a, damper.flange_a)
+        connect(spring.flange_b, damper.flange_b, inertia2.flange_a)]
 
     @named model = ODESystem(connections, t,
-                             systems = [
-                                 fixed,
-                                 torque,
-                                 inertia1,
-                                 inertia2,
-                                 spring,
-                                 damper,
-                                 sine,
-                             ])
+        systems = [
+            fixed,
+            torque,
+            inertia1,
+            inertia2,
+            spring,
+            damper,
+            sine,
+        ])
     sys = structural_simplify(model)
     prob = DAEProblem(sys, D.(states(sys)) .=> 0.0,
-                      [D(D(inertia2.phi)) => 1.0; D.(states(model)) .=> 0.0], (0, 10.0))
+        [D(D(inertia2.phi)) => 1.0; D.(states(model)) .=> 0.0], (0, 10.0))
     sol = solve(prob, DFBDF())
     @test SciMLBase.successful_retcode(sol)
 
@@ -100,19 +101,19 @@ end
     ## Test with constant torque source
     @named torque = ConstantTorque(use_support = true, tau_constant = 1)
     connections = [connect(torque.support, fixed.flange)
-                   connect(torque.flange, inertia1.flange_a)
-                   connect(inertia1.flange_b, spring.flange_a, damper.flange_a)
-                   connect(spring.flange_b, damper.flange_b, inertia2.flange_a)]
+        connect(torque.flange, inertia1.flange_a)
+        connect(inertia1.flange_b, spring.flange_a, damper.flange_a)
+        connect(spring.flange_b, damper.flange_b, inertia2.flange_a)]
 
     @named model = ODESystem(connections, t,
-                             systems = [
-                                 fixed,
-                                 torque,
-                                 inertia1,
-                                 inertia2,
-                                 spring,
-                                 damper,
-                             ])
+        systems = [
+            fixed,
+            torque,
+            inertia1,
+            inertia2,
+            spring,
+            damper,
+        ])
     sys = structural_simplify(model)
 
     prob = ODEProblem(sys, Pair[], (0, 10.0))
@@ -141,28 +142,28 @@ end
     @named sine = Blocks.Sine(amplitude = amplitude, frequency = frequency)
 
     connections = [connect(inertia1.flange_b, idealGear.flange_a)
-                   connect(idealGear.flange_b, inertia2.flange_a)
-                   connect(inertia2.flange_b, spring.flange_a)
-                   connect(spring.flange_b, inertia3.flange_a)
-                   connect(damper.flange_a, inertia2.flange_b)
-                   connect(damper.flange_b, fixed.flange)
-                   connect(sine.output, torque.tau)
-                   connect(torque.support, fixed.flange)
-                   connect(idealGear.support, fixed.flange)
-                   connect(torque.flange, inertia1.flange_a)]
+        connect(idealGear.flange_b, inertia2.flange_a)
+        connect(inertia2.flange_b, spring.flange_a)
+        connect(spring.flange_b, inertia3.flange_a)
+        connect(damper.flange_a, inertia2.flange_b)
+        connect(damper.flange_b, fixed.flange)
+        connect(sine.output, torque.tau)
+        connect(torque.support, fixed.flange)
+        connect(idealGear.support, fixed.flange)
+        connect(torque.flange, inertia1.flange_a)]
 
     @named model = ODESystem(connections, t,
-                             systems = [
-                                 fixed,
-                                 torque,
-                                 inertia1,
-                                 idealGear,
-                                 inertia2,
-                                 spring,
-                                 inertia3,
-                                 damper,
-                                 sine,
-                             ])
+        systems = [
+            fixed,
+            torque,
+            inertia1,
+            idealGear,
+            inertia2,
+            spring,
+            inertia3,
+            damper,
+            sine,
+        ])
     @test_skip begin
         sys = structural_simplify(model) #key 7 not found
         prob = ODAEProblem(sys, Pair[], (0, 1.0))
@@ -179,8 +180,8 @@ end
         @named lim = Blocks.Limiter(y_max = 6)
         @named output = Blocks.RealOutput()
         connections = [connect(sine.output, dz.input)
-                       connect(dz.output, lim.input)
-                       connect(lim.output, output)]
+            connect(dz.output, lim.input)
+            connect(lim.output, output)]
         ODESystem(connections, t, [], []; name = name, systems = [sine, dz, lim, output])
     end
 
@@ -189,29 +190,29 @@ end
     @named damper = Damper(d = 0.01)
     @named inertia = Inertia(J = 0.0001)
     @named friction = RotationalFriction(f = 0.001, tau_c = 20, w_brk = 0.06035,
-                                         tau_brk = 25)
+        tau_brk = 25)
     @named vel_profile = VelocityProfile()
     @named source = Speed(use_support = false)
     @named angle_sensor = AngleSensor()
 
     connections = [connect(vel_profile.output, source.w_ref)
-                   connect(source.flange, friction.flange_a)
-                   connect(friction.flange_b, inertia.flange_a)
-                   connect(inertia.flange_b, spring.flange_a, damper.flange_a)
-                   connect(spring.flange_b, damper.flange_b, fixed.flange)
-                   connect(angle_sensor.flange, inertia.flange_a)]
+        connect(source.flange, friction.flange_a)
+        connect(friction.flange_b, inertia.flange_a)
+        connect(inertia.flange_b, spring.flange_a, damper.flange_a)
+        connect(spring.flange_b, damper.flange_b, fixed.flange)
+        connect(angle_sensor.flange, inertia.flange_a)]
 
     @named model = ODESystem(connections, t,
-                             systems = [
-                                 fixed,
-                                 inertia,
-                                 spring,
-                                 damper,
-                                 vel_profile,
-                                 source,
-                                 friction,
-                                 angle_sensor,
-                             ])
+        systems = [
+            fixed,
+            inertia,
+            spring,
+            damper,
+            vel_profile,
+            source,
+            friction,
+            angle_sensor,
+        ])
     sys = structural_simplify(model)
     prob = DAEProblem(sys, D.(states(sys)) .=> 0.0, Pair[], (0, 10.0))
 
@@ -238,17 +239,17 @@ end
     @named rel_speed_sensor = RelSpeedSensor()
 
     connections = [connect(fixed.flange, inertia1.flange_b, rel_speed_sensor.flange_b)
-                   connect(inertia1.flange_b, torque_sensor.flange_a)
-                   connect(torque_sensor.flange_b, spring.flange_a, damper.flange_a,
-                           speed_sensor.flange, rel_speed_sensor.flange_a)
-                   connect(spring.flange_b, damper.flange_b, inertia2.flange_a)]
+        connect(inertia1.flange_b, torque_sensor.flange_a)
+        connect(torque_sensor.flange_b, spring.flange_a, damper.flange_a,
+        speed_sensor.flange, rel_speed_sensor.flange_a)
+        connect(spring.flange_b, damper.flange_b, inertia2.flange_a)]
 
     @named model = ODESystem(connections,
-                             t,
-                             systems = [
-                                 fixed, inertia1, inertia2, spring, damper, speed_sensor,
-                                 rel_speed_sensor, torque_sensor,
-                             ])
+        t,
+        systems = [
+            fixed, inertia1, inertia2, spring, damper, speed_sensor,
+            rel_speed_sensor, torque_sensor,
+        ])
     sys = structural_simplify(model)
 
     prob = ODEProblem(sys, Pair[], (0, 10.0))

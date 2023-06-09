@@ -68,9 +68,9 @@ Single input single output (SISO) continuous system block.
     @named input = RealInput(u_start = u_start)
     @named output = RealOutput(u_start = y_start)
     @variables(u(t)=u_start, [description = "Input of SISO system $name"],
-               y(t)=y_start, [description = "Output of SISO system $name"],)
+        y(t)=y_start, [description = "Output of SISO system $name"],)
     eqs = [u ~ input.u
-           y ~ output.u]
+        y ~ output.u]
     return ODESystem(eqs, t, [u, y], []; name = name, systems = [input, output])
 end
 
@@ -87,11 +87,11 @@ Base class for a multiple input multiple output (MIMO) continuous system block.
   - `y_start`: Initial value for the output
 """
 @component function MIMO(; name, nin = 1, nout = 1, u_start = zeros(nin),
-                         y_start = zeros(nout))
+    y_start = zeros(nout))
     @named input = RealInput(nin = nin, u_start = u_start)
     @named output = RealOutput(nout = nout, u_start = y_start)
     @variables(u(t)[1:nin]=u_start, [description = "Input of MIMO system $name"],
-               y(t)[1:nout]=y_start, [description = "Output of MIMO system $name"],)
+        y(t)[1:nout]=y_start, [description = "Output of MIMO system $name"],)
     eqs = [
         [u[i] ~ input.u[i] for i in 1:nin]...,
         [y[i] ~ output.u[i] for i in 1:nout]...,

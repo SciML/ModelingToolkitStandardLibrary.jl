@@ -46,7 +46,7 @@ Linear 1D position input source
     vars = @variables x(t) = s_0
 
     eqs = [D(x) ~ flange.v
-           s.u ~ x]
+        s.u ~ x]
 
     ODESystem(eqs, t, vars, pars; name, systems, defaults = [flange.v => 0, s.u => s_0])
 end

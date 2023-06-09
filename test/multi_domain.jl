@@ -32,29 +32,29 @@ D = Differential(t)
     @named friction = Damper(d = f)
 
     connections = [connect(fixed.flange, emf.support, friction.flange_b)
-                   connect(emf.flange, friction.flange_a, inertia.flange_a)
-                   connect(inertia.flange_b, load.flange)
-                   connect(load_step.output, load.tau)
-                   connect(voltage_step.output, source.V)
-                   connect(source.p, R1.p)
-                   connect(R1.n, L1.p)
-                   connect(L1.n, emf.p)
-                   connect(emf.n, source.n, ground.g)]
+        connect(emf.flange, friction.flange_a, inertia.flange_a)
+        connect(inertia.flange_b, load.flange)
+        connect(load_step.output, load.tau)
+        connect(voltage_step.output, source.V)
+        connect(source.p, R1.p)
+        connect(R1.n, L1.p)
+        connect(L1.n, emf.p)
+        connect(emf.n, source.n, ground.g)]
 
     @named model = ODESystem(connections, t,
-                             systems = [
-                                 ground,
-                                 voltage_step,
-                                 source,
-                                 R1,
-                                 L1,
-                                 emf,
-                                 fixed,
-                                 load,
-                                 load_step,
-                                 inertia,
-                                 friction,
-                             ])
+        systems = [
+            ground,
+            voltage_step,
+            source,
+            R1,
+            L1,
+            emf,
+            fixed,
+            load,
+            load_step,
+            inertia,
+            friction,
+        ])
     sys = structural_simplify(model)
 
     prob = ODEProblem(sys, [], (0, 6.0))
@@ -115,31 +115,31 @@ end
     @named speed_sensor = SpeedSensor()
 
     connections = [connect(fixed.flange, emf.support, friction.flange_b)
-                   connect(emf.flange, friction.flange_a, inertia.flange_a)
-                   connect(inertia.flange_b, load.flange)
-                   connect(inertia.flange_b, speed_sensor.flange)
-                   connect(load_step.output, load.tau)
-                   connect(voltage_step.output, source.V)
-                   connect(source.p, R1.p)
-                   connect(R1.n, L1.p)
-                   connect(L1.n, emf.p)
-                   connect(emf.n, source.n, ground.g)]
+        connect(emf.flange, friction.flange_a, inertia.flange_a)
+        connect(inertia.flange_b, load.flange)
+        connect(inertia.flange_b, speed_sensor.flange)
+        connect(load_step.output, load.tau)
+        connect(voltage_step.output, source.V)
+        connect(source.p, R1.p)
+        connect(R1.n, L1.p)
+        connect(L1.n, emf.p)
+        connect(emf.n, source.n, ground.g)]
 
     @named model = ODESystem(connections, t,
-                             systems = [
-                                 ground,
-                                 voltage_step,
-                                 source,
-                                 R1,
-                                 L1,
-                                 emf,
-                                 fixed,
-                                 load,
-                                 load_step,
-                                 inertia,
-                                 friction,
-                                 speed_sensor,
-                             ])
+        systems = [
+            ground,
+            voltage_step,
+            source,
+            R1,
+            L1,
+            emf,
+            fixed,
+            load,
+            load_step,
+            inertia,
+            friction,
+            speed_sensor,
+        ])
     sys = structural_simplify(model)
 
     prob = ODEProblem(sys, Pair[], (0, 6.0))
@@ -188,20 +188,20 @@ end
     @named thermal_conductor = ThermalConductor(G = 50)
     @named env = FixedTemperature(T = 273.15 + 20)
     connections = [connect(source.n, ground.g, heating_resistor.n)
-                   connect(source.p, heating_resistor.p)
-                   connect(voltage_sine.output, source.V)
-                   connect(heating_resistor.heat_port, thermal_conductor.port_a)
-                   connect(thermal_conductor.port_b, env.port)]
+        connect(source.p, heating_resistor.p)
+        connect(voltage_sine.output, source.V)
+        connect(heating_resistor.heat_port, thermal_conductor.port_a)
+        connect(thermal_conductor.port_b, env.port)]
 
     @named model = ODESystem(connections, t,
-                             systems = [
-                                 ground,
-                                 voltage_sine,
-                                 source,
-                                 heating_resistor,
-                                 thermal_conductor,
-                                 env,
-                             ])
+        systems = [
+            ground,
+            voltage_sine,
+            source,
+            heating_resistor,
+            thermal_conductor,
+            env,
+        ])
     sys = structural_simplify(model)
 
     prob = ODEProblem(sys, Pair[], (0, 6.0))

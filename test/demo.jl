@@ -15,12 +15,12 @@ using Test
     @named source = Constant()
 
     rc_eqs = [connect(source.output, voltage.V)
-              connect(voltage.p, resistor.p)
-              connect(resistor.n, capacitor.p)
-              connect(capacitor.n, voltage.n, ground.g)]
+        connect(voltage.p, resistor.p)
+        connect(resistor.n, capacitor.p)
+        connect(capacitor.n, voltage.n, ground.g)]
 
     @named rc_model = ODESystem(rc_eqs, t,
-                                systems = [resistor, capacitor, source, voltage, ground])
+        systems = [resistor, capacitor, source, voltage, ground])
     sys = structural_simplify(rc_model)
     prob = ODAEProblem(sys, Pair[], (0, 10.0))
     sol = solve(prob, Tsit5())
