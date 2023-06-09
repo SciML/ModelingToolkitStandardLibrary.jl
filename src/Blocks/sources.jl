@@ -592,14 +592,14 @@ function set_sampled_data!(memory::Parameter{T}, t, x, Δt::Parameter{T}) where 
     i = round(Int, t / Δt) + 1 #expensive
     if i == n + 1
         push!(memory.data, x)
-    elseif i<=n
+    elseif i <= n
         @inbounds memory.data[i] = x
     else
         error("Memory buffer skipped a step: n=$n, i=$i")
     end
 
     # memory.ref = Δt
-    
+
     return x
 end
 Symbolics.@register_symbolic set_sampled_data!(memory, t, x, Δt)
@@ -614,10 +614,8 @@ end
 Symbolics.derivative(::typeof(set_sampled_data!), args::NTuple{4, Any}, ::Val{3}) = 1
 
 function first_order_backwards_difference(t, x, Δt, memory)
-    
     x1 = set_sampled_data!(memory, t, x, Δt)
     x0 = get_sampled_data_const(t - Δt, memory)
 
     return (x1 - x0) / Δt
 end
-
