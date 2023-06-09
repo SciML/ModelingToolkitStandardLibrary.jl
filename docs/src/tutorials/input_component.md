@@ -10,7 +10,7 @@ This tutorial demonstrate each case and explain the pros and cons of each.
 
 ## `TimeVaryingFunction` Component
 
-The `ModelingToolkitStandardLibrary.Blocks.TimeVaryingFunction` component is easy to use and is performative.  However the data is locked to the `ODESystem` and can only be changed by building a new `ODESystem`.  Therefore, running a batch of data would not be efficient.  Below is an example of how to use the `TimeVaryingFunction` with `DataInterpolations` to build the function from sampled discrete data.
+The `ModelingToolkitStandardLibrary.Blocks.TimeVaryingFunction` component is easy to use and is performant.  However the data is locked to the `ODESystem` and can only be changed by building a new `ODESystem`.  Therefore, running a batch of data would not be efficient.  Below is an example of how to use the `TimeVaryingFunction` with `DataInterpolations` to build the function from sampled discrete data.
 
 ```julia
 using ModelingToolkit
@@ -86,7 +86,7 @@ sys = structural_simplify(system)
 prob = ODEProblem(sys, [], (0, time[end]))
 
 rdata[] = data1
-sol1 = solve(prob, ImplicitEuler(); dt, adaptive = false);
+sol1 = solve(prob, ImplicitEuler(); dt, adaptive = false)
 ddx1 = sol1[sys.ddx]
 
 rdata[] = data2
