@@ -428,11 +428,10 @@ end
 struct Parameter{T <: Real}
     data::Vector{T}
     ref::T
-    n::Int
 end
 
 function Base.isequal(x::Parameter, y::Parameter)
-    b0 = x.n == y.n
+    b0 = length(x.data) == length(y.data)
     if b0
         b1 = all(x.data .== y.data)
         b2 = x.ref == y.ref
@@ -465,7 +464,7 @@ Base.:^(x::Parameter, y::Parameter) = Base.power_by_squaring(x.ref, y.ref)
 Base.isless(x::Parameter, y::Number) = Base.isless(x.ref, y)
 Base.isless(y::Number, x::Parameter) = Base.isless(y, x.ref)
 
-Base.copy(x::Parameter{T}) where {T} = Parameter{T}(copy(x.data), x.ref, x.n)
+Base.copy(x::Parameter{T}) where {T} = Parameter{T}(copy(x.data), x.ref)
 
 function Base.show(io::IO, m::MIME"text/plain", p::Parameter)
     if !isempty(p.data)
@@ -484,9 +483,8 @@ function Parameter(x::T; tofloat = true) where {T <: Real}
         P = T
     end
 
-    return Parameter(P[], x, 0)
+    return Parameter(P[], x)
 end
-Parameter(x::Vector{T}, dt::T) where {T <: Real} = Parameter(x, dt, length(x))
 
 function get_sampled_data(t, memory::Parameter{T}) where {T}
     if t < 0
@@ -505,18 +503,19 @@ function get_sampled_data(t, memory::Parameter{T}) where {T}
     i2 = i1 + 1
 
     t1 = (i1 - 1) * memory.ref
-    x1 = @inbounds getindex(memory.data, i1)
+    x1 = @inbounds memory.data[i1]
 
     if t == t1
         return x1
     else
-        if i2 > memory.n
-            i2 = memory.n
+        n = length(memory.data)
+        if i2 > n
+            i2 = n
             i1 = i2 - 1
         end
 
         t2 = (i2 - 1) * memory.ref
-        x2 = @inbounds getindex(memory.data, i2)
+        x2 = @inbounds memory.data[i2]
         return linear_interpolation(x1, x2, t1, t2, t)
     end
 end
@@ -526,19 +525,26 @@ Symbolics.@register_symbolic get_sample_time(memory)
 
 Symbolics.@register_symbolic get_sampled_data(t, memory)
 
+get_sampled_data_const(t, memory::Parameter) = get_sampled_data(t, memory)
+Symbolics.@register_symbolic get_sampled_data_const(t, memory)
+Symbolics.derivative(::typeof(get_sampled_data_const), args::NTuple{2, Any}, ::Val{1}) = 0
+
 function first_order_backwards_difference(t, memory)
     Δt = get_sample_time(memory)
     x1 = get_sampled_data(t, memory)
-    x0 = get_sampled_data(t - Δt, memory)
+    x0 = get_sampled_data_const(t - Δt, memory)
 
     return (x1 - x0) / Δt
 end
 
 function Symbolics.derivative(::typeof(get_sampled_data), args::NTuple{2, Any}, ::Val{1})
-    first_order_backwards_difference(args[1], args[2])
+    t = @inbounds args[1]
+    memory = @inbounds args[2]
+    first_order_backwards_difference(t, memory)
 end
 
 SampledData(T::Type; name) = SampledData(T[], zero(T); name)
+SampledData(dt::T) where {T <: Real} = SampledData(T[], dt; name)
 function SampledData(data::Vector{T}, dt::T; name) where {T <: Real}
     SampledData(; name, buffer = Parameter(data, dt))
 end
@@ -567,3 +573,47 @@ end
 @deprecate Input SampledData
 
 Base.convert(::Type{T}, x::Parameter{T}) where {T <: Real} = x.ref
+
+# Beta Code for potential AE Hack ----------------------
+function set_sampled_data!(memory::Parameter{T}, t, x, Δt::Parameter{T}) where {T}
+    if t < 0
+        t = zero(t)
+    end
+
+    if t == zero(t)
+        empty!(memory.data)
+    end
+
+    n = length(memory.data)
+    i = round(Int, t / Δt) + 1 #expensive
+    if i == n + 1
+        push!(memory.data, x)
+    elseif i<=n
+        @inbounds memory.data[i] = x
+    else
+        error("Memory buffer skipped a step: n=$n, i=$i")
+    end
+
+    # memory.ref = Δt
+    
+    return x
+end
+Symbolics.@register_symbolic set_sampled_data!(memory, t, x, Δt)
+
+function Symbolics.derivative(::typeof(set_sampled_data!), args::NTuple{4, Any}, ::Val{2})
+    memory = @inbounds args[1]
+    t = @inbounds args[2]
+    x = @inbounds args[3]
+    Δt = @inbounds args[4]
+    first_order_backwards_difference(t, x, Δt, memory)
+end
+Symbolics.derivative(::typeof(set_sampled_data!), args::NTuple{4, Any}, ::Val{3}) = 1
+
+function first_order_backwards_difference(t, x, Δt, memory)
+    
+    x1 = set_sampled_data!(memory, t, x, Δt)
+    x0 = get_sampled_data_const(t - Δt, memory)
+
+    return (x1 - x0) / Δt
+end
+
