@@ -20,7 +20,7 @@ function Fixed(; name, s0 = 0.0)
     eqs = [flange.s ~ s0]
 
     return compose(ODESystem(eqs, t, vars, pars; name = name, defaults = [flange.s => s0]),
-                   flange)
+        flange)
 end
 
 """
@@ -50,8 +50,8 @@ function Mass(m; name, s0 = 0.0, v0 = 0.0)
     @variables v(t)=v0 [description = "Absolute linear velocity of sliding mass [m/s]"]
     @variables a(t)=0 [description = "Absolute linear acceleration of sliding mass [m/s^2]"]
     eqs = [v ~ D(s)
-           a ~ D(v)
-           m * a ~ flange_a.f + flange_b.f]
+        a ~ D(v)
+        m * a ~ flange_a.f + flange_b.f]
     return extend(ODESystem(eqs, t; name), pr)
 end
 

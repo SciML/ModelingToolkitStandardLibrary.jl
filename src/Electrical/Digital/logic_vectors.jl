@@ -24,7 +24,7 @@ axes(l::LogicVector) = axes(l.logic)
 
 getindex(s::LogicVector, i::Int) = getindex(s.logic, i)
 function Base.getindex(s::LogicVector, i1::Int, i2::Int,
-                       I::Int...)
+    I::Int...)
     getindex(s.logic, i1, i2, I...)
 end
 

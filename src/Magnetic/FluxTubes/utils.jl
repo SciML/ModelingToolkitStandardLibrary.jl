@@ -30,7 +30,7 @@ Partial component with magnetic potential difference between two magnetic ports 
     @named port_n = NegativeMagneticPort()
     @variables V_m(t)=V_m_start Phi(t)=Phi_start
     eqs = [V_m ~ port_p.V_m - port_n.V_m
-           Phi ~ port_p.Phi
-           0 ~ port_p.Phi + port_n.Phi]
+        Phi ~ port_p.Phi
+        0 ~ port_p.Phi + port_n.Phi]
     ODESystem(eqs, t, [V_m, Phi], [], systems = [port_p, port_n], name = name)
 end

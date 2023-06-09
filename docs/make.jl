@@ -18,29 +18,29 @@ ENV["GKSwstype"] = "100"
 include("pages.jl")
 
 makedocs(sitename = "ModelingToolkitStandardLibrary.jl",
-         authors = "Julia Computing",
-         clean = true,
-         doctest = false,
-         linkcheck = true,
-         strict = [
-             :linkcheck,
-             :doctest,
-             :example_block,
-         ],
-         modules = [ModelingToolkit,
-             ModelingToolkitStandardLibrary,
-             ModelingToolkitStandardLibrary.Blocks,
-             ModelingToolkitStandardLibrary.Mechanical,
-             ModelingToolkitStandardLibrary.Mechanical.Rotational,
-             ModelingToolkitStandardLibrary.Magnetic,
-             ModelingToolkitStandardLibrary.Magnetic.FluxTubes,
-             ModelingToolkitStandardLibrary.Electrical,
-             ModelingToolkitStandardLibrary.Thermal,
-             ModelingToolkitStandardLibrary.Hydraulic,
-             ModelingToolkitStandardLibrary.Hydraulic.IsothermalCompressible],
-         format = Documenter.HTML(assets = ["assets/favicon.ico"],
-                                  canonical = "https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/"),
-         pages = pages)
+    authors = "Julia Computing",
+    clean = true,
+    doctest = false,
+    linkcheck = true,
+    strict = [
+        :linkcheck,
+        :doctest,
+        :example_block,
+    ],
+    modules = [ModelingToolkit,
+        ModelingToolkitStandardLibrary,
+        ModelingToolkitStandardLibrary.Blocks,
+        ModelingToolkitStandardLibrary.Mechanical,
+        ModelingToolkitStandardLibrary.Mechanical.Rotational,
+        ModelingToolkitStandardLibrary.Magnetic,
+        ModelingToolkitStandardLibrary.Magnetic.FluxTubes,
+        ModelingToolkitStandardLibrary.Electrical,
+        ModelingToolkitStandardLibrary.Thermal,
+        ModelingToolkitStandardLibrary.Hydraulic,
+        ModelingToolkitStandardLibrary.Hydraulic.IsothermalCompressible],
+    format = Documenter.HTML(assets = ["assets/favicon.ico"],
+        canonical = "https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/"),
+    pages = pages)
 
 deploydocs(repo = "github.com/SciML/ModelingToolkitStandardLibrary.jl";
-           push_preview = true)
+    push_preview = true)

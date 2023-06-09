@@ -109,7 +109,7 @@ Output the sum of the two scalar inputs.
     @named input2 = RealInput()
     @named output = RealOutput()
     pars = @parameters(k1=k1, [description = "Gain of Add $name input1"],
-                       k2=k2, [description = "Gain of Add $name input2"],)
+        k2=k2, [description = "Gain of Add $name input2"],)
     eqs = [
         output.u ~ k1 * input1.u + k2 * input2.u,
     ]
@@ -140,8 +140,8 @@ Output the sum of the three scalar inputs.
     @named input3 = RealInput()
     @named output = RealOutput()
     pars = @parameters(k1=k1, [description = "Gain of Add $name input1"],
-                       k2=k2, [description = "Gain of Add $name input2"],
-                       k3=k3, [description = "Gain of Add $name input3"],)
+        k2=k2, [description = "Gain of Add $name input2"],
+        k3=k3, [description = "Gain of Add $name input3"],)
     eqs = [
         output.u ~ k1 * input1.u + k2 * input2.u + k3 * input3.u,
     ]

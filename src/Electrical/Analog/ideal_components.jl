@@ -151,7 +151,7 @@ See [TwoPort](@ref)
     @unpack v1, v2, i1, i2 = twoport
 
     eqs = [v1 ~ 0
-           i1 ~ 0]
+        i1 ~ 0]
     extend(ODESystem(eqs, t, [], [], name = name), twoport)
 end
 
@@ -207,8 +207,8 @@ Temperature dependent electrical resistor
     end
     @variables R(t) = R_ref
     eqs = [R ~ R_ref * (1 + alpha * (heat_port.T - T_ref))
-           heat_port.Q_flow ~ -v * i # -LossPower
-           v ~ i * R]
+        heat_port.Q_flow ~ -v * i # -LossPower
+        v ~ i * R]
     extend(ODESystem(eqs, t, [R], pars; name = name, systems = [heat_port]), oneport)
 end
 
@@ -243,11 +243,11 @@ Electromotoric force (electric/mechanic transformer)
     @parameters k = k
     @variables v(t)=0.0 i(t)=0.0 phi(t)=0.0 w(t)=0.0
     eqs = [v ~ p.v - n.v
-           0 ~ p.i + n.i
-           i ~ p.i
-           phi ~ flange.phi - support.phi
-           D(phi) ~ w
-           k * w ~ v
-           flange.tau ~ -k * i]
+        0 ~ p.i + n.i
+        i ~ p.i
+        phi ~ flange.phi - support.phi
+        D(phi) ~ w
+        k * w ~ v
+        flange.tau ~ -k * i]
     ODESystem(eqs, t, [v, i, phi, w], [k]; name = name, systems = [p, n, flange, support])
 end

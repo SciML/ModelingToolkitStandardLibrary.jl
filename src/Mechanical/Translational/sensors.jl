@@ -46,9 +46,9 @@ Linear 1D position input sensor.
     vars = @variables s(t) = s_0
 
     eqs = [D(s) ~ flange.v
-           output.u ~ s
-           flange.f ~ 0]
+        output.u ~ s
+        flange.f ~ 0]
 
     ODESystem(eqs, t, vars, pars; name, systems,
-              defaults = [flange.v => 0, output.u => s_0])
+        defaults = [flange.v => 0, output.u => s_0])
 end

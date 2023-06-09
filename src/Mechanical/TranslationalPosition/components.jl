@@ -20,7 +20,7 @@ Flange fixed in housing at a given position.
     eqs = [flange.s ~ s_0]
 
     return compose(ODESystem(eqs, t, vars, pars; name = name, defaults = [flange.s => s_0]),
-                   flange)
+        flange)
 end
 
 """
@@ -56,18 +56,18 @@ Sliding mass with inertia
         f(t) = 0
     end
     eqs = [flange.s ~ s
-           flange.f ~ f
-           D(s) ~ v
-           D(v) ~ f / m]
+        flange.f ~ f
+        D(s) ~ v
+        D(v) ~ f / m]
     return compose(ODESystem(eqs, t, vars, pars; name = name, defaults = [flange.s => s_0]),
-                   flange)
+        flange)
 end
 
 const REL = Val(:relative)
 @component function Spring(::Val{:relative}; name, k, v_a_0 = 0.0, v_b_0 = 0.0,
-                           delta_s_0 = 0,
-                           s_a_0 = 0,
-                           s_b_0 = 0)
+    delta_s_0 = 0,
+    s_a_0 = 0,
+    s_b_0 = 0)
     pars = @parameters begin
         k = k
         v_a_0 = v_a_0
@@ -87,19 +87,19 @@ const REL = Val(:relative)
     @named flange_b = Flange()
 
     eqs = [D(flange_a.s) ~ v1
-           D(flange_b.s) ~ v2
-           D(delta_s) ~ v1 - v2
-           f ~ k * delta_s
-           flange_a.f ~ +f
-           flange_b.f ~ -f]
+        D(flange_b.s) ~ v2
+        D(delta_s) ~ v1 - v2
+        f ~ k * delta_s
+        flange_a.f ~ +f
+        flange_b.f ~ -f]
 
     return compose(ODESystem(eqs, t, vars, pars; name = name,
-                             defaults = [
-                                 flange_a.s => s_a_0,
-                                 flange_b.s => s_b_0,
-                                 flange_a.f => +delta_s_0 * k,
-                                 flange_b.f => -delta_s_0 * k,
-                             ]), flange_a, flange_b)
+            defaults = [
+                flange_a.s => s_a_0,
+                flange_b.s => s_b_0,
+                flange_a.f => +delta_s_0 * k,
+                flange_b.f => -delta_s_0 * k,
+            ]), flange_a, flange_b)
 end
 
 const ABS = Val(:absolute)
@@ -131,24 +131,25 @@ Spring(; name, k, s_a_0 = 0, s_b_0 = 0, l = 0) = Spring(ABS; name, k, s_a_0, s_b
         l = l
     end
     vars = @variables begin
-    # delta_s(t) = s1 - s2
-    f(t) = k * (s_a_0 - s_b_0 - l) end
+        # delta_s(t) = s1 - s2
+        f(t) = k * (s_a_0 - s_b_0 - l)
+    end
 
     @named flange_a = Flange()
     @named flange_b = Flange()
 
     eqs = [
-           #    delta_s ~ flange_a.s - flange_b.s
-           f ~ k * (flange_a.s - flange_b.s - l) #delta_s
-           flange_a.f ~ +f
-           flange_b.f ~ -f]
+    #    delta_s ~ flange_a.s - flange_b.s
+        f ~ k * (flange_a.s - flange_b.s - l) #delta_s
+        flange_a.f ~ +f
+        flange_b.f ~ -f]
     return compose(ODESystem(eqs, t, vars, pars; name = name,
-                             defaults = [
-                                 flange_a.s => s_a_0,
-                                 flange_b.s => s_b_0,
-                                 flange_a.f => k * (s_a_0 - s_b_0 - l),
-                                 flange_b.f => -k * (s_a_0 - s_b_0 - l),
-                             ]), flange_a, flange_b)
+            defaults = [
+                flange_a.s => s_a_0,
+                flange_b.s => s_b_0,
+                flange_a.f => k * (s_a_0 - s_b_0 - l),
+                flange_b.f => -k * (s_a_0 - s_b_0 - l),
+            ]), flange_a, flange_b)
 end
 
 """
@@ -187,15 +188,15 @@ Linear 1D translational damper
     @named flange_b = Flange()
 
     eqs = [D(flange_a.s) ~ v1
-           D(flange_b.s) ~ v2
-           f ~ (v1 - v2) * d
-           flange_a.f ~ +f
-           flange_b.f ~ -f]
+        D(flange_b.s) ~ v2
+        f ~ (v1 - v2) * d
+        flange_a.f ~ +f
+        flange_b.f ~ -f]
     return compose(ODESystem(eqs, t, vars, pars; name = name,
-                             defaults = [
-                                 flange_a.s => s_a_0,
-                                 flange_b.s => s_b_0,
-                                 flange_a.f => +(v_a_0 - v_b_0) * d,
-                                 flange_b.f => -(v_a_0 - v_b_0) * d,
-                             ]), flange_a, flange_b)
+            defaults = [
+                flange_a.s => s_a_0,
+                flange_b.s => s_b_0,
+                flange_a.f => +(v_a_0 - v_b_0) * d,
+                flange_b.f => -(v_a_0 - v_b_0) * d,
+            ]), flange_a, flange_b)
 end

@@ -19,7 +19,7 @@ function PulseDiff(; name, Val = 1, dt = 0.1)
     D = ModelingToolkit.Difference(t; dt = dt)
 
     eqs = [D(val) ~ Val
-           val ~ d.val]
+        val ~ d.val]
 
     ODESystem(eqs, t, [val], [], systems = [d], defaults = Dict(Val => 0), name = name)
 end

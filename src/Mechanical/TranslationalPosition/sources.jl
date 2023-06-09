@@ -9,5 +9,5 @@ Input signal acting as external force on a flange
     @named f = RealInput() # Accelerating force acting at flange (= -flange.tau)
     eqs = [flange.f ~ -f.u]
     return extend(ODESystem(eqs, t, [], []; name = name, systems = [f]),
-                  partial_element)
+        partial_element)
 end

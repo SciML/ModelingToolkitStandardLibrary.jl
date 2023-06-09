@@ -117,14 +117,14 @@ N * dΦ/dt = -v
     sts = @variables v(t) i(t) V_m(t) Phi(t)=Phi_start
     pars = @parameters N = N
     eqs = [v ~ p.v - n.v
-           0 ~ p.i + n.i
-           i ~ p.i
-           V_m ~ port_p.V_m - port_n.V_m
-           0 ~ port_p.Phi + port_n.Phi
-           Phi ~ port_p.Phi
-           #converter equations:
-           V_m ~ i * N # Ampere's law
-           D(Phi) ~ -v / N]
+        0 ~ p.i + n.i
+        i ~ p.i
+        V_m ~ port_p.V_m - port_n.V_m
+        0 ~ port_p.Phi + port_n.Phi
+        Phi ~ port_p.Phi
+    #converter equations:
+        V_m ~ i * N # Ampere's law
+        D(Phi) ~ -v / N]
     ODESystem(eqs, t, sts, pars, systems = [port_p, port_n, p, n], name = name)
 end
 

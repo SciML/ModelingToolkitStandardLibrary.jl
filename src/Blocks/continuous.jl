@@ -19,7 +19,7 @@ Outputs `y = ∫k*u dt`, corresponding to the transfer function `1/s`.
     sts = @variables x(t)=x_start [description = "State of Integrator $name"]
     pars = @parameters k=k [description = "Gain of Integrator $name"]
     eqs = [D(x) ~ k * u
-           y ~ x]
+        y ~ x]
     extend(ODESystem(eqs, t, sts, pars; name = name), siso)
 end
 
@@ -60,7 +60,7 @@ A smaller `T` leads to a more ideal approximation of the derivative.
         description = "Gain of Derivative $name",
     ]
     eqs = [D(x) ~ (u - x) / T
-           y ~ (k / T) * (u - x)]
+        y ~ (k / T) * (u - x)]
     extend(ODESystem(eqs, t, sts, pars; name = name), siso)
 end
 
@@ -106,7 +106,7 @@ See also [`SecondOrder`](@ref)
         description = "Gain of FirstOrder $name",
     ]
     eqs = [D(x) ~ (k * u - x) / T
-           lowpass ? y ~ x : y ~ k * u - x]
+        lowpass ? y ~ x : y ~ k * u - x]
     extend(ODESystem(eqs, t, sts, pars; name = name), siso)
 end
 
@@ -147,8 +147,8 @@ Critical damping corresponds to `d=1`, which yields the fastest step response wi
     @parameters w=w [description = "Bandwidth of SecondOrder $name"]
     @parameters d=d [description = "Relative damping of SecondOrder $name"]
     eqs = [D(x) ~ xd
-           D(xd) ~ w * (w * (k * u - x) - 2 * d * xd)
-           y ~ x]
+        D(xd) ~ w * (w * (k * u - x) - 2 * d * xd)
+        y ~ x]
     extend(ODESystem(eqs, t; name = name), siso)
 end
 
@@ -210,7 +210,7 @@ Text-book version of a PID-controller without actuator saturation and anti-windu
 See also [`LimPID`](@ref)
 """
 @component function PID(; name, k = 1, Ti = false, Td = false, Nd = 10, xi_start = 0,
-                        xd_start = 0)
+    xd_start = 0)
     with_I = !isequal(Ti, false)
     with_D = !isequal(Td, false)
     @named err_input = RealInput() # control error
@@ -346,13 +346,13 @@ where the transfer function for the derivative includes additional filtering, se
   - `ctr_output`
 """
 @component function LimPID(; name, k = 1, Ti = false, Td = false, wp = 1, wd = 1,
-                           Ni = Ti == 0 ? Inf : √(max(Td / Ti, 1e-6)),
-                           Nd = 10,
-                           u_max = Inf,
-                           u_min = u_max > 0 ? -u_max : -Inf,
-                           gains = false,
-                           xi_start = 0.0,
-                           xd_start = 0.0)
+    Ni = Ti == 0 ? Inf : √(max(Td / Ti, 1e-6)),
+    Nd = 10,
+    u_max = Inf,
+    u_min = u_max > 0 ? -u_max : -Inf,
+    gains = false,
+    xi_start = 0.0,
+    xd_start = 0.0)
     with_I = !isequal(Ti, false)
     with_D = !isequal(Td, false)
     with_AWM = Ni != Inf
@@ -482,7 +482,7 @@ y &= h(x, u)
 linearized around the operating point `x₀, u₀`, we have `y0, u0 = h(x₀, u₀), u₀`.
 """
 @component function StateSpace(; A, B, C, D = nothing, x_start = zeros(size(A, 1)), name,
-                               u0 = zeros(size(B, 2)), y0 = zeros(size(C, 1)))
+    u0 = zeros(size(B, 2)), y0 = zeros(size(C, 1)))
     nx, nu, ny = size(A, 1), size(B, 2), size(C, 1)
     size(A, 2) == nx || error("`A` has to be a square matrix.")
     size(B, 1) == nx || error("`B` has to be of dimension ($nx x $nu).")

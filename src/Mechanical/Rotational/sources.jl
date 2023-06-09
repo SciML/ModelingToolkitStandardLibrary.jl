@@ -64,8 +64,8 @@ function ConstantTorque(; name, tau_constant, use_support = false)
         description = "Angular velocity of flange with respect to support (= der(phi))",
     ]
     eqs = [w ~ D(phi)
-           tau ~ -flange.tau
-           tau ~ tau_constant]
+        tau ~ -flange.tau
+        tau ~ tau_constant]
     return extend(ODESystem(eqs, t; name = name), partial_element)
 end
 
@@ -95,7 +95,7 @@ Forced movement of a flange according to a reference angular velocity signal
     @named w_ref = RealInput()
     @variables phi(t)=0.0 w(t)=0.0 a(t)=0.0
     eqs = [phi ~ flange.phi - phi_support
-           D(phi) ~ w]
+        D(phi) ~ w]
     if exact
         pars = []
         push!(eqs, w ~ w_ref.u)
@@ -106,5 +106,5 @@ Forced movement of a flange according to a reference angular velocity signal
         push!(eqs, a ~ (w_ref.u - w) * tau_filt)
     end
     return extend(ODESystem(eqs, t, [phi, w, a], pars; name = name, systems = [w_ref]),
-                  partial_element)
+        partial_element)
 end

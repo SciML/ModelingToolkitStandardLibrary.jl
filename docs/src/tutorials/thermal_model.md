@@ -27,7 +27,7 @@ connections = [
 ]
 
 @named model = ODESystem(connections, t,
-                         systems = [mass1, mass2, conduction, Tsensor1, Tsensor2])
+    systems = [mass1, mass2, conduction, Tsensor1, Tsensor2])
 sys = structural_simplify(model)
 prob = ODEProblem(sys, Pair[], (0, 5.0))
 sol = solve(prob, Tsit5())

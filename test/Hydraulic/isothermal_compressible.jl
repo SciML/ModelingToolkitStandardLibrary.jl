@@ -12,21 +12,23 @@ NEWTON = NLNewton(check_div = false, always_new = true, max_iter = 100, relax = 
 
 @testset "Fluid Domain and Tube" begin
     function System(N; bulk_modulus, name)
-        pars = @parameters begin bulk_modulus = bulk_modulus end
+        pars = @parameters begin
+            bulk_modulus = bulk_modulus
+        end
 
         systems = @named begin
             fluid = IC.HydraulicFluid(; bulk_modulus)
             stp = B.Step(; height = 10e5, offset = 0, start_time = 0.005, duration = Inf,
-                         smooth = true)
+                smooth = true)
             src = IC.Pressure(; p_int = 0)
             vol = IC.FixedVolume(; p_int = 0, vol = 10.0)
             res = IC.Tube(N; p_int = 0, area = 0.01, length = 50.0)
         end
 
         eqs = [connect(stp.output, src.p)
-               connect(fluid, src.port)
-               connect(src.port, res.port_a)
-               connect(res.port_b, vol.port)]
+            connect(fluid, src.port)
+            connect(src.port, res.port_a)
+            connect(res.port_b, vol.port)]
 
         ODESystem(eqs, t, [], pars; name, systems)
     end
@@ -39,7 +41,7 @@ NEWTON = NLNewton(check_div = false, always_new = true, max_iter = 100, relax = 
     probs = [ODEProblem(sys, ModelingToolkit.missing_variable_defaults(sys), (0, 0.05))
              for sys in syss] #
     sols = [solve(prob, ImplicitEuler(nlsolve = NEWTON); initializealg = NoInit(),
-                  dt = 1e-4, adaptive = false)
+        dt = 1e-4, adaptive = false)
             for prob in probs]
 
     s1_2 = complete(sys1_2)
@@ -71,15 +73,15 @@ end
             sink = IC.FixedPressure(; p = 10e5)
             vol = IC.FixedVolume(; vol = 0.1, p_int = 100e5)
             valve = IC.Valve(; p_a_int = 10e5, p_b_int = 100e5, area_int = 0, Cd = 1e5,
-                             minimum_area = 0)
+                minimum_area = 0)
             ramp = B.Ramp(; height = 1, duration = 0.001, offset = 0, start_time = 0.001,
-                          smooth = true)
+                smooth = true)
         end
 
         eqs = [connect(fluid, sink.port)
-               connect(sink.port, valve.port_a)
-               connect(valve.port_b, vol.port)
-               connect(valve.area, ramp.output)]
+            connect(sink.port, valve.port_a)
+            connect(valve.port_b, vol.port)
+            connect(valve.area, ramp.output)]
 
         ODESystem(eqs, t, [], pars; name, systems)
     end
@@ -89,7 +91,7 @@ end
     sys = structural_simplify(valve_system)
     prob = ODEProblem(sys, [], (0, 0.01))
     sol = solve(prob, ImplicitEuler(nlsolve = NEWTON); adaptive = false, dt = 1e-4,
-                initializealg = NoInit())
+        initializealg = NoInit())
 
     # the volume should discharge to 10bar
     @test sol[s.vol.port.p][end]≈10e5 atol=1e5
@@ -106,17 +108,17 @@ end
             src2 = IC.Pressure(; p_int = 10e5)
 
             vol1 = IC.DynamicVolume(N; direction = +1,
-                                    p_int = 10e5, area,
-                                    x_int = length,
-                                    x_max = length * 2,
-                                    x_min = length * 0.1,
-                                    x_damp = damping_volume / area + length * 0.1)
+                p_int = 10e5, area,
+                x_int = length,
+                x_max = length * 2,
+                x_min = length * 0.1,
+                x_damp = damping_volume / area + length * 0.1)
             vol2 = IC.DynamicVolume(N; direction = -1,
-                                    p_int = 10e5, area,
-                                    x_int = length,
-                                    x_max = length * 2,
-                                    x_min = length * 0.1,
-                                    x_damp = damping_volume / area + length * 0.1)
+                p_int = 10e5, area,
+                x_int = length,
+                x_max = length * 2,
+                x_min = length * 0.1,
+                x_damp = damping_volume / area + length * 0.1)
 
             mass = T.Mass(; m = 10)
 
@@ -125,12 +127,12 @@ end
         end
 
         eqs = [connect(fluid, src1.port)
-               connect(fluid, src2.port)
-               connect(src1.port, vol1.port)
-               connect(src2.port, vol2.port)
-               connect(vol1.flange, mass.flange, vol2.flange)
-               connect(src1.p, sin1.output)
-               connect(src2.p, sin2.output)]
+            connect(fluid, src2.port)
+            connect(src1.port, vol1.port)
+            connect(src2.port, vol2.port)
+            connect(vol1.flange, mass.flange, vol2.flange)
+            connect(src1.p, sin1.output)
+            connect(src2.p, sin2.output)]
 
         ODESystem(eqs, t, [], pars; name, systems)
     end
@@ -141,15 +143,15 @@ end
             s = complete(system)
             sys = structural_simplify(system)
             prob = ODEProblem(sys, ModelingToolkit.missing_variable_defaults(sys), (0, 5),
-                              [s.vol1.Cd_reverse => 0.1, s.vol2.Cd_reverse => 0.1];
-                              jac = true)
+                [s.vol1.Cd_reverse => 0.1, s.vol2.Cd_reverse => 0.1];
+                jac = true)
 
             @time sol = solve(prob,
-                              ImplicitEuler(nlsolve = NLNewton(check_div = false,
-                                                               always_new = true,
-                                                               max_iter = 10,
-                                                               relax = 9 // 10));
-                              dt = 0.0001, adaptive = false, initializealg = NoInit())
+                ImplicitEuler(nlsolve = NLNewton(check_div = false,
+                    always_new = true,
+                    max_iter = 10,
+                    relax = 9 // 10));
+                dt = 0.0001, adaptive = false, initializealg = NoInit())
 
             # begin
             #     fig = Figure()
@@ -218,26 +220,28 @@ end
             m_body = 1500
         end
 
-        vars = @variables begin ddx(t) = 0 end
+        vars = @variables begin
+            ddx(t) = 0
+        end
 
         systems = @named begin
             src = IC.FixedPressure(; p = p_s)
             valve = IC.SpoolValve2Way(; p_s_int = p_s, p_a_int = p_1, p_b_int = p_2,
-                                      p_r_int = p_r, g, m = m_f, x_int = 0, d, Cd)
+                p_r_int = p_r, g, m = m_f, x_int = 0, d, Cd)
             piston = IC.Actuator(5;
-                                 p_a_int = p_1,
-                                 p_b_int = p_2,
-                                 area_a = A_1,
-                                 area_b = A_2,
-                                 length_a_int = l_1,
-                                 length_b_int = l_2,
-                                 m = m_piston,
-                                 g = 0,
-                                 x_int = 0,
-                                 minimum_volume_a = A_1 * 1e-3,
-                                 minimum_volume_b = A_2 * 1e-3,
-                                 damping_volume_a = A_1 * 5e-3,
-                                 damping_volume_b = A_2 * 5e-3)
+                p_a_int = p_1,
+                p_b_int = p_2,
+                area_a = A_1,
+                area_b = A_2,
+                length_a_int = l_1,
+                length_b_int = l_2,
+                m = m_piston,
+                g = 0,
+                x_int = 0,
+                minimum_volume_a = A_1 * 1e-3,
+                minimum_volume_b = A_2 * 1e-3,
+                damping_volume_a = A_1 * 5e-3,
+                damping_volume_b = A_2 * 5e-3)
             body = T.Mass(; m = m_body)
             pipe = IC.Tube(5; p_int = p_2, area = A_2, length = 2.0)
             snk = IC.FixedPressure(; p = p_r)
@@ -258,17 +262,17 @@ end
         push!(systems, input)
 
         eqs = [connect(input.output, pos.s)
-               connect(valve.flange, pos.flange)
-               connect(valve.port_a, piston.port_a)
-               connect(piston.flange, body.flange)
-               connect(piston.port_b, m1.port_a)
-               connect(m1.port_b, pipe.port_b)
-               connect(pipe.port_a, m2.port_b)
-               connect(m2.port_a, valve.port_b)
-               connect(src.port, valve.port_s)
-               connect(snk.port, valve.port_r)
-               connect(fluid, src.port, snk.port)
-               D(body.v) ~ ddx]
+            connect(valve.flange, pos.flange)
+            connect(valve.port_a, piston.port_a)
+            connect(piston.flange, body.flange)
+            connect(piston.port_b, m1.port_a)
+            connect(m1.port_b, pipe.port_b)
+            connect(pipe.port_a, m2.port_b)
+            connect(m2.port_a, valve.port_b)
+            connect(src.port, valve.port_s)
+            connect(snk.port, valve.port_r)
+            connect(fluid, src.port, snk.port)
+            D(body.v) ~ ddx]
 
         ODESystem(eqs, t, vars, pars; name, systems)
     end
@@ -279,7 +283,7 @@ end
     defs = ModelingToolkit.defaults(sys)
     s = complete(system)
     prob = ODEProblem(sys, ModelingToolkit.missing_variable_defaults(sys), (0, 0.1);
-                      tofloat = false, jac = true)
+        tofloat = false, jac = true)
 
     # check the fluid domain
     @test Symbol(defs[s.src.port.ρ]) == Symbol(s.fluid.ρ)
@@ -299,7 +303,7 @@ end
     p = Parameter.(ModelingToolkit.varmap_to_vars(defs, parameters(sys); tofloat = false))
     prob = remake(prob; p, tspan = (0, time[end]))
     @time sol = solve(prob, ImplicitEuler(nlsolve = NEWTON); adaptive = false, dt,
-                      initializealg = NoInit())
+        initializealg = NoInit())
 
     @test sol[sys.ddx][1] == 0.0
     @test maximum(sol[sys.ddx]) > 200
@@ -313,13 +317,13 @@ end
         systems = @named begin
             fluid = IC.HydraulicFluid(; let_gas)
             vol = IC.DynamicVolume(5; p_int = 100e5, area = 0.001, x_int = 0.05,
-                                   x_max = 0.1, x_damp = 0.02, x_min = 0.01, direction = +1)
+                x_max = 0.1, x_damp = 0.02, x_min = 0.01, direction = +1)
             mass = T.Mass(; m = 100, g = -9.807, s_0 = 0.05)
             cap = IC.Cap(; p_int = 100e5)
         end
 
         eqs = [connect(fluid, cap.port, vol.port)
-               connect(vol.flange, mass.flange)]
+            connect(vol.flange, mass.flange)]
 
         ODESystem(eqs, t, [], pars; name, systems)
     end
@@ -329,7 +333,7 @@ end
     sys = structural_simplify(system)
     prob1 = ODEProblem(sys, ModelingToolkit.missing_variable_defaults(sys), (0, 0.05))
     prob2 = ODEProblem(sys, ModelingToolkit.missing_variable_defaults(sys), (0, 0.05),
-                       [s.let_gas => 0])
+        [s.let_gas => 0])
 
     @time sol1 = solve(prob1, ImplicitEuler(nlsolve = NEWTON); adaptive = false, dt = 1e-4)
     @time sol2 = solve(prob2, Rodas4())
