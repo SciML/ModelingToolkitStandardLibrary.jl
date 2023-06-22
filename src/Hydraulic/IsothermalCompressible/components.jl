@@ -506,7 +506,7 @@ dm ────►               │  │ area
 
     ports = @named begin
         port = HydraulicPort(; p_int)
-        flange = MechanicalPort(; f_int = p_int*area)
+        flange = MechanicalPort(; f_int = p_int * area)
         damper = ValveBase(; p_a_int = p_int, p_b_int = p_int, area_int = 1, Cd,
             Cd_reverse, minimum_area)
     end
@@ -528,7 +528,13 @@ dm ────►               │  │ area
     Δx = ParentScope(x_max) / N
     x₀ = ParentScope(x_int)
 
-    @named moving_volume = VolumeBase(; p_int, x_int = 0, area, dead_volume = 0, Χ1 = 0, Χ2 = 1)
+    @named moving_volume = VolumeBase(;
+        p_int,
+        x_int = 0,
+        area,
+        dead_volume = 0,
+        Χ1 = 0,
+        Χ2 = 1)
 
     volumes = []
     for i in 1:N
@@ -580,8 +586,6 @@ dm ────►               │  │ area
         systems = [ports; pipe_bases; volumes; moving_volume],
         defaults = [flange.v => 0])
 end
-
-
 
 @component function SpoolValve(reversible = false; p_a_int, p_b_int, x_int, Cd, d, name)
     pars = @parameters begin
