@@ -10,11 +10,14 @@ D = Differential(t)
 @testset "Free" begin
     function System(; name)
         systems = @named begin
-            mass = TV.Mass(; m = 100, g = -10)
+            acc = TV.Acceleration(false)
+            a = Constant(k = -10)
+            mass = TV.Mass(; m = 100)
             free = TV.Free()
         end
 
-        eqs = [connect(mass.flange, free.flange)]
+        eqs = [connect(a.output, acc.a)
+               connect(mass.flange, acc.flange, free.flange)]
 
         ODESystem(eqs, t, [], []; name, systems)
     end
@@ -26,6 +29,7 @@ D = Differential(t)
     sol = solve(prob, Rosenbrock23())
 
     @test sol[s.mass.flange.v][end]≈-0.1 * 10 atol=1e-3
+    @test sol[s.free.f][end] ≈ 100 * 10
 end
 
 @testset "spring damper mass fixed" begin
