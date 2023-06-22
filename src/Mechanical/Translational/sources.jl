@@ -36,7 +36,7 @@ Linear 1D position input source
   - `flange`: 1-dim. translational flange
   - `s`: real input 
 """
-@component function Position(; s_0 = 0, name)
+@component function Position(solves_force=true; s_0 = 0, name)
     systems = @named begin
         flange = MechanicalPort()
         s = RealInput()
@@ -46,16 +46,17 @@ Linear 1D position input source
     vars = @variables x(t) = s_0
 
     eqs = [
-        flange.f ~ 0
         D(x) ~ flange.v
         s.u ~ x
         ]
+
+    !solves_force && push!(eqs, 0 ~ flange.f)
 
     ODESystem(eqs, t, vars, pars; name, systems, defaults = [flange.v => 0, s.u => s_0])
 end
 
 
-@component function Velocity(; name)
+@component function Velocity(solves_force=true; name)
     systems = @named begin
         flange = MechanicalPort()
         v = RealInput()
@@ -65,15 +66,16 @@ end
     vars = []
 
     eqs = [
-        flange.f ~ 0
         v.u ~ flange.v
         ]
+
+    !solves_force && push!(eqs, 0 ~ flange.f)
 
     ODESystem(eqs, t, vars, pars; name, systems, defaults = [flange.v => 0])
 end
 
 
-@component function Acceleration(; s_0 = 0, name)
+@component function Acceleration(solves_force=true; s_0 = 0, name)
     systems = @named begin
         flange = MechanicalPort()
         a = RealInput()
@@ -83,9 +85,10 @@ end
     vars = @variables v(t) = 0
 
     eqs = [
-        flange.f ~ 0
         v ~ flange.v
         D(v) ~ a.u]
+
+    !solves_force && push!(eqs, 0 ~ flange.f)
 
     ODESystem(eqs, t, vars, pars; name, systems, defaults = [flange.v => 0])
 end
