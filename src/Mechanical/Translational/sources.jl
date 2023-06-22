@@ -45,8 +45,47 @@ Linear 1D position input source
     pars = @parameters s_0 = s_0
     vars = @variables x(t) = s_0
 
-    eqs = [D(x) ~ flange.v
-        s.u ~ x]
+    eqs = [
+        flange.f ~ 0
+        D(x) ~ flange.v
+        s.u ~ x
+        ]
 
     ODESystem(eqs, t, vars, pars; name, systems, defaults = [flange.v => 0, s.u => s_0])
+end
+
+
+@component function Velocity(; name)
+    systems = @named begin
+        flange = MechanicalPort()
+        v = RealInput()
+    end
+
+    pars = []
+    vars = []
+
+    eqs = [
+        flange.f ~ 0
+        v.u ~ flange.v
+        ]
+
+    ODESystem(eqs, t, vars, pars; name, systems, defaults = [flange.v => 0])
+end
+
+
+@component function Acceleration(; s_0 = 0, name)
+    systems = @named begin
+        flange = MechanicalPort()
+        a = RealInput()
+    end
+
+    pars = []
+    vars = @variables v(t) = 0
+
+    eqs = [
+        flange.f ~ 0
+        v ~ flange.v
+        D(v) ~ a.u]
+
+    ODESystem(eqs, t, vars, pars; name, systems, defaults = [flange.v => 0])
 end
