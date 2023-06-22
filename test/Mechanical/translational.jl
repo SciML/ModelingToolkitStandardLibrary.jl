@@ -17,7 +17,7 @@ D = Differential(t)
         end
 
         eqs = [connect(a.output, acc.a)
-               connect(mass.flange, acc.flange, free.flange)]
+            connect(mass.flange, acc.flange, free.flange)]
 
         ODESystem(eqs, t, [], []; name, systems)
     end

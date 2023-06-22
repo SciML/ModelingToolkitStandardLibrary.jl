@@ -11,7 +11,7 @@ Use to close a system that has un-connected `MechanicalPort`'s where the force s
     @named flange = MechanicalPort()
     vars = @variables f(t) = 0
     eqs = [
-        flange.f ~ f
+        flange.f ~ f,
     ]
     return compose(ODESystem(eqs, t, vars, []; name, defaults = [flange.v => 0]),
         flange)

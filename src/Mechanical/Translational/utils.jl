@@ -1,4 +1,4 @@
-@connector function MechanicalPort(; name, f_int=0, v_int=0)
+@connector function MechanicalPort(; name, f_int = 0, v_int = 0)
     pars = @parameters begin
         f_int = f_int
         v_int = v_int
@@ -7,7 +7,7 @@
         v(t) = v_int
         f(t), [connect = Flow]
     end
-    ODESystem(Equation[], t, vars, pars; name, defaults=[f=>f_int])
+    ODESystem(Equation[], t, vars, pars; name, defaults = [f => f_int])
 end
 Base.@doc """
     MechanicalPort(;name)
