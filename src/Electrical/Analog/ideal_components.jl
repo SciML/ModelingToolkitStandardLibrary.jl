@@ -8,10 +8,9 @@ node.
 
   - `g`
 """
-@component function Ground(; name)
-    @named g = Pin()
-    eqs = [g.v ~ 0]
-    ODESystem(eqs, t, [], []; systems = [g], name = name)
+@model Ground begin # (; name)
+    @components begin g = Pin() end
+    @equations begin g.v ~ 0 end
 end
 
 """
