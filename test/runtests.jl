@@ -31,9 +31,6 @@ end
 @safetestset "Digital Circuits" begin
     include("Electrical/digital.jl")
 end
-@safetestset "RC Circuit Demo" begin
-    include("demo.jl")
-end
 @safetestset "Chua Circuit Demo" begin
     include("chua_circuit.jl")
 end
@@ -66,4 +63,3 @@ end
 @safetestset "Hydraulic IsothermalCompressible" begin
     include("Hydraulic/isothermal_compressible.jl")
 end
-

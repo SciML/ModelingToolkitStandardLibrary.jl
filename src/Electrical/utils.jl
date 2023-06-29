@@ -32,7 +32,7 @@ Component with two electrical pins `p` and `n` and current `i` flows from `p` to
   - `p` Positive pin
   - `n` Negative pin
 """
-@model OnePort begin
+@mtkmodel OnePort begin
     @components begin
         p = Pin()
         n = Pin()

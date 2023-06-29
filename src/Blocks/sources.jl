@@ -69,7 +69,7 @@ Generate constant signal.
 
   - `output`
 """
-@model Constant begin
+@mtkmodel Constant begin
     @components begin
         output = RealOutput()
     end

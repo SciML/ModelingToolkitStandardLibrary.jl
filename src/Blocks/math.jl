@@ -12,7 +12,7 @@ Output the product of a gain value with the input signal.
   - `input`
   - `output`
 """
-@model Gain begin
+@mtkmodel Gain begin
     @extend u, y = siso = SISO()
     @parameters begin
         k, [description = "Gain function"]
@@ -79,7 +79,7 @@ Output difference between reference input (input1) and feedback input (input2).
   - `input2`
   - `output`
 """
-@model Feedback begin
+@mtkmodel Feedback begin
     @components begin
         input1 = RealInput()
         input2 = RealInput()

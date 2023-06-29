@@ -11,7 +11,7 @@ Flange fixed in housing at a given angle.
 
   - `phi0`: [`rad`] Fixed offset angle of housing
 """
-@model Fixed begin
+@mtkmodel Fixed begin
     @components begin
         flange = Flange()
     end
@@ -115,7 +115,7 @@ Linear 1D rotational damper
 
   - `d`: [`N.m.s/rad`] Damping constant
 """
-@model Damper begin
+@mtkmodel Damper begin
     @extend w_rel, tau = partial_comp = PartialCompliantWithRelativeStates()
     begin
         @symcheck d > 0 || throw(ArgumentError("Expected `d` to be positive"))

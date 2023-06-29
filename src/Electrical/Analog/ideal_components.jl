@@ -8,7 +8,7 @@ node.
 
   - `g`
 """
-@model Ground begin
+@mtkmodel Ground begin
     @components begin
         g = Pin()
     end
@@ -35,7 +35,7 @@ See [OnePort](@ref)
 
   - `R`: [`Ohm`] Resistance
 """
-@model Resistor begin
+@mtkmodel Resistor begin
     @extend v, i = oneport = OnePort()
     @parameters begin
         R
@@ -63,7 +63,7 @@ See [OnePort](@ref)
 
   - `G`: [`S`] Conductance
 """
-@model Conductor begin
+@mtkmodel Conductor begin
     @extend v, i = oneport = OnePort()
     @parameters begin
         G
@@ -92,7 +92,7 @@ Creates an ideal capacitor.
   - `C`: [`F`] Capacitance
   - `v`: [`V`] Initial voltage of capacitor
 """
-@model Capacitor begin
+@mtkmodel Capacitor begin
     @parameters begin
       C
     end
@@ -124,7 +124,7 @@ See [OnePort](@ref)
   - `L`: [`H`] Inductance
   - `i`: [`A`] Initial current through inductor
 """
-@model Inductor begin # name, L, i_start = 0.0)
+@mtkmodel Inductor begin # name, L, i_start = 0.0)
     @parameters begin
       L
     end
@@ -244,7 +244,7 @@ Electromotoric force (electric/mechanic transformer)
 
   - `k`: [`N⋅m/A`] Transformation coefficient
 """
-@model EMF begin
+@mtkmodel EMF begin
     @components begin
         p = Pin()
         n = Pin()

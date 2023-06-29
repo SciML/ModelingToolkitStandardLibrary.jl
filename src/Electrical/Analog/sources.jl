@@ -13,7 +13,7 @@ See [OnePort](@ref)
   - `n` Negative pin
   - `V` [RealInput](@ref) Input for the voltage control signal, i.e. `V ~ p.v - n.v`
 """
-@model Voltage begin
+@mtkmodel Voltage begin
     @extend v, i = oneport = OnePort()
     @components begin
         V = RealInput()
@@ -38,7 +38,7 @@ See [OnePort](@ref)
   - `n` Negative pin
   - `I` [RealInput](@ref) Input for the current control signal, i.e. `I ~ p.i
 """
-@model Current begin
+@mtkmodel Current begin
     @extend v, i = oneport = OnePort()
     @components begin
         I = RealInput()

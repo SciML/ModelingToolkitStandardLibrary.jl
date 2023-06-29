@@ -26,7 +26,7 @@ Ideal sensor to measure the absolute flange angular velocity
   - `flange`: [Flange](@ref) Flange of shaft from which sensor information shall be measured
   - `w`: [RealOutput](@ref) Absolute angular velocity of flange
 """
-@model SpeedSensor begin
+@mtkmodel SpeedSensor begin
     @components begin
         flange = Flange()
         w = RealOutput()

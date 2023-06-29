@@ -57,7 +57,7 @@ D = Differential(t)
         ])
     sys = structural_simplify(model)
 
-    prob = ODEProblem(sys, [], (0, 6.0))
+    prob = ODEProblem(sys, Pair[], (0, 6.0))
     sol = solve(prob, Rodas4())
     @test sol.retcode == Success
     # EMF equations
