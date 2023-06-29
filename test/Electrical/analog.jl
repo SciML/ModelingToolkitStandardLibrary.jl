@@ -74,7 +74,7 @@ end
     @named model = ODESystem(connections, t,
         systems = [R0, R1, R2, source, short, voltage, ground])
     sys = structural_simplify(model)
-    prob = ODEProblem(sys, Pair[], (0, 2.0))
+    prob = ODEProblem(sys, Pair[R2.i => 0.0], (0, 2.0))
     sol = solve(prob, Rodas4()) # has no state; does not work with Tsit5
     @test sol.retcode == Success
     @test sol[short.v] == sol[R0.v] == zeros(length(sol.t))
@@ -124,7 +124,7 @@ end
     @named model = ODESystem(connections, t;
         systems = [resistor, inductor, source, voltage, ground])
     sys = structural_simplify(model)
-    prob = ODAEProblem(sys, [inductor.i => 0.0, inductor.i_start => 0.0], (0.0, 10.0))
+    prob = ODAEProblem(sys, [inductor.i => 0.0], (0.0, 10.0))
     sol = solve(prob, Tsit5())
 
     # Plots.plot(sol; vars=[inductor.i, inductor.i])
