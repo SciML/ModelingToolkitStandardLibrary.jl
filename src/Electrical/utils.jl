@@ -1,4 +1,4 @@
-@model Pin begin
+@connector Pin begin
     v(t)                    # Potential at the pin [V]
     i(t), [connect = Flow]    # Current flowing into the pin [A]
 end
