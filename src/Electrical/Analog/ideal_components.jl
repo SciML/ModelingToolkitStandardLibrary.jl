@@ -8,10 +8,13 @@ node.
 
   - `g`
 """
-@component function Ground(; name)
-    @named g = Pin()
-    eqs = [g.v ~ 0]
-    ODESystem(eqs, t, [], []; systems = [g], name = name)
+@model Ground begin
+    @components begin
+        g = Pin()
+    end
+    @equations begin
+        g.v ~ 0
+    end
 end
 
 """
@@ -32,14 +35,14 @@ See [OnePort](@ref)
 
   - `R`: [`Ohm`] Resistance
 """
-@component function Resistor(; name, R)
-    @named oneport = OnePort()
-    @unpack v, i = oneport
-    pars = @parameters R = R
-    eqs = [
-        v ~ i * R,
-    ]
-    extend(ODESystem(eqs, t, [], pars; name = name), oneport)
+@model Resistor begin
+    @extend v, i = oneport = OnePort()
+    @parameters begin
+        R
+    end
+    @equations begin
+        v ~ i * R
+    end
 end
 
 """
@@ -60,18 +63,18 @@ See [OnePort](@ref)
 
   - `G`: [`S`] Conductance
 """
-@component function Conductor(; name, G)
-    @named oneport = OnePort()
-    @unpack v, i = oneport
-    pars = @parameters G = G
-    eqs = [
-        i ~ v * G,
-    ]
-    extend(ODESystem(eqs, t, [], pars; name = name), oneport)
+@model Conductor begin
+    @extend v, i = oneport = OnePort()
+    @parameters begin
+        G
+    end
+    @equations begin
+        i ~ v * G
+    end
 end
 
 """
-    Capacitor(; name, C)
+    Capacitor(; name, C, v_start)
 
 Creates an ideal capacitor.
 
@@ -87,20 +90,23 @@ Creates an ideal capacitor.
 # Parameters:
 
   - `C`: [`F`] Capacitance
-  - `v_start`: [`V`] Initial voltage of capacitor
+  - `v`: [`V`] Initial voltage of capacitor
 """
-@component function Capacitor(; name, C, v_start = 0.0)
-    @named oneport = OnePort(; v_start = v_start)
-    @unpack v, i = oneport
-    pars = @parameters C = C
-    eqs = [
-        D(v) ~ i / C,
-    ]
-    extend(ODESystem(eqs, t, [], pars; name = name), oneport)
+@model Capacitor begin
+    @parameters begin
+      C
+    end
+    @variables begin
+      v
+    end
+    @extend v, i = oneport = OnePort(; v = v)
+    @equations begin
+        D(v) ~ i / C
+    end
 end
 
 """
-    Inductor(; name, L)
+    Inductor(; name, L, i_start)
 
 Creates an ideal Inductor.
 
@@ -116,16 +122,19 @@ See [OnePort](@ref)
 # Parameters:
 
   - `L`: [`H`] Inductance
-  - `i_start`: [`A`] Initial current through inductor
+  - `i`: [`A`] Initial current through inductor
 """
-@component function Inductor(; name, L, i_start = 0.0)
-    @named oneport = OnePort(; i_start = i_start)
-    @unpack v, i = oneport
-    pars = @parameters L = L
-    eqs = [
-        D(i) ~ 1 / L * v,
-    ]
-    extend(ODESystem(eqs, t, [], pars; name = name), oneport)
+@model Inductor begin # name, L, i_start = 0.0)
+    @parameters begin
+      L
+    end
+    @variables begin
+      i
+    end
+    @extend v, i = oneport = OnePort(; i = i)
+    @equations begin
+        D(i) ~ 1 / L * v
+    end
 end
 
 """
@@ -213,7 +222,7 @@ Temperature dependent electrical resistor
 end
 
 """
-    EMF(;name, k)
+    EMF(; name, k)
 
 Electromotoric force (electric/mechanic transformer)
 
@@ -235,19 +244,29 @@ Electromotoric force (electric/mechanic transformer)
 
   - `k`: [`N⋅m/A`] Transformation coefficient
 """
-@component function EMF(; name, k)
-    @named p = Pin()
-    @named n = Pin()
-    @named flange = Flange()
-    @named support = Support()
-    @parameters k = k
-    @variables v(t)=0.0 i(t)=0.0 phi(t)=0.0 w(t)=0.0
-    eqs = [v ~ p.v - n.v
+@model EMF begin
+    @components begin
+        p = Pin()
+        n = Pin()
+        flange = Flange()
+        support = Support()
+    end
+    @parameters begin
+        k
+    end
+    @variables begin
+        v(t) = 0.0
+        i(t) = 0.0
+        phi(t) = 0.0
+        w(t) = 0.0
+    end
+    @equations begin
+        v ~ p.v - n.v
         0 ~ p.i + n.i
         i ~ p.i
         phi ~ flange.phi - support.phi
         D(phi) ~ w
         k * w ~ v
-        flange.tau ~ -k * i]
-    ODESystem(eqs, t, [v, i, phi, w], [k]; name = name, systems = [p, n, flange, support])
+        flange.tau ~ -k * i
+    end
 end

@@ -41,7 +41,7 @@ end
 Constant torque source
 
 # State variables:
-  
+
 - `phi_support(t)`: [`rad`] Absolute angle of support flange, only available if `use_support = true`
 - `tau`: Accelerating torque acting at flange (= -flange.tau)
 - `w`: Angular velocity of flange with respect to support (= der(phi))
@@ -70,7 +70,7 @@ function ConstantTorque(; name, tau_constant, use_support = false)
 end
 
 """
-    Speed(; name, use_support=false, exact=false, f_crit=50) 
+    Speed(; name, use_support=false, exact=false, f_crit=50)
 
 Forced movement of a flange according to a reference angular velocity signal
 

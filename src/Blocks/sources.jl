@@ -69,13 +69,16 @@ Generate constant signal.
 
   - `output`
 """
-@component function Constant(; name, k = 1)
-    @named output = RealOutput()
-    pars = @parameters k=k [description = "Constant output value of block $name"]
-    eqs = [
-        output.u ~ k,
-    ]
-    compose(ODESystem(eqs, t, [], pars; name = name), [output])
+@model Constant begin
+    @components begin
+        output = RealOutput()
+    end
+    @parameters begin
+        k, [description = "Constant output value of block $name"]
+    end
+    @equations begin
+        output.u ~ k
+    end
 end
 
 """
@@ -548,7 +551,7 @@ end
 """
     SampledData(; name, buffer)
 
-data input component.  
+data input component.
 
 # Parameters:
   - `buffer`: a `Parameter` type which holds the data and sample time

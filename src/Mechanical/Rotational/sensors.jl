@@ -26,12 +26,15 @@ Ideal sensor to measure the absolute flange angular velocity
   - `flange`: [Flange](@ref) Flange of shaft from which sensor information shall be measured
   - `w`: [RealOutput](@ref) Absolute angular velocity of flange
 """
-@component function SpeedSensor(; name)
-    @named flange = Flange()
-    @named w = RealOutput()
-    eqs = [D(flange.phi) ~ w.u
-        flange.tau ~ 0]
-    return ODESystem(eqs, t, [], []; name = name, systems = [flange, w])
+@model SpeedSensor begin
+    @components begin
+        flange = Flange()
+        w = RealOutput()
+    end
+    @equations begin
+        D(flange.phi) ~ w.u
+        flange.tau ~ 0
+    end
 end
 
 """

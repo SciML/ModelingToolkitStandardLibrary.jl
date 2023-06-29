@@ -11,11 +11,16 @@ Flange fixed in housing at a given angle.
 
   - `phi0`: [`rad`] Fixed offset angle of housing
 """
-@component function Fixed(; name, phi0 = 0.0)
-    @named flange = Flange()
-    @parameters phi0=phi0 [description = "Fixed offset angle of flange"]
-    eqs = [flange.phi ~ phi0]
-    return compose(ODESystem(eqs, t, [], [phi0]; name = name), flange)
+@model Fixed begin
+    @components begin
+        flange = Flange()
+    end
+    @parameters begin
+        phi0, [description = "Fixed offset angle of flange"]
+    end
+    @equations begin
+        flange.phi ~ phi0
+    end
 end
 
 """
@@ -110,15 +115,18 @@ Linear 1D rotational damper
 
   - `d`: [`N.m.s/rad`] Damping constant
 """
-@component function Damper(; name, d)
-    @named partial_comp = PartialCompliantWithRelativeStates()
-    @unpack w_rel, tau = partial_comp
-    @symcheck d > 0 || throw(ArgumentError("Expected `d` to be positive"))
-    pars = @parameters d=d [description = "Damping constant of $name"]
-    eqs = [tau ~ d * w_rel]
-    extend(ODESystem(eqs, t, [], pars; name = name), partial_comp)
+@model Damper begin
+    @extend w_rel, tau = partial_comp = PartialCompliantWithRelativeStates()
+    begin
+        @symcheck d > 0 || throw(ArgumentError("Expected `d` to be positive"))
+    end
+    @parameters begin
+        d, [description = "Damping constant"]
+    end
+    @equations begin
+        tau ~ d * w_rel
+    end
 end
-
 """
     SpringDamper(;name, d)
 

@@ -13,6 +13,12 @@
     end
     ODESystem(Equation[], t, [u...], []; name = name)
 end
+
+#=
+@connector RealInput begin
+    u(t), [input = true]
+end
+=#
 @doc """
     RealInput(;name, nin, u_start)
 
@@ -25,7 +31,6 @@ Connector with one input signal of type Real.
 # States:
 - `u`: Value of the connector; if nin=1 this is a scalar
 """ RealInput
-
 @connector function RealOutput(; name, nout = 1, u_start = nout > 1 ? zeros(nout) : 0.0)
     if nout == 1
         @variables u(t)=u_start [
@@ -41,6 +46,10 @@ Connector with one input signal of type Real.
     end
     ODESystem(Equation[], t, [u...], []; name = name)
 end
+
+#=@connector RealOutput begin
+    u(t), [output = true]
+end=#
 @doc """
     RealOutput(;name, nout, u_start)
 

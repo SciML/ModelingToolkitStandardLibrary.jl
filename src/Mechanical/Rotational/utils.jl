@@ -1,8 +1,8 @@
-@connector function Flange(; name)
-    sts = @variables(phi(t), [description = "Rotation angle of flange $name"],
-        tau(t), [connect = Flow, description = "Cut torque in flange $name"],)
-    ODESystem(Equation[], t, sts, [], name = name, defaults = Dict(phi => 0.0, tau => 0.0))
+@connector Flange begin
+    phi(t), [description = "Rotation angle of flange"]
+    tau(t), [connect = Flow, description = "Cut torque in flange"]
 end
+
 Base.@doc """
     Support(;name)
 

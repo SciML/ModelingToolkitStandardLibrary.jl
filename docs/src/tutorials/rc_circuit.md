@@ -29,7 +29,7 @@ rc_eqs = [connect(constant.output, source.V)
 @named rc_model = ODESystem(rc_eqs, t,
     systems = [resistor, capacitor, constant, source, ground])
 sys = structural_simplify(rc_model)
-prob = ODAEProblem(sys, Pair[], (0, 10.0))
+prob = ODAEProblem(sys, Pair[capacitor.v_start => 1], (0, 10.0))
 sol = solve(prob, Tsit5())
 plot(sol, vars = [capacitor.v, resistor.i],
     title = "RC Circuit Demonstration",

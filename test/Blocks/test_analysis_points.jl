@@ -6,7 +6,7 @@ using ModelingToolkit: get_eqs, vars, @set!, get_iv
 using ControlSystemsBase
 
 @named P = FirstOrder(k = 1, T = 1)
-@named C = Gain(-1)
+@named C = Gain(; k = -1)
 t = ModelingToolkit.get_iv(P)
 
 @test_logs (:warn,) (:warn,) connect(P.input, :bad_connection, C.output)
@@ -106,7 +106,7 @@ matrices2, _ = linearize(sys, :plant_input, [P.output.u])
 ## Test with subsystems
 
 @named P = FirstOrder(k = 1, T = 1)
-@named C = Gain(1)
+@named C = Gain(; k = 1)
 @named add = Blocks.Add(k2 = -1)
 t = ModelingToolkit.get_iv(P)
 
@@ -303,7 +303,7 @@ G = CS.feedback(Pss, Kss, pos_feedback = true)
 
 ## Multiple analysis points ====================================================
 @named P = FirstOrder(k = 1, T = 1)
-@named C = Gain(1)
+@named C = Gain(; k = 1)
 @named add = Blocks.Add(k2 = -1)
 t = ModelingToolkit.get_iv(P)
 

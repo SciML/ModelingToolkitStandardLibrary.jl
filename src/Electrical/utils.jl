@@ -1,9 +1,6 @@
-@connector function Pin(; name)
-    sts = @variables begin
-        v(t)                    # Potential at the pin [V]
-        i(t), [connect = Flow]    # Current flowing into the pin [A]
-    end
-    ODESystem(Equation[], t, sts, [], name = name, defaults = Dict(v => 1.0, i => 1.0))
+@model Pin begin
+    v(t)                    # Potential at the pin [V]
+    i(t), [connect = Flow]    # Current flowing into the pin [A]
 end
 @doc """
     Pin(; name)
@@ -16,7 +13,7 @@ A pin in an analog circuit.
 """ Pin
 
 """
-    OnePort(; name, v_start=0.0, i_start=0.0)
+    OnePort(; name, v = 0.0, i = 0.0)
 
 Component with two electrical pins `p` and `n` and current `i` flows from `p` to `n`.
 
@@ -27,25 +24,28 @@ Component with two electrical pins `p` and `n` and current `i` flows from `p` to
 
 # Parameters:
 
-  - `v_start`: [`V`] Initial voltage across the component
-  - `i_start`: [`A`] Initial current through the component
+  - `v`: [`V`] Initial voltage across the component
+  - `i`: [`A`] Initial current through the component
 
 # Connectors:
 
   - `p` Positive pin
   - `n` Negative pin
 """
-@component function OnePort(; name, v_start = 0.0, i_start = 0.0)
-    @named p = Pin()
-    @named n = Pin()
-    sts = @variables begin
-        v(t) = v_start
-        i(t) = i_start
+@model OnePort begin
+    @components begin
+        p = Pin()
+        n = Pin()
     end
-    eqs = [v ~ p.v - n.v
+    @variables begin
+        v(t)
+        i(t)
+    end
+    @equations begin
+        v ~ p.v - n.v
         0 ~ p.i + n.i
-        i ~ p.i]
-    return compose(ODESystem(eqs, t, sts, []; name = name), p, n)
+        i ~ p.i
+    end
 end
 
 """

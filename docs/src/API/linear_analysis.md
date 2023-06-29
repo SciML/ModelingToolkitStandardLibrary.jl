@@ -57,7 +57,7 @@ The following example builds a simple closed-loop system with a plant $P$ and a 
 ```@example LINEAR_ANALYSIS
 using ModelingToolkitStandardLibrary.Blocks, ModelingToolkit
 @named P = FirstOrder(k = 1, T = 1) # A first-order system with pole in -1
-@named C = Gain(-1)             # A P controller
+@named C = Gain(; k = -1)             # A P controller
 t = ModelingToolkit.get_iv(P)
 eqs = [connect(P.output, :plant_output, C.input)  # Connect with an automatically created analysis point called :plant_output
     connect(C.output, :plant_input, P.input)]

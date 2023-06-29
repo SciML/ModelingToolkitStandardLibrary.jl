@@ -1,5 +1,5 @@
 """
-    Gain(k; name)
+    Gain(; name, k)
 
 Output the product of a gain value with the input signal.
 
@@ -12,15 +12,16 @@ Output the product of a gain value with the input signal.
   - `input`
   - `output`
 """
-@component function Gain(k; name)
-    @named siso = SISO()
-    @unpack u, y = siso
-    pars = @parameters k=k [description = "Gain of Gain $name"]
-    eqs = [
-        y ~ k * u,
-    ]
-    extend(ODESystem(eqs, t, [], pars; name = name), siso)
+@model Gain begin
+    @extend u, y = siso = SISO()
+    @parameters begin
+        k, [description = "Gain function"]
+    end
+    @equations begin
+        y ~ k * u
+    end
 end
+Gain.f(k; name) = Gain.f(; k, name)
 
 """
     MatrixGain(K::AbstractArray; name)
@@ -78,14 +79,15 @@ Output difference between reference input (input1) and feedback input (input2).
   - `input2`
   - `output`
 """
-@component function Feedback(; name)
-    @named input1 = RealInput()
-    @named input2 = RealInput()
-    @named output = RealOutput()
-    eqs = [
-        output.u ~ input1.u - input2.u,
-    ]
-    return compose(ODESystem(eqs, t, [], []; name = name), input1, input2, output)
+@model Feedback begin
+    @components begin
+        input1 = RealInput()
+        input2 = RealInput()
+        output = RealOutput()
+    end
+    @equations begin
+        output.u ~ input1.u - input2.u
+    end
 end
 
 """

@@ -43,7 +43,7 @@ using OrdinaryDiffEq: ReturnCode.Success
             power_sensor,
         ])
     sys = structural_simplify(model)
-    prob = ODAEProblem(sys, Pair[], (0.0, 10.0))
+    prob = ODAEProblem(sys, Pair[capacitor.v => 0.0], (0.0, 10.0))
     sol = solve(prob, Tsit5())
 
     # Plots.plot(sol; vars=[capacitor.v, voltage_sensor.v])
@@ -124,7 +124,7 @@ end
     @named model = ODESystem(connections, t;
         systems = [resistor, inductor, source, voltage, ground])
     sys = structural_simplify(model)
-    prob = ODAEProblem(sys, [inductor.i => 0.0], (0.0, 10.0))
+    prob = ODAEProblem(sys, [inductor.i => 0.0, inductor.i_start => 0.0], (0.0, 10.0))
     sol = solve(prob, Tsit5())
 
     # Plots.plot(sol; vars=[inductor.i, inductor.i])
@@ -159,7 +159,7 @@ end
         @named model = ODESystem(connections, t;
             systems = [resistor, capacitor, source, ground, voltage])
         sys = structural_simplify(model)
-        prob = ODAEProblem(sys, [capacitor.v => 10.0], (0.0, 10.0))
+        prob = ODAEProblem(sys, [capacitor.v => 0.0], (0.0, 10.0))
         sol = solve(prob, Tsit5())
         @test sol.retcode == Success
         sol = solve(prob, Rodas4())
@@ -292,7 +292,7 @@ _damped_sine_wave(x, f, A, st, ϕ, d) = exp((st - x) * d) * A * sin(2 * π * f *
             ])
         vsys = structural_simplify(vmodel)
 
-        u0 = []
+        u0 = [cap.v => 0.0]
 
         prob = ODAEProblem(vsys, u0, (0, 10.0))
         sol = solve(prob, dt = 0.1, Tsit5())
@@ -356,7 +356,7 @@ end
             ])
         isys = structural_simplify(model)
 
-        u0 = []
+        u0 = [cap.v => 0.0]
 
         prob = ODAEProblem(isys, u0, (0, 10.0))
         sol = solve(prob, dt = 0.1, Tsit5())
