@@ -10,8 +10,8 @@ D = Differential(t)
 @testset "Free" begin
     function System(; name)
         systems = @named begin
-            acc = TV.Acceleration(false)
-            a = Constant(k = -10)
+            acc = TV.Acceleration()
+            a = Constant(; k = -10)
             mass = TV.Mass(; m = 100)
             free = TV.Free()
         end
@@ -33,7 +33,7 @@ D = Differential(t)
 end
 
 @testset "spring damper mass fixed" begin
-    @named dv = TV.Damper(d = 1, v_a_0 = 1)
+    @named dv = TV.Damper(d = 1, flange_a.v = 1)
     @named dp = TP.Damper(d = 1, v_a_0 = 1, s_a_0 = 3, s_b_0 = 1)
 
     @named sv = TV.Spring(k = 1, v_a_0 = 1, delta_s_0 = 1)
@@ -70,7 +70,7 @@ end
 end
 
 @testset "driven spring damper mass" begin
-    @named dv = TV.Damper(d = 1, v_a_0 = 1)
+    @named dv = TV.Damper(d = 1, flange_a.v = 1)
     @named dp = TP.Damper(d = 1, v_a_0 = 1, s_a_0 = 3, s_b_0 = 1)
 
     @named sv = TV.Spring(k = 1, v_a_0 = 1, delta_s_0 = 1)
@@ -119,8 +119,8 @@ end
 @testset "sources & sensors" begin
     function System(; name)
         systems = @named begin
-            pos = TV.Position(; s_0 = 0)
-            pos_sensor = TV.PositionSensor(; s_0 = 1)
+            pos = TV.Position(; s.u_start = 0)
+            pos_sensor = TV.PositionSensor(; s = 1)
             force = TV.Force()
             force_sensor = TV.ForceSensor()
 

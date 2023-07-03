@@ -7,18 +7,20 @@ Use to close a system that has un-connected `MechanicalPort`'s where the force s
 
   - `flange`: 1-dim. translational flange
 """
-@component function Free(; name)
-    @named flange = MechanicalPort()
-    vars = @variables f(t) = 0
-    eqs = [
-        flange.f ~ f,
-    ]
-    return compose(ODESystem(eqs, t, vars, []; name, defaults = [flange.v => 0]),
-        flange)
+@mtkmodel Free begin
+    @components begin
+        flange = MechanicalPort()
+    end
+    @variables begin
+        f(t) = 0.0
+    end
+    @equations begin
+        flange.f ~ f
+    end
 end
 
 """
-    Fixed(;name)
+    Fixed(; name)
 
 Fixes a flange position (velocity = 0)
 
@@ -26,11 +28,13 @@ Fixes a flange position (velocity = 0)
 
   - `flange`: 1-dim. translational flange
 """
-@component function Fixed(; name)
-    @named flange = MechanicalPort()
-    eqs = [flange.v ~ 0]
-    return compose(ODESystem(eqs, t, [], []; name = name, defaults = [flange.v => 0]),
-        flange)
+@mtkmodel Fixed begin
+    @components begin
+        flange = MechanicalPort()
+    end
+    @equations begin
+        flange.v ~ 0
+    end
 end
 
 """
@@ -175,41 +179,37 @@ const ABS = Val(:absolute)
 end
 
 """
-    Damper(; name, d, v_a_0=0.0, v_b_0=0.0)
+    Damper(; name, d, flange_a.v = 0.0, flange_b.v = 0.0)
 
 Linear 1D translational damper
 
 # Parameters:
 
   - `d`: [N.s/m] Damping constant
-  - `v_a_0`: [m/s] Initial value of absolute linear velocity at flange_a (default 0 m/s)
-  - `v_b_0`: [m/s] Initial value of absolute linear velocity at flange_b (default 0 m/s)
 
 # Connectors:
 
-  - `flange_a`: 1-dim. translational flange on one side of damper
-  - `flange_b`: 1-dim. translational flange on opposite side of damper
+  - `flange_a`: 1-dim. translational flange on one side of damper. Initial value of state `v` is set to 0.0 m/s.
+  - `flange_b`: 1-dim. translational flange on opposite side of damper. Initial value of state `v` is set to 0.0 m/s.
 """
-@component function Damper(; name, d, v_a_0 = 0.0, v_b_0 = 0.0)
-    pars = @parameters begin
-        d = d
-        v_a_0 = v_a_0
-        v_b_0 = v_b_0
+@mtkmodel Damper begin
+    @parameters begin
+        d
     end
-    vars = @variables begin
-        v(t) = v_a_0 - v_b_0
+    @variables begin
+        v(t)
         f(t) = 0.0
     end
 
-    @named flange_a = MechanicalPort()
-    @named flange_b = MechanicalPort()
+    @components begin
+        flange_a = MechanicalPort(; v = 0.0)
+        flange_b = MechanicalPort(; v = 0.0)
+    end
 
-    eqs = [v ~ flange_a.v - flange_b.v
+    @equations begin
+        v ~ flange_a.v - flange_b.v
         f ~ v * d
         flange_a.f ~ +f
-        flange_b.f ~ -f]
-    return compose(ODESystem(eqs, t, vars, pars; name = name,
-            defaults = [flange_a.v => v_a_0, flange_b.v => v_b_0]),
-        flange_a,
-        flange_b) #flange_a.f => +(v_a_0 - v_b_0)*d, flange_b.f => -(v_a_0 - v_b_0)*d
+        flange_b.f ~ -f
+    end
 end

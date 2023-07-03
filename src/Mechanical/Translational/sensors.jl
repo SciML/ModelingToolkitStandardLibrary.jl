@@ -8,47 +8,45 @@ Linear 1D force input sensor.
   - `flange`: 1-dim. translational flange
   - `output`: real output
 """
-@component function ForceSensor(; name)
-    systems = @named begin
+@mtkmodel ForceSensor begin
+    @components begin
         flange = MechanicalPort()
         output = RealOutput()
     end
 
-    vars = pars = []
-    eqs = [
-        flange.f ~ -output.u,
-    ]
-
-    ODESystem(eqs, t, vars, pars; name, systems)
+    @equations begin
+        flange.f ~ -output.u
+    end
 end
 
 """
-    PositionSensor(; s_0 = 0, name)
+    PositionSensor(; s = 0, name)
 
 Linear 1D position input sensor.
 
-# Parameters:
+# States:
 
-- `s_0`: [m] initial value of absolute position
+- `s`: [m] absolute position (with initial value of 0.0)
 
 # Connectors:
 
   - `flange`: 1-dim. translational flange
   - `output`: real output
 """
-@component function PositionSensor(; s_0 = 0, name)
-    systems = @named begin
+@mtkmodel PositionSensor begin
+    @components begin
         flange = MechanicalPort()
         output = RealOutput()
     end
 
-    pars = @parameters s_0 = s_0
-    vars = @variables s(t) = s_0
+    @variables begin
+        s(t) = 0.0
+    end
 
-    eqs = [D(s) ~ flange.v
+    @equations begin
+        D(s) ~ flange.v
         output.u ~ s
-        flange.f ~ 0]
+        flange.f ~ 0.0
+    end
 
-    ODESystem(eqs, t, vars, pars; name, systems,
-        defaults = [flange.v => 0, output.u => s_0])
 end

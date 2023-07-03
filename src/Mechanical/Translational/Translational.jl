@@ -4,6 +4,7 @@ Library to model 1-dimensional, translational mechanical systems
 module Translational
 
 using ModelingToolkit, Symbolics
+using ModelingToolkit: getdefault
 
 using ModelingToolkitStandardLibrary.Blocks: RealInput, RealOutput
 using IfElse: ifelse
