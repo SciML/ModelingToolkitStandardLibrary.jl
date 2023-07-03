@@ -89,14 +89,17 @@ Creates an ideal capacitor.
   - `C`: [`F`] Capacitance
   - `v_start`: [`V`] Initial voltage of capacitor
 """
-@component function Capacitor(; name, C, v_start = 0.0)
-    @named oneport = OnePort(; v_start = v_start)
-    @unpack v, i = oneport
-    pars = @parameters C = C
-    eqs = [
-        D(v) ~ i / C,
-    ]
-    extend(ODESystem(eqs, t, [], pars; name = name), oneport)
+@mtkmodel Capacitor begin
+    @parameters begin
+        C
+    end
+    @variables begin
+        v
+    end
+    @extend v, i = oneport = OnePort(; v = v)
+    @equations begin
+        D(v) ~ i / C
+    end
 end
 
 """
@@ -118,14 +121,17 @@ See [OnePort](@ref)
   - `L`: [`H`] Inductance
   - `i_start`: [`A`] Initial current through inductor
 """
-@component function Inductor(; name, L, i_start = 0.0)
-    @named oneport = OnePort(; i_start = i_start)
-    @unpack v, i = oneport
-    pars = @parameters L = L
-    eqs = [
-        D(i) ~ 1 / L * v,
-    ]
-    extend(ODESystem(eqs, t, [], pars; name = name), oneport)
+@mtkmodel Inductor begin # name, L, i_start = 0.0)
+    @parameters begin
+        L
+    end
+    @variables begin
+        i
+    end
+    @extend v, i = oneport = OnePort(; i = i)
+    @equations begin
+        D(i) ~ 1 / L * v
+    end
 end
 
 """

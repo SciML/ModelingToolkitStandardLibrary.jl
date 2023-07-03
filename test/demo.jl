@@ -12,7 +12,7 @@ using Test
     @named capacitor = Capacitor(C = C)
     @named voltage = Voltage()
     @named ground = Ground()
-    @named source = Constant()
+    @named source = Constant(k = 1)
 
     rc_eqs = [connect(source.output, voltage.V)
         connect(voltage.p, resistor.p)
