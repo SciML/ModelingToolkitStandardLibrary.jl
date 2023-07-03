@@ -1,8 +1,8 @@
-@connector function Flange(; name)
-    sts = @variables(phi(t), [description = "Rotation angle of flange $name"],
-        tau(t), [connect = Flow, description = "Cut torque in flange $name"],)
-    ODESystem(Equation[], t, sts, [], name = name, defaults = Dict(phi => 0.0, tau => 0.0))
+@connector Flange begin
+    phi(t), [description = "Rotation angle of flange"]
+    tau(t), [connect = Flow, description = "Cut torque in flange"]
 end
+
 Base.@doc """
     Support(;name)
 
@@ -13,9 +13,9 @@ Base.@doc """
 - `tau(t)`: [`N.m`] Cut torque in the flange
 """ Flange
 
-@connector function Support(; name)
-    @named flange = Flange()
-    extend(ODESystem(Equation[], t, [], [], name = name), flange)
+@connector Support begin
+    phi(t), [description = "Rotation angle of flange"]
+    tau(t), [connect = Flow, description = "Cut torque in flange"]
 end
 
 # Base.@doc """
@@ -50,83 +50,76 @@ Support/housing of a 1-dim. rotational shaft
 """ Support
 
 """
-    PartialCompliant(;name, phi_rel_start=0.0, tau_start=0.0)
+    PartialCompliant(;  name, phi_rel = 0.0, tau = 0.0)
 
 Partial model for the compliant connection of two rotational 1-dim. shaft flanges.
 
 # States:
 
-  - `phi_rel(t)`: [`rad`] Relative rotation angle (`flange_b.phi - flange_a.phi`)
-  - `tau(t)`: [`N.m`] Torque between flanges (`flange_b.tau`)
+  - `phi_rel(t)`: [`rad`] Relative rotation angle (`flange_b.phi - flange_a.phi`), initial value defaults to 0.0.
+  - `tau(t)`: [`N.m`] Torque between flanges (`flange_b.tau`), initial value defaults to 0.0.
 
 # Connectors:
 
   - `flange_a` [Flange](@ref)
   - `flange_b` [Flange](@ref)
 
-# Parameters:
-
-  - `phi_rel_start`: [`rad`] Initial relative rotation angle
-  - `tau_start`: [`N.m`] Initial torque between flanges
 """
-@component function PartialCompliant(; name, phi_rel_start = 0.0, tau_start = 0.0)
-    @named flange_a = Flange()
-    @named flange_b = Flange()
-    sts = @variables(phi_rel(t)=phi_rel_start,
-        [description = "Relative rotation angle between flanges"],
-        tau(t)=tau_start, [description = "Torque between flanges"])
-    eqs = [phi_rel ~ flange_b.phi - flange_a.phi
+@mtkmodel PartialCompliant begin
+    @components begin
+        flange_a = Flange()
+        flange_b = Flange()
+    end
+    @variables begin
+        phi_rel(t), [description = "Relative rotation angle between flanges"]
+        tau(t), [description = "Torque between flanges"]
+    end
+    @equations begin
+        phi_rel ~ flange_b.phi - flange_a.phi
         flange_b.tau ~ tau
-        flange_a.tau ~ -tau]
-    return compose(ODESystem(eqs, t, sts, []; name = name), flange_a, flange_b)
+        flange_a.tau ~ -tau
+    end
 end
 
 """
-    PartialCompliantWithRelativeStates(;name, phi_rel_start=0.0, tau_start=0.0)
+    PartialCompliantWithRelativeStates(; name, phi_rel = 0.0, tau = 0.0)
 
 Partial model for the compliant connection of two rotational 1-dim. shaft flanges where the relative angle and speed are used as preferred states
 
 # States:
 
-  - `phi_rel(t)`: [`rad`] Relative rotation angle (= flange_b.phi - flange_a.phi)
-  - `w_rel(t)`: [`rad/s`] Relative angular velocity (= D(phi_rel))
-  - `a_rel(t)`: [`rad/s²`] Relative angular acceleration (= D(w_rel))
-  - `tau(t)`: [`N.m`] Torque between flanges (= flange_b.tau)
+  - `phi_rel(t)`: [`rad`] Relative rotation angle (= flange_b.phi - flange_a.phi). Initial value defaults to 0.0.
+  - `w_rel(t)`: [`rad/s`] Relative angular velocity (= D(phi_rel)). Initial value defaults to 0.0.
+  - `a_rel(t)`: [`rad/s²`] Relative angular acceleration (= D(w_rel)). Initial value defaults to 0.0.
+  - `tau(t)`: [`N.m`] Torque between flanges (= flange_b.tau). Initial value defaults to 0.0.
 
 # Connectors:
 
   - `flange_a` [Flange](@ref)
   - `flange_b` [Flange](@ref)
-
-# Parameters:
-
-  - `phi_rel_start`: [`rad`] Initial relative rotation angle
-  - `w_rel_start`: [`rad/s`] Initial relative angular velocity (= D(phi_rel))
-  - `a_rel_start`: [`rad/s²`] Initial relative angular acceleration (= D(w_rel))
-  - `tau_start`: [`N.m`] Initial torque between flanges
 """
-@component function PartialCompliantWithRelativeStates(; name, phi_rel_start = 0.0,
-    w_start = 0.0,
-    a_start = 0.0, tau_start = 0.0)
-    @named flange_a = Flange()
-    @named flange_b = Flange()
-    sts = @variables(phi_rel(t)=phi_rel_start,
-        [description = "Relative rotation angle between flanges"],
-        w_rel(t)=w_start,
-        [description = "Relative angular velocity between flanges"],
-        a_rel(t)=a_start,
-        [description = "Relative angular acceleration between flanges"],
-        tau(t)=tau_start, [description = "Torque between flanges"],)
-    eqs = [phi_rel ~ flange_b.phi - flange_a.phi
+@mtkmodel PartialCompliantWithRelativeStates begin
+    @components begin
+        flange_a = Flange()
+        flange_b = Flange()
+    end
+    @variables begin
+        phi_rel(t), [description = "Relative rotation angle between flanges"]
+        w_rel(t), [description = "Relative angular velocity between flanges"]
+        a_rel(t), [description = "Relative angular acceleration between flanges"]
+        tau(t), [description = "Torque between flanges"]
+    end
+    @equations begin
+        phi_rel ~ flange_b.phi - flange_a.phi
         D(phi_rel) ~ w_rel
         D(w_rel) ~ a_rel
         flange_b.tau ~ tau
-        flange_a.tau ~ -tau]
-    return compose(ODESystem(eqs, t, sts, []; name = name), flange_a, flange_b)
+        flange_a.tau ~ -tau
+    end
 end
 
 """
-    PartialElementaryOneFlangeAndSupport2(;name, use_support=false)
+    PartialElementaryOneFlangeAndSupport2(; name, use_support = false)
 
 Partial model for a component with one rotational 1-dim. shaft flange and a support used for textual modeling, i.e., for elementary models
 
