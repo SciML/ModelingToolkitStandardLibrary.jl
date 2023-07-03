@@ -55,27 +55,36 @@ Connector with one output signal of type Real.
 """ RealOutput
 
 """
-    SISO(;name, u_start=0.0, y_start=0.0)
+    SISO(;name, u_start = 0.0, y_start = 0.0)
 
 Single input single output (SISO) continuous system block.
 
 # Parameters:
 
-  - `u_start`: Initial value for the input
-  - `y_start`: Initial value for the output
+  - `u`: Initial value for the input
+  - `y`: Initial value for the output
 """
-@component function SISO(; name, u_start = 0.0, y_start = 0.0)
-    @named input = RealInput(u_start = u_start)
-    @named output = RealOutput(u_start = y_start)
-    @variables(u(t)=u_start, [description = "Input of SISO system $name"],
-        y(t)=y_start, [description = "Output of SISO system $name"],)
-    eqs = [u ~ input.u
-        y ~ output.u]
-    return ODESystem(eqs, t, [u, y], []; name = name, systems = [input, output])
+@mtkmodel SISO begin
+    @parameters begin
+        u_start = 0.0
+        y_start = 0.0
+    end
+    @variables begin
+        u(t) = u_start, [description = "Input of SISO system"]
+        y(t) = y_start, [description = "Output of SISO system"]
+    end
+    @components begin
+        input = RealInput(u_start = 0.0)
+        output = RealOutput(u_start = 0.0)
+    end
+    @equations begin
+        u ~ input.u
+        y ~ output.u
+    end
 end
 
 """
-    MIMO(;name, nin=1, nout=1, u_start=zeros(nin), y_start=zeros(nout))
+    MIMO(; name, nin = 1, nout = 1, u_start = zeros(nin), y_start = zeros(nout))
 
 Base class for a multiple input multiple output (MIMO) continuous system block.
 

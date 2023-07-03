@@ -256,7 +256,7 @@ end
         if use_input
             @named input = B.SampledData(Float64)
         else
-            @named input = B.TimeVaryingFunction(f; t)
+            @named input = B.TimeVaryingFunction(f)
         end
 
         push!(systems, input)

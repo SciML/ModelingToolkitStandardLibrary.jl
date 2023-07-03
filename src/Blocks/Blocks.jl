@@ -5,6 +5,7 @@ module Blocks
 using ModelingToolkit, Symbolics
 using IfElse: ifelse
 import ..@symcheck
+using ModelingToolkit: getdefault
 
 @parameters t
 D = Differential(t)
