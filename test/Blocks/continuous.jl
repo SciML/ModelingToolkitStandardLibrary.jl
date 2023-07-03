@@ -13,10 +13,10 @@ an integrator with a constant input is often used together with the system under
 
 @testset "Constant" begin
     @named c = Constant(; k = 1)
-    @named int = Integrator()
+    @named int = Integrator(x = 1)
     @named iosys = ODESystem(connect(c.output, int.input), t, systems = [int, c])
     sys = structural_simplify(iosys)
-    prob = ODEProblem(sys, Pair[int.x => 1.0], (0.0, 1.0))
+    prob = ODEProblem(sys, Pair[], (0.0, 1.0))
     sol = solve(prob, Rodas4())
     @test sol.retcode == Success
     @test all(sol[c.output.u] .≈ 1)
@@ -147,7 +147,7 @@ end
 @testset "PI" begin
     re_val = 2
     @named ref = Constant(; k = re_val)
-    @named pi_controller = PI(k = 1, T = 1)
+    @named pi_controller = PI(int.k = 1, T = 1)
     @named plant = Plant()
     @named fb = Feedback()
     @named model = ODESystem([
@@ -227,8 +227,12 @@ end
 @testset "LimPI" begin
     re_val = 1
     @named ref = Constant(; k = re_val)
-    @named pi_controller_lim = LimPI(k = 3, T = 0.5, u_max = 1.5, u_min = -1.5, Ta = 0.1)
-    @named pi_controller = PI(k = 3, T = 0.5)
+    @named pi_controller_lim = LimPI(k = 3,
+        T = 0.5,
+        u_max = 1.5,
+        u_min = -1.5,
+        Ta = 0.1)
+    @named pi_controller = PI(gainPI.k = 3, T = 0.5)
     @named sat = Limiter(y_max = 1.5, y_min = -1.5)
     @named plant = Plant()
     @named fb = Feedback()
