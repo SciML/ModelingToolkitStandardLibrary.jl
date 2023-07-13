@@ -11,20 +11,20 @@ Flange fixed in housing at a given position.
 
   - `flange: 1-dim. translational flange`
 """
-@component function Fixed(; name, s_0 = 0.0)
-    pars = @parameters s_0 = s_0
-    vars = []
-
-    @named flange = Flange()
-
-    eqs = [flange.s ~ s_0]
-
-    return compose(ODESystem(eqs, t, vars, pars; name = name, defaults = [flange.s => s_0]),
-        flange)
+@mtkmodel Fixed begin#(; name, s_0 = 0.0)
+    @parameters begin
+        s_0
+    end
+    @components begin
+        flange = Flange(; s = s_0)
+    end
+    @equations begin
+        flange.s ~ s_0
+    end
 end
 
 """
-    Mass(; name, m, s_0 = 0.0, v_0 = 0.0)
+    Mass(; name, m, s = 0.0, v = 0.0)
 
 Sliding mass with inertia
 
@@ -43,24 +43,24 @@ Sliding mass with inertia
 
   - `flange: 1-dim. translational flange of mass`
 """
-@component function Mass(; name, m, s_0 = 0.0, v_0 = 0.0)
-    @named flange = Flange()
-    pars = @parameters begin
-        m = m
-        s_0 = s_0
-        v_0 = v_0
+@mtkmodel Mass begin
+    @parameters begin
+        m
     end
-    vars = @variables begin
-        s(t) = s_0
-        v(t) = v_0
-        f(t) = 0
+    @variables begin
+        s(t) = 0.0
+        v(t) = 0.0
+        f(t) = 0.0
     end
-    eqs = [flange.s ~ s
+    @components begin
+        flange = Flange(; s = s)
+    end
+    @equations begin
+        flange.s ~ s
         flange.f ~ f
         D(s) ~ v
-        D(v) ~ f / m]
-    return compose(ODESystem(eqs, t, vars, pars; name = name, defaults = [flange.s => s_0]),
-        flange)
+        D(v) ~ f / m
+    end
 end
 
 const REL = Val(:relative)
@@ -153,7 +153,7 @@ Spring(; name, k, s_a_0 = 0, s_b_0 = 0, l = 0) = Spring(ABS; name, k, s_a_0, s_b
 end
 
 """
-    Damper(; name, d, v_a_0=0.0, v_b_0=0.0, s_a_0 = 0, s_b_0 = 0)
+    Damper(; name, d, v1 =0.0, v2 = 0.0, flange_a.s = 0, flange_b.s = 0)
 
 Linear 1D translational damper
 
@@ -170,33 +170,26 @@ Linear 1D translational damper
   - `flange_a: 1-dim. translational flange on one side of damper`
   - `flange_b: 1-dim. translational flange on opposite side of damper`
 """
-@component function Damper(; name, d, v_a_0 = 0.0, v_b_0 = 0.0, s_a_0 = 0, s_b_0 = 0)
-    pars = @parameters begin
-        d = d
-        s_a_0 = s_a_0
-        s_b_0 = s_b_0
-        v_a_0 = v_a_0
-        v_b_0 = v_b_0
+@mtkmodel Damper begin#(; name, d, v_a_0 = 0.0, v_b_0 = 0.0, s_a_0 = 0, s_b_0 = 0)
+    @parameters begin
+        d
     end
-    vars = @variables begin
-        v1(t) = v_a_0
-        v2(t) = v_b_0
-        f(t) = +(v_a_0 - v_b_0) * d
+    @variables begin
+        v1(t) = 0.0
+        v2(t) = 0.0
+        f(t) = +(v1 - v2) * d
     end
 
-    @named flange_a = Flange()
-    @named flange_b = Flange()
+    @components begin
+        flange_a = Flange(; s = 0.0, f = (v1 - v2) * d)
+        flange_b = Flange(; s = 0.0, f = -(v1 - v2) * d)
+    end
 
-    eqs = [D(flange_a.s) ~ v1
+    @equations begin
+        D(flange_a.s) ~ v1
         D(flange_b.s) ~ v2
         f ~ (v1 - v2) * d
         flange_a.f ~ +f
-        flange_b.f ~ -f]
-    return compose(ODESystem(eqs, t, vars, pars; name = name,
-            defaults = [
-                flange_a.s => s_a_0,
-                flange_b.s => s_b_0,
-                flange_a.f => +(v_a_0 - v_b_0) * d,
-                flange_b.f => -(v_a_0 - v_b_0) * d,
-            ]), flange_a, flange_b)
+        flange_b.f ~ -f
+    end
 end

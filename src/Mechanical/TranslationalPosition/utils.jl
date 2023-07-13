@@ -1,9 +1,6 @@
-@connector function Flange(; name)
-    vars = @variables begin
-        s(t)
-        f(t), [connect = Flow]
-    end
-    ODESystem(Equation[], t, vars, [], name = name, defaults = Dict(f => 0.0))
+@connector Flange begin
+    s(t)
+    f(t), [connect = Flow]
 end
 Base.@doc """
     Flange(;name)
@@ -15,12 +12,9 @@ Base.@doc """
 - `f`: [N] Cut force into the flange
 """ Flange
 
-@connector function Support(; name)
-    sts = @variables begin
-        s(t)
-        f(t), [connect = Flow]
-    end
-    ODESystem(Equation[], t, sts, [], name = name, defaults = Dict(s => 0.0, f => 0.0))
+@connector Support begin
+    s(t)
+    f(t), [connect = Flow]
 end
 Base.@doc """
     Support(;name)
@@ -37,31 +31,29 @@ Support/housing 1-dim. translational flange.
 
 Partial model for the compliant connection of two translational 1-dim. flanges.
 
-# Parameters:
-
-  - `s_rel_start`: [m] Initial relative distance between the flanges
-  - `f_start`: [N] Initial force between flanges
-
 # States:
 
-  - `s_rel`: [m] Relative distance (= flange_b.s - flange_a.s)
-  - `f`: [N] Force between flanges (= flange_b.f)
+  - `s_rel`: [m] Relative distance (= flange_b.s - flange_a.s). It accepts intial value and defaults to 0.0.
+  - `f`: [N] Force between flanges (= flange_b.f). It accepts intial value and defaults to 0.0.
 """
-@component function PartialCompliant(; name, s_rel_start = 0.0, f_start = 0.0)
-    @named flange_a = Flange()
-    @named flange_b = Flange()
-    sts = @variables begin
-        v_a(t) = 0
-        v_b(t) = 0
-        s_rel(t) = s_rel_start
-        f(t) = f_start
+@mtkmodel PartialCompliant begin#(; name, s_rel_start = 0.0, f_start = 0.0)
+    @components begin
+        flange_a = Flange()
+        flange_b = Flange()
     end
-    eqs = [D(flange_a.s) ~ v_a
+    @variables begin
+        v_a(t) = 0.0
+        v_b(t) = 0.0
+        s_rel(t) = 0.0
+        f(t) = 0.0
+    end
+    @equations begin
+        D(flange_a.s) ~ v_a
         D(flange_b.s) ~ v_b
         D(s_rel) ~ v_b - v_a
         flange_b.f ~ +f
-        flange_a.f ~ -f]
-    return compose(ODESystem(eqs, t, sts, []; name = name), flange_a, flange_b)
+        flange_a.f ~ -f
+    end
 end
 
 """
@@ -83,17 +75,20 @@ Partial model for the compliant connection of two translational 1-dim. flanges.
   - `a_rel`: [m/s²] Relative linear acceleration (= der(v_rel))
   - `f`: [N] Force between flanges (= flange_b.f)
 """
-@component function PartialCompliantWithRelativeStates(; name, delta_s_0 = 0.0)
-    @named flange_a = Flange()
-    @named flange_b = Flange()
-    sts = @variables begin
-        delta_s(t) = delta_s_0
-        f(t) = 0
+@mtkmodel PartialCompliantWithRelativeStates begin
+   @components begin
+        flange_a = Flange()
+        flange_b = Flange()
     end
-    eqs = [delta_s ~ flange_a.s - flange_b.s
+    @variables begin
+        delta_s(t) = 0.0
+        f(t) = 0.0
+    end
+    @equations begin
+        delta_s ~ flange_a.s - flange_b.s
         flange_a.f ~ +f
-        flange_b.f ~ -f]
-    return compose(ODESystem(eqs, t, sts, []; name = name), flange_a, flange_b)
+        flange_b.f ~ -f
+    end
 end
 
 """

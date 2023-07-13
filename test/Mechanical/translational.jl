@@ -32,15 +32,15 @@ D = Differential(t)
     @test sol[s.free.f][end] ≈ 100 * 10
 end
 
-@testset "spring damper mass fixed" begin
+@testset "Spring, Damper, Mass, Fixed" begin
     @named dv = TV.Damper(d = 1, flange_a.v = 1)
-    @named dp = TP.Damper(d = 1, v_a_0 = 1, s_a_0 = 3, s_b_0 = 1)
+    @named dp = TP.Damper(d = 1, v1 = 1, v2 = 0.0, flange_a.s = 3, flange_b.s = 1)
 
     @named sv = TV.Spring(k = 1, v_a_0 = 1, delta_s_0 = 1)
     @named sp = TP.Spring(k = 1, s_a_0 = 3, s_b_0 = 1, l = 1)
 
     @named bv = TV.Mass(m = 1, v_0 = 1)
-    @named bp = TP.Mass(m = 1, v_0 = 1, s_0 = 3)
+    @named bp = TP.Mass(m = 1, v = 1, s = 3)
 
     @named gv = TV.Fixed()
     @named gp = TP.Fixed(s_0 = 1)
@@ -71,19 +71,19 @@ end
 
 @testset "driven spring damper mass" begin
     @named dv = TV.Damper(d = 1, flange_a.v = 1)
-    @named dp = TP.Damper(d = 1, v_a_0 = 1, s_a_0 = 3, s_b_0 = 1)
+    @named dp = TP.Damper(d = 1, v1 = 1.0, v2 = 0.0, flange_a.s = 3, flange_b.s = 1)
 
     @named sv = TV.Spring(k = 1, v_a_0 = 1, delta_s_0 = 1)
     @named sp = TP.Spring(k = 1, s_a_0 = 3, s_b_0 = 1, l = 1)
 
     @named bv = TV.Mass(m = 1, v_0 = 1)
-    @named bp = TP.Mass(m = 1, v_0 = 1, s_0 = 3)
+    @named bp = TP.Mass(m = 1, v = 1, s = 3)
 
     @named gv = TV.Fixed()
     @named gp = TP.Fixed(s_0 = 1)
 
     @named fv = TV.Force()
-    @named fp = TP.Force()
+    @named fp = TP.Force(use_support = false)
 
     @named source = Sine(frequency = 3, amplitude = 2)
 
