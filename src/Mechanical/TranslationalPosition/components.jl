@@ -114,9 +114,13 @@ Linear 1D translational spring
   - `flange_a: 1-dim. translational flange on one side of spring`
   - `flange_b: 1-dim. translational flange on opposite side of spring` #default function
 """
-Spring(; name, k, flange_a__s = 0, flange_b__s = 0, l = 0) = Spring(ABS; name, k, flange_a__s, flange_b__s, l) #default function
+function Spring(; name, k, flange_a__s = 0, flange_b__s = 0, l = 0)
+    Spring(ABS; name, k, flange_a__s, flange_b__s, l)
+end #default function
 
-@component function Spring(::Val{:absolute}; name, k, flange_a__s = 0, flange_b__s = 0, l = 0)
+@component function Spring(::Val{:absolute};
+    name, k, flange_a__s = 0,
+    flange_b__s = 0, l = 0)
     pars = @parameters begin
         k = k
         l = l

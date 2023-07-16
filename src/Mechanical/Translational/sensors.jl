@@ -48,5 +48,4 @@ Linear 1D position input sensor.
         output.u ~ s
         flange.f ~ 0.0
     end
-
 end

@@ -46,8 +46,8 @@ Partial model for the compliant connection of two translational 1-dim. flanges.
 @mtkmodel PartialCompliant begin
     @extend (flange_a, flange_b) = pt = PartialTwoFlanges()
     @variables begin
-        s_rel(t) = 0.0, [description = "Relative distance between flanges flange_b.s - flange_a.s"]
-        f(t) = 0.0, [description = "Force between flanges (positive in direction of flange axis R)"]
+        s_rel(t) = 0.0, [description = "Relative distance between flanges"]
+        f(t) = 0.0, [description = "Force between flanges"]
     end
 
     @equations begin
@@ -71,9 +71,9 @@ Partial model for the compliant connection of two translational 1-dim. flanges.
 @mtkmodel PartialCompliantWithRelativeStates begin
     @extend flange_a, flange_b = pt = PartialTwoFlanges()
     @variables begin
-        s_rel(t) = 0.0, [description = "Relative distance between flanges flange_b.s - flange_a.s"]
-        v_rel(t) = 0.0, [description = "Relative linear velocity (= D(s_rel))"]
-        f(t) = 0.0, [description = "Forces between flanges (= flange_b.f)"]
+        s_rel(t) = 0.0, [description = "Relative distance between flanges"]
+        v_rel(t) = 0.0, [description = "Relative linear velocity))"]
+        f(t) = 0.0, [description = "Forces between flanges"]
     end
 
     @equations begin
@@ -149,10 +149,10 @@ end
 @mtkmodel PartialRigid begin
     @extend flange_a, flange_b = ptf = PartialTwoFlanges()
     @variables begin
-        s(t) = 0.0, [description = "Absolute position of center of component (s = flange_a.s + L/2 = flange_b.s - L/2)"]
+        s(t) = 0.0, [description = "Absolute position of center of component"]
     end
     @parameters begin
-        L = 0.0, [description = "Length of component, from left flange to right flange (= flange_b.s - flange_a.s)"]
+        L = 0.0, [description = "Length of component, from left flange to right flange"]
     end
     @equations begin
         flange_a.s ~ s - L / 2

@@ -76,7 +76,7 @@ Partial model for the compliant connection of two translational 1-dim. flanges.
   - `f`: [N] Force between flanges (= flange_b.f)
 """
 @mtkmodel PartialCompliantWithRelativeStates begin
-   @components begin
+    @components begin
         flange_a = Flange()
         flange_b = Flange()
     end

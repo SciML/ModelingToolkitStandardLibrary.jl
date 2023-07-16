@@ -42,7 +42,8 @@ Linear 1D position input source
 
     !solves_force && push!(eqs, 0 ~ flange.f)
 
-    ODESystem(eqs, t, vars, []; name, systems, defaults = [flange.v => 0, s.u => s__u_start])
+    ODESystem(eqs, t, vars, [];
+        name, systems, defaults = [flange.v => 0, s.u => s__u_start])
 end
 
 @component function Velocity(; solves_force = true, name)

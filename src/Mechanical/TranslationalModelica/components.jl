@@ -13,15 +13,15 @@ Flange fixed in housing at a given position.
 """
 @mtkmodel Fixed begin
     @parameters begin
-      s0
+        s0
     end
 
     @components begin
-      flange = Flange(; s = 0.0)
+        flange = Flange(; s = 0.0)
     end
 
     @equations begin
-      flange.s ~ s0
+        flange.s ~ s0
     end
 end
 
@@ -45,12 +45,12 @@ Sliding mass with inertia
 """
 @mtkmodel Mass begin
     @parameters begin
-      m = 0.0, [description = "Mass of sliding mass [kg]"]
+        m = 0.0, [description = "Mass of sliding mass [kg]"]
     end
     @variables begin
-      s
-      v(t) = 0.0, [description = "Absolute linear velocity of sliding mass [m/s]"]
-      a(t) = 0.0, [description = "Absolute linear acceleration of sliding mass [m/s^2]"]
+        s
+        v(t) = 0.0, [description = "Absolute linear velocity of sliding mass [m/s]"]
+        a(t) = 0.0, [description = "Absolute linear acceleration of sliding mass [m/s^2]"]
     end
     @extend flange_a, flange_b, s = pr = PartialRigid(; L = 0.0, s = s)
     @equations begin
@@ -78,12 +78,12 @@ Linear 1D translational spring
 @mtkmodel Spring begin
     @extend flange_a, flange_b, s_rel, f = pc = PartialCompliant()
     @parameters begin
-      c = 0.0, [description = "Spring constant [N/m]"]
-      s_rel0 = 0.0, [description = "Unstretched spring length [m]"]
+        c = 0.0, [description = "Spring constant [N/m]"]
+        s_rel0 = 0.0, [description = "Unstretched spring length [m]"]
     end
 
     @equations begin
-      f ~ c * (s_rel - s_rel0)
+        f ~ c * (s_rel - s_rel0)
     end
 end
 
@@ -104,13 +104,13 @@ Linear 1D translational damper
 @mtkmodel Damper begin
     @extend flange_a, flange_b, v_rel, f = pc = PartialCompliantWithRelativeStates()
     @parameters begin
-      d = 0.0, [description = "Damping constant [Ns/m]"]
+        d = 0.0, [description = "Damping constant [Ns/m]"]
     end
     @variables begin
-      lossPower(t) = 0.0, [description = "Power dissipated by the damper [W]"]
+        lossPower(t) = 0.0, [description = "Power dissipated by the damper [W]"]
     end
     @equations begin
-      f ~ d * v_rel
-      lossPower ~ f * v_rel
+        f ~ d * v_rel
+        lossPower ~ f * v_rel
     end
 end
