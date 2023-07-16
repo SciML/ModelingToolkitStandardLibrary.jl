@@ -217,7 +217,6 @@ end
             Cd = 0.01
 
             m_piston = 880
-            m_body = 1500
         end
 
         vars = @variables begin
@@ -242,10 +241,10 @@ end
                 minimum_volume_b = A_2 * 1e-3,
                 damping_volume_a = A_1 * 5e-3,
                 damping_volume_b = A_2 * 5e-3)
-            body = T.Mass(; m = m_body)
+            body = T.Mass(; m = 1500)
             pipe = IC.Tube(5; p_int = p_2, area = A_2, length = 2.0)
             snk = IC.FixedPressure(; p = p_r)
-            pos = T.Position(; s_0 = 0)
+            pos = T.Position(; s.u_start = 0)
 
             m1 = IC.FlowDivider(; p_int = p_2, n = 3)
             m2 = IC.FlowDivider(; p_int = p_2, n = 3)
@@ -318,7 +317,7 @@ end
             fluid = IC.HydraulicFluid(; let_gas)
             vol = IC.DynamicVolume(5; p_int = 100e5, area = 0.001, x_int = 0.05,
                 x_max = 0.1, x_damp = 0.02, x_min = 0.01, direction = +1)
-            mass = T.Mass(; m = 100, g = -9.807, s_0 = 0.05)
+            mass = T.Mass(; m = 100, g = -9.807, s = 0.05)
             cap = IC.Cap(; p_int = 100e5)
         end
 

@@ -36,8 +36,8 @@ Sliding mass with inertia
 
 # States:
 
-  - `s`: [m] Absolute position of sliding mass. It accepts intial value and defaults to 0.0.
-  - `v`: [m/s] Absolute linear velocity of sliding mass (= D(s)). It accepts intial value and defaults to 0.0.
+  - `s`: [m] Absolute position of sliding mass. It accepts an initial value, which defaults to 0.0.
+  - `v`: [m/s] Absolute linear velocity of sliding mass (= D(s)). It accepts an initial value, which defaults to 0.0.
 
 # Connectors:
 

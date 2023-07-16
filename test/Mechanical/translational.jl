@@ -34,12 +34,12 @@ end
 
 @testset "Spring, Damper, Mass, Fixed" begin
     @named dv = TV.Damper(d = 1, flange_a.v = 1)
-    @named dp = TP.Damper(d = 1, v1 = 1, v2 = 0.0, flange_a.s = 3, flange_b.s = 1)
+    @named dp = TP.Damper(d = 1, va = 1, vb = 0.0, flange_a.s = 3, flange_b.s = 1)
 
-    @named sv = TV.Spring(k = 1, v_a_0 = 1, delta_s_0 = 1)
-    @named sp = TP.Spring(k = 1, s_a_0 = 3, s_b_0 = 1, l = 1)
+    @named sv = TV.Spring(k = 1, flange_a__v = 1, delta_s = 1)
+    @named sp = TP.Spring(k = 1, flange_a__s = 3, flange_b__s = 1, l = 1)
 
-    @named bv = TV.Mass(m = 1, v_0 = 1)
+    @named bv = TV.Mass(m = 1, v = 1)
     @named bp = TP.Mass(m = 1, v = 1, s = 3)
 
     @named gv = TV.Fixed()
@@ -71,12 +71,12 @@ end
 
 @testset "driven spring damper mass" begin
     @named dv = TV.Damper(d = 1, flange_a.v = 1)
-    @named dp = TP.Damper(d = 1, v1 = 1.0, v2 = 0.0, flange_a.s = 3, flange_b.s = 1)
+    @named dp = TP.Damper(d = 1, va = 1.0, vb = 0.0, flange_a.s = 3, flange_b.s = 1)
 
-    @named sv = TV.Spring(k = 1, v_a_0 = 1, delta_s_0 = 1)
-    @named sp = TP.Spring(k = 1, s_a_0 = 3, s_b_0 = 1, l = 1)
+    @named sv = TV.Spring(k = 1, flange_a__v = 1, delta_s = 1)
+    @named sp = TP.Spring(k = 1, flange_a__s = 3, flange_b__s = 1, l = 1)
 
-    @named bv = TV.Mass(m = 1, v_0 = 1)
+    @named bv = TV.Mass(m = 1, v = 1)
     @named bp = TP.Mass(m = 1, v = 1, s = 3)
 
     @named gv = TV.Fixed()

@@ -56,8 +56,8 @@ Partial model for the compliant connection of two rotational 1-dim. shaft flange
 
 # States:
 
-  - `phi_rel(t)`: [`rad`] Relative rotation angle (`flange_b.phi - flange_a.phi`), initial value defaults to 0.0.
-  - `tau(t)`: [`N.m`] Torque between flanges (`flange_b.tau`), initial value defaults to 0.0.
+  - `phi_rel(t)`: [`rad`] Relative rotation angle (`flange_b.phi - flange_a.phi`). It accepts an initial value, which defaults to 0.0.
+  - `tau(t)`: [`N.m`] Torque between flanges (`flange_b.tau`). It accepts an initial value, which defaults to 0.0.
 
 # Connectors:
 
@@ -71,8 +71,8 @@ Partial model for the compliant connection of two rotational 1-dim. shaft flange
         flange_b = Flange()
     end
     @variables begin
-        phi_rel(t), [description = "Relative rotation angle between flanges"]
-        tau(t), [description = "Torque between flanges"]
+        phi_rel(t) = 0.0, [description = "Relative rotation angle between flanges"]
+        tau(t) = 0.0, [description = "Torque between flanges"]
     end
     @equations begin
         phi_rel ~ flange_b.phi - flange_a.phi
@@ -88,10 +88,10 @@ Partial model for the compliant connection of two rotational 1-dim. shaft flange
 
 # States:
 
-  - `phi_rel(t)`: [`rad`] Relative rotation angle (= flange_b.phi - flange_a.phi). Initial value defaults to 0.0.
-  - `w_rel(t)`: [`rad/s`] Relative angular velocity (= D(phi_rel)). Initial value defaults to 0.0.
-  - `a_rel(t)`: [`rad/s²`] Relative angular acceleration (= D(w_rel)). Initial value defaults to 0.0.
-  - `tau(t)`: [`N.m`] Torque between flanges (= flange_b.tau). Initial value defaults to 0.0.
+  - `phi_rel(t)`: [`rad`] Relative rotation angle (= flange_b.phi - flange_a.phi). It accepts an initial value, which defaults to 0.0.
+  - `w_rel(t)`: [`rad/s`] Relative angular velocity (= D(phi_rel)). It accepts an initial value, which defaults to 0.0.
+  - `a_rel(t)`: [`rad/s²`] Relative angular acceleration (= D(w_rel)). It accepts an initial value, which defaults to 0.0.
+  - `tau(t)`: [`N.m`] Torque between flanges (= flange_b.tau). It accepts an initial value, which defaults to 0.0.
 
 # Connectors:
 
@@ -104,10 +104,10 @@ Partial model for the compliant connection of two rotational 1-dim. shaft flange
         flange_b = Flange()
     end
     @variables begin
-        phi_rel(t), [description = "Relative rotation angle between flanges"]
-        w_rel(t), [description = "Relative angular velocity between flanges"]
-        a_rel(t), [description = "Relative angular acceleration between flanges"]
-        tau(t), [description = "Torque between flanges"]
+        phi_rel(t) = 0.0, [description = "Relative rotation angle between flanges"]
+        w_rel(t) = 0.0, [description = "Relative angular velocity between flanges"]
+        a_rel(t) = 0.0, [description = "Relative angular acceleration between flanges"]
+        tau(t) = 0.0, [description = "Torque between flanges"]
     end
     @equations begin
         phi_rel ~ flange_b.phi - flange_a.phi

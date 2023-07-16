@@ -18,7 +18,7 @@ The idea behind the selection of the **through** variable is that it should be a
 ```math
 \begin{aligned}
     \partial {\color{blue}{across}} / \partial t \cdot c_1 = {\color{green}{through}}  \\
-    {\color{green}{through}} \cdot c_2 = {\color{blue}{across}} 
+    {\color{green}{through}} \cdot c_2 = {\color{blue}{across}}
 \end{aligned}
 ```
 
@@ -29,7 +29,7 @@ For the Electrical domain, the across variable is *voltage* and the through vari
   - Energy Dissipation:
 
 ```math
-\partial {\color{blue}{voltage}} / \partial t \cdot capacitance = {\color{green}{current}} 
+\partial {\color{blue}{voltage}} / \partial t \cdot capacitance = {\color{green}{current}}
 ```
 
   - Flow:
@@ -45,13 +45,13 @@ For the translation domain, choosing *velocity* for the across variable and *for
   - Energy Dissipation:
 
 ```math
-\partial {\color{blue}{velocity}} / \partial t \cdot mass = {\color{green}{force}} 
+\partial {\color{blue}{velocity}} / \partial t \cdot mass = {\color{green}{force}}
 ```
 
   - Flow:
 
 ```math
-{\color{green}{force}} \cdot (1/damping) = {\color{blue}{velocity}} 
+{\color{green}{force}} \cdot (1/damping) = {\color{blue}{velocity}}
 ```
 
 The diagram here shows the similarity of problems in different physical domains.
@@ -65,13 +65,13 @@ Now, if we choose *position* for the across variable, a similar relationship can
   - Energy Dissipation:
 
 ```math
-\partial^2 {\color{blue}{position}} / \partial t^2 \cdot mass = {\color{green}{force}} 
+\partial^2 {\color{blue}{position}} / \partial t^2 \cdot mass = {\color{green}{force}}
 ```
 
   - Flow:
 
 ```math
-{\color{green}{force}} \cdot (1/damping) = \partial {\color{blue}{position}} / \partial t 
+{\color{green}{force}} \cdot (1/damping) = \partial {\color{blue}{position}} / \partial t
 ```
 
 As can be seen, we must now establish a higher order derivative to define the Energy Dissipation and Flow equations, requiring an extra equation, as will be shown in the example below.
@@ -134,7 +134,7 @@ Now using the Translational library based on velocity, we can see the same relat
 using ModelingToolkitStandardLibrary
 const TV = ModelingToolkitStandardLibrary.Mechanical.Translational
 
-@named damping = TV.Damper(d = 1, v_a_0 = 1)
+@named damping = TV.Damper(d = 1, va = 1)
 @named body = TV.Mass(m = 1, v_0 = 1)
 @named ground = TV.Fixed()
 
@@ -167,7 +167,7 @@ Now, let's consider the position-based approach.  We can build the same model wi
 ```@example connections
 const TP = ModelingToolkitStandardLibrary.Mechanical.TranslationalPosition
 
-@named damping = TP.Damper(d = 1, v_a_0 = 1)
+@named damping = TP.Damper(d = 1, va = 1)
 @named body = TP.Mass(m = 1, v_0 = 1)
 @named ground = TP.Fixed(s_0 = 0)
 
@@ -220,21 +220,21 @@ In this problem, we have a mass, spring, and damper which are connected to a fix
 
 #### Damper
 
-The damper will connect the flange/flange 1 (`flange_a`) to the mass, and flange/flange 2 (`flange_b`) to the fixed point.  For both position- and velocity-based domains, we set the damping constant `d=1` and `v_a_0=1` and leave the default for `v_b_0` at 0.  For the position domain, we also need to set the initial positions for `flange_a` and `flange_b`.
+The damper will connect the flange/flange 1 (`flange_a`) to the mass, and flange/flange 2 (`flange_b`) to the fixed point.  For both position- and velocity-based domains, we set the damping constant `d=1` and `va=1` and leave the default for `v_b_0` at 0.  For the position domain, we also need to set the initial positions for `flange_a` and `flange_b`.
 
 ```@example connections
-@named dv = TV.Damper(d = 1, v_a_0 = 1)
-@named dp = TP.Damper(d = 1, v_a_0 = 1, s_a_0 = 3, s_b_0 = 1)
+@named dv = TV.Damper(d = 1, va = 1)
+@named dp = TP.Damper(d = 1, va = 1, flange_a__s = 3, flange_b__s = 1)
 nothing # hide
 ```
 
 #### Spring
 
-The spring will connect the flange/flange 1 (`flange_a`) to the mass, and flange/flange 2 (`flange_b`) to the fixed point.  For both position- and velocity-based domains, we set the spring constant `k=1`.  The velocity domain then requires the initial velocity `v_a_0` and initial spring stretch `delta_s_0`.  The position domain instead needs the initial positions for `flange_a` and `flange_b` and the natural spring length `l`.
+The spring will connect the flange/flange 1 (`flange_a`) to the mass, and flange/flange 2 (`flange_b`) to the fixed point.  For both position- and velocity-based domains, we set the spring constant `k=1`.  The velocity domain then requires the initial velocity `va` and initial spring stretch `delta_s`.  The position domain instead needs the initial positions for `flange_a` and `flange_b` and the natural spring length `l`.
 
 ```@example connections
-@named sv = TV.Spring(k = 1, v_a_0 = 1, delta_s_0 = 1)
-@named sp = TP.Spring(k = 1, s_a_0 = 3, s_b_0 = 1, l = 1)
+@named sv = TV.Spring(k = 1, va = 1, delta_s = 1)
+@named sp = TP.Spring(k = 1, flange_a__s = 3, flange_b__s = 1, l = 1)
 nothing # hide
 ```
 

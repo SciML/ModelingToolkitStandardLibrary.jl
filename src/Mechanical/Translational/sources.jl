@@ -27,55 +27,51 @@ Linear 1D position input source
 # Connectors:
 
   - `flange`: 1-dim. translational flange
-  - `s`: real input. `s.u_start` accepts initial value and defaults to 0.0.
+  - `s`: real input. `s.u_start` accepts an initial value, which It accepts an initial value, which defaults to 0.0.
 """
-@mtkmodel Position begin
-    @parameters begin
-        solves_force = false
+@component function Position(; solves_force = true, s__u_start = 0, name)
+    systems = @named begin
+        flange = MechanicalPort()
+        s = RealInput()
     end
-    @components begin
-        flange = MechanicalPort(; v = 0.0)
-        s = RealInput(; u_start = 0.0)
-    end
-    @variables begin
-        x(t)
-    end
-    @equations begin
-        D(x) ~ flange.v
-        s.u ~ x
-        !getdefault(solves_force) && 0 ~ flange.f
-    end
+
+    vars = @variables x(t)
+
+    eqs = [D(x) ~ flange.v
+        s.u ~ x]
+
+    !solves_force && push!(eqs, 0 ~ flange.f)
+
+    ODESystem(eqs, t, vars, []; name, systems, defaults = [flange.v => 0, s.u => s__u_start])
 end
 
-@mtkmodel Velocity begin
-    @parameters begin
-        solves_force = false
-    end
-    @components begin
+@component function Velocity(; solves_force = true, name)
+    systems = @named begin
         flange = MechanicalPort()
         v = RealInput()
     end
-    @equations begin
-        v.u ~ flange.v
-        getdefault(solves_force) && 0 ~ flange.f
-    end
+
+    eqs = [
+        v.u ~ flange.v,
+    ]
+
+    !solves_force && push!(eqs, 0 ~ flange.f)
+
+    ODESystem(eqs, t, [], []; name, systems, defaults = [flange.v => 0])
 end
 
-@mtkmodel Acceleration begin
-    @parameters begin
-        solves_force = false
-    end
-    @components begin
-        flange = MechanicalPort(; v = 0.0)
-        a = RealInput()
-    end
-    @variables begin
-        v(t) = 0
+@component function Acceleration(solves_force = true; s__u_start = 0, name)
+    systems = @named begin
+        flange = MechanicalPort()
+        a = RealInput(; u_start = s__u_start)
     end
 
-    @equations begin
-        v ~ flange.v
-        D(v) ~ a.u
-        !getdefault(solves_force) && 0 ~ flange.f
-    end
+    vars = @variables v(t) = 0
+
+    eqs = [v ~ flange.v
+        D(v) ~ a.u]
+
+    !solves_force && push!(eqs, 0 ~ flange.f)
+
+    ODESystem(eqs, t, vars, []; name, systems, defaults = [flange.v => 0])
 end

@@ -33,8 +33,8 @@ Partial model for the compliant connection of two translational 1-dim. flanges.
 
 # States:
 
-  - `s_rel`: [m] Relative distance (= flange_b.s - flange_a.s). It accepts intial value and defaults to 0.0.
-  - `f`: [N] Force between flanges (= flange_b.f). It accepts intial value and defaults to 0.0.
+  - `s_rel`: [m] Relative distance (= flange_b.s - flange_a.s). It accepts an initial value, which defaults to 0.0.
+  - `f`: [N] Force between flanges (= flange_b.f). It accepts an initial value, which defaults to 0.0.
 """
 @mtkmodel PartialCompliant begin#(; name, s_rel_start = 0.0, f_start = 0.0)
     @components begin
