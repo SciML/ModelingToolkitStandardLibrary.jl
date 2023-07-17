@@ -11,7 +11,7 @@ Flange fixed in housing at a given position.
 
   - `flange: 1-dim. translational flange`
 """
-@mtkmodel Fixed begin#(; name, s_0 = 0.0)
+@mtkmodel Fixed begin
     @parameters begin
         s_0
     end

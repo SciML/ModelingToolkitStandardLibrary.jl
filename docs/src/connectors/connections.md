@@ -134,8 +134,8 @@ Now using the Translational library based on velocity, we can see the same relat
 using ModelingToolkitStandardLibrary
 const TV = ModelingToolkitStandardLibrary.Mechanical.Translational
 
-@named damping = TV.Damper(d = 1, va = 1)
-@named body = TV.Mass(m = 1, v_0 = 1)
+@named damping = TV.Damper(d = 1, flange_a.v = 1)
+@named body = TV.Mass(m = 1, v = 1)
 @named ground = TV.Fixed()
 
 eqs = [connect(damping.flange_a, body.flange)
@@ -167,8 +167,8 @@ Now, let's consider the position-based approach.  We can build the same model wi
 ```@example connections
 const TP = ModelingToolkitStandardLibrary.Mechanical.TranslationalPosition
 
-@named damping = TP.Damper(d = 1, va = 1)
-@named body = TP.Mass(m = 1, v_0 = 1)
+@named damping = TP.Damper(d = 1, va = 1, vb = 0.0)
+@named body = TP.Mass(m = 1, v = 1)
 @named ground = TP.Fixed(s_0 = 0)
 
 eqs = [connect(damping.flange_a, body.flange)
@@ -197,10 +197,10 @@ plot(p1, p2, p3)
 
 The question then arises, can the position be plotted when using the Mechanical Translational Domain based on the Velocity Across variable?  Yes, we can!  There are 2 solutions:
 
- 1. the `Mass` component will add the position variable when the `s_0` parameter is used to set an initial position. Otherwise, the component does not track the position.
+ 1. the `Mass` component will add the position variable when the `s` parameter is used to set an initial position. Otherwise, the component does not track the position.
 
 ```julia
-@named body = TV.Mass(m = 1, v_0 = 1, s_0 = 0)
+@named body = TV.Mass(m = 1, v = 1, s = 0)
 ```
 
  2. implement a `PositionSensor`
@@ -223,8 +223,8 @@ In this problem, we have a mass, spring, and damper which are connected to a fix
 The damper will connect the flange/flange 1 (`flange_a`) to the mass, and flange/flange 2 (`flange_b`) to the fixed point.  For both position- and velocity-based domains, we set the damping constant `d=1` and `va=1` and leave the default for `v_b_0` at 0.  For the position domain, we also need to set the initial positions for `flange_a` and `flange_b`.
 
 ```@example connections
-@named dv = TV.Damper(d = 1, va = 1)
-@named dp = TP.Damper(d = 1, va = 1, flange_a__s = 3, flange_b__s = 1)
+@named dv = TV.Damper(d = 1, flange_a.v = 1)
+@named dp = TP.Damper(d = 1, va = 1, vb = 0.0, flange_a__s = 3, flange_b__s = 1)
 nothing # hide
 ```
 
@@ -233,18 +233,18 @@ nothing # hide
 The spring will connect the flange/flange 1 (`flange_a`) to the mass, and flange/flange 2 (`flange_b`) to the fixed point.  For both position- and velocity-based domains, we set the spring constant `k=1`.  The velocity domain then requires the initial velocity `va` and initial spring stretch `delta_s`.  The position domain instead needs the initial positions for `flange_a` and `flange_b` and the natural spring length `l`.
 
 ```@example connections
-@named sv = TV.Spring(k = 1, va = 1, delta_s = 1)
+@named sv = TV.Spring(k = 1, flange_a__v = 1, delta_s = 1)
 @named sp = TP.Spring(k = 1, flange_a__s = 3, flange_b__s = 1, l = 1)
 nothing # hide
 ```
 
 #### Mass
 
-For both position- and velocity-based domains, we set the mass `m=1` and initial velocity `v_0=1`. Like the damper, the position domain requires the position initial conditions set as well.
+For both position- and velocity-based domains, we set the mass `m=1` and initial velocity `v=1`. Like the damper, the position domain requires the position initial conditions set as well.
 
 ```@example connections
-@named bv = TV.Mass(m = 1, v_0 = 1)
-@named bp = TP.Mass(m = 1, v_0 = 1, s_0 = 3)
+@named bv = TV.Mass(m = 1, v = 1)
+@named bp = TP.Mass(m = 1, v = 1, s = 3)
 nothing # hide
 ```
 
