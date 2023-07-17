@@ -92,7 +92,7 @@ end
     B = [0, 1]
     C = [0.9 1;]
     D = [0;;]
-    @named ss = StateSpace(; A, B, C, D, x_start = zeros(2))
+    @named ss = StateSpace(; A, B, C, D, x = zeros(2))
     @named c = Constant(; k = 1)
     @named model = ODESystem([
             connect(c.output, ss.input),
@@ -113,7 +113,7 @@ end
     # non-zero operating point
     u0 = [1] # This causes no effective input to the system since c.k = 1
     y0 = [2]
-    @named ss = StateSpace(; A, B, C, D, x_start = zeros(2), u0, y0)
+    @named ss = StateSpace(; A, B, C, D, x = zeros(2), u0, y0)
     @named model = ODESystem([
             connect(c.output, ss.input),
         ],
@@ -133,11 +133,11 @@ end
 """
 Second order demo plant
 """
-@component function Plant(; name, x_start = zeros(2))
+@component function Plant(; name, x = zeros(2))
     @named input = RealInput()
     @named output = RealOutput()
     D = Differential(t)
-    sts = @variables x1(t)=x_start[1] x2(t)=x_start[2]
+    sts = @variables x1(t)=x[1] x2(t)=x[2]
     eqs = [D(x1) ~ x2
         D(x2) ~ -x1 - 0.5 * x2 + input.u
         output.u ~ 0.9 * x1 + x2]

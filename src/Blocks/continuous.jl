@@ -214,7 +214,7 @@ See also [`LimPI`](@ref)
 end
 
 """
-    PID(;name, k=1, Ti=false, Td=false, Nd=10, xi_start=0, xd_start=0)
+    PID(;name, k=1, Ti=false, Td=false, Nd=10, int__x=0, der__x=0)
 
 Text-book version of a PID-controller without actuator saturation and anti-windup measure.
 
@@ -224,8 +224,8 @@ Text-book version of a PID-controller without actuator saturation and anti-windu
   - `Ti`: [s] Integrator time constant (Ti>0 required). If set to false, no integral action is used.
   - `Td`: [s] Derivative time constant (Td>0 required). If set to false, no derivative action is used.
   - `Nd`: [s] Time constant for the derivative approximation (Nd>0 required; Nd=0 is ideal derivative).
-  - `x_start`: Initial value for the integrator.
-  - `xd_start`: Initial value for the derivative state.
+  - `int__x`: Initial value for the integrator.
+  - `der__x`: Initial value for the derivative state.
 
 # Connectors:
 
@@ -234,8 +234,8 @@ Text-book version of a PID-controller without actuator saturation and anti-windu
 
 See also [`LimPID`](@ref)
 """
-@component function PID(; name, k = 1, Ti = false, Td = false, Nd = 10, xi_start = 0,
-    xd_start = 0)
+@component function PID(; name, k = 1, Ti = false, Td = false, Nd = 10, int__x = 0,
+    der__x = 0)
     with_I = !isequal(Ti, false)
     with_D = !isequal(Td, false)
     @named err_input = RealInput() # control error
@@ -249,12 +249,12 @@ See also [`LimPID`](@ref)
     @named gainPID = Gain(k)
     @named addPID = Add3()
     if with_I
-        @named int = Integrator(k = 1 / Ti, x = xi_start)
+        @named int = Integrator(k = 1 / Ti, x = int__x)
     else
         @named Izero = Constant(k = 0)
     end
     if with_D
-        @named der = Derivative(k = Td, T = 1 / Nd, x = xd_start)
+        @named der = Derivative(k = Td, T = 1 / Nd, x = der__x)
     else
         @named Dzero = Constant(k = 0)
     end
@@ -290,11 +290,9 @@ See also [`LimPID`](@ref)
 end
 
 """
-    LimPI(; name, T, Ta, k = 1.0, x_start = 0.0, u_max = 1.0, u_min = -u_max)
+    LimPI(; name, T, Ta, k = 1.0, int__x = 0.0, u_max = 1.0, u_min = -u_max)
 
 Text-book version of a PI-controller with actuator saturation and anti-windup measure.
-Initial value of gain  can be set with `gainPI.k`
-Initial value of integrator state `x` can be set with `int.x`
 
 # Parameters:
 
@@ -306,7 +304,7 @@ Initial value of integrator state `x` can be set with `int.x`
   - `err_input`
   - `ctr_output`
 """
-@component function LimPI(; name, k = 1, T, u_max, u_min = -u_max, Ta, x_start = 0.0)
+@component function LimPI(; name, k = 1, T, u_max, u_min = -u_max, Ta, int__x = 0.0)
     @symcheck Ta > 0 ||
               throw(ArgumentError("Time constant `Ta` has to be strictly positive"))
     @symcheck T > 0 || throw(ArgumentError("Time constant `T` has to be strictly positive"))
@@ -316,7 +314,7 @@ Initial value of integrator state `x` can be set with `int.x`
     @named gainPI = Gain(k)
     @named addPI = Add()
     @named addTrack = Add()
-    @named int = Integrator(k = 1 / T, x = x_start)
+    @named int = Integrator(k = 1 / T, x = int__x)
     @named limiter = Limiter(y_max = u_max, y_min = u_min)
     @named addSat = Add(k1 = 1, k2 = -1)
     @named gainTrack = Gain(1 / Ta)
@@ -376,8 +374,8 @@ where the transfer function for the derivative includes additional filtering, se
     u_max = Inf,
     u_min = u_max > 0 ? -u_max : -Inf,
     gains = false,
-    xi_start = 0.0,
-    xd_start = 0.0)
+    int__x = 0.0,
+    der__x = 0.0)
     with_I = !isequal(Ti, false)
     with_D = !isequal(Td, false)
     with_AWM = Ni != Inf
@@ -412,12 +410,12 @@ where the transfer function for the derivative includes additional filtering, se
         else
             @named addI = Add(k1 = 1, k2 = -1)
         end
-        @named int = Integrator(k = 1 / Ti, x = xi_start)
+        @named int = Integrator(k = 1 / Ti, x = int__x)
     else
         @named Izero = Constant(k = 0)
     end
     if with_D
-        @named der = Derivative(k = Td, T = 1 / Nd, x = xd_start)
+        @named der = Derivative(k = Td, T = 1 / Nd, x = der__x)
         @named addD = Add(k1 = wd, k2 = -1)
     else
         @named Dzero = Constant(k = 0)
@@ -473,7 +471,7 @@ where the transfer function for the derivative includes additional filtering, se
 end
 
 """
-    StateSpace(A, B, C, D=0; x_start=zeros(size(A,1)), u0=zeros(size(B,2)), y0=zeros(size(C,1)), name)
+    StateSpace(A, B, C, D = 0; x =    zeros(size(A,1)), u0 = zeros(size(B,2)), y0 = zeros(size(C,1)), name)
 
 A linear, time-invariant state-space system on the form.
 
@@ -506,7 +504,7 @@ y &= h(x, u)
 
 linearized around the operating point `x₀, u₀`, we have `y0, u0 = h(x₀, u₀), u₀`.
 """
-@component function StateSpace(; A, B, C, D = nothing, x_start = zeros(size(A, 1)), name,
+@component function StateSpace(; A, B, C, D = nothing, x = zeros(size(A, 1)), name,
     u0 = zeros(size(B, 2)), y0 = zeros(size(C, 1)))
     nx, nu, ny = size(A, 1), size(B, 2), size(C, 1)
     size(A, 2) == nx || error("`A` has to be a square matrix.")
@@ -522,7 +520,7 @@ linearized around the operating point `x₀, u₀`, we have `y0, u0 = h(x₀, u�
     end
     @named input = RealInput(nin = nu)
     @named output = RealOutput(nout = ny)
-    @variables x(t)[1:nx]=x_start [
+    @variables x(t)[1:nx]=x [
         description = "State variables of StateSpace system $name",
     ]
     # pars = @parameters A=A B=B C=C D=D # This is buggy
