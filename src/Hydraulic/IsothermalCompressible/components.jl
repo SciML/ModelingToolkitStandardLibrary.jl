@@ -595,8 +595,9 @@ dm ────►               │  │ area
 
         for i in 1:N
             push!(eqs,
-                volumes[i].dx ~ ifelse((vol >= (i - 1) * (x_max/N) * area) &
-                                       (vol < (i) * (x_max/N) * area), flange.v * direction, 0))
+                volumes[i].dx ~ ifelse((vol >= (i - 1) * (x_max / N) * area) &
+                                       (vol < (i) * (x_max / N) * area),
+                    flange.v * direction, 0))
             push!(eqs, pipe_bases[i].x ~ volumes[i].vol / volumes[i].area)
         end
     else
