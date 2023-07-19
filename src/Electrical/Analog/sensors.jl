@@ -13,14 +13,19 @@ an ideal ammeter.
   - `p` Positive pin
   - `n` Negative pin
 """
-@component function CurrentSensor(; name)
-    @named p = Pin()
-    @named n = Pin()
-    @variables i(t) = 1.0
-    eqs = [p.v ~ n.v
+@mtkmodel CurrentSensor begin
+    @components begin
+        p = Pin()
+        n = Pin()
+    end
+    @variables begin
+        i(t)
+    end
+    @equations begin
+        p.v ~ n.v
         i ~ p.i
-        i ~ -n.i]
-    ODESystem(eqs, t, [i], [], systems = [p, n]; name = name)
+        i ~ -n.i
+    end
 end
 
 """
@@ -36,12 +41,17 @@ Creates a circuit component which measures the potential at a pin.
 
   - `p` Pin at which potential is to be measured
 """
-@component function PotentialSensor(; name)
-    @named p = Pin()
-    @variables phi(t) = 1.0
-    eqs = [p.i ~ 0
-        phi ~ p.v]
-    ODESystem(eqs, t, [phi], [], systems = [p]; name = name)
+@mtkmodel PotentialSensor begin
+    @components begin
+        p = Pin()
+    end
+    @variables begin
+        phi(t)
+    end
+    @equations begin
+        p.i ~ 0
+        phi ~ p.v
+    end
 end
 
 """
@@ -58,14 +68,19 @@ Creates a circuit component that measures the voltage across it. Analogous to an
   - `p` Positive pin
   - `n` Negative pin
 """
-@component function VoltageSensor(; name)
-    @named p = Pin()
-    @named n = Pin()
-    @variables v(t) = 1.0
-    eqs = [p.i ~ 0
+@mtkmodel VoltageSensor begin
+    @components begin
+        p = Pin()
+        n = Pin()
+    end
+    @variables begin
+        v(t)
+    end
+    @equations begin
+        p.i ~ 0
         n.i ~ 0
-        v ~ p.v - n.v]
-    ODESystem(eqs, t, [v], []; systems = [p, n], name = name)
+        v ~ p.v - n.v
+    end
 end
 
 """
@@ -76,7 +91,7 @@ consumed by a circuit.
 
 # States:
 
-  - `power(t)`: [`W`] The power being consumed, given by the product of voltage and current.
+  - `power(t)`: [`W`] The power being consumed, given by the product of voltage and current
   - See [VoltageSensor](@ref)
   - See [CurrentSensor](@ref)
 
@@ -87,21 +102,25 @@ consumed by a circuit.
   - `pv` Corresponds to the `p` pin of the [`VoltageSensor`](@ref)
   - `nv` Corresponds to the `n` pin of the [`VoltageSensor`](@ref)
 """
-@component function PowerSensor(; name)
-    @named pc = Pin()
-    @named nc = Pin()
-    @named pv = Pin()
-    @named nv = Pin()
-    @named voltage_sensor = VoltageSensor()
-    @named current_sensor = CurrentSensor()
-    @variables power(t) = 1.0
-    eqs = [connect(voltage_sensor.p, pv)
+@mtkmodel PowerSensor begin
+    @components begin
+        pc = Pin()
+        nc = Pin()
+        pv = Pin()
+        nv = Pin()
+        voltage_sensor = VoltageSensor()
+        current_sensor = CurrentSensor()
+    end
+    @variables begin
+        power(t)
+    end
+    @equations begin
+        connect(voltage_sensor.p, pv)
         connect(voltage_sensor.n, nv)
         connect(current_sensor.p, pc)
         connect(current_sensor.n, nc)
-        power ~ current_sensor.i * voltage_sensor.v]
-    ODESystem(eqs, t, [power], [];
-        systems = [pc, nc, pv, nv, voltage_sensor, current_sensor], name = name)
+        power ~ current_sensor.i * voltage_sensor.v
+    end
 end
 
 """
@@ -111,8 +130,8 @@ Combines a [`VoltageSensor`](@ref) and a [`CurrentSensor`](@ref).
 
 # States:
 
-  - `v(t)`: [`V`] The voltage across the [`VoltageSensor`](@ref)
-  - `i(t)`: [`A`] The current across the [`CurrentSensor`](@ref)
+  - `v(t)`: [`V`] The voltage across the [`VoltageSensor`](@ref). Defaults to 1.0.
+  - `i(t)`: [`A`] The current across the [`CurrentSensor`](@ref). Defaults to 1.0.
 
 # Connectors:
 
@@ -121,23 +140,25 @@ Combines a [`VoltageSensor`](@ref) and a [`CurrentSensor`](@ref).
   - `pv` Corresponds to the `p` pin of the [`VoltageSensor`](@ref)
   - `nv` Corresponds to the `n` pin of the [`VoltageSensor`](@ref)
 """
-@component function MultiSensor(; name)
-    @named pc = Pin()
-    @named nc = Pin()
-    @named pv = Pin()
-    @named nv = Pin()
-    @named voltage_sensor = VoltageSensor()
-    @named current_sensor = CurrentSensor()
-    sts = @variables begin
+@mtkmodel MultiSensor begin
+    @components begin
+        pc = Pin()
+        nc = Pin()
+        pv = Pin()
+        nv = Pin()
+        voltage_sensor = VoltageSensor()
+        current_sensor = CurrentSensor()
+    end
+    @variables begin
         i(t) = 1.0
         v(t) = 1.0
     end
-    eqs = [connect(voltage_sensor.p, pv)
+    @equations begin
+        connect(voltage_sensor.p, pv)
         connect(voltage_sensor.n, nv)
         connect(current_sensor.p, pc)
         connect(current_sensor.n, nc)
         i ~ current_sensor.i
-        v ~ voltage_sensor.v]
-    ODESystem(eqs, t, sts, []; systems = [pc, nc, pv, nv, voltage_sensor, current_sensor],
-        name = name)
+        v ~ voltage_sensor.v
+    end
 end

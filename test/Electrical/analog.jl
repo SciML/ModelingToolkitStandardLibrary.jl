@@ -13,7 +13,7 @@ using OrdinaryDiffEq: ReturnCode.Success
     @named source = Sine(offset = 1, amplitude = 10, frequency = 5)
     @named voltage = Voltage()
     @named resistor = Resistor(R = 1)
-    @named capacitor = Capacitor(C = 1)
+    @named capacitor = Capacitor(C = 1, v = 0.0)
     @named ground = Ground()
 
     @named voltage_sensor = VoltageSensor()
@@ -43,7 +43,7 @@ using OrdinaryDiffEq: ReturnCode.Success
             power_sensor,
         ])
     sys = structural_simplify(model)
-    prob = ODAEProblem(sys, Pair[], (0.0, 10.0))
+    prob = ODAEProblem(sys, [], (0.0, 10.0))
     sol = solve(prob, Tsit5())
 
     # Plots.plot(sol; vars=[capacitor.v, voltage_sensor.v])
@@ -74,7 +74,7 @@ end
     @named model = ODESystem(connections, t,
         systems = [R0, R1, R2, source, short, voltage, ground])
     sys = structural_simplify(model)
-    prob = ODEProblem(sys, Pair[], (0, 2.0))
+    prob = ODEProblem(sys, Pair[R2.i => 0.0], (0, 2.0))
     sol = solve(prob, Rodas4()) # has no state; does not work with Tsit5
     @test sol.retcode == Success
     @test sol[short.v] == sol[R0.v] == zeros(length(sol.t))
@@ -89,7 +89,7 @@ end
     @named source = Constant(k = 10)
     @named voltage = Voltage()
     @named resistor = Resistor(R = 1)
-    @named capacitor = Capacitor(C = 1)
+    @named capacitor = Capacitor(C = 1, v = 0.0)
     @named ground = Ground()
 
     connections = [connect(source.output, voltage.V)
@@ -100,7 +100,7 @@ end
     @named model = ODESystem(connections, t;
         systems = [resistor, capacitor, source, voltage, ground])
     sys = structural_simplify(model)
-    prob = ODAEProblem(sys, [capacitor.v => 0.0], (0.0, 10.0))
+    prob = ODAEProblem(sys, Pair[], (0.0, 10.0))
     sol = solve(prob, Tsit5())
 
     # Plots.plot(sol; vars=[source.v, capacitor.v])
@@ -113,7 +113,7 @@ end
     @named source = Constant(k = 10)
     @named voltage = Voltage()
     @named resistor = Resistor(R = 1)
-    @named inductor = Inductor(L = 1.0)
+    @named inductor = Inductor(L = 1.0, i = 0.0)
     @named ground = Ground()
 
     connections = [connect(source.output, voltage.V)
@@ -124,7 +124,7 @@ end
     @named model = ODESystem(connections, t;
         systems = [resistor, inductor, source, voltage, ground])
     sys = structural_simplify(model)
-    prob = ODAEProblem(sys, [inductor.i => 0.0], (0.0, 10.0))
+    prob = ODAEProblem(sys, Pair[], (0.0, 10.0))
     sol = solve(prob, Tsit5())
 
     # Plots.plot(sol; vars=[inductor.i, inductor.i])
@@ -147,7 +147,7 @@ end
     sources = [source_const, source_sin, source_step, source_tri, source_dsin, source_ramp]
 
     @named resistor = Resistor(; R)
-    @named capacitor = Capacitor(; C)
+    @named capacitor = Capacitor(; C, v = 0.0)
     @named ground = Ground()
 
     for source in sources
@@ -159,7 +159,7 @@ end
         @named model = ODESystem(connections, t;
             systems = [resistor, capacitor, source, ground, voltage])
         sys = structural_simplify(model)
-        prob = ODAEProblem(sys, [capacitor.v => 10.0], (0.0, 10.0))
+        prob = ODAEProblem(sys, Pair[], (0.0, 10.0))
         sol = solve(prob, Tsit5())
         @test sol.retcode == Success
         sol = solve(prob, Rodas4())
@@ -175,7 +175,7 @@ end
     @named current = Current()
     @named source = Step(start_time = 2)
     @named resistor = Resistor(R = 1)
-    @named capacitor = Capacitor(C = 1)
+    @named capacitor = Capacitor(C = 1, v = 0.0)
     @named ground = Ground()
 
     connections = [connect(source.output, current.I)
@@ -186,7 +186,7 @@ end
     @named model = ODESystem(connections, t;
         systems = [ground, resistor, current, capacitor, source])
     sys = structural_simplify(model)
-    prob = ODAEProblem(sys, [capacitor.v => 0.0], (0.0, 10.0))
+    prob = ODAEProblem(sys, Pair[], (0.0, 10.0))
     sol = solve(prob, Tsit5())
     y(x, st) = (x .> st) .* abs.(collect(x) .- st)
     @test sol.retcode == Success
@@ -200,7 +200,7 @@ end
     @named ground = Ground()
     @named R1 = Resistor(R = R)
     @named R2 = Resistor(R = 100 * R)
-    @named C1 = Capacitor(C = 1 / (2 * pi * f * R))
+    @named C1 = Capacitor(C = 1 / (2 * pi * f * R), v = 0.0)
     @named opamp = IdealOpAmp()
     @named square_source = Square(amplitude = Vin)
     @named voltage = Voltage()
@@ -247,7 +247,7 @@ _damped_sine_wave(x, f, A, st, ϕ, d) = exp((st - x) * d) * A * sin(2 * π * f *
     st, o, h, f, A, et, ϕ, d, δ = 0.7, 1.25, 3, 2, 2.5, 2, π / 4, 0.1, 0.0001
 
     @named res = Resistor(R = 1)
-    @named cap = Capacitor(C = 1)
+    @named cap = Capacitor(C = 1, v = 0.0)
     @named ground = Ground()
     @named voltage = Voltage()
     @named voltage_sensor = VoltageSensor()
@@ -274,7 +274,7 @@ _damped_sine_wave(x, f, A, st, ϕ, d) = exp((st - x) * d) * A * sin(2 * π * f *
     end
     # o .+ (x .> st). * _sawtooth_wave.(x, δ, f, A, st),
 
-    for i in 1:length(sources)
+    for i in 1:lastindex(sources)
         source = sources[i]
         @info "Testing Voltage with $(source.name) source"
         eqs = [connect(source.output, voltage.V)
@@ -292,7 +292,7 @@ _damped_sine_wave(x, f, A, st, ϕ, d) = exp((st - x) * d) * A * sin(2 * π * f *
             ])
         vsys = structural_simplify(vmodel)
 
-        u0 = []
+        u0 = [cap.v => 0.0]
 
         prob = ODAEProblem(vsys, u0, (0, 10.0))
         sol = solve(prob, dt = 0.1, Tsit5())
@@ -311,7 +311,7 @@ end
 
     @named ground = Ground()
     @named res = Resistor(R = 1.0)
-    @named cap = Capacitor(C = 1)
+    @named cap = Capacitor(C = 1, v = 0.0)
     @named current_sensor = CurrentSensor()
     @named current = Current()
     @named step = Step(start_time = st, offset = o, height = h)
@@ -337,7 +337,7 @@ end
     end
     # # o .+ (x .> st). * _sawtooth_wave.(x, δ, f, A, st)
 
-    for i in 1:length(sources)
+    for i in 1:lastindex(sources)
         source = sources[i]
         @info "Testing Current with $(source.name) source"
         eqs = [connect(source.output, current.I)
@@ -356,7 +356,7 @@ end
             ])
         isys = structural_simplify(model)
 
-        u0 = []
+        u0 = [cap.v => 0.0]
 
         prob = ODAEProblem(isys, u0, (0, 10.0))
         sol = solve(prob, dt = 0.1, Tsit5())

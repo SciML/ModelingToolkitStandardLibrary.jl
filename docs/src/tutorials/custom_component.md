@@ -27,7 +27,7 @@ model NonlinearResistor "Chua's resistor"
   parameter SI.Conductance Ga "conductance in inner voltage range";
   parameter SI.Conductance Gb "conductance in outer voltage range";
   parameter SI.Voltage Ve "inner voltage range limit";
-equation 
+equation
   i = if (v < -Ve) then Gb*(v + Ve) - Ga*Ve else if (v > Ve) then Gb*(v - Ve) + Ga*Ve else Ga*v;
 end NonlinearResistor;
 ```
@@ -94,7 +94,7 @@ The final model can now be created with the components from the library and the 
 @named L = Inductor(L = 18)
 @named Ro = Resistor(R = 12.5e-3)
 @named G = Conductor(G = 0.565)
-@named C1 = Capacitor(C = 10, v_start = 4)
+@named C1 = Capacitor(C = 10, v = 4)
 @named C2 = Capacitor(C = 100)
 @named Nr = NonlinearResistor(Ga = -0.757576,
     Gb = -0.409091,
@@ -119,7 +119,7 @@ nothing # hide
 
 Now the model can be simulated.
 First, `structural_simplify` is called on the model and an `ODEProblem` is built from the result.
-Since the initial voltage of the first capacitor was already specified via `v_start`, no initial condition is given and an empty pair is supplied.
+Since the initial voltage of the first capacitor was already specified via `v`, no initial condition is given and an empty pair is supplied.
 
 ```@example components
 sys = structural_simplify(model)

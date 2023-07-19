@@ -22,11 +22,11 @@ using IfElse: ifelse
         extend(ODESystem(eqs, t, [], pars; name = name), oneport)
     end
 
-    @named L = Inductor(L = 18)
+    @named L = Inductor(L = 18, i = 0.0)
     @named Ro = Resistor(R = 12.5e-3)
     @named G = Conductor(G = 0.565)
-    @named C1 = Capacitor(C = 10, v_start = 4)
-    @named C2 = Capacitor(C = 100)
+    @named C1 = Capacitor(C = 10, v = 4)
+    @named C2 = Capacitor(C = 100, v = 0.0)
     @named Nr = NonlinearResistor(Ga = -0.757576,
         Gb = -0.409091,
         Ve = 1)
