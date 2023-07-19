@@ -1,7 +1,8 @@
 """
-    Integrator(;name, k=1, x_start=0.0)
+    Integrator(;name, k = 1, x = 0.0)
 
 Outputs `y = ∫k*u dt`, corresponding to the transfer function `1/s`.
+Initial value of integrator state `x` can be set with `x`
 
 # Connectors:
 
@@ -11,22 +12,25 @@ Outputs `y = ∫k*u dt`, corresponding to the transfer function `1/s`.
 # Parameters:
 
   - `k`: Gain of integrator
-  - `x_start`: Initial value of integrator
 """
-@component function Integrator(; name, k = 1, x_start = 0.0)
-    @named siso = SISO()
-    @unpack u, y = siso
-    sts = @variables x(t)=x_start [description = "State of Integrator $name"]
-    pars = @parameters k=k [description = "Gain of Integrator $name"]
-    eqs = [D(x) ~ k * u
-        y ~ x]
-    extend(ODESystem(eqs, t, sts, pars; name = name), siso)
+@mtkmodel Integrator begin
+    @extend u, y = siso = SISO()
+    @variables begin
+        x(t) = 0.0, [description = "State of Integrator"]
+    end
+    @parameters begin
+        k = 1, [description = "Gain of Integrator"]
+    end
+    @equations begin
+        D(x) ~ k * u
+        y ~ x
+    end
 end
-
 """
-    Derivative(; name, k=1, T, x_start=0.0)
+    Derivative(; name, k = 1, T, x = 0.0)
 
 Outputs an approximate derivative of the input. The transfer function of this block is
+Initial value of the state `x` can be set with `x`
 
 ```
 k       k
@@ -44,31 +48,37 @@ A smaller `T` leads to a more ideal approximation of the derivative.
 
   - `k`: Gain
   - `T`: [s] Time constants (T>0 required; T=0 is ideal derivative block)
-  - `x_start`: Initial value of state
 
 # Connectors:
 
   - `input`
   - `output`
 """
-@component function Derivative(; name, k = 1, T, x_start = 0.0)
-    @symcheck T > 0 || throw(ArgumentError("Time constant `T` has to be strictly positive"))
-    @named siso = SISO()
-    @unpack u, y = siso
-    sts = @variables x(t)=x_start [description = "State of Derivative $name"]
-    pars = @parameters T=T [description = "Time constant of Derivative $name"] k=k [
-        description = "Gain of Derivative $name",
-    ]
-    eqs = [D(x) ~ (u - x) / T
-        y ~ (k / T) * (u - x)]
-    extend(ODESystem(eqs, t, sts, pars; name = name), siso)
+@mtkmodel Derivative begin
+    @extend u, y = siso = SISO()
+    @variables begin
+        x(t) = 0.0, [description = "State of Derivative"]
+    end
+    @parameters begin
+        T = T, [description = "Time constant of Derivative"]
+        k = 1, [description = "Gain of Derivative"]
+    end
+    begin
+        @symcheck T > 0 ||
+                  throw(ArgumentError("Time constant `T` has to be strictly positive"))
+    end
+    @equations begin
+        D(x) ~ (u - x) / T
+        y ~ (k / T) * (u - x)
+    end
 end
 
 """
-    FirstOrder(; name, k=1, T, x_start=0.0, lowpass=true)
+    FirstOrder(; name, k = 1.0, T, x = 0.0, lowpass = true)
 
 A first-order filter with a single real pole in `s = -T` and gain `k`. If `lowpass=true` (default), the transfer function
 is given by `Y(s)/U(s) = `
+Initial value of the state `x` can be set with `x`
 
 ```
    k
@@ -88,7 +98,6 @@ sT + 1 - k
 
   - `k`: Gain
   - `T`: [s] Time constants (T>0 required)
-  - `x_start`: Initial value of state
 
 # Connectors:
 
@@ -97,21 +106,28 @@ sT + 1 - k
 
 See also [`SecondOrder`](@ref)
 """
-@component function FirstOrder(; name, k = 1, T, x_start = 0.0, lowpass = true)
-    @symcheck T > 0 || throw(ArgumentError("Time constant `T` has to be strictly positive"))
-    @named siso = SISO()
-    @unpack u, y = siso
-    sts = @variables x(t)=x_start [description = "State of FirstOrder filter $name"]
-    pars = @parameters T=T [description = "Time constant of FirstOrder filter $name"] k=k [
-        description = "Gain of FirstOrder $name",
-    ]
-    eqs = [D(x) ~ (k * u - x) / T
-        lowpass ? y ~ x : y ~ k * u - x]
-    extend(ODESystem(eqs, t, sts, pars; name = name), siso)
+@mtkmodel FirstOrder begin
+    @extend u, y = siso = SISO()
+    @variables begin
+        x(t) = 0.0, [description = "State of FirstOrder filter"]
+    end
+    @parameters begin
+        lowpass = true
+        T = T, [description = "Time constant of FirstOrder filter"]
+        k = 1.0, [description = "Gain of FirstOrder"]
+    end
+    begin
+        @symcheck T > 0 ||
+                  throw(ArgumentError("Time constant `T` has to be strictly positive"))
+    end
+    @equations begin
+        D(x) ~ (k * u - x) / T
+        getdefault(lowpass) ? y ~ x : y ~ k * u - x
+    end
 end
 
 """
-    SecondOrder(; name, k=1, w, d, x_start=0.0, xd_start=0.0)
+    SecondOrder(; name, k = 1.0, w, d, x = 0.0, xd = 0.0)
 
 A second-order filter with gain `k`, a bandwidth of `w` rad/s and relative damping `d`. The transfer function
 is given by `Y(s)/U(s) = `
@@ -124,44 +140,47 @@ s² + 2d*w*s + w^2
 
 Critical damping corresponds to `d=1`, which yields the fastest step response without overshoot, `d < 1` results in an underdamped filter while `d > 1` results in an overdamped filter.
 `d = 1/√2` corresponds to a Butterworth filter of order 2 (maximally flat frequency response).
+Initial value of the state `x` can be set with `x`, and of derivative state `xd` with `xd`.
 
 # Parameters:
 
   - `k`: Gain
   - `w`: [`rad/s`] Angular frequency
   - `d`: Damping
-  - `x_start`: Initial value of state (output)
-  - `xd_start`: Initial value of derivative of state (output)
 
 # Connectors:
 
   - `input`
   - `output`
 """
-@component function SecondOrder(; name, k = 1, w, d, x_start = 0.0, xd_start = 0.0)
-    @named siso = SISO()
-    @unpack u, y = siso
-    @variables x(t)=x_start [description = "State of SecondOrder filter $name"]
-    @variables xd(t)=xd_start [description = "Derivative state of SecondOrder filter $name"]
-    @parameters k=k [description = "Gain of SecondOrder $name"]
-    @parameters w=w [description = "Bandwidth of SecondOrder $name"]
-    @parameters d=d [description = "Relative damping of SecondOrder $name"]
-    eqs = [D(x) ~ xd
+@mtkmodel SecondOrder begin
+    @extend u, y = siso = SISO()
+    @variables begin
+        x(t) = 0.0, [description = "State of SecondOrder filter"]
+        xd(t) = 0.0, [description = "Derivative state of SecondOrder filter"]
+    end
+    @parameters begin
+        k = 1.0, [description = "Gain of SecondOrder"]
+        w, [description = "Bandwidth of SecondOrder"]
+        d, [description = "Relative damping of SecondOrder"]
+    end
+    @equations begin
+        D(x) ~ xd
         D(xd) ~ w * (w * (k * u - x) - 2 * d * xd)
-        y ~ x]
-    extend(ODESystem(eqs, t; name = name), siso)
+        y ~ x
+    end
 end
 
 """
-    PI(;name, k=1, T, x_start=0.0)
+    PI(;name, gainPI.k = 1.0, T, int.x = 0.0)
 
 Textbook version of a PI-controller without actuator saturation and anti-windup measure.
+Initial value of integrator state `x` can be set with `int.x`
+Initial value of gain  can be set with `gainPI.k`
 
 # Parameters:
 
-  - `k`: Gain
   - `T`: [s] Integrator time constant (T>0 required)
-  - `x_start`: Initial value for the integrator
 
 # Connectors:
 
@@ -170,26 +189,32 @@ Textbook version of a PI-controller without actuator saturation and anti-windup 
 
 See also [`LimPI`](@ref)
 """
-@component function PI(; name, k = 1, T, x_start = 0.0)
-    @symcheck T > 0 || throw(ArgumentError("Time constant `T` has to be strictly positive"))
-    @named err_input = RealInput() # control error
-    @named ctr_output = RealOutput() # control signal
-    @named gainPI = Gain(k)
-    @named addPI = Add()
-    @named int = Integrator(k = 1 / T, x_start = x_start)
-    sys = [err_input, ctr_output, gainPI, addPI, int]
-    eqs = [
-        connect(err_input, addPI.input1),
-        connect(addPI.output, gainPI.input),
-        connect(gainPI.output, ctr_output),
-        connect(err_input, int.input),
-        connect(int.output, addPI.input2),
-    ]
-    ODESystem(eqs, t, [], []; name = name, systems = sys)
+@mtkmodel PI begin
+    @parameters begin
+        T, [description = "Integrator time constant"]
+    end
+    begin
+        @symcheck T > 0 ||
+                  throw(ArgumentError("Time constant `T` has to be strictly positive"))
+    end
+    @components begin
+        err_input = RealInput() # control error
+        ctr_output = RealOutput() # control signal
+        gainPI = Gain(; k = 1.0)
+        addPI = Add()
+        int = Integrator(k = 1 / T, x = 0.0)
+    end
+    @equations begin
+        connect(err_input, addPI.input1)
+        connect(addPI.output, gainPI.input)
+        connect(gainPI.output, ctr_output)
+        connect(err_input, int.input)
+        connect(int.output, addPI.input2)
+    end
 end
 
 """
-    PID(;name, k=1, Ti=false, Td=false, Nd=10, xi_start=0, xd_start=0)
+    PID(;name, k=1, Ti=false, Td=false, Nd=10, int__x=0, der__x=0)
 
 Text-book version of a PID-controller without actuator saturation and anti-windup measure.
 
@@ -199,8 +224,8 @@ Text-book version of a PID-controller without actuator saturation and anti-windu
   - `Ti`: [s] Integrator time constant (Ti>0 required). If set to false, no integral action is used.
   - `Td`: [s] Derivative time constant (Td>0 required). If set to false, no derivative action is used.
   - `Nd`: [s] Time constant for the derivative approximation (Nd>0 required; Nd=0 is ideal derivative).
-  - `x_start`: Initial value for the integrator.
-  - `xd_start`: Initial value for the derivative state.
+  - `int__x`: Initial value for the integrator.
+  - `der__x`: Initial value for the derivative state.
 
 # Connectors:
 
@@ -209,8 +234,8 @@ Text-book version of a PID-controller without actuator saturation and anti-windu
 
 See also [`LimPID`](@ref)
 """
-@component function PID(; name, k = 1, Ti = false, Td = false, Nd = 10, xi_start = 0,
-    xd_start = 0)
+@component function PID(; name, k = 1, Ti = false, Td = false, Nd = 10, int__x = 0,
+    der__x = 0)
     with_I = !isequal(Ti, false)
     with_D = !isequal(Td, false)
     @named err_input = RealInput() # control error
@@ -224,12 +249,12 @@ See also [`LimPID`](@ref)
     @named gainPID = Gain(k)
     @named addPID = Add3()
     if with_I
-        @named int = Integrator(k = 1 / Ti, x_start = xi_start)
+        @named int = Integrator(k = 1 / Ti, x = int__x)
     else
         @named Izero = Constant(k = 0)
     end
     if with_D
-        @named der = Derivative(k = Td, T = 1 / Nd, x_start = xd_start)
+        @named der = Derivative(k = Td, T = 1 / Nd, x = der__x)
     else
         @named Dzero = Constant(k = 0)
     end
@@ -265,23 +290,21 @@ See also [`LimPID`](@ref)
 end
 
 """
-    LimPI(;name, k=1, T, u_max=1, u_min=-u_max, Ta)
+    LimPI(; name, T, Ta, k = 1.0, int__x = 0.0, u_max = 1.0, u_min = -u_max)
 
 Text-book version of a PI-controller with actuator saturation and anti-windup measure.
 
 # Parameters:
 
-  - `k`: Gain
   - `T`: [s] Integrator time constant (T>0 required)
   - `Ta`: [s] Tracking time constant (Ta>0 required)
-  - `x_start`: Initial value for the integrator
 
 # Connectors:
 
   - `err_input`
   - `ctr_output`
 """
-@component function LimPI(; name, k = 1, T, u_max, u_min = -u_max, Ta, x_start = 0.0)
+@component function LimPI(; name, k = 1, T, u_max, u_min = -u_max, Ta, int__x = 0.0)
     @symcheck Ta > 0 ||
               throw(ArgumentError("Time constant `Ta` has to be strictly positive"))
     @symcheck T > 0 || throw(ArgumentError("Time constant `T` has to be strictly positive"))
@@ -291,7 +314,7 @@ Text-book version of a PI-controller with actuator saturation and anti-windup me
     @named gainPI = Gain(k)
     @named addPI = Add()
     @named addTrack = Add()
-    @named int = Integrator(k = 1 / T, x_start = x_start)
+    @named int = Integrator(k = 1 / T, x = int__x)
     @named limiter = Limiter(y_max = u_max, y_min = u_min)
     @named addSat = Add(k1 = 1, k2 = -1)
     @named gainTrack = Gain(1 / Ta)
@@ -351,8 +374,8 @@ where the transfer function for the derivative includes additional filtering, se
     u_max = Inf,
     u_min = u_max > 0 ? -u_max : -Inf,
     gains = false,
-    xi_start = 0.0,
-    xd_start = 0.0)
+    int__x = 0.0,
+    der__x = 0.0)
     with_I = !isequal(Ti, false)
     with_D = !isequal(Td, false)
     with_AWM = Ni != Inf
@@ -376,7 +399,7 @@ where the transfer function for the derivative includes additional filtering, se
     @named measurement = RealInput()
     @named ctr_output = RealOutput() # control signal
     @named addP = Add(k1 = wp, k2 = -1)
-    @named gainPID = Gain(k)
+    @named gainPID = Gain(; k)
     @named addPID = Add3()
     @named limiter = Limiter(y_max = u_max, y_min = u_min)
     if with_I
@@ -387,12 +410,12 @@ where the transfer function for the derivative includes additional filtering, se
         else
             @named addI = Add(k1 = 1, k2 = -1)
         end
-        @named int = Integrator(k = 1 / Ti, x_start = xi_start)
+        @named int = Integrator(k = 1 / Ti, x = int__x)
     else
         @named Izero = Constant(k = 0)
     end
     if with_D
-        @named der = Derivative(k = Td, T = 1 / Nd, x_start = xd_start)
+        @named der = Derivative(k = Td, T = 1 / Nd, x = der__x)
         @named addD = Add(k1 = wd, k2 = -1)
     else
         @named Dzero = Constant(k = 0)
@@ -448,7 +471,7 @@ where the transfer function for the derivative includes additional filtering, se
 end
 
 """
-    StateSpace(A, B, C, D=0; x_start=zeros(size(A,1)), u0=zeros(size(B,2)), y0=zeros(size(C,1)), name)
+    StateSpace(A, B, C, D = 0; x =    zeros(size(A,1)), u0 = zeros(size(B,2)), y0 = zeros(size(C,1)), name)
 
 A linear, time-invariant state-space system on the form.
 
@@ -481,7 +504,7 @@ y &= h(x, u)
 
 linearized around the operating point `x₀, u₀`, we have `y0, u0 = h(x₀, u₀), u₀`.
 """
-@component function StateSpace(; A, B, C, D = nothing, x_start = zeros(size(A, 1)), name,
+@component function StateSpace(; A, B, C, D = nothing, x = zeros(size(A, 1)), name,
     u0 = zeros(size(B, 2)), y0 = zeros(size(C, 1)))
     nx, nu, ny = size(A, 1), size(B, 2), size(C, 1)
     size(A, 2) == nx || error("`A` has to be a square matrix.")
@@ -497,7 +520,7 @@ linearized around the operating point `x₀, u₀`, we have `y0, u0 = h(x₀, u�
     end
     @named input = RealInput(nin = nu)
     @named output = RealOutput(nout = ny)
-    @variables x(t)[1:nx]=x_start [
+    @variables x(t)[1:nx]=x [
         description = "State variables of StateSpace system $name",
     ]
     # pars = @parameters A=A B=B C=C D=D # This is buggy
