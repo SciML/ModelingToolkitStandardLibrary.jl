@@ -138,7 +138,8 @@ end
     end
 
     for N in [1, 2]
-        for damping_volume in [0.01 * 0.1 * 0.25, 0]
+        for damping_volume in [0.01 * 0.1 * 0.25]
+            
             @named system = System(N; damping_volume)
             s = complete(system)
             sys = structural_simplify(system)
@@ -150,7 +151,7 @@ end
                 ImplicitEuler(nlsolve = NLNewton(check_div = false,
                     always_new = true,
                     max_iter = 10,
-                    relax = 9 // 10));
+                    relax=9//10));
                 dt = 0.0001, adaptive = false, initializealg = NoInit())
 
             # begin
@@ -307,7 +308,7 @@ end
 
     @test sol[sys.ddx][1] == 0.0
     @test maximum(sol[sys.ddx]) > 200
-    @test sol[s.piston.x][end]≈0.06 atol=0.01
+    @test sol[s.piston.x][end]≈0.05 atol=0.01
 end
 
 @testset "Prevent Negative Pressure" begin

@@ -568,7 +568,7 @@ dm ────►               │  │ area
 
     volumes = []
     if N > 0
-        Δx = x_max / N # ParentScope not needed here, why??
+        Δx = ParentScope(x_max) / N
         x₀ = ParentScope(x_int)
 
         for i in 1:N
@@ -595,8 +595,8 @@ dm ────►               │  │ area
 
         for i in 1:N
             push!(eqs,
-                volumes[i].dx ~ ifelse((vol >= (i - 1) * Δx * area) &
-                                       (vol < (i) * Δx * area), flange.v * direction, 0))
+                volumes[i].dx ~ ifelse((vol >= (i - 1) * (x_max/N) * area) &
+                                       (vol < (i) * (x_max/N) * area), flange.v * direction, 0))
             push!(eqs, pipe_bases[i].x ~ volumes[i].vol / volumes[i].area)
         end
     else
