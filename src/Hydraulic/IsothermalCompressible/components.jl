@@ -568,7 +568,7 @@ dm ────►               │  │ area
 
     volumes = []
     if N > 0
-        Δx = ParentScope(x_max) / N
+        Δx = x_max / N # ParentScope not needed here, why??
         x₀ = ParentScope(x_int)
 
         for i in 1:N
