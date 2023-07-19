@@ -1,9 +1,6 @@
-@connector function Flange(; name)
-    vars = @variables begin
-        s(t)
-        f(t), [connect = Flow]
-    end
-    ODESystem(Equation[], t, vars, [], name = name, defaults = Dict(f => 0.0))
+@connector Flange begin
+    s(t)
+    f(t), [connect = Flow]
 end
 Base.@doc """
     Flange(;name)
@@ -15,9 +12,9 @@ Base.@doc """
 - `f`: [N] Cut force into the flange
 """ Flange
 
-@connector function Support(; name)
-    @named flange = Flange()
-    extend(ODESystem(Equation[], t, name = name), flange)
+@connector Support begin
+    s(t)
+    f(t), [connect = Flow]
 end
 Base.@doc """
     Support(;name)
@@ -29,78 +26,66 @@ Support/housing 1-dim. translational flange.
 - `f`: [N] Cut force into the flange
 """ Support
 
-function PartialTwoFlanges(; name)
-    @named flange_a = Flange() # (left) driving flange (flange axis directed into cut plane, e. g. from left to right)
-    @named flange_b = Flange() # (right) driven flange (flange axis directed out of cut plane)
-    compose(ODESystem([], t; name), flange_a, flange_b)
+@mtkmodel PartialTwoFlanges begin
+    @components begin
+        flange_a = Flange() # (left) driving flange (flange axis directed into cut plane, e. g. from left to right)
+        flange_b = Flange() # (right) driven flange (flange axis directed out of cut plane)
+    end
 end
 
 """
-    PartialCompliant(;name, s_rel_start=0.0, f_start=0.0)
+    PartialCompliant(; name, s_rel = 0.0, f = 0.0)
 
 Partial model for the compliant connection of two translational 1-dim. flanges.
 
-# Parameters:
-
-  - `s_rel_start`: [m] Initial relative distance between the flanges
-  - `f_start`: [N] Initial force between flanges
-
 # States:
 
-  - `s_rel`: [m] Relative distance (= flange_b.s - flange_a.s)
-  - `f`: [N] Force between flanges (= flange_b.f)
+  - `s_rel`: [m] Relative distance (= flange_b.s - flange_a.s). It accepts an initial value, which defaults to 0.0.
+  - `f`: [N] Force between flanges (= flange_b.f). It accepts an initial value, which defaults to 0.0.
 """
-function PartialCompliant(; name, s_rel_start = 0.0, f_start = 0.0)
-    @named pt = PartialTwoFlanges()
-    @unpack flange_a, flange_b = pt
-    @variables s_rel(t)=s_rel_start [
-        description = "Relative distance between flanges flange_b.s - flange_a.s",
-    ]
-    @variables f(t)=f_start [
-        description = "Force between flanges (positive in direction of flange axis R)",
-    ]
+@mtkmodel PartialCompliant begin
+    @extend (flange_a, flange_b) = pt = PartialTwoFlanges()
+    @variables begin
+        s_rel(t) = 0.0, [description = "Relative distance between flanges"]
+        f(t) = 0.0, [description = "Force between flanges"]
+    end
 
-    eqs = [s_rel ~ flange_b.s - flange_a.s
+    @equations begin
+        s_rel ~ flange_b.s - flange_a.s
         flange_b.f ~ +f
-        flange_a.f ~ -f]
-    return extend(ODESystem(eqs, t; name = name), pt)
+        flange_a.f ~ -f
+    end
 end
 
 """
-    PartialCompliantWithRelativeStates(;name, s_rel_start=0.0, v_rel_start=0.0, f_start=0.0)
+    PartialCompliantWithRelativeStates(;name, s_rel = 0.0, v_rel = 0.0, f = 0.0)
 
 Partial model for the compliant connection of two translational 1-dim. flanges.
 
-# Parameters:
+    # States:
 
-  - `s_rel_start`: [m] Initial relative distance
-  - `v_rel_start`: [m/s] Initial relative linear velocity (= der(s_rel))
-
-# States:
-
-  - `s_rel`: [m] Relative distance (= flange_b.phi - flange_a.phi)
-  - `v_rel`: [m/s] Relative linear velocity (= der(s_rel))
-  - `f`: [N] Force between flanges (= flange_b.f)
+  - `s_rel`: [m] Relative distance (= flange_b.phi - flange_a.phi). It accepts an initial value, which defaults to 0.0.
+  - `v_rel`: [m/s] Relative linear velocity (= der(s_rel)). It accepts an initial value, which defaults to 0.0.
+  - `f`: [N] Force between flanges (= flange_b.f). It accepts an initial value, which defaults to 0.0.
 """
-function PartialCompliantWithRelativeStates(; name, s_rel_start = 0, v_rel_start = 0,
-    f_start = 0)
-    @named pt = PartialTwoFlanges()
-    @unpack flange_a, flange_b = pt
-    @variables s_rel(t)=s_rel_start [
-        description = "Relative distance between flanges flange_b.s - flange_a.s",
-    ]
-    @variables v_rel(t)=v_rel_start [description = "Relative linear velocity (= D(s_rel))"]
-    @variables f(t)=f_start [description = "Forces between flanges (= flange_b.f)"]
+@mtkmodel PartialCompliantWithRelativeStates begin
+    @extend flange_a, flange_b = pt = PartialTwoFlanges()
+    @variables begin
+        s_rel(t) = 0.0, [description = "Relative distance between flanges"]
+        v_rel(t) = 0.0, [description = "Relative linear velocity))"]
+        f(t) = 0.0, [description = "Forces between flanges"]
+    end
 
-    eqs = [s_rel ~ flange_b.s - flange_a.s
+    @equations begin
+        s_rel ~ flange_b.s - flange_a.s
         v_rel ~ D(s_rel)
         flange_b.f ~ f
-        flange_a.f ~ -f]
-    return extend(ODESystem(eqs, t; name = name), pt)
+        flange_a.f ~ -f
+    end
 end
 
 """
-    PartialElementaryOneFlangeAndSupport2(;name, use_support=false)
+    PartialElementaryOneFlangeAndSupport2(; name, use_support = false)
 
 Partial model for a component with one translational 1-dim. shaft flange and a support used for textual modeling, i.e., for elementary models
 
@@ -130,7 +115,7 @@ function PartialElementaryOneFlangeAndSupport2(; name, use_support = false)
 end
 
 """
-    PartialElementaryTwoFlangesAndSupport2(;name, use_support=false)
+    PartialElementaryTwoFlangesAndSupport2(; name, use_support = false)
 
 Partial model for a component with two translational 1-dim. flanges and a support used for textual modeling, i.e., for elementary models
 
@@ -161,16 +146,16 @@ function PartialElementaryTwoFlangesAndSupport2(; name, use_support = false)
     end
 end
 
-function PartialRigid(; name, L = 0, s0 = 0)
-    @named ptf = PartialTwoFlanges()
-    @unpack flange_a, flange_b = ptf
-    @variables s(t)=s0 [
-        description = "Absolute position of center of component (s = flange_a.s + L/2 = flange_b.s - L/2)",
-    ]
-    @parameters L=L [
-        description = "Length of component, from left flange to right flange (= flange_b.s - flange_a.s)",
-    ]
-    eqs = [flange_a.s ~ s - L / 2
-        flange_b.s ~ s + L / 2]
-    return extend(ODESystem(eqs, t; name = name), ptf)
+@mtkmodel PartialRigid begin
+    @extend flange_a, flange_b = ptf = PartialTwoFlanges()
+    @variables begin
+        s(t) = 0.0, [description = "Absolute position of center of component"]
+    end
+    @parameters begin
+        L = 0.0, [description = "Length of component, from left flange to right flange"]
+    end
+    @equations begin
+        flange_a.s ~ s - L / 2
+        flange_b.s ~ s + L / 2
+    end
 end

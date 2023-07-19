@@ -1,5 +1,5 @@
 """
-    AngleSensor(;name)
+    AngleSensor(; name)
 
 Ideal sensor to measure the absolute flange angle
 
@@ -8,16 +8,19 @@ Ideal sensor to measure the absolute flange angle
   - `flange`: [Flange](@ref) Flange of shaft from which sensor information shall be measured
   - `phi`: [RealOutput](@ref) Absolute angle of flange
 """
-@component function AngleSensor(; name)
-    @named flange = Flange()
-    @named phi = RealOutput()
-    eqs = [phi.u ~ flange.phi
-        flange.tau ~ 0]
-    return ODESystem(eqs, t, [], []; name = name, systems = [flange, phi])
+@mtkmodel AngleSensor begin
+    @components begin
+        flange = Flange()
+        phi = RealOutput()
+    end
+    @equations begin
+        phi.u ~ flange.phi
+        flange.tau ~ 0
+    end
 end
 
 """
-    SpeedSensor(;name)
+    SpeedSensor(; name)
 
 Ideal sensor to measure the absolute flange angular velocity
 
@@ -26,12 +29,15 @@ Ideal sensor to measure the absolute flange angular velocity
   - `flange`: [Flange](@ref) Flange of shaft from which sensor information shall be measured
   - `w`: [RealOutput](@ref) Absolute angular velocity of flange
 """
-@component function SpeedSensor(; name)
-    @named flange = Flange()
-    @named w = RealOutput()
-    eqs = [D(flange.phi) ~ w.u
-        flange.tau ~ 0]
-    return ODESystem(eqs, t, [], []; name = name, systems = [flange, w])
+@mtkmodel SpeedSensor begin
+    @components begin
+        flange = Flange()
+        w = RealOutput()
+    end
+    @equations begin
+        D(flange.phi) ~ w.u
+        flange.tau ~ 0
+    end
 end
 
 """
@@ -45,17 +51,20 @@ Ideal sensor to measure the torque between two flanges (`= flange_a.tau`)
   - `flange_b`: [Flange](@ref) Left flange of shaft
   - `tau`: [RealOutput](@ref) Torque in flange flange_a and flange_b (`tau = flange_a.tau = -flange_b.tau`)
 """
-@component function TorqueSensor(; name)
-    @named flange_a = Flange()
-    @named flange_b = Flange()
-    @named tau = RealOutput()
-    eqs = [flange_a.phi ~ flange_b.phi
-        tau.u ~ flange_a.tau]
-    return ODESystem(eqs, t, [], []; name = name, systems = [flange_a, flange_b, tau])
+@mtkmodel TorqueSensor begin
+    @components begin
+        flange_a = Flange()
+        flange_b = Flange()
+        tau = RealOutput()
+    end
+    @equations begin
+        flange_a.phi ~ flange_b.phi
+        tau.u ~ flange_a.tau
+    end
 end
 
 """
-    RelSpeedSensor(;name)
+    RelSpeedSensor(; name)
 
 Ideal sensor to measure the relative angular velocity
 
@@ -65,15 +74,19 @@ Ideal sensor to measure the relative angular velocity
   - `flange_b`: [Flange](@ref) Flange of shaft from which sensor information shall be measured
   - `w`: [RealOutput](@ref) Absolute angular velocity of flange
 """
-@component function RelSpeedSensor(; name)
-    @named flange_a = Flange()
-    @named flange_b = Flange()
-    @named w_rel = RealOutput()
-    @variables phi_rel(t) = 0.0
-    eqs = [0 ~ flange_a.tau + flange_b.tau
+@mtkmodel RelSpeedSensor begin
+    @components begin
+        flange_a = Flange()
+        flange_b = Flange()
+        w_rel = RealOutput()
+    end
+    @variables begin
+        phi_rel(t) = 0.0
+    end
+    @equations begin
+        0 ~ flange_a.tau + flange_b.tau
         phi_rel ~ flange_b.phi - flange_a.phi
         D(phi_rel) ~ w_rel.u
-        0 ~ flange_a.tau]
-    return ODESystem(eqs, t, [phi_rel], []; name = name,
-        systems = [flange_a, flange_b, w_rel])
+        0 ~ flange_a.tau
+    end
 end

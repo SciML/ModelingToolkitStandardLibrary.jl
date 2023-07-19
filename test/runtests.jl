@@ -53,6 +53,9 @@ end
 @safetestset "Mechanical Translation" begin
     include("Mechanical/translational.jl")
 end
+@safetestset "Mechanical Translation" begin
+    include("Mechanical/translational_modelica.jl")
+end
 @safetestset "Multi-Domain" begin
     include("multi_domain.jl")
 end

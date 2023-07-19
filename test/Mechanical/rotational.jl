@@ -14,7 +14,7 @@ D = Differential(t)
     @named inertia1 = Inertia(J = 2) # this one is fixed
     @named spring = Spring(c = 1e4)
     @named damper = Damper(d = 10)
-    @named inertia2 = Inertia(J = 2, phi_start = pi / 2)
+    @named inertia2 = Inertia(J = 2, phi = pi / 2)
 
     connections = [connect(fixed.flange, inertia1.flange_b)
         connect(inertia1.flange_b, spring.flange_a, damper.flange_a)
@@ -63,7 +63,7 @@ end
 
     @named fixed = Fixed()
     @named torque = Torque(use_support = true)
-    @named inertia1 = Inertia(J = 2, phi_start = pi / 2)
+    @named inertia1 = Inertia(J = 2, phi = pi / 2)
     @named spring = Rotational.Spring(c = 1e4)
     @named damper = Damper(d = 10)
     @named inertia2 = Inertia(J = 4)
@@ -233,7 +233,7 @@ end
     @named inertia1 = Inertia(J = 2) # this one is fixed
     @named spring = Spring(c = 1e4)
     @named damper = Damper(d = 10)
-    @named inertia2 = Inertia(J = 2, phi_start = pi / 2)
+    @named inertia2 = Inertia(J = 2, phi = pi / 2)
     @named speed_sensor = SpeedSensor()
     @named torque_sensor = TorqueSensor()
     @named rel_speed_sensor = RelSpeedSensor()

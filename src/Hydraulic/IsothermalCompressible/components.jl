@@ -506,7 +506,7 @@ dm ────►               │  │ area
 
     ports = @named begin
         port = HydraulicPort(; p_int)
-        flange = MechanicalPort(; f_int = p_int * area)
+        flange = MechanicalPort(; f = p_int * area)
         damper = ValveBase(; p_a_int = p_int, p_b_int = p_int, area_int = 1, Cd,
             Cd_reverse, minimum_area)
     end
