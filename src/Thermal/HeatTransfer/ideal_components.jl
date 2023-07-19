@@ -1,11 +1,11 @@
 """
-    HeatCapacitor(; name, C, T_start=273.15 + 20)
+    HeatCapacitor(; name, C, T = 273.15 + 20)
 
 Lumped thermal element storing heat
 
 # States:
 
-  - `T`: [`K`] Temperature of element
+  - `T`: [`K`] Temperature of element. It accepts an initial value, which defaults to 273.15 + 20.
   - `der_T`: [`K/s`] Time derivative of temperature
 
 # Connectors:
@@ -15,25 +15,28 @@ Lumped thermal element storing heat
 # Parameters:
 
   - `C`: [`J/K`] Heat capacity of element (= cp*m)
-  - `T_start`: [`K`] Initial temperature of element
 """
-@component function HeatCapacitor(; name, C, T_start = 273.15 + 20)
-    @named port = HeatPort()
-    @parameters C = C
-    sts = @variables begin
-        T(t) = T_start
+@mtkmodel HeatCapacitor begin
+    @components begin
+        port = HeatPort()
+    end
+    @parameters begin
+        C, [description = "Heat capacity of element"]
+    end
+    @variables begin
+        T(t) = 273.15 + 20
         der_T(t) = 0.0
     end
 
-    D = Differential(t)
-    eqs = [T ~ port.T
+    @equations begin
+        T ~ port.T
         der_T ~ port.Q_flow / C
-        D(T) ~ der_T]
-    ODESystem(eqs, t, sts, [C]; systems = [port], name = name)
+        D(T) ~ der_T
+    end
 end
 
 """
-    ThermalConductor(;name, G)
+    ThermalConductor(; name, G)
 
 Lumped thermal element transporting heat without storing it.
 
@@ -50,14 +53,14 @@ see [`Element1D`](@ref)
 
   - `G`: [`W/K`] Constant thermal conductance of material
 """
-@component function ThermalConductor(; name, G)
-    @named element1d = Element1D()
-    @unpack Q_flow, dT = element1d
-    pars = @parameters G = G
-    eqs = [
-        Q_flow ~ G * dT,
-    ]
-    extend(ODESystem(eqs, t, [], pars; name = name), element1d)
+@mtkmodel ThermalConductor begin
+    @extend Q_flow, dT = element1d = Element1D()
+    @parameters begin
+        G
+    end
+    @equations begin
+        Q_flow ~ G * dT
+    end
 end
 
 """
@@ -79,15 +82,14 @@ Lumped thermal element transporting heat without storing it.
 
   - `R`: [`K/W`] Constant thermal resistance of material
 """
-@component function ThermalResistor(; name, R)
-    @named element1d = Element1D()
-    @unpack Q_flow, dT = element1d
-    pars = @parameters R = R
-    eqs = [
-        dT ~ R * Q_flow,
-    ]
-
-    extend(ODESystem(eqs, t, [], pars; name = name), element1d)
+@mtkmodel ThermalResistor begin
+    @extend Q_flow, dT = element1d = Element1D()
+    @parameters begin
+        R
+    end
+    @equations begin
+        dT ~ R * Q_flow
+    end
 end
 
 """
@@ -109,14 +111,14 @@ Lumped thermal element for heat convection.
 
   - `G`: [W/K] Convective thermal conductance
 """
-@component function ConvectiveConductor(; name, G)
-    @named convective_element1d = ConvectiveElement1D()
-    @unpack Q_flow, dT = convective_element1d
-    @parameters G = G
-    eqs = [
-        Q_flow ~ G * dT,
-    ]
-    extend(ODESystem(eqs, t, [], [G]; name = name), convective_element1d)
+@mtkmodel ConvectiveConductor begin
+    @extend Q_flow, dT = convective_element1d = ConvectiveElement1D()
+    @parameters begin
+        G
+    end
+    @equations begin
+        Q_flow ~ G * dT
+    end
 end
 
 """
@@ -126,7 +128,7 @@ Lumped thermal element for heat convection.
 
 # States:
 
-  - `dT`:  [`K`] Temperature difference across the component `solid.T` - `fluid.T`
+  - `dT`: [`K`] Temperature difference across the component `solid.T` - `fluid.T`
   - `Q_flow`: [`W`] Heat flow rate from `solid` -> `fluid`
 
 # Connectors:
@@ -138,14 +140,14 @@ Lumped thermal element for heat convection.
 
   - `R`: [`K/W`] Constant thermal resistance of material
 """
-@component function ConvectiveResistor(; name, R)
-    @named convective_element1d = ConvectiveElement1D()
-    @unpack Q_flow, dT = convective_element1d
-    @parameters R = R
-    eqs = [
-        dT ~ R * Q_flow,
-    ]
-    extend(ODESystem(eqs, t, [], [R]; name = name), convective_element1d)
+@mtkmodel ConvectiveResistor begin
+    @extend Q_flow, dT = convective_element1d = ConvectiveElement1D()
+    @parameters begin
+        R
+    end
+    @equations begin
+        dT ~ R * Q_flow
+    end
 end
 
 """
@@ -167,22 +169,22 @@ Lumped thermal element for radiation heat transfer.
 
   - `G`: [m^2] Net radiation conductance between two surfaces # Stefan-Boltzmann constant TODO: extract into physical constants module or use existing one
 """
-@component function BodyRadiation(; name, G)
-    sigma = 5.6703744191844294e-8 # Stefan-Boltzmann constant TODO: extract into physical constants module or use existing one
+@mtkmodel BodyRadiation begin
+    begin
+        sigma = 5.6703744191844294e-8 # Stefan-Boltzmann constant TODO: extract into physical constants module or use existing one
+    end
 
-    @named element1d = Element1D()
-    @unpack Q_flow, dT = element1d
-    @unpack port_a, port_b = element1d
-    pars = @parameters G = G
-    eqs = [
-        Q_flow ~ G * sigma * (port_a.T^4 - port_b.T^4),
-    ]
-
-    extend(ODESystem(eqs, t, [], pars; name = name), element1d)
+    @extend Q_flow, dT, port_a, port_b = element1d = Element1D()
+    @parameters begin
+        G
+    end
+    @equations begin
+        Q_flow ~ G * sigma * (port_a.T^4 - port_b.T^4)
+    end
 end
 
 """
-    ThermalCollector(; name, m=1)
+    ThermalCollector(; name, m = 1)
 
 Collects `m` heat flows
 

@@ -15,12 +15,17 @@ lags are associated with this sensor model.
 
   - `port`
 """
-@component function TemperatureSensor(; name)
-    @named port = HeatPort()
-    @variables T(t)
-    eqs = [T ~ port.T
-        port.Q_flow ~ 0]
-    ODESystem(eqs, t, [T], [], systems = [port], name = name)
+@mtkmodel TemperatureSensor begin
+    @components begin
+        port = HeatPort()
+    end
+    @variables begin
+        T(t)
+    end
+    @equations begin
+        T ~ port.T
+        port.Q_flow ~ 0
+    end
 end
 
 """
@@ -40,14 +45,19 @@ output signal in kelvin.
   - `port_a`
   - `port_b`
 """
-@component function RelativeTemperatureSensor(; name)
-    @named port_a = HeatPort()
-    @named port_b = HeatPort()
-    @variables T(t)
-    eqs = [T ~ port_a.T - port_b.T
+@mtkmodel RelativeTemperatureSensor begin
+    @components begin
+        port_a = HeatPort()
+        port_b = HeatPort()
+    end
+    @variables begin
+        T(t)
+    end
+    @equations begin
+        T ~ port_a.T - port_b.T
         port_a.Q_flow ~ 0
-        port_b.Q_flow ~ 0]
-    ODESystem(eqs, t, [T], [], systems = [port_a, port_b], name = name)
+        port_b.Q_flow ~ 0
+    end
 end
 
 """
@@ -69,12 +79,17 @@ The output signal is positive, if the heat flows from `port_a` to `port_b`.
   - `port_a`
   - `port_b`
 """
-@component function HeatFlowSensor(; name)
-    @named port_a = HeatPort()
-    @named port_b = HeatPort()
-    @variables Q_flow(t)
-    eqs = [port_a.T ~ port_b.T
+@mtkmodel HeatFlowSensor begin
+    @components begin
+        port_a = HeatPort()
+        port_b = HeatPort()
+    end
+    @variables begin
+        Q_flow(t)
+    end
+    @equations begin
+        port_a.T ~ port_b.T
         port_a.Q_flow + port_b.Q_flow ~ 0
-        Q_flow ~ port_a.Q_flow]
-    ODESystem(eqs, t, [Q_flow], [], systems = [port_a, port_b], name = name)
+        Q_flow ~ port_a.Q_flow
+    end
 end

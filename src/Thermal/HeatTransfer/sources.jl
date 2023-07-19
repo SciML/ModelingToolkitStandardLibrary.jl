@@ -1,5 +1,5 @@
 """
-    FixedHeatFlow(; name, Q_flow=1.0, T_ref=293.15, alpha=0.0)
+    FixedHeatFlow(; name, Q_flow = 1.0, T_ref = 293.15, alpha = 0.0)
 
 Fixed heat flow boundary condition.
 
@@ -17,18 +17,19 @@ the component FixedHeatFlow is connected, if parameter `Q_flow` is positive.
   - `T_ref`: [K] Reference temperature
   - `alpha`: [1/K] Temperature coefficient of heat flow rate
 """
-@component function FixedHeatFlow(; name, Q_flow = 1.0, T_ref = 293.15, alpha = 0.0)
-    pars = @parameters begin
-        Q_flow = Q_flow
-        T_ref = T_ref
-        alpha = alpha
+@mtkmodel FixedHeatFlow begin
+    @parameters begin
+        Q_flow = 1.0, [description = "Fixed heat flow rate at port"]
+        T_ref = 293.15, [description = "Reference temperature"]
+        alpha = 0.0, [description = "Temperature coefficient of heat flow rate"]
     end
-    @named port = HeatPort()
+    @components begin
+        port = HeatPort()
+    end
 
-    eqs = [
-        port.Q_flow ~ -Q_flow * (1 + alpha * (port.T - T_ref)),
-    ]
-    ODESystem(eqs, t, [], pars; systems = [port], name = name)
+    @equations begin
+        port.Q_flow ~ -Q_flow * (1 + alpha * (port.T - T_ref))
+    end
 end
 
 """
@@ -46,17 +47,20 @@ This model defines a fixed temperature `T` at its port in kelvin, i.e., it defin
 
   - `T`: [K] Fixed temperature boundary condition
 """
-@component function FixedTemperature(; name, T)
-    @named port = HeatPort()
-    pars = @parameters T = T
-    eqs = [
-        port.T ~ T,
-    ]
-    ODESystem(eqs, t, [], pars; systems = [port], name = name)
+@mtkmodel FixedTemperature begin
+    @components begin
+        port = HeatPort()
+    end
+    @parameters begin
+        T, [description = "Fixed temperature boundary condition"]
+    end
+    @equations begin
+        port.T ~ T
+    end
 end
 
 """
-    PrescribedHeatFlow(; name, T_ref=293.15, alpha=0.0)
+    PrescribedHeatFlow(; name, T_ref = 293.15, alpha = 0.0)
 
 Prescribed heat flow boundary condition.
 
@@ -76,18 +80,18 @@ dependent losses (which are given a reference temperature T_ref).
   - `T_ref`: [K] Reference temperature
   - `alpha`: [1/K] Temperature coefficient of heat flow rate
 """
-@component function PrescribedHeatFlow(; name, T_ref = 293.15, alpha = 0.0)
-    pars = @parameters begin
-        T_ref = T_ref
-        alpha = alpha
+@mtkmodel PrescribedHeatFlow begin
+    @parameters begin
+        T_ref = 293.15, [description = "Reference temperature"]
+        alpha = 0.0, [description = "Temperature coefficient of heat flow rate"]
     end
-    @named port = HeatPort()
-    @named Q_flow = RealInput()
-
-    eqs = [
-        port.Q_flow ~ -Q_flow.u * (1 + alpha * (port.T - T_ref)),
-    ]
-    ODESystem(eqs, t, [], pars; systems = [port, Q_flow], name = name)
+    @components begin
+        port = HeatPort()
+        Q_flow = RealInput()
+    end
+    @equations begin
+        port.Q_flow ~ -Q_flow.u * (1 + alpha * (port.T - T_ref))
+    end
 end
 
 """
@@ -104,11 +108,12 @@ the temperature at the specified value.
   - `port`
   - `RealInput` `T` input for the temperature
 """
-@component function PrescribedTemperature(; name)
-    @named port = HeatPort()
-    @named T = RealInput()
-    eqs = [
-        port.T ~ T.u,
-    ]
-    ODESystem(eqs, t, [], []; systems = [port, T], name = name)
+@mtkmodel PrescribedTemperature begin
+    @components begin
+        port = HeatPort()
+        T = RealInput()
+    end
+    @equations begin
+        port.T ~ T.u
+    end
 end
