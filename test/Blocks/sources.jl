@@ -418,7 +418,7 @@ end
     x = @. time^2 + 1.0
 
     vars = @variables y(t)=1 dy(t)=0 ddy(t)=0
-    @named src = TimeVaryingFunction(LinearInterpolation(x, time))
+    @named src = SampledData(Float64)
     @named int = Integrator()
     @named iosys = ODESystem([y ~ src.output.u
             D(y) ~ dy
