@@ -89,7 +89,7 @@ Variable length internal flow model of the fully developed incompressible flow f
     else
         c = length_int
     end
-    add_inertia && push!(vars, ddw)
+    add_inertia && push!(vars, ddm)
 
     systems = @named begin
         port_a = HydraulicPort(; p_int)
@@ -119,7 +119,7 @@ Variable length internal flow model of the fully developed incompressible flow f
     eqs = [0 ~ port_a.dm + port_b.dm]
 
     if variable_length
-        push!(eqs, ifelse(c > 0, shear + inertia, zero(c)))
+        push!(eqs, Δp ~ ifelse(c > 0, shear + inertia, zero(c)))
     else
         push!(eqs, Δp ~ shear + inertia)
     end
@@ -578,7 +578,7 @@ dm ────►               │  │ area
                     x₀ - Δx * (i - 1),
                     zero(Δx)))
 
-            comp = VolumeBase(reversible; name = Symbol("v$i"), p_int = ParentScope(p_int),
+            comp = VolumeBase(; name = Symbol("v$i"), p_int = ParentScope(p_int),
                 x_int = 0,
                 area = ParentScope(area),
                 dead_volume = ParentScope(area) * length, Χ1 = 1, Χ2 = 0)
