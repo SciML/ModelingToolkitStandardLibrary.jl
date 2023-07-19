@@ -72,11 +72,11 @@ Fluid parameter setter for isothermal compressible fluid domain.  Defaults given
     ODESystem(eqs, t, vars, pars; name, defaults = [dm => 0])
 end
 
-f_laminar(shape_factor, Re) = shape_factor * regPow(Re, -1, 1e-6) #regPow used to avoid dividing by 0, min value is 1e-6
+f_laminar(shape_factor, Re) = shape_factor * regPow(Re, -1, 0.1) #regPow used to avoid dividing by 0, min value is 0.1
 f_turbulent(shape_factor, Re) = (shape_factor / 64) / (0.79 * log(Re) - 1.64)^2
 
 """
-    friction_factor(dm, area, d_h, density, viscosity, shape_factor)
+    friction_factor(dm, area, d_h, viscosity, shape_factor)
 
 Calculates the friction factor ``f`` for fully developed flow in a tube such that ``Δp = f \\cdot \\rho \\frac{u^2}{2} \\frac{l}{d_h}`` where 
 
@@ -98,9 +98,11 @@ The friction factor is calculated for laminar and turbulent flow with a transiti
 
 Reference: Introduction to Fluid Mechanics, Fox & McDonald, 5th Edition, equations 8.19 and 8.21
 """
-function friction_factor(dm, area, d_h, density, viscosity, shape_factor)
-    u = abs(dm) / (density * area)
-    Re = density * u * d_h / viscosity
+function friction_factor(dm, area, d_h, viscosity, shape_factor)
+    # u = abs(dm) / (density * area)
+    # Re = density * u * d_h / viscosity
+
+    Re = abs(dm) * d_h / (area * viscosity)
 
     if Re <= 2000
         return f_laminar(shape_factor, Re)
@@ -111,7 +113,7 @@ function friction_factor(dm, area, d_h, density, viscosity, shape_factor)
         return f_turbulent(shape_factor, Re)
     end
 end
-@register_symbolic friction_factor(dm, area, d_h, density, viscosity, shape_factor)
+@register_symbolic friction_factor(dm, area, d_h, viscosity, shape_factor)
 Symbolics.derivative(::typeof(friction_factor), args, ::Val{1}) = 0
 Symbolics.derivative(::typeof(friction_factor), args, ::Val{4}) = 0
 
@@ -133,6 +135,11 @@ function liquid_density(port, p)
     regPow(1 + density_exp(port) * p / bulk_modulus(port), 1 / density_exp(port))
 end #Tait-Murnaghan equation of state
 liquid_density(port) = liquid_density(port, port.p)
+
+function liquid_density_differential(port, dp)
+    density_ref(port) * dp / bulk_modulus(port)
+end
+
 function gas_density(port, p)
     slope = (density_ref(port) - gas_density_ref(port)) / (0 - gas_pressure_ref(port))
     b = density_ref(port)

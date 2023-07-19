@@ -27,12 +27,13 @@ end
 
 @testset "TimeVaryingFunction" begin
     f(t) = t^2 + 1
-
+    vars = @variables y(t)=1 dy(t)=0 ddy(t)=0
     @named src = TimeVaryingFunction(f)
     @named int = Integrator()
-    @named iosys = ODESystem([
-            connect(src.output, int.input),
-        ],
+    @named iosys = ODESystem([y ~ src.output.u
+            D(y) ~ dy
+            D(dy) ~ ddy
+            connect(src.output, int.input)],
         t,
         systems = [int, src])
     sys = structural_simplify(iosys)
@@ -409,14 +410,15 @@ end
 end
 
 @testset "SampledData" begin
+    using DataInterpolations
+
     dt = 4e-4
     t_end = 10.0
     time = 0:dt:t_end
     x = @. time^2 + 1.0
 
     vars = @variables y(t)=1 dy(t)=0 ddy(t)=0
-
-    @named src = SampledData(Float64)
+    @named src = TimeVaryingFunction(LinearInterpolation(x, time))
     @named int = Integrator()
     @named iosys = ODESystem([y ~ src.output.u
             D(y) ~ dy
