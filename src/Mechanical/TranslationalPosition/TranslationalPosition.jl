@@ -12,7 +12,7 @@ D = Differential(t)
 export Flange
 include("utils.jl")
 
-export Fixed, Mass, Spring, Damper, IdealGear
+export Fixed, Mass, Spring, Damper
 include("components.jl")
 
 export Force
