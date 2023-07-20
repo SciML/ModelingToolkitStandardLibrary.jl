@@ -175,8 +175,8 @@ end
     PI(;name, gainPI.k = 1.0, T, int.x = 0.0)
 
 Textbook version of a PI-controller without actuator saturation and anti-windup measure.
+The proportional gain can be set with `gainPI.k`
 Initial value of integrator state `x` can be set with `int.x`
-Initial value of gain  can be set with `gainPI.k`
 
 # Parameters:
 
@@ -290,12 +290,13 @@ See also [`LimPID`](@ref)
 end
 
 """
-    LimPI(; name, T, Ta, k = 1.0, int__x = 0.0, u_max = 1.0, u_min = -u_max)
+    LimPI(; name, k = 1.0, T, Ta, int__x = 0.0, u_max = 1.0, u_min = -u_max)
 
 Text-book version of a PI-controller with actuator saturation and anti-windup measure.
 
 # Parameters:
 
+  - `k`: Proportional gain
   - `T`: [s] Integrator time constant (T>0 required)
   - `Ta`: [s] Tracking time constant (Ta>0 required)
 
@@ -471,7 +472,7 @@ where the transfer function for the derivative includes additional filtering, se
 end
 
 """
-    StateSpace(A, B, C, D = 0; x =    zeros(size(A,1)), u0 = zeros(size(B,2)), y0 = zeros(size(C,1)), name)
+    StateSpace(A, B, C, D = 0; x = zeros(size(A,1)), u0 = zeros(size(B,2)), y0 = zeros(size(C,1)), name)
 
 A linear, time-invariant state-space system on the form.
 
