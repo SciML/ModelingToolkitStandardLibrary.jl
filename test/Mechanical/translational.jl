@@ -10,8 +10,8 @@ D = Differential(t)
 @testset "Free" begin
     function System(; name)
         systems = @named begin
-            acc = TV.Acceleration(false)
-            a = Constant(k = -10)
+            acc = TV.Acceleration()
+            a = Constant(; k = -10)
             mass = TV.Mass(; m = 100)
             free = TV.Free()
         end
@@ -32,15 +32,15 @@ D = Differential(t)
     @test sol[s.free.f][end] ≈ 100 * 10
 end
 
-@testset "spring damper mass fixed" begin
-    @named dv = TV.Damper(d = 1, v_a_0 = 1)
-    @named dp = TP.Damper(d = 1, v_a_0 = 1, s_a_0 = 3, s_b_0 = 1)
+@testset "Spring, Damper, Mass, Fixed" begin
+    @named dv = TV.Damper(d = 1, flange_a.v = 1)
+    @named dp = TP.Damper(d = 1, va = 1, vb = 0.0, flange_a.s = 3, flange_b.s = 1)
 
-    @named sv = TV.Spring(k = 1, v_a_0 = 1, delta_s_0 = 1)
-    @named sp = TP.Spring(k = 1, s_a_0 = 3, s_b_0 = 1, l = 1)
+    @named sv = TV.Spring(k = 1, flange_a__v = 1, delta_s = 1)
+    @named sp = TP.Spring(k = 1, flange_a__s = 3, flange_b__s = 1, l = 1)
 
-    @named bv = TV.Mass(m = 1, v_0 = 1)
-    @named bp = TP.Mass(m = 1, v_0 = 1, s_0 = 3)
+    @named bv = TV.Mass(m = 1, v = 1)
+    @named bp = TP.Mass(m = 1, v = 1, s = 3)
 
     @named gv = TV.Fixed()
     @named gp = TP.Fixed(s_0 = 1)
@@ -70,20 +70,20 @@ end
 end
 
 @testset "driven spring damper mass" begin
-    @named dv = TV.Damper(d = 1, v_a_0 = 1)
-    @named dp = TP.Damper(d = 1, v_a_0 = 1, s_a_0 = 3, s_b_0 = 1)
+    @named dv = TV.Damper(d = 1, flange_a.v = 1)
+    @named dp = TP.Damper(d = 1, va = 1.0, vb = 0.0, flange_a.s = 3, flange_b.s = 1)
 
-    @named sv = TV.Spring(k = 1, v_a_0 = 1, delta_s_0 = 1)
-    @named sp = TP.Spring(k = 1, s_a_0 = 3, s_b_0 = 1, l = 1)
+    @named sv = TV.Spring(k = 1, flange_a__v = 1, delta_s = 1)
+    @named sp = TP.Spring(k = 1, flange_a__s = 3, flange_b__s = 1, l = 1)
 
-    @named bv = TV.Mass(m = 1, v_0 = 1)
-    @named bp = TP.Mass(m = 1, v_0 = 1, s_0 = 3)
+    @named bv = TV.Mass(m = 1, v = 1)
+    @named bp = TP.Mass(m = 1, v = 1, s = 3)
 
     @named gv = TV.Fixed()
     @named gp = TP.Fixed(s_0 = 1)
 
     @named fv = TV.Force()
-    @named fp = TP.Force()
+    @named fp = TP.Force(use_support = false)
 
     @named source = Sine(frequency = 3, amplitude = 2)
 
@@ -119,8 +119,8 @@ end
 @testset "sources & sensors" begin
     function System(; name)
         systems = @named begin
-            pos = TV.Position(; s_0 = 0)
-            pos_sensor = TV.PositionSensor(; s_0 = 1)
+            pos = TV.Position(; s.u_start = 0)
+            pos_sensor = TV.PositionSensor(; s = 1)
             force = TV.Force()
             force_sensor = TV.ForceSensor()
 

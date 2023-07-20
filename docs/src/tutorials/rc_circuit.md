@@ -16,7 +16,7 @@ C = 1.0
 V = 1.0
 @variables t
 @named resistor = Resistor(R = R)
-@named capacitor = Capacitor(C = C)
+@named capacitor = Capacitor(C = C, v = 0.0)
 @named source = Voltage()
 @named constant = Constant(k = V)
 @named ground = Ground()

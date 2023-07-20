@@ -13,8 +13,8 @@ using ModelingToolkitStandardLibrary.Thermal, ModelingToolkit, OrdinaryDiffEq, P
 
 C1 = 15
 C2 = 15
-@named mass1 = HeatCapacitor(C = C1, T_start = 373.15)
-@named mass2 = HeatCapacitor(C = C2, T_start = 273.15)
+@named mass1 = HeatCapacitor(C = C1, T = 373.15)
+@named mass2 = HeatCapacitor(C = C2, T = 273.15)
 @named conduction = ThermalConductor(G = 10)
 @named Tsensor1 = TemperatureSensor()
 @named Tsensor2 = TemperatureSensor()

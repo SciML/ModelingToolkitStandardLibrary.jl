@@ -8,7 +8,7 @@ using OrdinaryDiffEq: ReturnCode.Success
 
 @testset "Gain" begin
     @named c = Constant(; k = 1)
-    @named gain = Gain(1;)
+    @named gain = Gain(; k = 1)
     @named int = Integrator(; k = 1)
     @named model = ODESystem([
             connect(c.output, gain.input),
@@ -27,7 +27,7 @@ end
 
 @testset "Feedback loop" begin
     @named c = Constant(; k = 2)
-    @named gain = Gain(1;)
+    @named gain = Gain(; k = 1)
     @named int = Integrator(; k = 1)
     @named fb = Feedback(;)
     @named model = ODESystem([
@@ -191,14 +191,14 @@ end
 
 @testset "MatrixGain" begin
     K = [1 2; 3 4]
-    @named gain = MatrixGain(K;)
+    @named gain = MatrixGain(; K)
     K = [1, 2]
-    @named gain = MatrixGain(K;)
+    @named gain = MatrixGain(; K)
     # TODO:
 end
 
 @testset "Sum" begin
-    @named s = Sum(2;)
+    @named s = Sum(; input.nin = 2)
     # TODO:
 end
 

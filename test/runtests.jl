@@ -21,11 +21,13 @@ end
 @safetestset "Analog Circuits" begin
     include("Electrical/analog.jl")
 end
+
+@safetestset "Chua Circuit Demo" begin
+    include("chua_circuit.jl")
+end
+
 @safetestset "Digital Circuits" begin
     include("Electrical/digital.jl")
-end
-@safetestset "RC Circuit Demo" begin
-    include("demo.jl")
 end
 @safetestset "Chua Circuit Demo" begin
     include("chua_circuit.jl")
@@ -50,6 +52,9 @@ end
 end
 @safetestset "Mechanical Translation" begin
     include("Mechanical/translational.jl")
+end
+@safetestset "Mechanical Translation" begin
+    include("Mechanical/translational_modelica.jl")
 end
 @safetestset "Multi-Domain" begin
     include("multi_domain.jl")

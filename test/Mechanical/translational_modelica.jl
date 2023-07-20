@@ -7,12 +7,9 @@ import ModelingToolkitStandardLibrary.Mechanical.TranslationalModelica as TP
 D = Differential(t)
 
 @testset "spring damper mass fixed" begin
-    @named damper = TP.Damper(1)
-
-    @named spring = TP.Spring(1; s_rel0 = 1)
-
-    @named mass = TP.Mass(1, v0 = 1)
-
+    @named damper = TP.Damper(; d = 1)
+    @named spring = TP.Spring(; c = 1, s_rel0 = 1)
+    @named mass = TP.Mass(; m = 1, v = 1)
     @named fixed = TP.Fixed(s0 = 1)
 
     eqs = [connect(spring.flange_a, mass.flange_a, damper.flange_a)
@@ -32,16 +29,11 @@ D = Differential(t)
 end
 
 @testset "driven spring damper mass" begin
-    @named damper = TP.Damper(1)
-
-    @named spring = TP.Spring(1; s_rel0 = 1)
-
-    @named mass = TP.Mass(1, v0 = 1)
-
-    @named fixed = TP.Fixed(s0 = 1)
-
-    @named force = TP.Force()
-
+    @named damper = TP.Damper(; d = 1)
+    @named spring = TP.Spring(; c = 1, s_rel0 = 1)
+    @named mass = TP.Mass(; m = 1, v = 1)
+    @named fixed = TP.Fixed(; s0 = 1)
+    @named force = TP.Force(use_support = false)
     @named source = Sine(frequency = 3, amplitude = 2)
 
     eqs = [connect(force.f, source.output)

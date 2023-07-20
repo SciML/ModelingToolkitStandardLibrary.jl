@@ -46,7 +46,7 @@ See also [`get_sensitivity`](@ref), [`get_comp_sensitivity`](@ref), [`get_looptr
 ```julia
 using ModelingToolkitStandardLibrary.Blocks
 @named P = FirstOrder(k = 1, T = 1)
-@named C = Gain(-1)
+@named C = Gain(; k = -1)
 t = ModelingToolkit.get_iv(P)
 eqs = [connect(P.output, C.input)
        connect(C.output, :plant_input, P.input)]

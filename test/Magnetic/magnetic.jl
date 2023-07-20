@@ -20,7 +20,7 @@ using OrdinaryDiffEq: ReturnCode.Success
     @named voltage = Electrical.Voltage()
     @named r = Electrical.Resistor(R = 7.5)
     @named ground = Electrical.Ground()
-    @named coil = Magnetic.FluxTubes.ElectroMagneticConverter(N = 600)
+    @named coil = Magnetic.FluxTubes.ElectroMagneticConverter(N = 600, Phi = 0.0)
     @named ground_m = Magnetic.FluxTubes.Ground()
     @named r_mAirPar = Magnetic.FluxTubes.ConstantReluctance(R_m = a * b * l_air * mu_air)
     @named r_mFe = Magnetic.FluxTubes.ConstantReluctance(R_m = a * b * l_Fe * mu_Fe)

@@ -1,14 +1,14 @@
-@component function Link(; name, m, l, I, g, x1_0 = 0, y1_0 = 0)
-    pars = @parameters begin
-        m = m
-        l = l
-        I = I
-        g = g
-        x1_0 = x1_0
-        y1_0 = y1_0
+@mtkmodel Link begin
+    @parameters begin
+        m
+        l
+        I
+        g
+        x1_0 = 0.0
+        y1_0 = 0.0
     end
 
-    vars = @variables begin
+    @variables begin
         (A(t) = 0), [state_priority = 10]
         (dA(t) = 0), [state_priority = 10]
         (ddA(t) = 0), [state_priority = 10]
@@ -40,13 +40,16 @@
         ddy_cm(t) = 0
     end
 
-    @named TX1 = MechanicalPort()
-    @named TY1 = MechanicalPort()
+    @components begin
+        TX1 = MechanicalPort()
+        TY1 = MechanicalPort()
 
-    @named TX2 = MechanicalPort()
-    @named TY2 = MechanicalPort()
+        TX2 = MechanicalPort()
+        TY2 = MechanicalPort()
+    end
 
-    eqs = [D(A) ~ dA
+    @equations begin
+        D(A) ~ dA
         D(dA) ~ ddA
         D(x1) ~ dx1
         D(y1) ~ dy1
@@ -57,17 +60,17 @@
         D(y_cm) ~ dy_cm
         D(dy_cm) ~ ddy_cm
 
-    # x forces
+        # x forces
         m * ddx_cm ~ fx1 + fx2
 
-    # y forces
+        # y forces
         m * ddy_cm ~ m * g + fy1 + fy2
 
-    # torques
+        # torques
         I * ddA ~ -fy1 * (x2 - x1) / 2 + fy2 * (x2 - x1) / 2 + fx1 * (y2 - y1) / 2 -
                   fx2 * (y2 - y1) / 2
 
-    # geometry
+        # geometry
         x2 ~ l * cos(A) + x1
         y2 ~ l * sin(A) + y1
         x_cm ~ l * cos(A) / 2 + x1
@@ -79,8 +82,6 @@
         TX2.f ~ fx2
         TX2.v ~ dx2
         TY2.f ~ fy2
-        TY2.v ~ dy2]
-
-    return ODESystem(eqs, t, vars, pars; name = name, systems = [TX1, TY1, TX2, TY2],
-        defaults = [TX1.v => 0, TY1.v => 0, TX2.v => 0, TY2.v => 0])
+        TY2.v ~ dy2
+    end
 end

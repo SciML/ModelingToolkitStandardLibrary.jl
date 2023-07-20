@@ -1,16 +1,21 @@
-
-function PartialTorque(; name, use_support = false)
-    @named partial_element = PartialElementaryOneFlangeAndSupport2(use_support = use_support)
-    @unpack flange, phi_support = partial_element
-    @variables phi(t) [
-        description = "Angle of flange with respect to support (= flange.phi - support.phi)",
-    ]
-    eqs = [phi ~ flange.phi - phi_support]
-    return extend(ODESystem(eqs, t; name = name), partial_element)
+@mtkmodel PartialTorque begin
+    @parameters begin
+        use_support
+    end
+    @extend flange, phi_support = partial_element = PartialElementaryOneFlangeAndSupport2(use_support = use_support)
+    @variables begin
+        phi(t),
+        [
+            description = "Angle of flange with respect to support (= flange.phi - support.phi)",
+        ]
+    end
+    @equations begin
+        phi ~ flange.phi - phi_support
+    end
 end
 
 """
-    Torque(; name, use_support=false)
+    Torque(; name, use_support)
 
 Input signal acting as external torque on a flange
 
@@ -27,21 +32,26 @@ Input signal acting as external torque on a flange
 
   - `use_support`
 """
-@component function Torque(; name, use_support = false)
-    @named partial_element = PartialElementaryOneFlangeAndSupport2(use_support = use_support)
-    @unpack flange = partial_element
-    @named tau = RealInput()
-    eqs = [flange.tau ~ -tau.u]
-    return extend(ODESystem(eqs, t, [], []; name = name, systems = [tau]), partial_element)
+@mtkmodel Torque begin
+    @parameters begin
+        use_support
+    end
+    @extend (flange,) = partial_element = PartialElementaryOneFlangeAndSupport2(use_support = use_support)
+    @components begin
+        tau = RealInput()
+    end
+    @equations begin
+        flange.tau ~ -tau.u
+    end
 end
 
 """
-    ConstantTorque(; name, tau_constant, use_support = false)
+    ConstantTorque(; name, tau_constant, use_support)
 
 Constant torque source
 
 # State variables:
-  
+
 - `phi_support(t)`: [`rad`] Absolute angle of support flange, only available if `use_support = true`
 - `tau`: Accelerating torque acting at flange (= -flange.tau)
 - `w`: Angular velocity of flange with respect to support (= der(phi))
@@ -51,26 +61,31 @@ Constant torque source
 
 # Arguments:
 - `tau_constant`: The constant torque applied by the source
-- `use_support`: Whether or not an internal support flange is added, defaults to false.
+- `use_support`: Whether or not an internal support flange is added.
 """
-function ConstantTorque(; name, tau_constant, use_support = false)
-    @named partial_element = PartialTorque(; use_support)
-    @unpack flange, phi = partial_element
-    @parameters tau_constant=tau_constant [
-        description = "Constant torque (if negative, torque is acting as load in positive direction of rotation)",
-    ]
-    @variables tau(t) [description = "Accelerating torque acting at flange (= -flange.tau)"]
-    @variables w(t) [
-        description = "Angular velocity of flange with respect to support (= der(phi))",
-    ]
-    eqs = [w ~ D(phi)
+@mtkmodel ConstantTorque begin #(; name, tau_constant, use_support = false)
+    @parameters begin
+        tau_constant,
+        [
+            description = "Constant torque (if negative, torque is acting as load in positive direction of rotation)",
+        ]
+        use_support
+    end
+    @extend flange, phi = partial_element = PartialTorque(; use_support = use_support)
+    @variables begin
+        tau(t), [description = "Accelerating torque acting at flange (= -flange.tau)"]
+        w(t),
+        [description = "Angular velocity of flange with respect to support (= der(phi))"]
+    end
+    @equations begin
+        w ~ D(phi)
         tau ~ -flange.tau
-        tau ~ tau_constant]
-    return extend(ODESystem(eqs, t; name = name), partial_element)
+        tau ~ tau_constant
+    end
 end
 
 """
-    Speed(; name, use_support=false, exact=false, f_crit=50) 
+    Speed(; name, use_support, exact = false, f_crit = 50)
 
 Forced movement of a flange according to a reference angular velocity signal
 
