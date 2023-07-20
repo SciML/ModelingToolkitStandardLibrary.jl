@@ -522,7 +522,7 @@ dm ────►               │  │ area
 
     ports = @named begin
         port = HydraulicPort(; p_int)
-        flange = MechanicalPort(; f_int = -direction * p_int * area)
+        flange = MechanicalPort(; f = -direction * p_int * area)
         damper = ValveBase(reversible;
             p_a_int = p_int,
             p_b_int = p_int,
