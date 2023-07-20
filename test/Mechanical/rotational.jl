@@ -62,6 +62,7 @@ end
     J_motor = 0.1 # Motor inertia
 
     @named fixed = Fixed()
+    @named torque_test = Torque() # Test that it's possible to instantiate torque with default support value
     @named torque = Torque(use_support = true)
     @named inertia1 = Inertia(J = 2, phi = pi / 2)
     @named spring = Rotational.Spring(c = 1e4)
