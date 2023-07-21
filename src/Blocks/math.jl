@@ -57,10 +57,10 @@ end
 MatrixGain.f(K; name) = MatrixGain.f(; name, K)
 
 """
-    Sum(; input.nin::Int, name)
+    Sum(; input__nin::Int, name)
 
 Output the sum of the elements of the input port vector.
-Input port dimension can be set with `input.nin`
+Input port dimension can be set with `input__nin`
 
 # Connectors:
 
