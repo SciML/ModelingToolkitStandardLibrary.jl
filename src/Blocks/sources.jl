@@ -455,6 +455,20 @@ end
 struct Parameter{T <: Real}
     data::Vector{T}
     ref::T
+    circular_buffer::Bool
+end
+
+Parameter(data::Vector{T}, ref::T) where {T <: Real} = Parameter(data, ref, true)
+Parameter(x::Parameter) = x
+function Parameter(x::T; tofloat = true) where {T <: Real}
+    if tofloat
+        x = float(x)
+        P = typeof(x)
+    else
+        P = T
+    end
+
+    return Parameter(P[], x)
 end
 
 function Base.isequal(x::Parameter, y::Parameter)
@@ -501,18 +515,6 @@ function Base.show(io::IO, m::MIME"text/plain", p::Parameter)
     end
 end
 
-Parameter(x::Parameter) = x
-function Parameter(x::T; tofloat = true) where {T <: Real}
-    if tofloat
-        x = float(x)
-        P = typeof(x)
-    else
-        P = T
-    end
-
-    return Parameter(P[], x)
-end
-
 function get_sampled_data(t, memory::Parameter{T}) where {T}
     if t < 0
         t = zero(t)
@@ -536,9 +538,15 @@ function get_sampled_data(t, memory::Parameter{T}) where {T}
         return x1
     else
         n = length(memory.data)
-        if i2 > n
-            i2 = n
-            i1 = i2 - 1
+
+        if memory.circular_buffer
+            i1 = (i1 - 1) % n + 1
+            i2 = (i2 - 1) % n + 1
+        else
+            if i2 > n
+                i2 = n
+                i1 = i2 - 1
+            end
         end
 
         t2 = (i2 - 1) * memory.ref
@@ -564,12 +572,6 @@ function Symbolics.derivative(::typeof(get_sampled_data), args::NTuple{2, Any}, 
     t = @inbounds args[1]
     memory = @inbounds args[2]
     first_order_backwards_difference(t, memory)
-end
-
-SampledData(T::Type; name) = SampledData(T[], zero(T); name)
-SampledData(dt::T) where {T <: Real} = SampledData(T[], dt; name)
-function SampledData(data::Vector{T}, dt::T; name) where {T <: Real}
-    SampledData(; name, buffer = Parameter(data, dt))
 end
 
 """
@@ -598,6 +600,16 @@ data input component.
         defaults = [output.u => get_sampled_data(0.0, buffer)])
 end
 @deprecate Input SampledData
+
+function SampledData(T::Type, circular_buffer = true; name)
+    SampledData(T[], zero(T), circular_buffer; name)
+end
+function SampledData(dt::T, circular_buffer = true) where {T <: Real}
+    SampledData(T[], dt, circular_buffer; name)
+end
+function SampledData(data::Vector{T}, dt::T, circular_buffer = true; name) where {T <: Real}
+    SampledData(; name, buffer = Parameter(data, dt, circular_buffer))
+end
 
 Base.convert(::Type{T}, x::Parameter{T}) where {T <: Real} = x.ref
 
