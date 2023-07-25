@@ -626,9 +626,9 @@ function set_sampled_data!(memory::Parameter{T}, t, x, Δt::Parameter{T}) where 
     n = length(memory.data)
     i = round(Int, t / Δt) + 1 #expensive
     if i == n + 1
-        push!(memory.data, x)
+        push!(memory.data, ModelingToolkit.ForwardDiff.value(x))
     elseif i <= n
-        @inbounds memory.data[i] = x
+        @inbounds memory.data[i] = ModelingToolkit.ForwardDiff.value(x)
     else
         error("Memory buffer skipped a step: n=$n, i=$i")
     end
