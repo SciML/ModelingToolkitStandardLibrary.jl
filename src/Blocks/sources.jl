@@ -1,4 +1,5 @@
 using DiffEqBase
+import ChainRulesCore
 
 # Define and register smooth functions
 # These are "smooth" aka differentiable and avoid Gibbs effect
@@ -575,6 +576,9 @@ function Symbolics.derivative(::typeof(get_sampled_data), args::NTuple{2, Any}, 
     memory = @inbounds args[2]
     first_order_backwards_difference(t, memory)
 end
+function ChainRulesCore.frule((_, ẋ, _), ::typeof(get_sampled_data), t, memory)
+    first_order_backwards_difference(t, memory) * ẋ
+end
 
 """
     SampledData(; name, buffer)
@@ -649,6 +653,14 @@ function Symbolics.derivative(::typeof(set_sampled_data!), args::NTuple{4, Any},
     first_order_backwards_difference(t, x, Δt, memory)
 end
 Symbolics.derivative(::typeof(set_sampled_data!), args::NTuple{4, Any}, ::Val{3}) = 1 #set_sampled_data returns x, therefore d/dx (x) = 1
+function ChainRulesCore.frule((_, _, ṫ, ẋ, _),
+    ::typeof(set_sampled_data!),
+    memory,
+    t,
+    x,
+    Δt)
+    first_order_backwards_difference(t, x, Δt, memory) * ṫ + ẋ
+end
 
 function first_order_backwards_difference(t, x, Δt, memory)
     x1 = set_sampled_data!(memory, t, x, Δt)

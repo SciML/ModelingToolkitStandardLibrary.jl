@@ -1,3 +1,5 @@
+import ChainRulesCore
+
 regPow(x, a, delta = 0.01) = x * (x * x + delta * delta)^((a - 1) / 2);
 regRoot(x, delta = 0.01) = regPow(x, 0.5, delta)
 
@@ -116,6 +118,7 @@ end
 @register_symbolic friction_factor(dm, area, d_h, viscosity, shape_factor)
 Symbolics.derivative(::typeof(friction_factor), args, ::Val{1}) = 0
 Symbolics.derivative(::typeof(friction_factor), args, ::Val{4}) = 0
+ChainRulesCore.frule(_, ::typeof(friction_factor), _...) = 0
 
 function transition(x1, x2, y1, y2, x)
     u = (x - x1) / (x2 - x1)
