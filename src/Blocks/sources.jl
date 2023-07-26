@@ -1,3 +1,5 @@
+using DiffEqBase
+
 # Define and register smooth functions
 # These are "smooth" aka differentiable and avoid Gibbs effect
 # These follow: `offset` + `smooth_wave` * `smooth_step` with zero output for `t < start_time`
@@ -626,9 +628,9 @@ function set_sampled_data!(memory::Parameter{T}, t, x, Δt::Parameter{T}) where 
     n = length(memory.data)
     i = round(Int, t / Δt) + 1 #expensive
     if i == n + 1
-        push!(memory.data, ModelingToolkit.ForwardDiff.value(x))
+        push!(memory.data, DiffEqBase.value(x))
     elseif i <= n
-        @inbounds memory.data[i] = ModelingToolkit.ForwardDiff.value(x)
+        @inbounds memory.data[i] = DiffEqBase.value(x)
     else
         error("Memory buffer skipped a step: n=$n, i=$i")
     end
