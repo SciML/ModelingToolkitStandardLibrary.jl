@@ -6,9 +6,9 @@ Pkg.add(&quot;ModelingToolkitStandardLibrary&quot;)</code></pre><h2 id="Tutorial
   [e30172f5] Documenter v0.27.25
   [615f187c] IfElse v0.1.1
   [961ee093] ModelingToolkit v8.63.0
-  [16a59e39] ModelingToolkitStandardLibrary v2.0.0 `~/work/ModelingToolkitStandardLibrary.jl/ModelingToolkitStandardLibrary.jl`
+  [16a59e39] ModelingToolkitStandardLibrary v2.1.0 `~/work/ModelingToolkitStandardLibrary.jl/ModelingToolkitStandardLibrary.jl`
   [1dea7af3] OrdinaryDiffEq v6.53.3
-  [91a5bcdd] Plots v1.38.16</code></pre></details><details><summary>and using this machine and Julia version.</summary><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Julia Version 1.9.2
+  [91a5bcdd] Plots v1.38.17</code></pre></details><details><summary>and using this machine and Julia version.</summary><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Julia Version 1.9.2
 Commit e4ee485e909 (2023-07-05 09:39 UTC)
 Platform Info:
   OS: Linux (x86_64-linux-gnu)
@@ -17,7 +17,7 @@ Platform Info:
   LIBM: libopenlibm
   LLVM: libLLVM-14.0.6 (ORCJIT, skylake-avx512)
   Threads: 1 on 2 virtual cores</code></pre></details><details><summary>A more complete overview of all dependencies and their versions is also provided.</summary><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Status `~/work/ModelingToolkitStandardLibrary.jl/ModelingToolkitStandardLibrary.jl/docs/Manifest.toml`
-  [47edcb42] ADTypes v0.1.5
+  [47edcb42] ADTypes v0.1.6
   [a4c015fc] ANSIColoredPrinters v0.0.1
 ⌅ [c3fe647b] AbstractAlgebra v0.30.9
   [621f4979] AbstractFFTs v1.4.0
@@ -26,7 +26,7 @@ Platform Info:
   [ec485272] ArnoldiMethod v0.2.0
   [4fba245c] ArrayInterface v7.4.11
   [30b0a656] ArrayInterfaceCore v0.1.29
-  [4c555306] ArrayLayouts v1.0.13
+  [4c555306] ArrayLayouts v1.1.0
   [aae01518] BandedMatrices v0.17.32
   [e2ed5e7c] Bijections v0.1.4
   [d1d4a3ce] BitFlags v0.1.7
@@ -47,7 +47,7 @@ Platform Info:
   [a80b9123] CommonMark v0.8.12
   [38540f10] CommonSolve v0.2.4
   [bbf7d656] CommonSubexpressions v0.3.0
-  [34da2185] Compat v4.7.0
+  [34da2185] Compat v4.8.0
   [b152e2b5] CompositeTypes v0.1.3
   [f0e56b4a] ConcurrentUtilities v2.2.1
   [187b0558] ConstructionBase v1.5.3
@@ -83,7 +83,7 @@ Platform Info:
   [7034ab61] FastBroadcast v0.2.6
   [9aa1b823] FastClosures v0.3.2
   [29a986be] FastLapackInterface v2.0.0
-  [1a297f60] FillArrays v1.4.2
+  [1a297f60] FillArrays v1.5.0
   [6a86dc24] FiniteDiff v2.21.1
   [53c48c17] FixedPointNumbers v0.8.4
   [59287772] Formatting v0.4.2
@@ -96,7 +96,7 @@ Platform Info:
   [c27321d9] Glob v1.3.1
   [86223c79] Graphs v1.8.0
   [42e2da0e] Grisu v1.0.2
-  [0b43b601] Groebner v0.3.6
+⌅ [0b43b601] Groebner v0.3.6
   [d5909c97] GroupsCore v0.4.0
   [cd3eb016] HTTP v1.9.14
   [3e5b6fbb] HostCPUFeatures v0.1.15
@@ -124,11 +124,11 @@ Platform Info:
   [50d2b5c4] Lazy v0.15.1
   [2d8b4e74] LevyArea v1.0.0
   [d3d80556] LineSearches v7.2.0
-  [7a12625a] LinearMaps v3.10.2
+  [7a12625a] LinearMaps v3.11.0
   [7ed4a6bd] LinearSolve v2.4.1
   [2ab3a3ac] LogExpFunctions v0.3.24
   [e6f89c97] LoggingExtras v1.0.0
-  [bdcacae8] LoopVectorization v0.12.164
+  [bdcacae8] LoopVectorization v0.12.165
   [d8e11817] MLStyle v0.4.17
   [1914dd2f] MacroTools v0.5.10
   [d125e4d3] ManualMemory v0.1.8
@@ -138,7 +138,7 @@ Platform Info:
   [442fdcdd] Measures v0.3.2
   [e1d29d7a] Missings v1.1.0
   [961ee093] ModelingToolkit v8.63.0
-  [16a59e39] ModelingToolkitStandardLibrary v2.0.0 `~/work/ModelingToolkitStandardLibrary.jl/ModelingToolkitStandardLibrary.jl`
+  [16a59e39] ModelingToolkitStandardLibrary v2.1.0 `~/work/ModelingToolkitStandardLibrary.jl/ModelingToolkitStandardLibrary.jl`
   [46d2c3a1] MuladdMacro v0.2.4
 ⌅ [102ac46a] MultivariatePolynomials v0.4.7
   [d8a4904e] MutableArithmetics v1.3.0
@@ -158,7 +158,7 @@ Platform Info:
   [b98c9c47] Pipe v1.3.0
   [ccf2f8ad] PlotThemes v3.1.0
   [995b91a9] PlotUtils v1.3.5
-  [91a5bcdd] Plots v1.38.16
+  [91a5bcdd] Plots v1.38.17
   [e409e4f3] PoissonRandom v0.4.4
   [f517fe37] Polyester v0.7.5
   [1d0040c9] PolyesterWeave v0.2.1
@@ -184,7 +184,7 @@ Platform Info:
 ⌅ [7e49a35a] RuntimeGeneratedFunctions v0.5.9
   [94e857df] SIMDTypes v0.1.0
   [476501e8] SLEEFPirates v0.6.39
-  [0bca4576] SciMLBase v1.93.4
+  [0bca4576] SciMLBase v1.94.0
   [e9a6253c] SciMLNLSolve v0.1.8
   [c0aeaf25] SciMLOperators v0.3.5
   [6c6a2e73] Scratch v1.2.0
@@ -355,5 +355,5 @@ Platform Info:
   [8e850ede] nghttp2_jll v1.48.0+0
   [3f19e933] p7zip_jll v17.4.0+0
 Info Packages marked with ⌅ have new versions available but compatibility constraints restrict them from upgrading. To see why use `status --outdated -m`</code></pre></details>You can also download the 
-<a href="https://github.com/SciML/ModelingToolkitStandardLibrary.jl/tree/gh-pages/v2.0.0/assets/Manifest.toml">manifest</a> file and the
-<a href="https://github.com/SciML/ModelingToolkitStandardLibrary.jl/tree/gh-pages/v2.0.0/assets/Project.toml">project</a> file.</article><nav class="docs-footer"><a class="docs-footer-nextpage" href="tutorials/rc_circuit/">RC Circuit »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.25 on <span class="colophon-date" title="Saturday 22 July 2023 21:59">Saturday 22 July 2023</span>. Using Julia version 1.9.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+<a href="https://github.com/SciML/ModelingToolkitStandardLibrary.jl/tree/gh-pages/v2.1.0/assets/Manifest.toml">manifest</a> file and the
+<a href="https://github.com/SciML/ModelingToolkitStandardLibrary.jl/tree/gh-pages/v2.1.0/assets/Project.toml">project</a> file.</article><nav class="docs-footer"><a class="docs-footer-nextpage" href="tutorials/rc_circuit/">RC Circuit »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.25 on <span class="colophon-date" title="Wednesday 26 July 2023 18:28">Wednesday 26 July 2023</span>. Using Julia version 1.9.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
