@@ -244,7 +244,7 @@ end
             body = T.Mass(; m = 1500)
             pipe = IC.Tube(5; p_int = p_2, area = A_2, length = 2.0)
             snk = IC.FixedPressure(; p = p_r)
-            pos = T.Position(; s.u_start = 0)
+            pos = T.Position()
 
             m1 = IC.FlowDivider(; p_int = p_2, n = 3)
             m2 = IC.FlowDivider(; p_int = p_2, n = 3)

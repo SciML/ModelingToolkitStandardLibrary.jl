@@ -119,7 +119,7 @@ end
 @testset "sources & sensors" begin
     function System(; name)
         systems = @named begin
-            pos = TV.Position(; s.u_start = 0)
+            pos = TV.Position()
             pos_sensor = TV.PositionSensor(; s = 1)
             force = TV.Force()
             force_sensor = TV.ForceSensor()

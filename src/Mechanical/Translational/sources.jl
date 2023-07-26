@@ -20,35 +20,46 @@ Linear 1D force input source
 end
 
 """
-    Position(; s.u_start = 0.0, name)
+    Position(solves_force = true; name)
 
-Linear 1D position input source
+Linear 1D position input source.  Set `solves_force=false` to force input force to 0 (i.e. only the position is given, the respective force needed is already provided elsewhere in the model).  
 
 # Connectors:
 
   - `flange`: 1-dim. translational flange
-  - `s`: real input. `s.u_start` accepts an initial value, which It accepts an initial value, which defaults to 0.0.
+  - `s`: real input
 """
-@component function Position(; solves_force = true, s__u_start = 0, name)
+@component function Position(solves_force = true; name)
+    vars = []
+
     systems = @named begin
-        flange = MechanicalPort()
+        flange = MechanicalPort(; v = 0)
         s = RealInput()
     end
 
-    vars = @variables x(t)
-
-    eqs = [D(x) ~ flange.v
-        s.u ~ x]
+    eqs = [
+        D(s.u) ~ flange.v,
+    ]
 
     !solves_force && push!(eqs, 0 ~ flange.f)
 
     ODESystem(eqs, t, vars, [];
-        name, systems, defaults = [flange.v => 0, s.u => s__u_start])
+        name, systems)
 end
 
-@component function Velocity(; solves_force = true, name)
+"""
+    Velocity(solves_force = true; name)
+
+Linear 1D position input source.  Set `solves_force=false` to force input force to 0 (i.e. only the velocity is given, the respective force needed is already provided elsewhere in the model).  
+
+# Connectors:
+
+  - `flange`: 1-dim. translational flange
+  - `v`: real input
+"""
+@component function Velocity(solves_force = true; name)
     systems = @named begin
-        flange = MechanicalPort()
+        flange = MechanicalPort(; v = 0)
         v = RealInput()
     end
 
@@ -58,13 +69,23 @@ end
 
     !solves_force && push!(eqs, 0 ~ flange.f)
 
-    ODESystem(eqs, t, [], []; name, systems, defaults = [flange.v => 0])
+    ODESystem(eqs, t, [], []; name, systems)
 end
 
-@component function Acceleration(solves_force = true; s__u_start = 0, name)
+"""
+Acceleration(solves_force = true; name)
+
+Linear 1D position input source.  Set `solves_force=false` to force input force to 0 (i.e. only the acceleration is given, the respective force needed is already provided elsewhere in the model).  
+
+# Connectors:
+
+  - `flange`: 1-dim. translational flange
+  - `a`: real input
+"""
+@component function Acceleration(solves_force = true; name)
     systems = @named begin
-        flange = MechanicalPort()
-        a = RealInput(; u_start = s__u_start)
+        flange = MechanicalPort(; v = 0)
+        a = RealInput()
     end
 
     vars = @variables v(t) = 0
@@ -74,5 +95,5 @@ end
 
     !solves_force && push!(eqs, 0 ~ flange.f)
 
-    ODESystem(eqs, t, vars, []; name, systems, defaults = [flange.v => 0])
+    ODESystem(eqs, t, vars, []; name, systems)
 end
