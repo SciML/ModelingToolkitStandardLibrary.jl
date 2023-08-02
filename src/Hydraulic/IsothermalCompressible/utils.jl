@@ -118,7 +118,9 @@ end
 @register_symbolic friction_factor(dm, area, d_h, viscosity, shape_factor)
 Symbolics.derivative(::typeof(friction_factor), args, ::Val{1}) = 0
 Symbolics.derivative(::typeof(friction_factor), args, ::Val{4}) = 0
-ChainRulesCore.frule(_, ::typeof(friction_factor), _...) = 0
+function ChainRulesCore.frule(_, ::typeof(friction_factor), args...)
+    (friction_factor(args...), ChainRulesCore.ZeroTangent)
+end
 
 function transition(x1, x2, y1, y2, x)
     u = (x - x1) / (x2 - x1)

@@ -511,6 +511,9 @@ Base.isless(y::Number, x::Parameter) = Base.isless(y, x.ref)
 
 Base.copy(x::Parameter{T}) where {T} = Parameter{T}(copy(x.data), x.ref)
 
+Base.ifelse(c::Bool, x::Parameter, y::Parameter) = ifelse(c, x.ref, y.ref)
+Base.ifelse(c::Bool, x::Parameter, y::Number) = ifelse(c, x.ref, y)
+Base.ifelse(c::Bool, x::Number, y::Parameter) = ifelse(c, x, y.ref)
 Base.max(x::Number, y::Parameter) = max(x, y.ref)
 Base.max(x::Parameter, y::Number) = max(x.ref, y)
 Base.max(x::Parameter, y::Parameter) = max(x.ref, y.ref)
@@ -627,6 +630,9 @@ function SampledData(data::Vector{T}, dt::T, circular_buffer = true; name) where
 end
 
 Base.convert(::Type{T}, x::Parameter{T}) where {T <: Real} = x.ref
+function Base.convert(::Type{<:Parameter{T}}, x::Number) where {T <: Real}
+    Parameter{T}(T[], x, true)
+end
 
 # Beta Code for potential AE Hack ----------------------
 function set_sampled_data!(memory::Parameter{T}, t, x, Δt::Parameter{T}) where {T}
