@@ -519,7 +519,6 @@ Base.min(x::Number, y::Parameter) = min(x, y.ref)
 Base.min(x::Parameter, y::Number) = min(x.ref, y)
 Base.min(x::Parameter, y::Parameter) = min(x.ref, y.ref)
 
-
 function Base.show(io::IO, m::MIME"text/plain", p::Parameter)
     if !isempty(p.data)
         print(io, p.data)
