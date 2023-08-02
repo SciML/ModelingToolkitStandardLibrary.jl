@@ -3,7 +3,7 @@ The module `Blocks` contains common input-output components, referred to as bloc
 """
 module Blocks
 using ModelingToolkit, Symbolics
-using IfElse: ifelse
+import IfElse: ifelse
 import ..@symcheck
 using ModelingToolkit: getdefault
 

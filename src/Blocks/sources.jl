@@ -511,9 +511,10 @@ Base.isless(y::Number, x::Parameter) = Base.isless(y, x.ref)
 
 Base.copy(x::Parameter{T}) where {T} = Parameter{T}(copy(x.data), x.ref)
 
-Base.ifelse(c::Bool, x::Parameter, y::Parameter) = ifelse(c, x.ref, y.ref)
-Base.ifelse(c::Bool, x::Parameter, y::Number) = ifelse(c, x.ref, y)
-Base.ifelse(c::Bool, x::Number, y::Parameter) = ifelse(c, x, y.ref)
+ifelse(c::Bool, x::Parameter, y::Parameter) = ifelse(c, x.ref, y.ref)
+ifelse(c::Bool, x::Parameter, y::Number) = ifelse(c, x.ref, y)
+ifelse(c::Bool, x::Number, y::Parameter) = ifelse(c, x, y.ref)
+
 Base.max(x::Number, y::Parameter) = max(x, y.ref)
 Base.max(x::Parameter, y::Number) = max(x.ref, y)
 Base.max(x::Parameter, y::Parameter) = max(x.ref, y.ref)
