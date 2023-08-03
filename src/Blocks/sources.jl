@@ -1,4 +1,5 @@
 using DiffEqBase
+import ChainRulesCore
 
 # Define and register smooth functions
 # These are "smooth" aka differentiable and avoid Gibbs effect
@@ -496,18 +497,31 @@ Base.:+(x::Number, y::Parameter) = x + y.ref
 Base.:+(y::Parameter, x::Number) = Base.:+(x, y)
 Base.:+(x::Parameter, y::Parameter) = x.ref + y.ref
 
+Base.:-(y::Parameter) = -y.ref
 Base.:-(x::Number, y::Parameter) = x - y.ref
 Base.:-(y::Parameter, x::Number) = y.ref - x
 Base.:-(x::Parameter, y::Parameter) = x.ref - y.ref
 
-Base.:^(x::Number, y::Parameter) = Base.power_by_squaring(x, y.ref)
-Base.:^(y::Parameter, x::Number) = Base.power_by_squaring(y.ref, x)
-Base.:^(x::Parameter, y::Parameter) = Base.power_by_squaring(x.ref, y.ref)
+Base.:^(x::Number, y::Parameter) = Base.:^(x, y.ref)
+Base.:^(y::Parameter, x::Number) = Base.:^(y.ref, x)
+Base.:^(x::Parameter, y::Parameter) = Base.:^(x.ref, y.ref)
 
 Base.isless(x::Parameter, y::Number) = Base.isless(x.ref, y)
 Base.isless(y::Number, x::Parameter) = Base.isless(y, x.ref)
 
 Base.copy(x::Parameter{T}) where {T} = Parameter{T}(copy(x.data), x.ref)
+
+ifelse(c::Bool, x::Parameter, y::Parameter) = ifelse(c, x.ref, y.ref)
+ifelse(c::Bool, x::Parameter, y::Number) = ifelse(c, x.ref, y)
+ifelse(c::Bool, x::Number, y::Parameter) = ifelse(c, x, y.ref)
+
+Base.max(x::Number, y::Parameter) = max(x, y.ref)
+Base.max(x::Parameter, y::Number) = max(x.ref, y)
+Base.max(x::Parameter, y::Parameter) = max(x.ref, y.ref)
+
+Base.min(x::Number, y::Parameter) = min(x, y.ref)
+Base.min(x::Parameter, y::Number) = min(x.ref, y)
+Base.min(x::Parameter, y::Parameter) = min(x.ref, y.ref)
 
 function Base.show(io::IO, m::MIME"text/plain", p::Parameter)
     if !isempty(p.data)
@@ -575,6 +589,9 @@ function Symbolics.derivative(::typeof(get_sampled_data), args::NTuple{2, Any}, 
     memory = @inbounds args[2]
     first_order_backwards_difference(t, memory)
 end
+function ChainRulesCore.frule((_, ẋ, _), ::typeof(get_sampled_data), t, memory)
+    first_order_backwards_difference(t, memory) * ẋ
+end
 
 """
     SampledData(; name, buffer)
@@ -614,6 +631,9 @@ function SampledData(data::Vector{T}, dt::T, circular_buffer = true; name) where
 end
 
 Base.convert(::Type{T}, x::Parameter{T}) where {T <: Real} = x.ref
+function Base.convert(::Type{<:Parameter{T}}, x::Number) where {T <: Real}
+    Parameter{T}(T[], x, true)
+end
 
 # Beta Code for potential AE Hack ----------------------
 function set_sampled_data!(memory::Parameter{T}, t, x, Δt::Parameter{T}) where {T}
@@ -649,6 +669,14 @@ function Symbolics.derivative(::typeof(set_sampled_data!), args::NTuple{4, Any},
     first_order_backwards_difference(t, x, Δt, memory)
 end
 Symbolics.derivative(::typeof(set_sampled_data!), args::NTuple{4, Any}, ::Val{3}) = 1 #set_sampled_data returns x, therefore d/dx (x) = 1
+function ChainRulesCore.frule((_, _, ṫ, ẋ, _),
+    ::typeof(set_sampled_data!),
+    memory,
+    t,
+    x,
+    Δt)
+    first_order_backwards_difference(t, x, Δt, memory) * ṫ + ẋ
+end
 
 function first_order_backwards_difference(t, x, Δt, memory)
     x1 = set_sampled_data!(memory, t, x, Δt)
