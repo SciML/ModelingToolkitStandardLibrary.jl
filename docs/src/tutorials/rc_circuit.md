@@ -31,7 +31,7 @@ rc_eqs = [connect(constant.output, source.V)
 sys = structural_simplify(rc_model)
 prob = ODAEProblem(sys, Pair[], (0, 10.0))
 sol = solve(prob, Tsit5())
-plot(sol, vars = [capacitor.v, resistor.i],
+plot(sol, idxs = [capacitor.v, resistor.i],
     title = "RC Circuit Demonstration",
     labels = ["Capacitor Voltage" "Resistor Current"])
 savefig("plot.png");
