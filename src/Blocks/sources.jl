@@ -531,12 +531,13 @@ function Base.show(io::IO, m::MIME"text/plain", p::Parameter)
     end
 end
 
-function get_sampled_data(t, memory::Parameter{T}) where {T}
+
+function get_sampled_data(t, data::Vector{T}, dt::T, circular_buffer=true) where {T}
     if t < 0
         t = zero(t)
     end
 
-    if isempty(memory.data)
+    if isempty(data)
         if T <: AbstractFloat
             return T(NaN)
         else
@@ -544,18 +545,18 @@ function get_sampled_data(t, memory::Parameter{T}) where {T}
         end
     end
 
-    i1 = floor(Int, t / memory.ref) + 1 #expensive
+    i1 = floor(Int, t / dt) + 1 #expensive
     i2 = i1 + 1
 
-    t1 = (i1 - 1) * memory.ref
-    x1 = @inbounds memory.data[i1]
+    t1 = (i1 - 1) * dt
+    x1 = @inbounds data[i1]
 
     if t == t1
         return x1
     else
-        n = length(memory.data)
+        n = length(data)
 
-        if memory.circular_buffer
+        if circular_buffer
             i1 = (i1 - 1) % n + 1
             i2 = (i2 - 1) % n + 1
         else
@@ -565,16 +566,20 @@ function get_sampled_data(t, memory::Parameter{T}) where {T}
             end
         end
 
-        t2 = (i2 - 1) * memory.ref
-        x2 = @inbounds memory.data[i2]
+        t2 = (i2 - 1) * dt
+        x2 = @inbounds data[i2]
         return linear_interpolation(x1, x2, t1, t2, t)
     end
 end
+Symbolics.@register_symbolic get_sampled_data(t, data, dt, circular_buffer)
+
+function get_sampled_data(t, memory::Parameter{T}) where {T}
+    return get_sampled_data(t, memory.data, memory.ref, memory.circular_buffer)
+end
+Symbolics.@register_symbolic get_sampled_data(t, memory)
 
 get_sample_time(memory::Parameter) = memory.ref
 Symbolics.@register_symbolic get_sample_time(memory)
-
-Symbolics.@register_symbolic get_sampled_data(t, memory)
 
 function first_order_backwards_difference(t, memory)
     Δt = get_sample_time(memory)
@@ -584,14 +589,42 @@ function first_order_backwards_difference(t, memory)
     return (x1 - x0) / Δt
 end
 
+function first_order_backwards_difference(t, data, dt, circular_buffer)
+    
+    x1 = get_sampled_data(t,      data, dt, circular_buffer)
+    x0 = get_sampled_data(t - dt, data, dt, circular_buffer)
+
+    return (x1 - x0) / dt
+end
+
+
+
+
 function Symbolics.derivative(::typeof(get_sampled_data), args::NTuple{2, Any}, ::Val{1})
     t = @inbounds args[1]
     memory = @inbounds args[2]
-    first_order_backwards_difference(t, memory)
+    
+    return first_order_backwards_difference(t, memory)
 end
 function ChainRulesCore.frule((_, ẋ, _), ::typeof(get_sampled_data), t, memory)
     first_order_backwards_difference(t, memory) * ẋ
 end
+
+
+
+function Symbolics.derivative(::typeof(get_sampled_data), args::NTuple{4, Any}, ::Val{1})
+    t = @inbounds args[1]
+    data = @inbounds args[2]
+    dt = @inbounds args[3]
+    circular_buffer = @inbounds args[4]
+    return first_order_backwards_difference(t, data, dt, circular_buffer)
+end
+function ChainRulesCore.frule((_, ẋ, _), ::typeof(get_sampled_data), t, data, dt, circular_buffer)
+    first_order_backwards_difference(t, data, dt, circular_buffer) * ẋ
+end
+
+
+
 
 """
     SampledData(; name, buffer)
@@ -604,38 +637,61 @@ data input component.
 # Connectors:
   - `output`
 """
-@component function SampledData(; name, buffer)
+function SampledData(::Type{T}, circular_buffer=true; name, data=T[], dt=zero(T)) where {T<:Real}
+
     pars = @parameters begin
-        buffer = buffer
+        buffer = Parameter(data, dt, circular_buffer)
     end
     vars = []
     systems = @named begin
         output = RealOutput()
     end
+
     eqs = [
-        output.u ~ get_sampled_data(t, buffer),
+        output.u ~ get_sampled_data(t, buffer)
     ]
+    
+    return ODESystem(eqs, t, vars, pars; name, systems, defaults = [output.u => get_sampled_data(0.0, buffer)])
+end
+
+function SampledData(circular_buffer=true; name, data=Float64[], dt=0.0)
+    pars = @parameters begin
+        data = data
+        dt = dt
+    end
+
+    vars = []
+    systems = @named begin
+        output = RealOutput()
+    end
+
+    eqs = [
+        output.u ~ get_sampled_data(t, data, dt, circular_buffer)
+    ]
+
     return ODESystem(eqs, t, vars, pars; name, systems,
-        defaults = [output.u => get_sampled_data(0.0, buffer)])
+        defaults = [output.u => get_sampled_data(0.0, data, dt, circular_buffer)])
 end
 @deprecate Input SampledData
 
-function SampledData(T::Type, circular_buffer = true; name)
-    SampledData(T[], zero(T), circular_buffer; name)
-end
-function SampledData(dt::T, circular_buffer = true) where {T <: Real}
-    SampledData(T[], dt, circular_buffer; name)
-end
-function SampledData(data::Vector{T}, dt::T, circular_buffer = true; name) where {T <: Real}
-    SampledData(; name, buffer = Parameter(data, dt, circular_buffer))
-end
+
+# function SampledData(T::Type, circular_buffer = true; name)
+#     SampledData(T[], zero(T), circular_buffer; name)
+# end
+# function SampledData(dt::T, circular_buffer = true) where {T <: Real}
+#     SampledData(T[], dt, circular_buffer; name)
+# end
+# function SampledData(data::Vector{T}, dt::T, circular_buffer = true; name) where {T <: Real}
+#     SampledData(; name, buffer = Parameter(data, dt, circular_buffer))
+# end
+
 
 Base.convert(::Type{T}, x::Parameter{T}) where {T <: Real} = x.ref
 function Base.convert(::Type{<:Parameter{T}}, x::Number) where {T <: Real}
     Parameter{T}(T[], x, true)
 end
 
-# Beta Code for potential AE Hack ----------------------
+# Code for AE Hack ----------------------
 function set_sampled_data!(memory::Parameter{T}, t, x, Δt::Parameter{T}) where {T}
     if t < 0
         t = zero(t)
@@ -678,7 +734,7 @@ function ChainRulesCore.frule((_, _, ṫ, ẋ, _),
     first_order_backwards_difference(t, x, Δt, memory) * ṫ + ẋ
 end
 
-function first_order_backwards_difference(t, x, Δt, memory)
+function first_order_backwards_difference_with_setter(t, x, Δt, memory)
     x1 = set_sampled_data!(memory, t, x, Δt)
     x0 = get_sampled_data(t - Δt, memory)
 
