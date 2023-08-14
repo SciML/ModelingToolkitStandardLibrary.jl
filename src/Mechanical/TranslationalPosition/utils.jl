@@ -118,7 +118,7 @@ Partial model for a component with two translational 1-dim. flanges and a suppor
 
 # Parameters:
 
-  - `use_support`: If support flange enabled, otherwise implicitly grounded
+  - `use_support`: If support flange enabled, otherwise implicitly grounded. By default it is `false`
 
 # States:
 
