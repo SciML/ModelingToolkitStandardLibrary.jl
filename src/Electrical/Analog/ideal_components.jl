@@ -96,10 +96,7 @@ See [OnePort](@ref)
     @parameters begin
         C, [description = "Capacitance"]
     end
-    @variables begin
-        v
-    end
-    @extend v, i = oneport = OnePort(; v = v)
+    @extend v, i = oneport = OnePort(; v)
     @equations begin
         D(v) ~ i / C
     end
@@ -128,10 +125,7 @@ See [OnePort](@ref)
     @parameters begin
         L, [description = "Inductance"]
     end
-    @variables begin
-        i
-    end
-    @extend v, i = oneport = OnePort(; i = i)
+    @extend v, i = oneport = OnePort(; i)
     @equations begin
         D(i) ~ 1 / L * v
     end
@@ -248,25 +242,19 @@ Electromotoric force (electric/mechanic transformer)
   - `k`: [`N⋅m/A`] Transformation coefficient
 """
 @mtkmodel EMF begin
-    @components begin
-        p = Pin()
-        n = Pin()
-        flange = Flange()
-        support = Support()
-    end
     @parameters begin
         k, [description = "Transformation coefficient"]
     end
     @variables begin
-        v(t) = 0.0
-        i(t) = 0.0
-        phi(t) = 0.0
+        phi(t) = 0.0, [description = "Rotation Angle"]
         w(t) = 0.0
     end
+    @extend v, i = oneport = OnePort()
+    @components begin
+        flange = Flange()
+        support = Support()
+    end
     @equations begin
-        v ~ p.v - n.v
-        0 ~ p.i + n.i
-        i ~ p.i
         phi ~ flange.phi - support.phi
         D(phi) ~ w
         k * w ~ v
