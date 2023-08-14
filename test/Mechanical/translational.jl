@@ -85,7 +85,7 @@ end
     @named gp = TP.Fixed(s_0 = 1)
 
     @named fv = TV.Force()
-    @named fp = TP.Force(use_support = false)
+    @named fp = TP.Force()
 
     @named source = Sine(frequency = 3, amplitude = 2, unit = u"N")
 

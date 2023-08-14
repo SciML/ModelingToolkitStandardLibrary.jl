@@ -1,6 +1,6 @@
 @mtkmodel PartialTorque begin
     @extend flange, phi_support = partial_element = PartialElementaryOneFlangeAndSupport2(;
-        use_support)
+        use_support = false)
     @variables begin
         phi(t),
         [description = "Angle of flange with respect to support",
@@ -12,7 +12,7 @@
 end
 
 """
-    Torque(; name, use_support)
+    Torque(; name, use_support = false)
 
 Input signal acting as external torque on a flange
 
@@ -31,7 +31,7 @@ Input signal acting as external torque on a flange
 """
 @mtkmodel Torque begin
     @extend (flange,) = partial_element = PartialElementaryOneFlangeAndSupport2(;
-        use_support)
+        use_support = false)
     @components begin
         tau = RealInput(unit = u"N*m")
     end
@@ -41,7 +41,7 @@ Input signal acting as external torque on a flange
 end
 
 """
-    ConstantTorque(; name, tau_constant, use_support)
+    ConstantTorque(; name, tau_constant, use_support = false)
 
 Constant torque source
 
@@ -56,7 +56,7 @@ Constant torque source
 
 # Arguments:
 - `tau_constant`: The constant torque applied by the source
-- `use_support`: Whether or not an internal support flange is added.
+- `use_support`: Whether or not an internal support flange is added. By default, it is `false`
 """
 @mtkmodel ConstantTorque begin
     @parameters begin
@@ -66,7 +66,7 @@ Constant torque source
             unit = u"N*m"]
         ]
     end
-    @extend flange, phi = partial_element = PartialTorque(; use_support)
+    @extend flange, phi = partial_element = PartialTorque(; use_support = false)
     @variables begin
         tau(t), [description = "Accelerating torque acting at flange (= -flange.tau)",
             unit = u"N*m"]
@@ -81,7 +81,7 @@ Constant torque source
 end
 
 """
-    Speed(; name, use_support, exact = false, f_crit = 50)
+    Speed(; name, use_support = false, exact = false, f_crit = 50)
 
 Forced movement of a flange according to a reference angular velocity signal
 

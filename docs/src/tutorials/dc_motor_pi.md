@@ -27,7 +27,7 @@ L = 4.5e-3 # [H] armature inductance
 k = 0.5 # [N.m/A] motor constant
 J = 0.02 # [kg.m²] inertia
 f = 0.01 # [N.m.s/rad] friction factor
-tau_L_step = -0.3 # [N.m] amplitude of the load torque step 
+tau_L_step = -0.3 # [N.m] amplitude of the load torque step
 nothing # hide
 ```
 
@@ -43,7 +43,7 @@ The actual model can now be composed.
 @named L1 = Inductor(L = L)
 @named emf = EMF(k = k)
 @named fixed = Fixed()
-@named load = Torque(use_support = false)
+@named load = Torque()
 @named load_step = Blocks.Step(height = tau_L_step, start_time = 3)
 @named inertia = Inertia(J = J)
 @named friction = Damper(d = f)

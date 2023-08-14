@@ -160,7 +160,7 @@ c = 10   # Damping coefficient
 @named inertia2 = Inertia(; J = m2)
 @named spring = Spring(; c = k)
 @named damper = Damper(; d = c)
-@named torque = Torque(; use_support = false)
+@named torque = Torque()
 
 function SystemModel(u = nothing; name = :model)
     eqs = [connect(torque.flange, inertia1.flange_a)
