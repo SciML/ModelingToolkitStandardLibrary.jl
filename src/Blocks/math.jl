@@ -54,7 +54,6 @@ Output the product of a gain matrix with the input signal vector.
          for i in 1:nout]...
     end
 end
-MatrixGain.f(K; name) = MatrixGain.f(; name, K)
 
 """
     Sum(; input__nin::Int, name)

@@ -1,8 +1,6 @@
 @mtkmodel PartialTorque begin
-    @parameters begin
-        use_support
-    end
-    @extend flange, phi_support = partial_element = PartialElementaryOneFlangeAndSupport2(use_support = use_support)
+    @extend flange, phi_support = partial_element = PartialElementaryOneFlangeAndSupport2(;
+        use_support)
     @variables begin
         phi(t),
         [description = "Angle of flange with respect to support",
@@ -32,7 +30,8 @@ Input signal acting as external torque on a flange
   - `use_support`
 """
 @mtkmodel Torque begin
-    @extend (flange,) = partial_element = PartialElementaryOneFlangeAndSupport2(; use_support)
+    @extend (flange,) = partial_element = PartialElementaryOneFlangeAndSupport2(;
+        use_support)
     @components begin
         tau = RealInput(unit = u"N*m")
     end
@@ -65,9 +64,9 @@ Constant torque source
         [
             description = "Constant torque (if negative, torque is acting as load in positive direction of rotation)",
             unit = u"N*m"]
-        use_support
+        ]
     end
-    @extend flange, phi = partial_element = PartialTorque(; use_support = use_support)
+    @extend flange, phi = partial_element = PartialTorque(; use_support)
     @variables begin
         tau(t), [description = "Accelerating torque acting at flange (= -flange.tau)",
             unit = u"N*m"]

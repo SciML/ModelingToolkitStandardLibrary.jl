@@ -254,6 +254,11 @@ Electromotoric force (electric/mechanic transformer)
         phi(t) = 0.0, [description = "Rotation angle", unit = u"rad"]
         w(t) = 0.0, [description = "Angular velocity", unit = u"rad/s"]
     end
+    @extend v, i = oneport = OnePort()
+    @components begin
+        flange = Flange()
+        support = Support()
+    end
     @equations begin
         phi ~ flange.phi - support.phi
         D(phi) ~ w
