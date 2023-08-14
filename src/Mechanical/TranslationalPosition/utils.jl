@@ -120,13 +120,13 @@ Partial model for a component with one translational 1-dim. shaft flange and a s
 end
 
 """
-    PartialElementaryTwoFlangesAndSupport2(;name, use_support=false)
+    PartialElementaryTwoFlangesAndSupport2(; name, use_support = false)
 
 Partial model for a component with two translational 1-dim. flanges and a support used for textual modeling, i.e., for elementary models
 
 # Parameters:
 
-  - `use_support`: If support flange enabled, otherwise implicitly grounded
+  - `use_support`: If support flange enabled, otherwise implicitly grounded. By default it is `false`
 
 # States:
 

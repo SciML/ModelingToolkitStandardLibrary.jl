@@ -62,7 +62,7 @@ end
     J_motor = 0.1 # Motor inertia
 
     @named fixed = Fixed()
-    @named torque = Torque(use_support = true)
+    @named torque = Torque(; use_support = true)
     @named inertia1 = Inertia(J = 2, phi = pi / 2)
     @named spring = Rotational.Spring(c = 1e4)
     @named damper = Damper(d = 10)
@@ -192,7 +192,7 @@ end
     @named friction = RotationalFriction(f = 0.001, tau_c = 20, w_brk = 0.06035,
         tau_brk = 25)
     @named vel_profile = VelocityProfile()
-    @named source = Speed(use_support = false)
+    @named source = Speed()
     @named angle_sensor = AngleSensor()
 
     connections = [connect(vel_profile.output, source.w_ref)

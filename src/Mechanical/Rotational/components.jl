@@ -197,11 +197,11 @@ This element characterizes any type of gear box which is fixed in the ground and
 # Parameters:
 
   - `ratio`: Transmission ratio (flange_a.phi/flange_b.phi)
-  - `use_support`: If support flange enabled, otherwise implicitly grounded
+  - `use_support`: If support flange enabled, otherwise implicitly grounded. By default it is `false`
 """
 @mtkmodel IdealGear begin
     @extend phi_support, flange_a, flange_b = partial_element = PartialElementaryTwoFlangesAndSupport2(;
-        use_support)
+        use_support = false)
     @parameters begin
         ratio, [description = "Transmission ratio"]
     end

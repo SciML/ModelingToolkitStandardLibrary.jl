@@ -33,7 +33,7 @@ end
     @named spring = TP.Spring(; c = 1, s_rel0 = 1)
     @named mass = TP.Mass(; m = 1, v = 1)
     @named fixed = TP.Fixed(; s0 = 1)
-    @named force = TP.Force(use_support = false)
+    @named force = TP.Force()
     @named source = Sine(frequency = 3, amplitude = 2)
 
     eqs = [connect(force.f, source.output)
