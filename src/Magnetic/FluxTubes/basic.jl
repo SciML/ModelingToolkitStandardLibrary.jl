@@ -119,7 +119,7 @@ Initial magnetic flux flowing into the port_p can be set with `Phi` ([Wb])
         i(t), [description = "Current", unit = u"A"]
         Phi, [description = "Magnetic flux", unit = u"Wb"]
     end
-    @extend V_m, Phi = two_port = TwoPort(; Phi = Phi)
+    @extend V_m, Phi = two_port = TwoPort(; Phi)
     @components begin
         p = Pin()
         n = Pin()
@@ -147,9 +147,6 @@ Initial magnetic flux flowing into the port_p can be set with `Phi` ([`Wb`])
   - `A`: [m^2] Cross sectional area of eddy current path
 """
 @mtkmodel EddyCurrent begin
-    @variables begin
-        Phi, [description = "Magnetic flux", unit = u"Wb"]
-    end
     @parameters begin
         rho = 0.098e-6, [description = "Resistivity of flux tube material", unit = u"Ω*m"]
         l = 1, [description = "Average length of eddy current path", unit = u"m"]
@@ -157,7 +154,7 @@ Initial magnetic flux flowing into the port_p can be set with `Phi` ([`Wb`])
         R = rho * l / A,
         [description = "Electrical resistance of eddy current path", unit = u"Ω"]
     end
-    @extend (V_m, Phi) = two_port = TwoPort(; Phi = Phi)
+    @extend (V_m, Phi) = two_port = TwoPort(; Phi)
     @equations begin
         D(Phi) ~ V_m * R
     end
