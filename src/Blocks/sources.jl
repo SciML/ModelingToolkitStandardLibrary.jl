@@ -590,7 +590,13 @@ function Symbolics.derivative(::typeof(get_sampled_data), args::NTuple{2, Any}, 
     first_order_backwards_difference(t, memory)
 end
 function ChainRulesCore.frule((_, ẋ, _), ::typeof(get_sampled_data), t, memory)
-    first_order_backwards_difference(t, memory) * ẋ
+    get_sampled_data(t, memory), first_order_backwards_difference(t, memory) * ẋ
+end
+function ChainRulesCore.frule((_, ẋ, _),
+    ::typeof(first_order_backwards_difference),
+    t,
+    memory)
+    first_order_backwards_difference(t, memory), 0
 end
 
 """
@@ -675,6 +681,7 @@ function ChainRulesCore.frule((_, _, ṫ, ẋ, _),
     t,
     x,
     Δt)
+    set_sampled_data!(memory, t, x, Δt),
     first_order_backwards_difference(t, x, Δt, memory) * ṫ + ẋ
 end
 
