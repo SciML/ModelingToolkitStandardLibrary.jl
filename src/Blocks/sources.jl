@@ -531,8 +531,7 @@ function Base.show(io::IO, m::MIME"text/plain", p::Parameter)
     end
 end
 
-
-function get_sampled_data(t, data::Vector{T}, dt::T, circular_buffer=true) where {T}
+function get_sampled_data(t, data::Vector{T}, dt::T, circular_buffer = true) where {T}
     if t < 0
         t = zero(t)
     end
@@ -590,27 +589,21 @@ function first_order_backwards_difference(t, memory)
 end
 
 function first_order_backwards_difference(t, data, dt, circular_buffer)
-    
-    x1 = get_sampled_data(t,      data, dt, circular_buffer)
+    x1 = get_sampled_data(t, data, dt, circular_buffer)
     x0 = get_sampled_data(t - dt, data, dt, circular_buffer)
 
     return (x1 - x0) / dt
 end
 
-
-
-
 function Symbolics.derivative(::typeof(get_sampled_data), args::NTuple{2, Any}, ::Val{1})
     t = @inbounds args[1]
     memory = @inbounds args[2]
-    
+
     return first_order_backwards_difference(t, memory)
 end
 function ChainRulesCore.frule((_, ẋ, _), ::typeof(get_sampled_data), t, memory)
     first_order_backwards_difference(t, memory) * ẋ
 end
-
-
 
 function Symbolics.derivative(::typeof(get_sampled_data), args::NTuple{4, Any}, ::Val{1})
     t = @inbounds args[1]
@@ -619,12 +612,14 @@ function Symbolics.derivative(::typeof(get_sampled_data), args::NTuple{4, Any}, 
     circular_buffer = @inbounds args[4]
     return first_order_backwards_difference(t, data, dt, circular_buffer)
 end
-function ChainRulesCore.frule((_, ẋ, _), ::typeof(get_sampled_data), t, data, dt, circular_buffer)
+function ChainRulesCore.frule((_, ẋ, _),
+    ::typeof(get_sampled_data),
+    t,
+    data,
+    dt,
+    circular_buffer)
     first_order_backwards_difference(t, data, dt, circular_buffer) * ẋ
 end
-
-
-
 
 """
     SampledData(; name, buffer)
@@ -637,8 +632,11 @@ data input component.
 # Connectors:
   - `output`
 """
-function SampledData(::Type{T}, circular_buffer=true; name, data=T[], dt=zero(T)) where {T<:Real}
-
+function SampledData(::Type{T},
+    circular_buffer = true;
+    name,
+    data = T[],
+    dt = zero(T)) where {T <: Real}
     pars = @parameters begin
         buffer = Parameter(data, dt, circular_buffer)
     end
@@ -648,13 +646,19 @@ function SampledData(::Type{T}, circular_buffer=true; name, data=T[], dt=zero(T)
     end
 
     eqs = [
-        output.u ~ get_sampled_data(t, buffer)
+        output.u ~ get_sampled_data(t, buffer),
     ]
-    
-    return ODESystem(eqs, t, vars, pars; name, systems, defaults = [output.u => get_sampled_data(0.0, buffer)])
+
+    return ODESystem(eqs,
+        t,
+        vars,
+        pars;
+        name,
+        systems,
+        defaults = [output.u => get_sampled_data(0.0, buffer)])
 end
 
-function SampledData(circular_buffer=true; name, data=Float64[], dt=0.0)
+function SampledData(circular_buffer = true; name, data = Float64[], dt = 0.0)
     pars = @parameters begin
         data = data
         dt = dt
@@ -666,14 +670,13 @@ function SampledData(circular_buffer=true; name, data=Float64[], dt=0.0)
     end
 
     eqs = [
-        output.u ~ get_sampled_data(t, data, dt, circular_buffer)
+        output.u ~ get_sampled_data(t, data, dt, circular_buffer),
     ]
 
     return ODESystem(eqs, t, vars, pars; name, systems,
         defaults = [output.u => get_sampled_data(0.0, data, dt, circular_buffer)])
 end
 @deprecate Input SampledData
-
 
 # function SampledData(T::Type, circular_buffer = true; name)
 #     SampledData(T[], zero(T), circular_buffer; name)
@@ -684,7 +687,6 @@ end
 # function SampledData(data::Vector{T}, dt::T, circular_buffer = true; name) where {T <: Real}
 #     SampledData(; name, buffer = Parameter(data, dt, circular_buffer))
 # end
-
 
 Base.convert(::Type{T}, x::Parameter{T}) where {T <: Real} = x.ref
 function Base.convert(::Type{<:Parameter{T}}, x::Number) where {T <: Real}
