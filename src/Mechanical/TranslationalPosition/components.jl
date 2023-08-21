@@ -13,7 +13,7 @@ Flange fixed in housing at a given position.
 """
 @mtkmodel Fixed begin
     @parameters begin
-        s_0, [description = "Fixed offset position of housing", unit = u"m"]
+        s_0 = 0, [description = "Fixed offset position of housing", unit = u"m"]
     end
     @components begin
         flange = Flange(; s = s_0)
