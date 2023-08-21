@@ -41,11 +41,11 @@
     end
 
     @components begin
-        TX1 = MechanicalPort()
-        TY1 = MechanicalPort()
+        TX1 = Flange()
+        TY1 = Flange()
 
-        TX2 = MechanicalPort()
-        TY2 = MechanicalPort()
+        TX2 = Flange()
+        TY2 = Flange()
     end
 
     @equations begin
@@ -76,12 +76,12 @@
         x_cm ~ l * cos(A) / 2 + x1
         y_cm ~ l * sin(A) / 2 + y1
         TX1.f ~ fx1
-        TX1.v ~ dx1
+        TX1.s ~ x1
         TY1.f ~ fy1
-        TY1.v ~ dy1
+        TY1.s ~ y1
         TX2.f ~ fx2
-        TX2.v ~ dx2
+        TX2.s ~ x2
         TY2.f ~ fy2
-        TY2.v ~ dy2
+        TY2.s ~ y2
     end
 end

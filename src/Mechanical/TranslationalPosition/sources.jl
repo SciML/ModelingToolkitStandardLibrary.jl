@@ -5,11 +5,11 @@ Input signal acting as external force on a flange
 """
 @mtkmodel Force begin
     @parameters begin
-        use_support
+        s = 0
     end
-    @extend (flange,) = partial_element = PartialElementaryOneFlangeAndSupport2(use_support = use_support)
     @components begin
-        f = RealInput() # Accelerating force acting at flange (= -flange.tau)
+        flange = Flange(; s = s)
+        f = RealInput()
     end
     @equations begin
         flange.f ~ -f.u

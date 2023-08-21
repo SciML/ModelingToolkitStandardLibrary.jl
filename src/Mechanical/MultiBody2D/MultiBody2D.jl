@@ -1,7 +1,7 @@
 module MultiBody2D
 
 using ModelingToolkit, Symbolics, IfElse
-using ..Translational
+using ..TranslationalPosition
 
 @parameters t
 D = Differential(t)
