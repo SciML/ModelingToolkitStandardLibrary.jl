@@ -1,6 +1,6 @@
 using ModelingToolkit
 using ModelingToolkitStandardLibrary.Mechanical.MultiBody2D
-using ModelingToolkitStandardLibrary.Mechanical.Translational
+using ModelingToolkitStandardLibrary.Mechanical.TranslationalPosition
 using DifferentialEquations
 # using Setfield
 using Test
