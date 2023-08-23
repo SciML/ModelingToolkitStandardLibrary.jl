@@ -46,7 +46,7 @@ Creates a circuit component which measures the potential at a pin.
         p = Pin()
     end
     @variables begin
-        phi(t)
+        phi(t), [description = "Measured potential", unit = u"V"]
     end
     @equations begin
         p.i ~ 0
@@ -74,7 +74,7 @@ Creates a circuit component that measures the voltage across it. Analogous to an
         n = Pin()
     end
     @variables begin
-        v(t)
+        v(t), [description = "Voltage difference from positive to negative pin", unit = u"V"]
     end
     @equations begin
         p.i ~ 0
@@ -112,7 +112,7 @@ consumed by a circuit.
         current_sensor = CurrentSensor()
     end
     @variables begin
-        power(t)
+        power(t), [description = "Power being consumed", unit = u"W"]
     end
     @equations begin
         connect(voltage_sensor.p, pv)
@@ -150,8 +150,8 @@ Combines a [`VoltageSensor`](@ref) and a [`CurrentSensor`](@ref).
         current_sensor = CurrentSensor()
     end
     @variables begin
-        i(t) = 1.0
-        v(t) = 1.0
+        i(t) = 1.0, [description = "Current", unit = u"A"]
+        v(t) = 1.0, [description = "Voltage", unit = u"V"]
     end
     @equations begin
         connect(voltage_sensor.p, pv)

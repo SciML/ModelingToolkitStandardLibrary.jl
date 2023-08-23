@@ -38,7 +38,7 @@ See [OnePort](@ref)
 @mtkmodel Resistor begin
     @extend v, i = oneport = OnePort()
     @parameters begin
-        R, [description = "Resistance"]
+        R, [description = "Resistance", unit = u"Ω"]
     end
     @equations begin
         v ~ i * R
@@ -66,7 +66,7 @@ See [OnePort](@ref)
 @mtkmodel Conductor begin
     @extend v, i = oneport = OnePort()
     @parameters begin
-        G, [description = "Conductance"]
+        G, [description = "Conductance", unit = u"S"]
     end
     @equations begin
         i ~ v * G
@@ -94,7 +94,7 @@ See [OnePort](@ref)
 """
 @mtkmodel Capacitor begin
     @parameters begin
-        C, [description = "Capacitance"]
+        C, [description = "Capacitance",unit = u"F"]
     end
     @variables begin
         v
@@ -126,7 +126,7 @@ See [OnePort](@ref)
 """
 @mtkmodel Inductor begin
     @parameters begin
-        L, [description = "Inductance"]
+        L, [description = "Inductance", unit = u"H"]
     end
     @variables begin
         i

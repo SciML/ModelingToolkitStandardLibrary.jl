@@ -33,8 +33,8 @@ Component with two electrical pins `p` and `n` and current `i` flows from `p` to
         n = Pin()
     end
     @variables begin
-        v(t) = 0.0
-        i(t) = 0.0
+        v(t) = 0.0, [description = "Voltage", unit = u"V"]
+        i(t) = 0.0, [description = "Current", unit = u"A"]
     end
     @equations begin
         v ~ p.v - n.v
@@ -70,10 +70,10 @@ Current `i1` flows from `p1` to `n1` and `i2` from `p2` to `n2`.
         n2 = Pin()
     end
     @variables begin
-        v1(t) = 0.0
-        i1(t) = 0.0
-        v2(t) = 0.0
-        i2(t) = 0.0
+        v1(t) = 0.0, [description = "Voltage", unit = u"V"]
+        i1(t) = 0.0, [description = "Current", unit = u"A"]
+        v2(t) = 0.0, [description = "Voltage", unit = u"V"]
+        i2(t) = 0.0, [description = "Current", unit = u"A"]
     end
     @equations begin
         v1 ~ p1.v - n1.v
