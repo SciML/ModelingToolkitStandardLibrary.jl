@@ -117,7 +117,6 @@ Initial magnetic flux flowing into the port_p can be set with `Phi` ([Wb])
         v(t),
         [description = "Voltage difference from positive to negative pin", unit = u"V"]
         i(t), [description = "Current", unit = u"A"]
-        Phi, [description = "Magnetic flux", unit = Wb]
     end
     @extend V_m, Phi = two_port = TwoPort(; Phi)
     @components begin
