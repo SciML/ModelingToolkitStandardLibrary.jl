@@ -13,10 +13,10 @@ Parameters:
         port_n = NegativeMagneticPort()
     end
     @parameters begin
-        V_m = 0.0, [description = "Magnetic potential difference"]
+        V_m = 0.0, [description = "Magnetic potential difference", unit = u"A"]
     end
     @variables begin
-        Phi(t)
+        Phi(t), [description = "Magnetic flux", unit = u"Wb"]
     end
     @equations begin
         V_m ~ port_p.V_m - port_n.V_m
@@ -40,10 +40,10 @@ Parameters:
         port_n = NegativeMagneticPort()
     end
     @parameters begin
-        Phi = 0.0, [description = "Magnetic flux"]
+        Phi = 0.0, [description = "Magnetic flux", unit = u"Wb"]
     end
     @variables begin
-        V_m(t)
+        V_m(t), [description = "Magnetic potential difference", unit = u"A"]
     end
     @equations begin
         V_m ~ port_p.V_m - port_n.V_m

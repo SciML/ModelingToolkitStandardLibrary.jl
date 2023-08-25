@@ -1,6 +1,7 @@
 @connector MagneticPort begin
-    V_m(t), [description = "Magnetic potential at the port"]
-    Phi(t), [connect = Flow, description = "Magnetic flux flowing into the port"]
+    V_m(t), [description = "Magnetic potential at the port", unit = u"A"]
+    Phi(t),
+    [connect = Flow, description = "Magnetic flux flowing into the port", unit = u"Wb"]
 end
 Base.@doc "Port for a Magnetic system." MagneticPort
 
@@ -30,8 +31,15 @@ Partial component with magnetic potential difference between two magnetic ports 
         port_n = NegativeMagneticPort()
     end
     @variables begin
-        V_m(t) = 0.0
-        Phi(t) = 0.0
+        V_m(t) = 0.0, [description = "Magnetic potential at the port", unit = u"A"]
+        function Phi(t)
+            0.0,
+            [
+                connect = Flow,
+                description = "Magnetic flux flowing into the port",
+                unit = u"Wb",
+            ]
+        end
     end
     @equations begin
         V_m ~ port_p.V_m - port_n.V_m

@@ -20,7 +20,7 @@ Idle running branch.
 @mtkmodel Idle begin
     @extend (Phi,) = two_port = TwoPort()
     @equations begin
-        Phi ~ 0
+        Phi ~ 0.0
     end
 end
 
@@ -68,7 +68,7 @@ Constant permeance.
 @mtkmodel ConstantPermeance begin
     @extend V_m, Phi = two_port = TwoPort()
     @parameters begin
-        G_m = 1.0, [description = "Magnetic permeance"]
+        G_m = 1.0, [description = "Magnetic permeance", unit = u"H"]
     end
     @equations begin
         Phi ~ G_m * V_m
@@ -87,7 +87,7 @@ Constant reluctance.
 @mtkmodel ConstantReluctance begin
     @extend V_m, Phi = two_port = TwoPort(; Phi = 0.0)
     @parameters begin
-        R_m = 1.0, [description = "Magnetic reluctance"]
+        R_m = 1.0, [description = "Magnetic reluctance", unit = u"H^-1"]
     end
     @equations begin
         V_m ~ Phi * R_m
@@ -114,9 +114,10 @@ Initial magnetic flux flowing into the port_p can be set with `Phi` ([Wb])
         N, [description = "Number of turns"]
     end
     @variables begin
-        v(t)
-        i(t)
-        Phi
+        v(t),
+        [description = "Voltage difference from positive to negative pin", unit = u"V"]
+        i(t), [description = "Current", unit = u"A"]
+        Phi, [description = "Magnetic flux", unit = u"Wb"]
     end
     @extend V_m, Phi = two_port = TwoPort(; Phi = Phi)
     @components begin
@@ -147,13 +148,14 @@ Initial magnetic flux flowing into the port_p can be set with `Phi` ([`Wb`])
 """
 @mtkmodel EddyCurrent begin
     @variables begin
-        Phi
+        Phi, [description = "Magnetic flux", unit = u"Wb"]
     end
     @parameters begin
-        rho = 0.098e-6, [description = "Resistivity of flux tube material"]
-        l = 1, [description = "Average length of eddy current path"]
-        A = 1, [description = "Cross sectional area of eddy current path"]
-        R = rho * l / A # Electrical resistance of eddy current path
+        rho = 0.098e-6, [description = "Resistivity of flux tube material", unit = u"Ω*m"]
+        l = 1, [description = "Average length of eddy current path", unit = u"m"]
+        A = 1, [description = "Cross sectional area of eddy current path", unit = u"m^2"]
+        R = rho * l / A,
+        [description = "Electrical resistance of eddy current path", unit = u"Ω"]
     end
     @extend (V_m, Phi) = two_port = TwoPort(; Phi = Phi)
     @equations begin
