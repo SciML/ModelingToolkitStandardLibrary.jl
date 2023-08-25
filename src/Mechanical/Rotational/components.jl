@@ -94,7 +94,7 @@ Linear 1D rotational spring
         @symcheck c > 0 || throw(ArgumentError("Expected `c` to be positive"))
     end
     @parameters begin
-        c, [description = "Spring constant", unit = u"N*m"]
+        c, [description = "Spring constant", unit = u"N*m*rad^-1"]
         phi_rel0 = 0.0, [description = "Unstretched spring angle", unit = u"rad"]
     end
     @equations begin

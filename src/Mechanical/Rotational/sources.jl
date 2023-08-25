@@ -65,15 +65,21 @@ Constant torque source
         tau_constant,
         [
             description = "Constant torque (if negative, torque is acting as load in positive direction of rotation)",
-            unit = u"N*m"
+            unit = u"N*m",
         ]
     end
     @extend flange, phi = partial_element = PartialTorque(; use_support = false)
     @variables begin
-        tau(t), [description = "Accelerating torque acting at flange (= -flange.tau)",
-            unit = u"N*m"]
-        w(t), [description = "Angular velocity of flange with respect to support",
-            unit = u"rad*s^-1"]
+        tau(t),
+        [
+            description = "Accelerating torque acting at flange (= -flange.tau)",
+            unit = u"N*m",
+        ]
+        w(t),
+        [
+            description = "Angular velocity of flange with respect to support",
+            unit = u"rad*s^-1",
+        ]
     end
     @equations begin
         w ~ D(phi)
