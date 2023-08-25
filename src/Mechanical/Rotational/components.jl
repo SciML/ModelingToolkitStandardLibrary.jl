@@ -16,7 +16,7 @@ Flange fixed in housing at a given angle.
         flange = Flange()
     end
     @parameters begin
-        phi0 = 0.0, [description = "Fixed offset angle of flange"]
+        phi0 = 0.0, [description = "Fixed offset angle of flange", unit = u"rad"]
     end
     @equations begin
         flange.phi ~ phi0
@@ -45,7 +45,7 @@ end
 """
 @mtkmodel Inertia begin
     @parameters begin
-        J, [description = "Moment of inertia"]
+        J, [description = "Moment of inertia", unit = u"kg*m^2"]
     end
     @components begin
         flange_a = Flange()
@@ -55,9 +55,9 @@ end
         @symcheck J > 0 || throw(ArgumentError("Expected `J` to be positive"))
     end
     @variables begin
-        phi(t) = 0.0, [description = "Absolute rotation angle"]
-        w(t) = 0.0, [description = "Absolute angular velocity"]
-        a(t) = 0.0, [description = "Absolute angular acceleration"]
+        phi(t) = 0.0, [description = "Absolute rotation angle", unit = u"rad"]
+        w(t) = 0.0, [description = "Absolute angular velocity", unit = u"rad*s^-1"]
+        a(t) = 0.0, [description = "Absolute angular acceleration", rad = u"rad*s^-2"]
     end
     @equations begin
         phi ~ flange_a.phi
@@ -94,8 +94,8 @@ Linear 1D rotational spring
         @symcheck c > 0 || throw(ArgumentError("Expected `c` to be positive"))
     end
     @parameters begin
-        c, [description = "Spring constant"]
-        phi_rel0 = 0.0, [description = "Unstretched spring angle"]
+        c, [description = "Spring constant", unit = u"N*m*rad^-1"]
+        phi_rel0 = 0.0, [description = "Unstretched spring angle", unit = u"rad"]
     end
     @equations begin
         tau ~ c * (phi_rel - phi_rel0)
@@ -129,7 +129,7 @@ Linear 1D rotational damper
         @symcheck d > 0 || throw(ArgumentError("Expected `d` to be positive"))
     end
     @parameters begin
-        d, [description = "Damping constant"]
+        d, [description = "Damping constant", unit = u"N*m*s*rad^-1"]
     end
     @equations begin
         tau ~ d * w_rel
@@ -159,10 +159,10 @@ Linear 1D rotational spring and damper
   - `phi_rel0`: [`rad`] Unstretched spring angle
 """
 @mtkmodel SpringDamper begin
-    @extend phi_rel, w_rel, tau = partial_comp = PartialCompliantWithRelativeStates()
+    @extend phi_rel, w_rel, a_rel, tau = partial_comp = PartialCompliantWithRelativeStates()
     @variables begin
-        tau_c(t), [description = "Spring torque"]
-        tau_d(t), [description = "Damper torque"]
+        tau_c(t), [description = "Spring torque", unit = u"N*m"]
+        tau_d(t), [description = "Damper torque", unit = u"N*m"]
     end
     @parameters begin
         d, [description = "Damping constant"]
@@ -208,8 +208,14 @@ This element characterizes any type of gear box which is fixed in the ground and
         ratio, [description = "Transmission ratio"]
     end
     @variables begin
-        phi_a(t) = 0.0, [description = "Relative angle between shaft a and the support"]
-        phi_b(t) = 0.0, [description = "Relative angle between shaft b and the support"]
+        function phi_a(t)
+            0.0,
+            [description = "Relative angle between shaft a and the support", unit = u"rad"]
+        end
+        function phi_b(t)
+            0.0,
+            [description = "Relative angle between shaft b and the support", unit = u"rad"]
+        end
     end
     @equations begin
         phi_a ~ flange_a.phi - phi_support
@@ -247,14 +253,13 @@ Friction model: "Armstrong, B. and C.C. de Wit, Friction Modeling and Compensati
   - `tau_brk`: [`N⋅m`] Breakaway friction torque
 """
 @mtkmodel RotationalFriction begin
-    @extend w_rel, tau = partial_comp = PartialCompliantWithRelativeStates()
+    @extend phi_rel, w_rel, a_rel, tau = partial_comp = PartialCompliantWithRelativeStates()
     @parameters begin
-        f, [description = "Viscous friction coefficient"]
-        tau_c, [description = "Coulomb friction torque"]
-        w_brk, [description = "Breakaway friction velocity"]
-        tau_brk, [description = "Breakaway friction torque"]
+        f, [description = "Viscous friction coefficient", unit = u"N*m*s/rad"]
+        tau_c, [description = "Coulomb friction torque", unit = u"N*m"]
+        w_brk, [description = "Breakaway friction velocity", unit = u"rad*s^-1"]
+        tau_brk, [description = "Breakaway friction torque", unit = "N*m"]
     end
-
     begin
         str_scale = sqrt(2 * exp(1)) * (tau_brk - tau_c)
         w_st = w_brk * sqrt(2)

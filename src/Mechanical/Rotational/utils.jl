@@ -1,6 +1,6 @@
 @connector Flange begin
-    phi(t), [description = "Rotation angle of flange"]
-    tau(t), [connect = Flow, description = "Cut torque in flange"]
+    phi(t), [description = "Rotation angle of flange", unit = u"rad"]
+    tau(t), [connect = Flow, description = "Cut torque in flange", unit = u"N*m"]
 end
 
 Base.@doc """
@@ -14,8 +14,8 @@ Base.@doc """
 """ Flange
 
 @connector Support begin
-    phi(t), [description = "Rotation angle of flange"]
-    tau(t), [connect = Flow, description = "Cut torque in flange"]
+    phi(t), [description = "Rotation angle of flange", unit = u"rad"]
+    tau(t), [connect = Flow, description = "Cut torque in flange", unit = u"N*m"]
 end
 
 # Base.@doc """
@@ -71,8 +71,10 @@ Partial model for the compliant connection of two rotational 1-dim. shaft flange
         flange_b = Flange()
     end
     @variables begin
-        phi_rel(t) = 0.0, [description = "Relative rotation angle between flanges"]
-        tau(t) = 0.0, [description = "Torque between flanges"]
+        function phi_rel(t)
+            0.0, [description = "Relative rotation angle between flanges", units = u"rad"]
+        end
+        tau(t) = 0.0, [description = "Torque between flanges", u"N*m"]
     end
     @equations begin
         phi_rel ~ flange_b.phi - flange_a.phi
@@ -104,10 +106,21 @@ Partial model for the compliant connection of two rotational 1-dim. shaft flange
         flange_b = Flange()
     end
     @variables begin
-        phi_rel(t) = 0.0, [description = "Relative rotation angle between flanges"]
-        w_rel(t) = 0.0, [description = "Relative angular velocity between flanges"]
-        a_rel(t) = 0.0, [description = "Relative angular acceleration between flanges"]
-        tau(t) = 0.0, [description = "Torque between flanges"]
+        function phi_rel(t)
+            0.0, [description = "Relative rotation angle between flanges", unit = u"rad"]
+        end
+        function w_rel(t)
+            0.0,
+            [description = "Relative angular velocity between flanges", unit = u"rad*s^-1"]
+        end
+        function a_rel(t)
+            0.0,
+            [
+                description = "Relative angular acceleration between flanges",
+                unit = u"rad*s^-2",
+            ]
+        end
+        tau(t) = 0.0, [description = "Torque between flanges", unit = u"N*m"]
     end
     @equations begin
         phi_rel ~ flange_b.phi - flange_a.phi
@@ -138,7 +151,10 @@ Partial model for a component with one rotational 1-dim. shaft flange and a supp
 @component function PartialElementaryOneFlangeAndSupport2(; name, use_support = false)
     @named flange = Flange()
     sys = [flange]
-    @variables phi_support(t)=0.0 [description = "Absolute angle of support flange"]
+    @variables phi_support(t)=0.0 [
+        description = "Absolute angle of support flange",
+        unit = u"rad",
+    ]
     if use_support
         @named support = Support()
         eqs = [support.phi ~ phi_support
@@ -173,7 +189,10 @@ Partial model for a component with two rotational 1-dim. shaft flanges and a sup
     @named flange_a = Flange()
     @named flange_b = Flange()
     sys = [flange_a, flange_b]
-    @variables phi_support(t)=0.0 [description = "Absolute angle of support flange"]
+    @variables phi_support(t)=0.0 [
+        description = "Absolute angle of support flange",
+        unit = u"rad",
+    ]
     if use_support
         @named support = Support()
         eqs = [support.phi ~ phi_support

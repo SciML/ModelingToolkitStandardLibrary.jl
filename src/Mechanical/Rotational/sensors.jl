@@ -72,7 +72,7 @@ Ideal sensor to measure the relative angular velocity
 
   - `flange_a`: [Flange](@ref) Flange of shaft from which sensor information shall be measured
   - `flange_b`: [Flange](@ref) Flange of shaft from which sensor information shall be measured
-  - `w`: [RealOutput](@ref) Absolute angular velocity of flange
+  - `w_rel`: [RealOutput](@ref) Relative angular velocity
 """
 @mtkmodel RelSpeedSensor begin
     @components begin
@@ -81,7 +81,7 @@ Ideal sensor to measure the relative angular velocity
         w_rel = RealOutput()
     end
     @variables begin
-        phi_rel(t) = 0.0
+        phi_rel(t) = 0.0, [description = "Relative rotation angle", units = u"rad"]
     end
     @equations begin
         0 ~ flange_a.tau + flange_b.tau

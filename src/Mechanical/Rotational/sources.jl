@@ -5,9 +5,8 @@
     @extend flange, phi_support = partial_element = PartialElementaryOneFlangeAndSupport2(use_support = use_support)
     @variables begin
         phi(t),
-        [
-            description = "Angle of flange with respect to support (= flange.phi - support.phi)",
-        ]
+        [description = "Angle of flange with respect to support",
+            unit = u"rad"]
     end
     @equations begin
         phi ~ flange.phi - phi_support
@@ -68,14 +67,21 @@ Constant torque source
         tau_constant,
         [
             description = "Constant torque (if negative, torque is acting as load in positive direction of rotation)",
-        ]
+            unit = u"N*m"]
         use_support
     end
     @extend flange, phi = partial_element = PartialTorque(; use_support = use_support)
     @variables begin
-        tau(t), [description = "Accelerating torque acting at flange (= -flange.tau)"]
+        tau(t),
+        [
+            description = "Accelerating torque acting at flange (= -flange.tau)",
+            unit = u"N*m",
+        ]
         w(t),
-        [description = "Angular velocity of flange with respect to support (= der(phi))"]
+        [
+            description = "Angular velocity of flange with respect to support",
+            unit = u"rad*s^-1",
+        ]
     end
     @equations begin
         w ~ D(phi)
@@ -108,7 +114,13 @@ Forced movement of a flange according to a reference angular velocity signal
     @named partial_element = PartialElementaryOneFlangeAndSupport2(use_support = use_support)
     @unpack flange, phi_support = partial_element
     @named w_ref = RealInput()
-    @variables phi(t)=0.0 w(t)=0.0 a(t)=0.0
+    @variables begin
+        function phi(t)
+            0.0, [description = "Angle of flange with respect to support", unit = u"rad"]
+        end
+        w(t) = 0.0, [description = "Angular velocity", unit = u"rad*s^-1"]
+        a(t) = 0.0, [description = "Angular acceleration", unit = u"rad*s^-2"]
+    end
     eqs = [phi ~ flange.phi - phi_support
         D(phi) ~ w]
     if exact
@@ -116,7 +128,10 @@ Forced movement of a flange according to a reference angular velocity signal
         push!(eqs, w ~ w_ref.u)
         push!(eqs, a ~ 0)
     else
-        pars = @parameters tau_filt = tau_filt
+        pars = @parameters tau_filt=tau_filt [
+            description = "Time constant of low-pass filter",
+            unit = u"rad*s^-1",
+        ]
         push!(eqs, D(w) ~ a)
         push!(eqs, a ~ (w_ref.u - w) * tau_filt)
     end
