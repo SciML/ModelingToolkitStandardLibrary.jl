@@ -13,7 +13,7 @@ Flange fixed in housing at a given position.
 """
 @mtkmodel Fixed begin
     @parameters begin
-        s_0
+        s_0, [description = "Fixed offset position of housing", unit = u"m"]
     end
     @components begin
         flange = Flange(; s = s_0)
@@ -31,13 +31,12 @@ Sliding mass with inertia
 # Parameters:
 
   - `m`: [kg] Mass of sliding mass
-  - `s_0`: [m] Initial value of absolute position of sliding mass
-  - `v_0`: [m/s] Initial value of absolute linear velocity of sliding mass
 
 # States:
 
-  - `s`: [m] Absolute position of sliding mass
-  - `v`: [m/s] Absolute linear velocity of sliding mass (= der(s))
+  - `s`: [m] Absolute position of sliding mass. It accepts an initial value, which defaults to 0.0.
+  - `v`: [m/s] Absolute linear velocity of sliding mass (= der(s)). It accepts an initial value, which defaults to 0.0.
+  - `f`: [N] Force. It accepts an initial value, which defaults to 0.0.
 
 # Connectors:
 
@@ -45,12 +44,15 @@ Sliding mass with inertia
 """
 @mtkmodel Mass begin
     @parameters begin
-        m
+        m, [description = "Mass of sliding mass", unit = u"kg"]
     end
     @variables begin
-        s(t) = 0.0
-        v(t) = 0.0
-        f(t) = 0.0
+        s(t) = 0.0, [description = "Absolute position of sliding mass", unit = u"m"]
+        function v(t)
+            0.0,
+            [description = "Absolute linear velocity of sliding mass", unit = u"m*s^-1"]
+        end
+        f(t) = 0.0, [description = "Force", unit = u"N"]
     end
     @components begin
         flange = Flange(; s = s)
@@ -158,7 +160,7 @@ Linear 1D translational damper
 """
 @mtkmodel Damper begin
     @parameters begin
-        d
+        d, [description = "Damping constant", unit = u"N.s/m"]
     end
     @variables begin
         va(t) = 0.0

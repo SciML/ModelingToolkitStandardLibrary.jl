@@ -1,6 +1,6 @@
 @connector Flange begin
-    s(t)
-    f(t), [connect = Flow]
+    s(t), [description = "Absolute position of flange", unit = u"m"]
+    f(t), [connect = Flow, description = " Cut force into the flange", unit = u"N"]
 end
 Base.@doc """
     Flange(;name)
@@ -13,8 +13,8 @@ Base.@doc """
 """ Flange
 
 @connector Support begin
-    s(t)
-    f(t), [connect = Flow]
+    s(t), [description = "Absolute position of the support/housing", unit = u"m"]
+    f(t), [connect = Flow, description = "Cut force into the flange", unit = u"N"]
 end
 Base.@doc """
     Support(;name)
@@ -36,7 +36,7 @@ Partial model for the compliant connection of two translational 1-dim. flanges.
   - `s_rel`: [m] Relative distance (= flange_b.s - flange_a.s). It accepts an initial value, which defaults to 0.0.
   - `f`: [N] Force between flanges (= flange_b.f). It accepts an initial value, which defaults to 0.0.
 """
-@mtkmodel PartialCompliant begin#(; name, s_rel_start = 0.0, f_start = 0.0)
+@mtkmodel PartialCompliant begin
     @components begin
         flange_a = Flange()
         flange_b = Flange()
@@ -44,8 +44,8 @@ Partial model for the compliant connection of two translational 1-dim. flanges.
     @variables begin
         v_a(t) = 0.0
         v_b(t) = 0.0
-        s_rel(t) = 0.0
-        f(t) = 0.0
+        s_rel(t) = 0.0, [description = "Relative distance ", unit = u"m"]
+        f(t) = 0.0, [description = "Force between flanges", unit = u"N"]
     end
     @equations begin
         D(flange_a.s) ~ v_a
@@ -61,18 +61,9 @@ end
 
 Partial model for the compliant connection of two translational 1-dim. flanges.
 
-# Parameters:
+  # States:
 
-  - `s_rel_start`: [m] Initial relative distance
-  - `v_rel_start`: [m/s] Initial relative linear velocity (= der(s_rel))
-  - `a_rel_start`: [m/s²] Initial relative linear acceleration (= der(v_rel))
-  - `f_start`: [N] Initial force between flanges
-
-# States:
-
-  - `s_rel`: [m] Relative distance (= flange_b.phi - flange_a.phi)
-  - `v_rel`: [m/s] Relative linear velocity (= der(s_rel))
-  - `a_rel`: [m/s²] Relative linear acceleration (= der(v_rel))
+  - `delta_s`: [m]
   - `f`: [N] Force between flanges (= flange_b.f)
 """
 @mtkmodel PartialCompliantWithRelativeStates begin
@@ -82,7 +73,7 @@ Partial model for the compliant connection of two translational 1-dim. flanges.
     end
     @variables begin
         delta_s(t) = 0.0
-        f(t) = 0.0
+        f(t) = 0.0, [description = "Force between flanges", unit = u"N"]
     end
     @equations begin
         delta_s ~ flange_a.s - flange_b.s
@@ -107,7 +98,8 @@ Partial model for a component with one translational 1-dim. shaft flange and a s
 @component function PartialElementaryOneFlangeAndSupport2(; name, use_support = false)
     @named flange = Flange()
     sys = [flange]
-    @variables s_support(t)
+    @variables s_support(t),
+    [description = "Absolute position of support flange", unit = u"m"]
     if use_support
         @named support = Support()
         eqs = [support.s ~ s_support
@@ -120,7 +112,7 @@ Partial model for a component with one translational 1-dim. shaft flange and a s
 end
 
 """
-    PartialElementaryTwoFlangesAndSupport2(;name, use_support=false)
+    PartialElementaryTwoFlangesAndSupport2(; name, use_support = false)
 
 Partial model for a component with two translational 1-dim. flanges and a support used for textual modeling, i.e., for elementary models
 
@@ -136,7 +128,9 @@ Partial model for a component with two translational 1-dim. flanges and a suppor
     @named flange_a = Flange()
     @named flange_b = Flange()
     sys = [flange_a, flange_b]
-    @variables s_support(t) = 0.0
+    @variables function s_support(t)
+        0.0, [description = "Absolute position of support flange", unit = u"m"]
+    end
     if use_support
         @named support = Support()
         eqs = [support.s ~ s_support
