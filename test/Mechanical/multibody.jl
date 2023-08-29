@@ -1,6 +1,6 @@
 using ModelingToolkit
 using ModelingToolkitStandardLibrary.Mechanical.MultiBody2D
-using ModelingToolkitStandardLibrary.Mechanical.Translational
+using ModelingToolkitStandardLibrary.Mechanical.TranslationalPosition
 using DifferentialEquations
 # using Setfield
 using Test
@@ -23,6 +23,7 @@ eqs = [connect(link1.TX1, cart.flange) #, force.flange)
 @named model = ODESystem(eqs, t, [], []; systems = [link1, link2, cart, fixed])
 
 sys = structural_simplify(model)
+@test length(states(sys)) == 6
 
 # The below code does work...
 #=
