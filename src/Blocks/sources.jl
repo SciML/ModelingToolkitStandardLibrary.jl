@@ -97,17 +97,17 @@ The input variable `t` can be changed by passing a different variable as the key
 - `output`
 """
 @mtkmodel TimeVaryingFunction begin
-    @parameters begin
+    @structural_parameters begin
         f
     end
     @components begin
         output = RealOutput(; unit)
     end
     @equations begin
-        output.u ~ first(getdefault(f))(t)
+        output.u ~ f(t)
     end
 end
-TimeVaryingFunction.f(f; name) = TimeVaryingFunction.f(; f = [f], name)
+TimeVaryingFunction.f(f; name) = TimeVaryingFunction(; f, name)
 
 """
     Sine(; name, frequency, amplitude = 1, phase = 0, offset = 0, start_time = 0,
