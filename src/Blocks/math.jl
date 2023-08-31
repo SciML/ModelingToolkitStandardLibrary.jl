@@ -221,15 +221,15 @@ If the given function is not composed of simple core methods (e.g. sin, abs, ...
   - `output`
 """
 @mtkmodel StaticNonLinearity begin
-    @parameters begin
+    @structural_parameters begin
         func
     end
     @extend u, y = siso = SISO()
     @equations begin
-        y ~ first(getdefault(func))(u)
+        y ~ func(u)
     end
 end
-StaticNonLinearity.f(func; name) = StaticNonLinearity.f(; name = name, func = [func])
+StaticNonLinearity.f(func; name) = StaticNonLinearity(; func, name)
 
 """
     Abs(; name)
