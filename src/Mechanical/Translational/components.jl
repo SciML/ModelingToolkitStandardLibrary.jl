@@ -38,7 +38,7 @@ Fixes a flange position (velocity = 0)
 end
 
 """
-    Mass(; name, v_0 = 0.0, m, s_0 = nothing, g = nothing)
+    Mass(; name, v_0 = 0.0, m, s = nothing, g = nothing)
 
 Sliding mass with inertia
 
@@ -46,13 +46,13 @@ Sliding mass with inertia
 
   - `m`: [kg] mass of sliding body
   - `v_0`: [m/s] Initial value of absolute linear velocity of sliding mass (default 0 m/s)
-  - `s_0`: [m] (optional) initial value of absolute position of sliding mass
+  - `s`: [m] (optional) initial value of absolute position of sliding mass
   - `g`: [m/s²] (optional) gravity field acting on the mass, positive value acts in the positive direction
 
 # States:
 
   - `v`: [m/s] absolute linear velocity of sliding mass
-  - `s`: [m] (optional with parameter s_0) absolute position of sliding mass
+  - `s`: [m] (optional with parameter s) absolute position of sliding mass
 
 # Connectors:
 
