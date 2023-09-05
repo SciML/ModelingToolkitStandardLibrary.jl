@@ -1,8 +1,6 @@
 @mtkmodel PartialTorque begin
-    @parameters begin
-        use_support
-    end
-    @extend flange, phi_support = partial_element = PartialElementaryOneFlangeAndSupport2(use_support = use_support)
+    @extend flange, phi_support = partial_element = PartialElementaryOneFlangeAndSupport2(;
+        use_support = false)
     @variables begin
         phi(t),
         [
@@ -15,7 +13,7 @@
 end
 
 """
-    Torque(; name, use_support)
+    Torque(; name, use_support = false)
 
 Input signal acting as external torque on a flange
 
@@ -33,10 +31,8 @@ Input signal acting as external torque on a flange
   - `use_support`
 """
 @mtkmodel Torque begin
-    @parameters begin
-        use_support
-    end
-    @extend (flange,) = partial_element = PartialElementaryOneFlangeAndSupport2(use_support = use_support)
+    @extend (flange,) = partial_element = PartialElementaryOneFlangeAndSupport2(;
+        use_support = false)
     @components begin
         tau = RealInput()
     end
@@ -46,7 +42,7 @@ Input signal acting as external torque on a flange
 end
 
 """
-    ConstantTorque(; name, tau_constant, use_support)
+    ConstantTorque(; name, tau_constant, use_support = false)
 
 Constant torque source
 
@@ -61,17 +57,16 @@ Constant torque source
 
 # Arguments:
 - `tau_constant`: The constant torque applied by the source
-- `use_support`: Whether or not an internal support flange is added.
+- `use_support`: Whether or not an internal support flange is added. By default, it is `false`
 """
-@mtkmodel ConstantTorque begin #(; name, tau_constant, use_support = false)
+@mtkmodel ConstantTorque begin
     @parameters begin
         tau_constant,
         [
             description = "Constant torque (if negative, torque is acting as load in positive direction of rotation)",
         ]
-        use_support
     end
-    @extend flange, phi = partial_element = PartialTorque(; use_support = use_support)
+    @extend flange, phi = partial_element = PartialTorque(; use_support = false)
     @variables begin
         tau(t), [description = "Accelerating torque acting at flange (= -flange.tau)"]
         w(t),
@@ -85,7 +80,7 @@ Constant torque source
 end
 
 """
-    Speed(; name, use_support, exact = false, f_crit = 50)
+    Speed(; name, use_support = false, exact = false, f_crit = 50)
 
 Forced movement of a flange according to a reference angular velocity signal
 

@@ -48,11 +48,10 @@ Sliding mass with inertia
         m = 0.0, [description = "Mass of sliding mass [kg]"]
     end
     @variables begin
-        s
         v(t) = 0.0, [description = "Absolute linear velocity of sliding mass [m/s]"]
         a(t) = 0.0, [description = "Absolute linear acceleration of sliding mass [m/s^2]"]
     end
-    @extend flange_a, flange_b, s = pr = PartialRigid(; L = 0.0, s = s)
+    @extend flange_a, flange_b, s = pr = PartialRigid(; L = 0.0, s)
     @equations begin
         v ~ D(s)
         a ~ D(v)

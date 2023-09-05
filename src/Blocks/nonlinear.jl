@@ -97,7 +97,6 @@ Initial value of state `Y` can be set with `int.y`
         rising = 1.0, [description = "Maximum rising slew rate of SlewRateLimiter"]
         falling = -rising, [description = "Derivative time constant of SlewRateLimiter"]
         Td = 0.001, [description = "Derivative time constant"]
-        y_start
     end
     begin
         getdefault(rising) ≥ getdefault(falling) ||
@@ -105,7 +104,7 @@ Initial value of state `Y` can be set with `int.y`
         getdefault(Td) > 0 ||
             throw(ArgumentError("Time constant `Td` must be strictly positive"))
     end
-    @extend u, y = siso = SISO(y_start = y_start)
+    @extend u, y = siso = SISO(; y_start)
     @equations begin
         D(y) ~ max(min((u - y) / Td, rising), falling)
     end
