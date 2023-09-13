@@ -549,7 +549,7 @@ dm ────►               │  │ area
         p_int,
         x_int = 0,
         area,
-        dead_volume = N == 0 ? area * x_max : 0,
+        dead_volume = N == 0 ? area * x_int : 0,
         Χ1 = N == 0 ? 1 : 0,
         Χ2 = 1)
 
