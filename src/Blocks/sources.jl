@@ -442,8 +442,6 @@ end
 # - SawTooth    Generate saw tooth signal
 # - Trapezoid   Generate trapezoidal signal of type Real
 
-
-
 # SampledData Parameter struct ----------------
 
 struct Parameter{T <: Real}
@@ -530,8 +528,6 @@ function Base.convert(::Type{<:Parameter{T}}, x::Number) where {T <: Real}
     Parameter{T}(T[], x, true)
 end
 
-
-
 # SampledData utilities ----------------
 
 function linear_interpolation(x1::Real, x2::Real, t1::Real, t2::Real, t)
@@ -556,15 +552,13 @@ function first_order_backwards_difference(t, memory)
 end
 
 function first_order_backwards_difference(t, buffer, Δt, circular_buffer)
-    x1 = get_sampled_data(t     , buffer, Δt, circular_buffer)
+    x1 = get_sampled_data(t, buffer, Δt, circular_buffer)
     x0 = get_sampled_data(t - Δt, buffer, Δt, circular_buffer)
 
     return (x1 - x0) / Δt
 end
 
-
-
-function get_sampled_data(t, buffer::Vector{<:Real}, dt::Real, circular_buffer=true)
+function get_sampled_data(t, buffer::Vector{<:Real}, dt::Real, circular_buffer = true)
     if t < 0
         t = zero(t)
     end
@@ -603,7 +597,9 @@ function get_sampled_data(t, buffer::Vector{<:Real}, dt::Real, circular_buffer=t
         return linear_interpolation(x1, x2, t1, t2, t)
     end
 end
-get_sampled_data(t, buffer) = get_sampled_data(t, buffer.data, buffer.ref, buffer.circular_buffer)
+function get_sampled_data(t, buffer)
+    get_sampled_data(t, buffer.data, buffer.ref, buffer.circular_buffer)
+end
 Symbolics.@register_symbolic get_sampled_data(t, buffer)
 Symbolics.@register_symbolic get_sampled_data(t, buffer, dt, circular_buffer) false
 
@@ -623,11 +619,14 @@ function Symbolics.derivative(::typeof(get_sampled_data), args::NTuple{4, Any}, 
     circular_buffer = @inbounds args[4]
     first_order_backwards_difference(t, buffer, sample_time, circular_buffer)
 end
-function ChainRulesCore.frule((_, ẋ, _), ::typeof(get_sampled_data), t, buffer, sample_time, circular_buffer)
+function ChainRulesCore.frule((_, ẋ, _),
+    ::typeof(get_sampled_data),
+    t,
+    buffer,
+    sample_time,
+    circular_buffer)
     first_order_backwards_difference(t, buffer, sample_time, circular_buffer) * ẋ
 end
-
-
 
 # SampledData component ----------------
 
@@ -648,7 +647,11 @@ data input component.
 # Connectors:
   - `output`
 """
-@component function SampledData(::Val{SampledDataType.vector_based}; name, buffer, sample_time, circular_buffer=true)
+@component function SampledData(::Val{SampledDataType.vector_based};
+    name,
+    buffer,
+    sample_time,
+    circular_buffer = true)
     pars = @parameters begin
         buffer = buffer #::Vector{Real}
         sample_time = sample_time #::Real
@@ -662,7 +665,9 @@ data input component.
         output.u ~ get_sampled_data(t, buffer, sample_time, circular_buffer),
     ]
     return ODESystem(eqs, t, vars, pars; name, systems,
-        defaults = [output.u => get_sampled_data(0.0, buffer, sample_time, circular_buffer)])
+        defaults = [
+            output.u => get_sampled_data(0.0, buffer, sample_time, circular_buffer),
+        ])
 end
 
 """
@@ -694,19 +699,26 @@ end
 SampledData(x::SampledDataType.Option; kwargs...) = SampledData(Val(x); kwargs...)
 
 # struct_based
-SampledData(T::Type, circular_buffer = true; name) = SampledData(SampledDataType.struct_based; name, buffer = Parameter(T[], zero(T), circular_buffer))
+function SampledData(T::Type, circular_buffer = true; name)
+    SampledData(SampledDataType.struct_based;
+        name,
+        buffer = Parameter(T[], zero(T), circular_buffer))
+end
 
 # vector_based
-SampledData(sample_time::T, circular_buffer = true; name) where {T <: Real} = SampledData(SampledDataType.vector_based; name, buffer=T[], sample_time, circular_buffer)
-SampledData(buffer::Vector{<:Real}, sample_time::Real, circular_buffer = true; name) = SampledData(SampledDataType.vector_based; name, buffer, sample_time, circular_buffer)
-SampledData(; name, buffer, sample_time, circular_buffer) = SampledData(SampledDataType.vector_based; name, buffer, sample_time, circular_buffer)
-
-
-
-
-
-
-
-
-
-
+function SampledData(sample_time::T, circular_buffer = true; name) where {T <: Real}
+    SampledData(SampledDataType.vector_based;
+        name,
+        buffer = T[],
+        sample_time,
+        circular_buffer)
+end
+function SampledData(buffer::Vector{<:Real},
+    sample_time::Real,
+    circular_buffer = true;
+    name)
+    SampledData(SampledDataType.vector_based; name, buffer, sample_time, circular_buffer)
+end
+function SampledData(; name, buffer, sample_time, circular_buffer)
+    SampledData(SampledDataType.vector_based; name, buffer, sample_time, circular_buffer)
+end
