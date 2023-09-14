@@ -568,9 +568,7 @@ function first_order_backwards_difference(t, buffer, Δt, circular_buffer)
     return (x1 - x0) / Δt
 end
 
-
-
-function get_sampled_data(t, buffer::Vector{<:Real}, dt::Real, circular_buffer=true)
+function get_sampled_data(t, buffer::Vector{T}, dt::T, circular_buffer = true) where {T<:Real}
     if t < 0
         t = zero(t)
     end
