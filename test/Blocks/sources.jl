@@ -417,27 +417,60 @@ end
     time = 0:dt:t_end
     x = @. time^2 + 1.0
 
-    vars = @variables y(t)=1 dy(t)=0 ddy(t)=0
-    @named src = SampledData(Float64)
-    @named int = Integrator()
-    @named iosys = ODESystem([y ~ src.output.u
-            D(y) ~ dy
-            D(dy) ~ ddy
-            connect(src.output, int.input)],
-        t,
-        systems = [int, src])
-    sys = structural_simplify(iosys)
-    s = complete(iosys)
-    prob = ODEProblem(sys, [], (0.0, t_end), [s.src.buffer => Parameter(x, dt)];
-        tofloat = false)
-    prob = remake(prob; p = Parameter.(prob.p))
+    @testset "using Parameter type" begin
+        vars = @variables y(t)=1 dy(t)=0 ddy(t)=0
+        @named src = SampledData(Float64)
+        @named int = Integrator()
+        @named iosys = ODESystem([y ~ src.output.u
+                D(y) ~ dy
+                D(dy) ~ ddy
+                connect(src.output, int.input)],
+            t,
+            systems = [int, src])
+        sys = structural_simplify(iosys)
+        s = complete(iosys)
+        prob = ODEProblem(sys,
+            [],
+            (0.0, t_end),
+            [s.src.buffer => Parameter(x, dt)];
+            tofloat = false)
+        # prob = remake(prob; p = Parameter.(prob.p)) #<-- no longer needed with ModelingToolkit.jl PR #2231
 
-    sol = solve(prob, Rodas4(); initializealg = NoInit())
-    @test sol.retcode == Success
-    @test sol[src.output.u][1] == 1.0 #check correct initial condition
+        sol = solve(prob, Rodas4(); initializealg = NoInit())
+        @test sol.retcode == Success
+        @test sol[src.output.u][1] == 1.0 #check correct initial condition
 
-    @test sol(time)[src.output.u]≈x atol=1e-3
-    @test sol[int.output.u][end]≈1 / 3 * 10^3 + 10.0 atol=1e-3 # closed-form solution to integral
-    @test sol[dy][end]≈2 * time[end] atol=1e-3
-    @test sol[ddy][end]≈2 atol=1e-3
+        @test sol(time)[src.output.u]≈x atol=1e-3
+        @test sol[int.output.u][end]≈1 / 3 * 10^3 + 10.0 atol=1e-3 # closed-form solution to integral
+        @test sol[dy][end]≈2 * time[end] atol=1e-3
+        @test sol[ddy][end]≈2 atol=1e-3
+    end
+
+    @testset "using Vector Based" begin
+        vars = @variables y(t)=1 dy(t)=0 ddy(t)=0
+        @named src = SampledData(dt)
+        @named int = Integrator()
+        @named iosys = ODESystem([y ~ src.output.u
+                D(y) ~ dy
+                D(dy) ~ ddy
+                connect(src.output, int.input)],
+            t,
+            systems = [int, src])
+        sys = structural_simplify(iosys)
+        s = complete(iosys)
+        prob = ODEProblem(sys,
+            [],
+            (0.0, t_end),
+            [s.src.buffer => x, s.src.sample_time => dt];
+            tofloat = false)
+
+        sol = solve(prob, Rodas4(); initializealg = NoInit())
+        @test sol.retcode == Success
+        @test sol[src.output.u][1] == 1.0 #check correct initial condition
+
+        @test sol(time)[src.output.u]≈x atol=1e-3
+        @test sol[int.output.u][end]≈1 / 3 * 10^3 + 10.0 atol=1e-3 # closed-form solution to integral
+        @test sol[dy][end]≈2 * time[end] atol=1e-3
+        @test sol[ddy][end]≈2 atol=1e-3
+    end
 end

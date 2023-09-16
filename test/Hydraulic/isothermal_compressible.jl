@@ -281,6 +281,12 @@ end
     sys = structural_simplify(system)
     defs = ModelingToolkit.defaults(sys)
     s = complete(system)
+    dt = 1e-4
+    time = 0:dt:0.1
+    x = @. 0.9 * (time > 0.015) * (time - 0.015)^2 - 25 * (time > 0.02) * (time - 0.02)^3
+    defs[s.input.buffer] = Parameter(x, dt)
+    #prob = ODEProblem(sys, ModelingToolkit.missing_variable_defaults(sys), (0, 0.1);
+    #                  tofloat = false)#, jac = true)
     prob = ODEProblem(sys, ModelingToolkit.missing_variable_defaults(sys), (0, 0.1);
         tofloat = false, jac = true)
 
@@ -292,15 +298,9 @@ end
     @test Symbol(defs[s.valve.port_r.ρ]) == Symbol(s.fluid.ρ)
     @test Symbol(defs[s.snk.port.ρ]) == Symbol(s.fluid.ρ)
 
-    dt = 1e-4
-    time = 0:dt:0.1
-    x = @. 0.9 * (time > 0.015) * (time - 0.015)^2 - 25 * (time > 0.02) * (time - 0.02)^3
-
-    defs[s.input.buffer] = Parameter(x, dt)
     # defs[s.piston.Cd_reverse] = 0.1
 
-    p = Parameter.(ModelingToolkit.varmap_to_vars(defs, parameters(sys); tofloat = false))
-    prob = remake(prob; p, tspan = (0, time[end]))
+    prob = remake(prob; tspan = (0, time[end]))
     @time sol = solve(prob, ImplicitEuler(nlsolve = NEWTON); adaptive = false, dt,
         initializealg = NoInit())
 
