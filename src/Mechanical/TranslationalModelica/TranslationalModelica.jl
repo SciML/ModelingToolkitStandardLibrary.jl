@@ -7,7 +7,7 @@ using ModelingToolkit, Symbolics, IfElse
 using ModelingToolkit: t_nounits as t, D_nounits as D
 using ...Blocks: RealInput, RealOutput
 
-export Flange
+export Flange, Support
 include("utils.jl")
 
 export Fixed, Mass, Spring, Damper
