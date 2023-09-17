@@ -11,6 +11,9 @@ import ...@symcheck
 @parameters t
 D = Differential(t)
 
+export Frame
+include("utils.jl")
+
 export Fixed
 include("components.jl")
 
