@@ -106,3 +106,52 @@ Body component with mass and inertia
     return compose(ODESystem(eqs, t, vars, pars; name = name),
         frame)
 end
+
+"""
+    FixedTranslation(; name, l, z)
+A fixed translation between two components (rigid rod)
+
+# Parameters:
+
+  - `r`: [m, m] Fixed x,y-length of the rod resolved w.r.t to body frame_a at phi = 0
+  - `l`: [m] Length of vector r
+  - `z`: [m] Position z of cylinder representing the fixed translation
+
+# Connectors:
+    
+      - `frame_a` [Frame](@ref) Coordinate system fixed to the component with one cut-force and cut-torque
+      - `frame_b` [Frame](@ref) Coordinate system fixed to the component with one cut-force and cut-torque
+"""
+@mtkmodel FixedTranslation begin
+    @extend frame_a, frame_b = partial_frames = PartialTwoFrames()
+
+    @parameters begin
+        r,
+        [
+            description = "Fixed x,y-length of the rod resolved w.r.t to body frame_a at phi = 0",
+        ]
+        l, [description = "Length of vector r"]
+        z, [description = "Position z of cylinder representing the fixed translation"]
+    end
+
+    @variables begin
+        R, [description = "Rotation matrix"]
+        r0, [description = "Length of the rod resolved w.r.t to inertal frame"]
+    end
+
+    @equations begin
+        # resovle the translation w.r.t. inertial frame
+        R ~ [[cos(frame_a.phi), -sin(frame_a.phi)]; [sin(frame_a.phi), cos(frame_a.phi)]]
+        r0 ~ R * r
+
+        # rigidly connect positions
+        frame_a.x + r0[1] ~ frame_b.x
+        frame_a.y + r0[2] ~ frame_b.y
+        frame_a.phi ~ frame_b.phi
+
+        # balancing force including lever principle
+        frame_a.fx + frame_b.fx ~ 0
+        frame_a.fy + frame_b.fy ~ 0
+        frame_a.j + frame_b.j + r0 * [frame_b.fy, -frame_b.fx] ~ 0
+    end
+end

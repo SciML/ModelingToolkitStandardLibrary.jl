@@ -11,10 +11,10 @@ import ...@symcheck
 @parameters t
 D = Differential(t)
 
-export Frame
+export Frame, PartialTwoFrames
 include("utils.jl")
 
-export Fixed
+export Fixed, FixedTranslation
 include("components.jl")
 
 end
