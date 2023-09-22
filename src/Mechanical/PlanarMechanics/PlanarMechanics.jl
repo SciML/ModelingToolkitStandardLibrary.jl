@@ -11,6 +11,13 @@ import ...@symcheck
 @parameters t
 D = Differential(t)
 
+module Rotational
+# TODO: figure out how to use Rotational directly
+using ModelingToolkit
+export Flange, Support, Fixed
+include("../Rotational/utils.jl")
+end
+
 export Frame, PartialTwoFrames
 include("utils.jl")
 
