@@ -21,7 +21,7 @@ A revolute joint
   - `support` [Support](@ref) if `use_flange == true`
 
 """
-@component function Revolute(; nane, phi = 0.0, tau = 0.0, use_flange = false)
+@component function Revolute(; name, phi = 0.0, ω = 0.0, tau = 0.0, use_flange = false)
     @named partial_frames = PartialTwoFrames()
     @unpack frame_a, frame_b = partial_frames
     @named fixed = Rotational.Fixed()
@@ -31,11 +31,11 @@ A revolute joint
         @named support = Rotational.Support()
     end
 
-    vars = @varialbes begin
-        phi = phi, [description = "Anugliar position"]
-        ω = 0.0, [description = "Angular velocity"]
-        α = 0.0, [description = "Angular acceleration"]
-        j = tau, [description = "Torque"]
+    vars = @variables begin
+        phi(t) = phi
+        ω(t) = ω
+        α(t) = 0.0
+        j(t) = tau
     end
 
     eqs = [
@@ -46,18 +46,18 @@ A revolute joint
         frame_a.y ~ frame_b.y,
         frame_a.phi + phi ~ frame_b.phi,
         # balance forces
-        frame_a.fx + frame_b.fx = 0,
-        frame_a.fy + frame_b.fy = 0,
+        frame_a.fx + frame_b.fx ~ 0,
+        frame_a.fy + frame_b.fy ~ 0,
         # balance torques
-        frame_a.j + frame_b.j = 0,
-        frame_a.j = j,
+        frame_a.j + frame_b.j ~ 0,
+        frame_a.j ~ j,
     ]
 
     if use_flange
         # actutation torque
         push!(eqs, connect(fixed.flange, support))
     else
-        push!(eqs, j ~ ϕ)
+        push!(eqs, j ~ phi)
     end
 
     pars = []

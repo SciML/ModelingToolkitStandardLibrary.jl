@@ -5,7 +5,8 @@ Frame fixed in the planar world frame at a given position and orientation
 
 # Parameters:
 
-  - `r`: [m, m] Fixed absolute x,y-position, resolved in planarWorld frame
+  - `x`: [m] Fixed absolute x-position, resolved in planarWorld frame
+  - `y`: [m] Fixed absolute y-position, resolved in planarWorld frame
   - `phi`: [rad] Fixed angle
 
 # Connectors:
@@ -14,16 +15,18 @@ Frame fixed in the planar world frame at a given position and orientation
 """
 @mtkmodel Fixed begin
     @parameters begin
-        r, [description = "Fixed absolute x,y-position, resolved in planarWorld frame"]
-        phi, [description = "Fixed angle"]
+        x = 0, [description = "Fixed absolute x-position, resolved in planarWorld frame"]
+        y = 0, [description = "Fixed absolute y-position, resolved in planarWorld frame"]
+        phi = 0, [description = "Fixed angle"]
     end
 
     @components begin
-        frame = Frame(; r = (0.0, 0.0), phi = 0.0)
+        frame = Frame()
     end
 
     @equations begin
-        frame.x, frame.y ~ r
+        frame.x ~ x
+        frame.y ~ y
         frame.phi ~ phi
     end
 end
@@ -38,7 +41,7 @@ Body component with mass and inertia
   - `m`: [kg] mass of the body
   - `j`: [kg.m²] inertia of the body with respect to the origin of `frame` along the z-axis of `frame`
   - `r`: [m, m] (optional) Translational position x,y-position
-  - `gy`: [m/s²] (optional) gravity field acting on the mass in the y-direction, positive value acts in the positive direction
+  - `gy`: [m/s²] (optional) gravity field acting on the mass in the y-direction, positive value acts in the positive direction defaults to 9.81
 
 # States:
 
@@ -56,7 +59,7 @@ Body component with mass and inertia
 
   - `frame`: 2-dim. Coordinate system
 """
-@component function Body(; name, m, j, r = nothing, gy = nothing)
+@component function Body(; name, m, j, r = nothing, gy = 9.81)
     @named frame = Frame()
     pars = @parameters begin
         m = m
@@ -82,13 +85,13 @@ Body component with mass and inertia
         # velocity is the time derivative of position
         rx ~ frame.x,
         ry ~ frame.y,
-        vx ~ D(r_x),
-        vy ~ D(r_y),
+        vx ~ D(rx),
+        vy ~ D(ry),
         phi ~ frame.phi,
         ω ~ D(phi),
         # acceleration is the time derivative of velocity
-        ax ~ D(v_x),
-        ay ~ D(v_y),
+        ax ~ D(vx),
+        ay ~ D(vy),
         α ~ D(ω),
         # newton's law
         fx ~ frame.fx,
@@ -108,14 +111,13 @@ Body component with mass and inertia
 end
 
 """
-    FixedTranslation(; name, l, z)
+    FixedTranslation(; name, r::AbstractArray, l)
 A fixed translation between two components (rigid rod)
 
 # Parameters:
 
-  - `r`: [m, m] Fixed x,y-length of the rod resolved w.r.t to body frame_a at phi = 0
-  - `l`: [m] Length of vector r
-  - `z`: [m] Position z of cylinder representing the fixed translation
+  - `rx`: [m] Fixed x-length of the rod resolved w.r.t to body frame_a at phi = 0
+  - `ry`: [m] Fixed y-length of the rod resolved w.r.t to body frame_a at phi = 0
 
 # Connectors:
     
@@ -126,32 +128,39 @@ A fixed translation between two components (rigid rod)
     @extend frame_a, frame_b = partial_frames = PartialTwoFrames()
 
     @parameters begin
-        r,
+        rx,
         [
-            description = "Fixed x,y-length of the rod resolved w.r.t to body frame_a at phi = 0",
+            description = "Fixed x-length of the rod resolved w.r.t to body frame_a at phi = 0",
         ]
-        l, [description = "Length of vector r"]
-        z, [description = "Position z of cylinder representing the fixed translation"]
+        ry,
+        [
+            description = "Fixed y-length of the rod resolved w.r.t to body frame_a at phi = 0",
+        ]
     end
 
+    # begin
+    #     l = norm([rx, ry])
+    # end
+
     @variables begin
-        R, [description = "Rotation matrix"]
-        r0, [description = "Length of the rod resolved w.r.t to inertal frame"]
+        r0x(t), [description = "x-length of the rod resolved w.r.t to inertal frame"]
+        r0y(t), [description = "y-length of the rod resolved w.r.t to inertal frame"]
+        cos_phi(t), [description = "cos(phi)"]
+        sin_phi(t), [description = "sin(phi)"]
     end
 
     @equations begin
-        # resovle the translation w.r.t. inertial frame
-        R ~ [[cos(frame_a.phi), -sin(frame_a.phi)]; [sin(frame_a.phi), cos(frame_a.phi)]]
-        r0 ~ R * r
-
         # rigidly connect positions
-        frame_a.x + r0[1] ~ frame_b.x
-        frame_a.y + r0[2] ~ frame_b.y
+        frame_a.x + rx ~ frame_b.x
+        frame_a.y + ry ~ frame_b.y
         frame_a.phi ~ frame_b.phi
-
         # balancing force including lever principle
         frame_a.fx + frame_b.fx ~ 0
         frame_a.fy + frame_b.fy ~ 0
-        frame_a.j + frame_b.j + r0 * [frame_b.fy, -frame_b.fx] ~ 0
+        cos_phi ~ cos(frame_a.phi)
+        sin_phi ~ sin(frame_a.phi)
+        r0x ~ cos_phi * rx - sin_phi * ry
+        r0y ~ sin_phi * rx + cos_phi * rx
+        frame_a.j + frame_b.j + r0x * (frame_b.fy - frame_a.fy) - r0y * (frame_b.fx - frame_a.fx) ~ 0
     end
 end

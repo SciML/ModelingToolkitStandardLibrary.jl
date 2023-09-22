@@ -14,14 +14,41 @@ D = Differential(t)
 module Rotational
 # TODO: figure out how to use Rotational directly
 using ModelingToolkit
-export Flange, Support, Fixed
+export Flange, Support
 include("../Rotational/utils.jl")
+
+"""
+    Fixed(;name, phi0 = 0.0)
+
+Flange fixed in housing at a given angle.
+
+# Connectors:
+
+  - `flange` [Flange](@ref)
+
+# Parameters:
+
+  - `phi0`: [`rad`] Fixed offset angle of housing
+"""
+@mtkmodel Fixed begin
+    @components begin
+        flange = Flange()
+    end
+    @parameters begin
+        phi0 = 0.0, [description = "Fixed offset angle of flange"]
+    end
+    @equations begin
+        flange.phi ~ phi0
+    end
+end
 end
 
 export Frame, PartialTwoFrames
 include("utils.jl")
 
-export Fixed, FixedTranslation
+export Fixed, Body, FixedTranslation
 include("components.jl")
 
+export Revolute
+include("joints.jl")
 end
