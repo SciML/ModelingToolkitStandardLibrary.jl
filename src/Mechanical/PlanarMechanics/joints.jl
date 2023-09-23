@@ -63,5 +63,5 @@ A revolute joint
     pars = []
 
     return compose(ODESystem(eqs, t, vars, pars; name = name),
-        partial_frames, fixed)
+        frame_a, frame_b, fixed)
 end
