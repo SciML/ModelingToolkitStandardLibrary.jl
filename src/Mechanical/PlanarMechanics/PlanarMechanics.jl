@@ -4,10 +4,11 @@ Library to model planar mechanical multi-body systems inspired by https://github
 
 module PlanarMechanics
 
+import ModelingToolkitStandardLibrary.Mechanical.Rotational
+import ModelingToolkitStandardLibrary.Mechanical.TranslationalModelica
 using ModelingToolkit, Symbolics, IfElse
 using ...Blocks: RealInput, RealOutput
 import ...@symcheck
-import ModelingToolkitStandardLibrary.Mechanical.Rotational
 
 @parameters t
 D = Differential(t)
@@ -18,6 +19,6 @@ include("utils.jl")
 export Fixed, Body, FixedTranslation
 include("components.jl")
 
-export Revolute
+export Revolute, Prismatic
 include("joints.jl")
 end

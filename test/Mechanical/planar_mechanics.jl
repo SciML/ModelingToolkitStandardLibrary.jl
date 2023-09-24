@@ -29,3 +29,11 @@ D = Differential(t)
     # phi and omega for the pendulum body
     @test length(states(sys)) == 2
 end
+
+@testset "Prismatic" begin
+    r = [1.0, 0.0]
+    e = r / sqrt(r' * r)
+    @named prismatic = Prismatic(rx = r[1], ry = r[2], ex = e[1], ey = e[2])
+    # just testing instantiation
+    @test true
+end

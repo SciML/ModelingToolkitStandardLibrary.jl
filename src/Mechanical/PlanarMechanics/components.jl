@@ -138,10 +138,6 @@ A fixed translation between two components (rigid rod)
         ]
     end
 
-    # begin
-    #     l = norm([rx, ry])
-    # end
-
     @variables begin
         r0x(t), [description = "x-length of the rod resolved w.r.t to inertal frame"]
         r0y(t), [description = "y-length of the rod resolved w.r.t to inertal frame"]

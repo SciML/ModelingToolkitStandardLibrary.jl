@@ -9,7 +9,7 @@ using ...Blocks: RealInput, RealOutput
 @parameters t
 D = Differential(t)
 
-export Flange
+export Flange, Support
 include("utils.jl")
 
 export Fixed, Mass, Spring, Damper
