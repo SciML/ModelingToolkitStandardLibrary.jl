@@ -41,7 +41,7 @@ Body component with mass and inertia
   - `m`: [kg] mass of the body
   - `j`: [kg.m²] inertia of the body with respect to the origin of `frame` along the z-axis of `frame`
   - `r`: [m, m] (optional) Translational position x,y-position
-  - `gy`: [m/s²] (optional) gravity field acting on the mass in the y-direction, positive value acts in the positive direction defaults to 9.81
+  - `gy`: [m/s²] (optional) gravity field acting on the mass in the y-direction, positive value acts in the positive direction defaults to -9.807
 
 # States:
 
@@ -59,7 +59,7 @@ Body component with mass and inertia
 
   - `frame`: 2-dim. Coordinate system
 """
-@component function Body(; name, m, j, r = nothing, gy = 9.81)
+@component function Body(; name, m, j, r = nothing, gy = -9.807)
     @named frame = Frame()
     pars = @parameters begin
         m = m
