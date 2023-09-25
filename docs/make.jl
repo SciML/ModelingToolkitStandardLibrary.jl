@@ -19,14 +19,6 @@ include("pages.jl")
 
 makedocs(sitename = "ModelingToolkitStandardLibrary.jl",
     authors = "Julia Computing",
-    clean = true,
-    doctest = false,
-    linkcheck = true,
-    strict = [
-        :linkcheck,
-        :doctest,
-        :example_block,
-    ],
     modules = [ModelingToolkit,
         ModelingToolkitStandardLibrary,
         ModelingToolkitStandardLibrary.Blocks,
@@ -38,6 +30,8 @@ makedocs(sitename = "ModelingToolkitStandardLibrary.jl",
         ModelingToolkitStandardLibrary.Thermal,
         ModelingToolkitStandardLibrary.Hydraulic,
         ModelingToolkitStandardLibrary.Hydraulic.IsothermalCompressible],
+    clean = true, doctest = false, linkcheck = true,
+    warnonly = [:docs_block, :missing_docs, :cross_references],
     format = Documenter.HTML(assets = ["assets/favicon.ico"],
         canonical = "https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/"),
     pages = pages)
