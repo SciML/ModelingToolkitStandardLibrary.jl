@@ -116,7 +116,10 @@ Variable length internal flow model of the fully developed incompressible flow f
         0
     end
 
-    eqs = [0 ~ port_a.dm + port_b.dm]
+    eqs = [
+        domain_connect(port_a, port_b)
+        0 ~ port_a.dm + port_b.dm
+        ]
 
     if variable_length
         push!(eqs, Δp ~ ifelse(c > 0, shear + inertia, zero(c)))
@@ -301,7 +304,9 @@ end
         ifelse(Δp > 0, Cd, Cd_reverse)
     end
 
-    eqs = [0 ~ port_a.dm + port_b.dm
+    eqs = [
+        domain_connect(port_a, port_b)
+        0 ~ port_a.dm + port_b.dm
         dm ~ regRoot(2 * Δp * ρ / c) * x
         y ~ x]
 
