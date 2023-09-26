@@ -450,10 +450,17 @@ end
 
 # Methods above are implemented in terms of linearization_function, the method below creates wrappers for linearize
 for f in [:get_sensitivity, :get_comp_sensitivity, :get_looptransfer]
-    @eval function $f(sys, ap, args...; loop_openings = nothing, kwargs...)
-        lin_fun, ssys = $(Symbol(string(f) * "_function"))(sys, ap, args...; loop_openings,
+    @eval function $f(sys,
+        ap,
+        args...;
+        loop_openings = nothing,
+        op = Dict(),
+        p = DiffEqBase.NullParameters(),
+        kwargs...)
+        lin_fun, ssys = $(Symbol(string(f) * "_function"))(sys, ap, args...; op, p,
+            loop_openings,
             kwargs...)
-        ModelingToolkit.linearize(ssys, lin_fun; kwargs...), ssys
+        ModelingToolkit.linearize(ssys, lin_fun; op, p, kwargs...), ssys
     end
 end
 
