@@ -20,6 +20,10 @@ Coordinate system (2-dim.) fixed to the component with one cut-force and cut-tor
     - `j`: [N.m] torque (clockwise)
 """ Frame
 
+# extends Frame with just styling
+# https://github.com/dzimmer/PlanarMechanics/blob/master/PlanarMechanics/Interfaces/Frame_resolve.mo
+FrameResolve = Frame
+
 @mtkmodel PartialTwoFrames begin
     @components begin
         frame_a = Frame()
