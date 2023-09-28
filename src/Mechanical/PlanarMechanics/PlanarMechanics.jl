@@ -13,7 +13,7 @@ import ...@symcheck
 @parameters t
 D = Differential(t)
 
-export Frame, PartialTwoFrames
+export Frame, FrameResolve, PartialTwoFrames, ZeroPosition
 include("utils.jl")
 
 export Fixed, Body, FixedTranslation

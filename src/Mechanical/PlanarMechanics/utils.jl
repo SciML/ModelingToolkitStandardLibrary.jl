@@ -39,3 +39,22 @@ Partial model with two frames
     - `frame_a` [Frame](@ref) Coordinate system fixed to the component with one cut-force and cut-torque
     - `frame_b` [Frame](@ref) Coordinate system fixed to the component with one cut-force and cut-torque
 """ PartialTwoFrames
+
+"""
+    ZeroPosition(;name)
+Set zero position vector and orientation object of frame_resolve
+
+# Connectors:
+    - `frame_resolve` [FrameResolve](@ref) Coordinate system fixed to the component with one cut-force and cut-torque
+"""
+@mtkmodel ZeroPosition begin
+    @components begin
+        frame_resolve = FrameResolve()
+    end
+
+    @equations begin
+        frame_resolve.x ~ 0
+        frame_resolve.y ~ 0
+        frame_resolve.phi ~ 0
+    end
+end
