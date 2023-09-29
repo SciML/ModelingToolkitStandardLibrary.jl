@@ -3,10 +3,10 @@
 Pkg.add(&quot;ModelingToolkitStandardLibrary&quot;)</code></pre><h2 id="Tutorials"><a class="docs-heading-anchor" href="#Tutorials">Tutorials</a><a id="Tutorials-1"></a><a class="docs-heading-anchor-permalink" href="#Tutorials" title="Permalink"></a></h2><ul><li><a href="https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/tutorials/rc_circuit/">RC Circuit</a></li><li><a href="https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/tutorials/custom_component/">Custom Component</a></li><li><a href="https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/tutorials/thermal_model/">Thermal Model</a></li><li><a href="https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/tutorials/dc_motor_pi/">DC Motor with PI-controller</a></li></ul><h2 id="Libraries"><a class="docs-heading-anchor" href="#Libraries">Libraries</a><a id="Libraries-1"></a><a class="docs-heading-anchor-permalink" href="#Libraries" title="Permalink"></a></h2><p>The following are the constituant libraries of the ModelingToolkit Standard Library.</p><ul><li><a href="https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/API/blocks/">Basic Blocks</a></li><li><a href="https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/API/mechanical/">Mechanical Components</a></li><li><a href="https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/API/electrical/">Electrical Components</a></li><li><a href="https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/API/magnetic/">Magnetic Components</a></li><li><a href="https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/API/thermal/">Thermal Components</a></li><li><a href="API/hydraulic/#hydraulic">Hydraulic Components</a></li></ul><h2 id="Contributing"><a class="docs-heading-anchor" href="#Contributing">Contributing</a><a id="Contributing-1"></a><a class="docs-heading-anchor-permalink" href="#Contributing" title="Permalink"></a></h2><ul><li><p>Please refer to the <a href="https://github.com/SciML/ColPrac/blob/master/README.md">SciML ColPrac: Contributor&#39;s Guide on Collaborative Practices for Community Packages</a> for guidance on PRs, issues, and other matters relating to contributing to SciML.</p></li><li><p>See the <a href="https://github.com/SciML/SciMLStyle">SciML Style Guide</a> for common coding practices and other style decisions.</p></li><li><p>There are a few community forums:</p><ul><li>The #diffeq-bridged and #sciml-bridged channels in the <a href="https://julialang.org/slack/">Julia Slack</a></li><li>The #diffeq-bridged and #sciml-bridged channels in the <a href="https://julialang.zulipchat.com/#narrow/stream/279055-sciml-bridged">Julia Zulip</a></li><li>On the <a href="https://discourse.julialang.org">Julia Discourse forums</a></li><li>See also <a href="https://sciml.ai/community/">SciML Community page</a></li></ul></li></ul><h2 id="Reproducibility"><a class="docs-heading-anchor" href="#Reproducibility">Reproducibility</a><a id="Reproducibility-1"></a><a class="docs-heading-anchor-permalink" href="#Reproducibility" title="Permalink"></a></h2><details><summary>The documentation of this SciML package was built using these direct dependencies,</summary><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Status `~/work/ModelingToolkitStandardLibrary.jl/ModelingToolkitStandardLibrary.jl/docs/Project.toml`
   [aaaaaaaa] ControlSystemsBase v1.9.2
   [0c46a032] DifferentialEquations v7.10.0
-  [e30172f5] Documenter v1.0.1
+  [e30172f5] Documenter v1.1.0
   [615f187c] IfElse v0.1.1
 ⌃ [961ee093] ModelingToolkit v8.70.0
-  [16a59e39] ModelingToolkitStandardLibrary v2.3.2 `~/work/ModelingToolkitStandardLibrary.jl/ModelingToolkitStandardLibrary.jl`
+  [16a59e39] ModelingToolkitStandardLibrary v2.3.3 `~/work/ModelingToolkitStandardLibrary.jl/ModelingToolkitStandardLibrary.jl`
   [1dea7af3] OrdinaryDiffEq v6.56.0
   [91a5bcdd] Plots v1.39.0
 Info Packages marked with ⌃ have new versions available and may be upgradable.</code></pre></details><details><summary>and using this machine and Julia version.</summary><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Julia Version 1.9.3
@@ -15,14 +15,14 @@ Build Info:
   Official https://julialang.org/ release
 Platform Info:
   OS: Linux (x86_64-linux-gnu)
-  CPU: 2 × Intel(R) Xeon(R) Platinum 8370C CPU @ 2.80GHz
+  CPU: 2 × Intel(R) Xeon(R) Platinum 8272CL CPU @ 2.60GHz
   WORD_SIZE: 64
   LIBM: libopenlibm
-  LLVM: libLLVM-14.0.6 (ORCJIT, icelake-server)
+  LLVM: libLLVM-14.0.6 (ORCJIT, skylake-avx512)
   Threads: 1 on 2 virtual cores</code></pre></details><details><summary>A more complete overview of all dependencies and their versions is also provided.</summary><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Status `~/work/ModelingToolkitStandardLibrary.jl/ModelingToolkitStandardLibrary.jl/docs/Manifest.toml`
   [47edcb42] ADTypes v0.2.4
   [a4c015fc] ANSIColoredPrinters v0.0.1
-  [c3fe647b] AbstractAlgebra v0.32.3
+  [c3fe647b] AbstractAlgebra v0.32.4
   [621f4979] AbstractFFTs v1.5.0
   [1520ce14] AbstractTrees v0.4.4
   [79e6a3ab] Adapt v3.6.2
@@ -72,9 +72,9 @@ Platform Info:
   [b552c78f] DiffRules v1.15.1
   [0c46a032] DifferentialEquations v7.10.0
   [b4f34e82] Distances v0.10.9
-  [31c24e10] Distributions v0.25.100
+  [31c24e10] Distributions v0.25.102
   [ffbed154] DocStringExtensions v0.9.3
-  [e30172f5] Documenter v1.0.1
+  [e30172f5] Documenter v1.1.0
   [5b8099bc] DomainSets v0.6.7
   [fa6b7ba4] DualNumbers v0.6.8
   [7c1d4256] DynamicPolynomials v0.5.3
@@ -100,7 +100,7 @@ Platform Info:
   [28b8d3ca] GR v0.72.10
   [c145ed77] GenericSchur v0.5.3
   [c27321d9] Glob v1.3.1
-  [86223c79] Graphs v1.8.0
+  [86223c79] Graphs v1.9.0
   [42e2da0e] Grisu v1.0.2
   [0b43b601] Groebner v0.4.4
   [d5909c97] GroupsCore v0.4.0
@@ -118,7 +118,7 @@ Platform Info:
   [1019f520] JLFzf v0.1.5
   [692b3bcd] JLLWrappers v1.5.0
   [682c06a0] JSON v0.21.4
-  [98e50ef6] JuliaFormatter v1.0.36
+  [98e50ef6] JuliaFormatter v1.0.37
   [ccbc3e58] JumpProcesses v9.8.0
   [ef3ab10e] KLU v0.4.1
   [ba0b0d4f] Krylov v0.9.4
@@ -146,14 +146,14 @@ Platform Info:
   [442fdcdd] Measures v0.3.2
   [e1d29d7a] Missings v1.1.0
 ⌃ [961ee093] ModelingToolkit v8.70.0
-  [16a59e39] ModelingToolkitStandardLibrary v2.3.2 `~/work/ModelingToolkitStandardLibrary.jl/ModelingToolkitStandardLibrary.jl`
+  [16a59e39] ModelingToolkitStandardLibrary v2.3.3 `~/work/ModelingToolkitStandardLibrary.jl/ModelingToolkitStandardLibrary.jl`
   [46d2c3a1] MuladdMacro v0.2.4
   [102ac46a] MultivariatePolynomials v0.5.2
   [d8a4904e] MutableArithmetics v1.3.3
   [d41bc354] NLSolversBase v7.8.3
   [2774e3e8] NLsolve v4.5.1
   [77ba4419] NaNMath v1.0.2
-  [8913a72c] NonlinearSolve v1.10.1
+⌅ [8913a72c] NonlinearSolve v1.10.1
   [6fe1bfb0] OffsetArrays v1.12.10
   [4d8831e6] OpenSSL v1.4.1
   [429524aa] Optim v1.7.7
@@ -168,7 +168,7 @@ Platform Info:
   [995b91a9] PlotUtils v1.3.5
   [91a5bcdd] Plots v1.39.0
   [e409e4f3] PoissonRandom v0.4.4
-  [f517fe37] Polyester v0.7.6
+  [f517fe37] Polyester v0.7.7
   [1d0040c9] PolyesterWeave v0.2.1
 ⌅ [f27b6e38] Polynomials v3.2.13
   [85a6dd25] PositiveFactorizations v0.2.4
@@ -211,13 +211,13 @@ Platform Info:
   [276daf66] SpecialFunctions v2.3.1
   [aedffcd0] Static v0.8.8
   [0d7ed370] StaticArrayInterface v1.4.1
-  [90137ffa] StaticArrays v1.6.4
+  [90137ffa] StaticArrays v1.6.5
   [1e83bf80] StaticArraysCore v1.4.2
   [82ae8749] StatsAPI v1.7.0
   [2913bbd2] StatsBase v0.34.2
   [4c63d2b9] StatsFuns v1.3.0
   [9672c7b4] SteadyStateDiffEq v1.16.1
-  [789caeaf] StochasticDiffEq v6.62.0
+⌃ [789caeaf] StochasticDiffEq v6.62.0
   [7792a7ef] StrideArraysCore v0.4.17
   [c3572dad] Sundials v4.20.0
   [2efcf032] SymbolicIndexingInterface v0.2.2
@@ -374,4 +374,4 @@ Platform Info:
   [8e850b90] libblastrampoline_jll v5.8.0+0
   [8e850ede] nghttp2_jll v1.48.0+0
   [3f19e933] p7zip_jll v17.4.0+0
-Info Packages marked with ⌃ and ⌅ have new versions available, but those with ⌅ are restricted by compatibility constraints from upgrading. To see why use `status --outdated -m`</code></pre></details><p>You can also download the <a href="https://github.com/SciML/ModelingToolkitStandardLibrary.jl/tree/gh-pages/v2.3.2/assets/Manifest.toml">manifest</a> file and the <a href="https://github.com/SciML/ModelingToolkitStandardLibrary.jl/tree/gh-pages/v2.3.2/assets/Project.toml">project</a> file.</p></article><nav class="docs-footer"><a class="docs-footer-nextpage" href="tutorials/rc_circuit/">RC Circuit »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="auto">Automatic (OS)</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.0.1 on <span class="colophon-date" title="Tuesday 26 September 2023 17:55">Tuesday 26 September 2023</span>. Using Julia version 1.9.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+Info Packages marked with ⌃ and ⌅ have new versions available, but those with ⌅ are restricted by compatibility constraints from upgrading. To see why use `status --outdated -m`</code></pre></details><p>You can also download the <a href="https://github.com/SciML/ModelingToolkitStandardLibrary.jl/tree/gh-pages/v2.3.3/assets/Manifest.toml">manifest</a> file and the <a href="https://github.com/SciML/ModelingToolkitStandardLibrary.jl/tree/gh-pages/v2.3.3/assets/Project.toml">project</a> file.</p></article><nav class="docs-footer"><a class="docs-footer-nextpage" href="tutorials/rc_circuit/">RC Circuit »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="auto">Automatic (OS)</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.1.0 on <span class="colophon-date" title="Friday 29 September 2023 19:51">Friday 29 September 2023</span>. Using Julia version 1.9.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
