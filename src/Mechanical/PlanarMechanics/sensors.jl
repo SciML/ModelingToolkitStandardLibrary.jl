@@ -9,6 +9,8 @@ Partial absolute sensor model for sensors defined by components
     @components begin
         frame_a = Frame()
     end
+    # TODO: assert the number of connections
+    # https://github.com/dzimmer/PlanarMechanics/blob/443b007bcc1522bb172f13012e2d7a8ecc3f7a9b/PlanarMechanics/Sensors/Internal/PartialAbsoluteSensor.mo#L11
 end
 
 """
@@ -133,9 +135,9 @@ Measure absolute position and orientation (same as Sensors.AbsolutePosition, but
     end
 
     eqs = [
-        x ~ r[1],
-        y ~ r[2],
-        phi ~ r[3],
+        x.u ~ r[1],
+        y.u ~ r[2],
+        phi.u ~ r[3],
     ]
 
     return compose(ODESystem(eqs, t, [], []; name = name),
@@ -168,9 +170,9 @@ Measure absolute position and orientation of the origin of frame connector
     systems = [pos, frame_a, x, y, phi]
 
     eqs = [
-        pos.x ~ x,
-        pos.y ~ y,
-        pos.phi ~ phi,
+        x.u ~ pos.x,
+        y.u ~ pos.y,
+        phi.u ~ pos.phi,
         connect(pos.frame_a, frame_a),
     ]
 
