@@ -61,7 +61,12 @@ end
 end
 
 @testset "Measure Demo" begin
-    @test_nowarn @named abs_pos_fa = AbsolutePosition(; resolve_in_frame = :world)
+    @test_nowarn @named abs_pos_w = AbsolutePosition(; resolve_in_frame = :world)
     @test_nowarn @named abs_pos_fa = AbsolutePosition(; resolve_in_frame = :frame_a)
     @test_nowarn @named abs_pos_fr = AbsolutePosition(; resolve_in_frame = :frame_resolve)
+
+    @test_nowarn @named rel_pos_w = RelativePosition(; resolve_in_frame = :world)
+    @test_nowarn @named rel_pos_fa = RelativePosition(; resolve_in_frame = :frame_a)
+    @test_nowarn @named rel_pos_fb = RelativePosition(; resolve_in_frame = :frame_b)
+    @test_nowarn @named rel_pos_fr = RelativePosition(; resolve_in_frame = :frame_resolve)
 end
