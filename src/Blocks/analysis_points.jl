@@ -520,6 +520,11 @@ get_comp_sensitivity
 
 Compute the (linearized) loop-transfer function in analysis point `ap`, from `ap.out` to `ap.in`.
 
+!!! info "Negative feedback"
+
+    Feedback loops often use negative feedback, and the computed loop-transfer function will in this case have the negative feedback included. Standard analysis tools often assume a loop-transfer function without the negative gain built in, and the result of this function may thus need negation before use.
+
+
 !!! danger "Experimental"
 
     The analysis-point interface is currently experimental and at any time subject to breaking changes not respecting semantic versioning.
