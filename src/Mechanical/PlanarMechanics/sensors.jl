@@ -56,7 +56,7 @@ Partial absolute sensor models for sensors defined by equations (frame_resolve m
 end
 
 """
-    BasicAbsolutePosition(;name, resolve_in_frame = :world)
+    BasicAbsolutePosition(;name, resolve_in_frame = :frame_a)
 Measure absolute position and orientation (same as Sensors.AbsolutePosition, but frame_resolve is not conditional and must be connected).
 
 # Connectors:
@@ -64,14 +64,14 @@ Measure absolute position and orientation (same as Sensors.AbsolutePosition, but
   - `x`: [m] x-position
   - `y`: [m] y-position
   - `phi`: [rad] rotation angle (counterclockwise)
-  - `frame_a`: 2-dim. Coordinate system from which kinematic quantities are measured
+  - `frame_a`: Coordinate system a
   - `frame_resolve`: 2-dim. Coordinate system in which vector is optionally resolved
 
 # Parameters:
   
-  - `resolve_in_frame`: Frame in which output vector r is resolved (1: :world, 2: :frame_a, 3: :frame_resolve)
+  - `resolve_in_frame`: Frame in which output x, y, phi r is resolved (1: :world, 2: :frame_a, 3: :frame_resolve)
 """
-@component function BasicAbsolutePosition(; name, resolve_in_frame = :world)
+@component function BasicAbsolutePosition(; name, resolve_in_frame = :frame_a)
     @named x = RealOutput()
     @named y = RealOutput()
     @named phi = RealOutput()
@@ -97,7 +97,7 @@ Measure absolute position and orientation (same as Sensors.AbsolutePosition, but
         r = transpose(rotation_matrix) * [frame_a.x, frame_a.y, frame_a.phi] -
             [0, 0, frame_resolve.phi]
     else
-        error("frame_resolve_type must be one of :world, :frame_a, :frame_resolve")
+        error("resolve_in_frame must be one of :world, :frame_a, :frame_resolve")
     end
 
     eqs = [
@@ -111,7 +111,7 @@ Measure absolute position and orientation (same as Sensors.AbsolutePosition, but
 end
 
 """
-    AbsolutePosition(;name, resolve_in_frame = :world)
+    AbsolutePosition(;name, resolve_in_frame = :frame_a)
 Measure absolute position and orientation of the origin of frame connector
 
 # Connectors:
@@ -122,9 +122,9 @@ Measure absolute position and orientation of the origin of frame connector
 
 # Parameters:
 
-  - `resolve_in_frame`: Frame in which output vector r is resolved (1: :world, 2: :frame_a, 3: :frame_resolve)
+  - `resolve_in_frame`: Frame in which output x, y, phi is resolved (1: :world, 2: :frame_a, 3: :frame_resolve)
 """
-@component function AbsolutePosition(; name, resolve_in_frame = :world)
+@component function AbsolutePosition(; name, resolve_in_frame = :frame_a)
     @named pos = BasicAbsolutePosition()
     @named partial_abs_sensor = PartialAbsoluteSensor()
     @unpack frame_a, = partial_abs_sensor
