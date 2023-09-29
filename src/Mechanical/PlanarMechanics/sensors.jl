@@ -12,6 +12,24 @@ Partial absolute sensor model for sensors defined by components
 end
 
 """
+    PartialRelativeSensor(;name)
+Partial relative sensor model for sensors defined by components
+
+# Connectors:
+
+  - `frame_a`: Coordinate system a
+  - `frame_b`: Coordinate system b
+"""
+@mtkmodel PartialRelativeSensor begin
+    @components begin
+        frame_a = Frame()
+        frame_b = Frame()
+    end
+    # TODO: assert the number of connections
+    # https://github.com/dzimmer/PlanarMechanics/blob/443b007bcc1522bb172f13012e2d7a8ecc3f7a9b/PlanarMechanics/Sensors/Internal/PartialRelativeSensor.mo#L12-L13
+end
+
+"""
     PartialAbsoluteBaseSensor(;name)
 Partial absolute sensor models for sensors defined by equations (frame_resolve must be connected exactly once)
 # Connectors:
