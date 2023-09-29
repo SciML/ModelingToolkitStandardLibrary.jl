@@ -59,3 +59,9 @@ end
     # just testing instantiation
     @test true
 end
+
+@testset "Measure Demo" begin
+    @test_nowarn @named abs_pos_fa = AbsolutePosition(; resolve_in_frame = :world)
+    @test_nowarn @named abs_pos_fa = AbsolutePosition(; resolve_in_frame = :frame_a)
+    @test_nowarn @named abs_pos_fr = AbsolutePosition(; resolve_in_frame = :frame_resolve)
+end
