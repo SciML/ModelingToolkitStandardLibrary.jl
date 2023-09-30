@@ -170,9 +170,9 @@ Measure absolute position and orientation of the origin of frame connector
     systems = [pos, frame_a, x, y, phi]
 
     eqs = [
-        x.u ~ pos.x,
-        y.u ~ pos.y,
-        phi.u ~ pos.phi,
+        x.u ~ pos.x.u,
+        y.u ~ pos.y.u,
+        phi.u ~ pos.phi.u,
         connect(pos.frame_a, frame_a),
     ]
 
@@ -188,8 +188,7 @@ Measure absolute position and orientation of the origin of frame connector
         push!(eqs, connect(zero_position.frame_resolve, pos.frame_resolve))
     end
 
-    return compose(ODESystem(eqs, t, [], []; name = name),
-        systems...)
+    return compose(ODESystem(eqs, t, [], []; name = name), systems...)
 end
 
 """

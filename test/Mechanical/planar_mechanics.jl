@@ -60,6 +60,34 @@ end
     @test true
 end
 
+@testset "Position Sensors" begin
+    m = 1
+    @named body = Body(; m, j = 0.1)
+    @named abs_pos_sensor = AbsolutePosition()
+    connections = [
+        connect(body.frame, abs_pos_sensor.frame_a),
+        body.phi ~ 0,
+        body.fx ~ 0,
+        body.fy ~ m * -9.807,
+    ]
+
+    @named model = ODESystem(connections,
+        t,
+        [],
+        [],
+        systems = [body, abs_pos_sensor])
+
+    sys = structural_simplify(model)
+    unset_vars = setdiff(states(sys), keys(ModelingToolkit.defaults(sys)))
+    prob = ODEProblem(sys, unset_vars .=> 0.0, tspan, []; jac = true)
+
+    sol = solve(prob, Rodas5P())
+    @test SciMLBase.successful_retcode(sol)
+
+    @test sol[abs_pos_sensor.frame_a.y][end] ≈ sol[body.ry][end]
+    @test sol[abs_pos_sensor.frame_a.x][end] ≈ sol[body.rx][end]
+end
+
 @testset "Measure Demo" begin
     @test_nowarn @named abs_pos_w = AbsolutePosition(; resolve_in_frame = :world)
     @test_nowarn @named abs_pos_fa = AbsolutePosition(; resolve_in_frame = :frame_a)
