@@ -197,9 +197,9 @@ Measure relative position and orientation between the origins of two frame conne
 
 # Connectors:
 
- - `x`: [m] x-position
- - `y`: [m] y-position
- - `phi`: [rad] rotation angle (counterclockwise)
+ - `rel_x`: [m] Relative x-position
+ - `rel_y`: [m] Relative y-position
+ - `rel_phi`: [rad] Relative rotation angle (counterclockwise)
  - `frame_a`: Coordinate system a
  - `frame_b`: Coordinate system b
  - `frame_resolve`: 
@@ -209,9 +209,9 @@ Measure relative position and orientation between the origins of two frame conne
     - `resolve_in_frame`: Frame in which output x, y, phi is resolved (1: :world, 2: :frame_a, 3: frame_b 4: :frame_resolve)
 """
 @component function BasicRelativePosition(; name, resolve_in_frame = :frame_a)
-    @named x = RealOutput()
-    @named y = RealOutput()
-    @named phi = RealOutput()
+    @named rel_x = RealOutput()
+    @named rel_y = RealOutput()
+    @named rel_phi = RealOutput()
 
     @named partial_rel_pos = PartialRelativeBaseSensor()
     @unpack frame_a, frame_b, frame_resolve = partial_rel_pos
@@ -241,13 +241,13 @@ Measure relative position and orientation between the origins of two frame conne
     end
 
     eqs = [
-        x.u ~ r[1],
-        y.u ~ r[2],
-        phi.u ~ r[3],
+        rel_x.u ~ r[1],
+        rel_y.u ~ r[2],
+        rel_phi.u ~ r[3],
     ]
 
     return compose(ODESystem(eqs, t, [], []; name = name),
-        x, y, phi, frame_a, frame_b, frame_resolve)
+        rel_x, rel_y, rel_phi, frame_a, frame_b, frame_resolve)
 end
 
 """
@@ -256,9 +256,9 @@ Measure relative position and orientation between the origins of two frame conne
 
 # Connectors:
 
-    - `x`: [m] x-position
-    - `y`: [m] y-position
-    - `phi`: [rad] rotation angle (counterclockwise)
+    - `rel_x`: [m] Relative x-position
+    - `re_y`: [m] Relative y-position
+    - `rel_phi`: [rad] Relative rotation angle (counterclockwise)
     - `frame_a`: Coordinate system a
     - `frame_b`: Coordinate system b
 # Parameters:
@@ -270,15 +270,15 @@ Measure relative position and orientation between the origins of two frame conne
     @named partial_rel_pos = PartialRelativeSensor()
     @unpack frame_a, frame_b = partial_rel_pos
 
-    @named x = RealOutput()
-    @named y = RealOutput()
-    @named phi = RealOutput()
+    @named rel_x = RealOutput()
+    @named rel_y = RealOutput()
+    @named rel_phi = RealOutput()
 
-    systems = [pos, frame_a, frame_b, x, y, phi]
+    systems = [pos, frame_a, frame_b, rel_x, rel_y, rel_phi]
     eqs = [
-        pos.x.u ~ x.u,
-        pos.y.u ~ y.u,
-        pos.phi.u ~ phi.u,
+        pos.rel_x.u ~ rel_x.u,
+        pos.rel_y.u ~ rel_y.u,
+        pos.rel_phi.u ~ rel_phi.u,
         connect(pos.frame_a, frame_a),
         connect(pos.frame_b, frame_b),
     ]

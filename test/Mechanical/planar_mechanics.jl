@@ -105,10 +105,10 @@ end
 
     # sensor1 is attached to body1, so the relative y-position between body1 and the base is
     # equal to the y-position of body1
-    @test sol[body1.ry][end] ≈ -sol[rel_pos_sensor1.y.u][end]
+    @test sol[body1.ry][end] ≈ -sol[rel_pos_sensor1.rel_y.u][end]
 
     # the relative y-position between body1 and body2 is zero
-    @test sol[rel_pos_sensor2.y.u][end] == 0
+    @test sol[rel_pos_sensor2.rel_y.u][end] == 0
 
     # no displacement in the x-direction
     @test sol[abs_pos_sensor.x.u][end] ≈ sol[body1.rx][end] ≈ sol[body2.rx][end]
