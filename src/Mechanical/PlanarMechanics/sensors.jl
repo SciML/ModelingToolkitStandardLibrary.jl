@@ -426,10 +426,59 @@ end
     end
 
     if !(frame_in == :frame_resolve || frame_out == :frame_resolve)
-        @named zero_position = ZeroPosition()
-        push!(systems, zero_position)
+        @named zero_pos = ZeroPosition()
+        push!(systems, zero_pos)
         push!(eqs,
-            connect(zero_position.frame_resolve, basic_transformb_vector.frame_resolve))
+            connect(zero_pos.frame_resolve, basic_transformb_vector.frame_resolve))
+    end
+
+    return compose(ODESystem(eqs, t, [], []; name = name), systems...)
+end
+
+@component function AbsoluteVelocity(; name, resolve_in_frame = :frame_a)
+    @named partial_abs_sensor = PartialAbsoluteSensor()
+    @unpack frame_a, = partial_abs_sensor
+
+    @named v_x = RealOutput()
+    @named v_y = RealOutput()
+    @named ω = RealOutput()
+
+    @named pos = BasicAbsolutePosition(; resolve_in_frame = :world)
+    @named zero_pos = ZeroPosition()
+
+    @named transform_absolute_vector = TransformAbsoluteVector(;
+        frame_in = :world,
+        frame_out = resolve_in_frame)
+
+    systems = [frame_a, v_x, v_y, ω, pos, zero_pos, transform_absolute_vector]
+
+    eqs = [
+        # connect(position.r, der1.u),
+        # connect(der1.y, transformAbsoluteVector.r_in)
+        D(pos.x.u) ~ transform_absolute_vector.x_in.u,
+        D(pos.y.u) ~ transform_absolute_vector.y_in.u,
+        D(pos.phi.u) ~ transform_absolute_vector.phi_in.u,
+        # connect(transformAbsoluteVector.r_out, v)
+        transform_absolute_vector.x_out.u ~ v_x.u,
+        transform_absolute_vector.y_out.u ~ v_y.u,
+        transform_absolute_vector.phi_out.u ~ ω.u,
+        connect(pos.frame_a, frame_a),
+        connect(zero_pos.frame_resolve, pos.frame_resolve),
+        connect(transform_absolute_vector.frame_a, frame_a),
+    ]
+
+    if resolve_in_frame == :frame_resolve
+        @named frame_resolve = FrameResolve()
+        push!(systems, frame_resolve)
+        push!(eqs, connect(transform_absolute_vector.frame_resolve, frame_resolve))
+    end
+
+    if resolve_in_frame != :frame_resolve
+        @named zero_pos1 = ZeroPosition()
+        push!(systems, zero_pos1)
+        push!(eqs,
+            connect(transform_absolute_vector.zero_pos.frame_resolve,
+                zero_pos1.frame_resolve))
     end
 
     return compose(ODESystem(eqs, t, [], []; name = name), systems...)
