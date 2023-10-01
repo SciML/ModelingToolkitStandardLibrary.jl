@@ -60,22 +60,38 @@ end
     @test true
 end
 
-@testset "Position Sensors" begin
+@testset "Position Sensors (two free falling bodies)" begin
     m = 1
-    @named body = Body(; m, j = 0.1)
-    @named abs_pos_sensor = AbsolutePosition()
+    j = 0
+    resolve_in_frame = :world
+
+    @named body1 = Body(; m, j)
+    @named body2 = Body(; m, j)
+    @named base = Fixed()
+
+    @named abs_pos_sensor = AbsolutePosition(; resolve_in_frame)
+    @named rel_pos_sensor1 = RelativePosition(; resolve_in_frame)
+    @named rel_pos_sensor2 = RelativePosition(; resolve_in_frame)
+
     connections = [
-        connect(body.frame, abs_pos_sensor.frame_a),
-        body.phi ~ 0,
-        body.fx ~ 0,
-        body.fy ~ m * -9.807,
+        connect(body1.frame, abs_pos_sensor.frame_a),
+        connect(rel_pos_sensor1.frame_a, body1.frame),
+        connect(rel_pos_sensor1.frame_b, base.frame),
+        connect(rel_pos_sensor2.frame_b, body1.frame),
+        connect(rel_pos_sensor2.frame_a, body2.frame),
+        body1.phi ~ 0,
+        body1.fx ~ 0,
+        body1.fy ~ m * -9.807,
+        body2.phi ~ 0,
+        body2.fx ~ 0,
+        body2.fy ~ m * -9.807,
     ]
 
     @named model = ODESystem(connections,
         t,
         [],
         [],
-        systems = [body, abs_pos_sensor])
+        systems = [body1, body2, base, abs_pos_sensor, rel_pos_sensor1, rel_pos_sensor2])
 
     sys = structural_simplify(model)
     unset_vars = setdiff(states(sys), keys(ModelingToolkit.defaults(sys)))
@@ -84,8 +100,18 @@ end
     sol = solve(prob, Rodas5P())
     @test SciMLBase.successful_retcode(sol)
 
-    @test sol[abs_pos_sensor.frame_a.y][end] ≈ sol[body.ry][end]
-    @test sol[abs_pos_sensor.frame_a.x][end] ≈ sol[body.rx][end]
+    # the two bodyies falled the same distance, and so the absolute sensor attached to body1
+    @test sol[abs_pos_sensor.y.u][end] ≈ sol[body1.ry][end] ≈ sol[body2.ry][end]
+
+    # sensor1 is attached to body1, so the relative y-position between body1 and the base is
+    # equal to the y-position of body1
+    @test sol[body1.ry][end] ≈ -sol[rel_pos_sensor1.y.u][end]
+
+    # the relative y-position between body1 and body2 is zero
+    @test sol[rel_pos_sensor2.y.u][end] == 0
+
+    # no displacement in the x-direction
+    @test sol[abs_pos_sensor.x.u][end] ≈ sol[body1.rx][end] ≈ sol[body2.rx][end]
 end
 
 @testset "Measure Demo" begin

@@ -241,9 +241,9 @@ Measure relative position and orientation between the origins of two frame conne
     end
 
     eqs = [
-        x ~ r[1],
-        y ~ r[2],
-        phi ~ r[3],
+        x.u ~ r[1],
+        y.u ~ r[2],
+        phi.u ~ r[3],
     ]
 
     return compose(ODESystem(eqs, t, [], []; name = name),
@@ -276,9 +276,9 @@ Measure relative position and orientation between the origins of two frame conne
 
     systems = [pos, frame_a, frame_b, x, y, phi]
     eqs = [
-        pos.x ~ x,
-        pos.y ~ y,
-        pos.phi ~ phi,
+        pos.x.u ~ x.u,
+        pos.y.u ~ y.u,
+        pos.phi.u ~ phi.u,
         connect(pos.frame_a, frame_a),
         connect(pos.frame_b, frame_b),
     ]
