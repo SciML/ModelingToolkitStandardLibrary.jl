@@ -298,3 +298,94 @@ Measure relative position and orientation between the origins of two frame conne
     return compose(ODESystem(eqs, t, [], []; name = name),
         systems...)
 end
+
+@component function BasicTransformAbsoluteVector(;
+    name,
+    frame_in = :frame_a,
+    frame_out = frame_in)
+    @named frame_a = Frame()
+    @named frame_b = Frame()
+
+    @named x_in = RealInput()
+    @named y_in = RealInput()
+    @named phi_in = RealInput()
+
+    @named x_out = RealOutput()
+    @named y_out = RealOutput()
+    @named phi_out = RealOutput()
+
+    @named frame_resolve = FrameResolve()
+
+    systems = [frame_a, frame_b, frame_resolve, x_in, y_in, phi_in, x_out, y_out, phi_out]
+    eqs = [
+        # TODO: assert the number of connections
+        # https://github.com/dzimmer/PlanarMechanics/blob/443b007bcc1522bb172f13012e2d7a8ecc3f7a9b/PlanarMechanics/Sensors/Internal/BasicTransformAbsoluteVector.mo#L42-L43
+        frame_a.fx ~ 0,
+        frame_a.fy ~ 0,
+        frame_a.j ~ 0,
+        frame_resolve.fx ~ 0,
+        frame_resolve.fy ~ 0,
+        frame_resolve.j ~ 0,
+    ]
+
+    r_temp = Vector{Float64}(undef, 3)
+    R1 = Matrix{Float64}(undef, 3, 4)
+
+    if frame_out == frame_in
+        append!(eqs, [
+            x_out.u ~ x_in.u,
+            y_out.u ~ y_in.u,
+            phi_out.u ~ phi_in.u,
+        ])
+    else
+        if frame_in == :world
+            R1 = [1.0 0.0 0.0 0.0;
+                0.0 1.0 0.0 0.0;
+                0.0 0.0 1.0 0.0]
+        elseif frame_in == :frame_a
+            R1 = [cos(frame_a.phi) -sin(frame_a.phi) 0.0 0.0;
+                sin(frame_a.phi) cos(frame_a.phi) 0.0 0.0;
+                0.0 0.0 1.0 frame_a.phi]
+        elseif frame_in == :frame_resolve
+            R1 = [cos(frame_resolve.phi) -sin(frame_resolve.phi) 0.0 0.0;
+                sin(frame_resolve.phi) cos(frame_resolve.phi) 0.0 0.0;
+                0.0 0.0 1.0 frame_resolve.phi]
+        else
+            error("Wrong value for parameter frame_in")
+        end
+
+        r_temp = R1 * [x_in.u, y_in.u, phi_in.u, 1]
+
+        if frame_out == :world
+            append!(eqs, [
+                x_out.u ~ r_temp[1],
+                y_out.u ~ r_temp[2],
+                phi_out.u ~ r_temp[3],
+            ])
+        elseif frame_out == :frame_a
+            rotation_matrix = [cos(frame_a.phi) sin(frame_a.phi) 0.0;
+                -sin(frame_a.phi) cos(frame_a.phi) 0.0;
+                0.0 0.0 1.0]
+            r = rotation_matrix * r_temp
+            append!(eqs, [
+                x_out.u ~ r[1],
+                y_out.u ~ r[2],
+                phi_out.u ~ r[3],
+            ])
+        elseif frame_out == :frame_resolve
+            rotation_matrix = [cos(frame_resolve.phi) sin(frame_resolve.phi) 0.0;
+                -sin(frame_resolve.phi) cos(frame_resolve.phi) 0.0;
+                0.0 0.0 1.0]
+            r = rotation_matrix * r_temp
+            append!(eqs, [
+                x_out.u ~ r[1],
+                y_out.u ~ r[2],
+                phi_out.u ~ r[3],
+            ])
+        else
+            error("Wrong value for parameter frame_out")
+        end
+    end
+
+    return compose(ODESystem(eqs, t, [], []; name = name), systems...)
+end
