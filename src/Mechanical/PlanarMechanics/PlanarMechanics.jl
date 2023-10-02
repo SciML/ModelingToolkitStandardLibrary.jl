@@ -22,6 +22,6 @@ include("components.jl")
 export Revolute, Prismatic
 include("joints.jl")
 
-export AbsolutePosition, RelativePosition, AbsoluteVelocity
+export AbsolutePosition, RelativePosition, AbsoluteVelocity, RelativeVelocity
 include("sensors.jl")
 end

@@ -64,7 +64,7 @@ end
     @test true
 end
 
-@testset "Position Sensors (two free falling bodies)" begin
+@testset "Sensors (two free falling bodies)" begin
     m = 1
     j = 1
     resolve_in_frame = :world
@@ -77,14 +77,20 @@ end
     @named abs_v_sensor = AbsoluteVelocity(; resolve_in_frame)
     @named rel_pos_sensor1 = RelativePosition(; resolve_in_frame)
     @named rel_pos_sensor2 = RelativePosition(; resolve_in_frame)
+    @named rel_v_sensor1 = RelativeVelocity(; resolve_in_frame)
+    @named rel_v_sensor2 = RelativeVelocity(; resolve_in_frame)
 
     connections = [
         connect(body1.frame, abs_pos_sensor.frame_a),
         connect(rel_pos_sensor1.frame_a, body1.frame),
+        connect(rel_v_sensor1.frame_a, body1.frame),
         connect(rel_pos_sensor1.frame_b, base.frame),
+        connect(rel_v_sensor1.frame_b, base.frame),
         connect(rel_pos_sensor2.frame_b, body1.frame),
+        connect(rel_v_sensor2.frame_b, body1.frame),
         connect(rel_pos_sensor2.frame_a, body2.frame),
-        connect(body1.frame, abs_v_sensor.frame_a),
+        connect(rel_v_sensor2.frame_a, body2.frame),
+        connect(abs_v_sensor.frame_a, body1.frame),
         [s ~ 0 for s in (body1.phi, body2.phi, body1.fx, body1.fy, body2.fx, body2.fy)]...,
     ]
 
@@ -100,6 +106,8 @@ end
             abs_v_sensor,
             rel_pos_sensor1,
             rel_pos_sensor2,
+            rel_v_sensor1,
+            rel_v_sensor2,
         ])
 
     sys = structural_simplify(model)
@@ -114,7 +122,7 @@ end
           0.5 * g * tspan[end]^2
 
     # sensor1 is attached to body1, so the relative y-position between body1 and the base is
-    # equal to the y-position of body1
+    # equal to the absolute y-position of body1
     @test sol[body1.ry][end] ≈ -sol[rel_pos_sensor1.rel_y.u][end]
 
     # the relative y-position between body1 and body2 is zero
@@ -123,12 +131,16 @@ end
     # no displacement in the x-direction
     @test sol[abs_pos_sensor.x.u][end] ≈ sol[body1.rx][end] ≈ sol[body2.rx][end]
 
-    # velocity after t seconds v = g * t
-    @test sol[abs_v_sensor.v_y.u][end] ≈ g * tspan[end]
+    # velocity after t seconds v = g * t, so the relative y-velocity between body1 and the base is
+    # equal to the absolute y-velocity of body1
+    @test sol[abs_v_sensor.v_y.u][end] ≈ -sol[rel_v_sensor1.rel_v_y.u][end] ≈ g * tspan[end]
+
+    # the relative y-velocity between body1 and body2 is zero
+    @test sol[rel_v_sensor2.rel_v_y.u][end] == 0
 end
 
 @testset "Measure Demo" begin
-    @test_nowarn @named abs_v_w = AbsoluteVelocity(; resolve_in_frame = :world)
-    @test_nowarn @named abs_v_fa = AbsoluteVelocity(; resolve_in_frame = :frame_a)
-    @test_nowarn @named abs_v_fr = AbsoluteVelocity(; resolve_in_frame = :frame_resolve)
+    @test_nowarn @named rel_v_w = RelativeVelocity(; resolve_in_frame = :world)
+    @test_nowarn @named rel_v_fa = RelativeVelocity(; resolve_in_frame = :frame_a)
+    @test_nowarn @named rel_v_fr = RelativeVelocity(; resolve_in_frame = :frame_resolve)
 end
