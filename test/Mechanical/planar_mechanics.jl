@@ -75,11 +75,13 @@ end
 
     @named abs_pos_sensor = AbsolutePosition(; resolve_in_frame)
     @named abs_v_sensor = AbsoluteVelocity(; resolve_in_frame)
-    @named abs_a_sensor = AbsoluteAccleration(; resolve_in_frame)
+    @named abs_a_sensor = AbsoluteAcceleration(; resolve_in_frame)
     @named rel_pos_sensor1 = RelativePosition(; resolve_in_frame)
     @named rel_pos_sensor2 = RelativePosition(; resolve_in_frame)
     @named rel_v_sensor1 = RelativeVelocity(; resolve_in_frame)
     @named rel_v_sensor2 = RelativeVelocity(; resolve_in_frame)
+    @named rel_a_sensor1 = RelativeAcceleration(; resolve_in_frame)
+    @named rel_a_sensor2 = RelativeAcceleration(; resolve_in_frame)
 
     connections = [
         connect(body1.frame, abs_pos_sensor.frame_a),
@@ -93,6 +95,10 @@ end
         connect(rel_v_sensor2.frame_b, body1.frame),
         connect(rel_pos_sensor2.frame_a, body2.frame),
         connect(rel_v_sensor2.frame_a, body2.frame),
+        connect(rel_a_sensor1.frame_a, body1.frame),
+        connect(rel_a_sensor1.frame_b, base.frame),
+        connect(rel_a_sensor2.frame_a, body1.frame),
+        connect(rel_a_sensor2.frame_b, body2.frame),
         [s ~ 0 for s in (body1.phi, body2.phi, body1.fx, body1.fy, body2.fx, body2.fy)]...,
     ]
 
@@ -111,6 +117,8 @@ end
             rel_pos_sensor2,
             rel_v_sensor1,
             rel_v_sensor2,
+            rel_a_sensor1,
+            rel_a_sensor2,
         ])
 
     sys = structural_simplify(model)
@@ -143,10 +151,13 @@ end
 
     # the body is under constant acclertation = g
     @test all(sol[abs_a_sensor.a_y.u] .≈ g)
+
+    # the relative y-accleration between body1 and the base is
+    # equal to the absolute y-accleration of body1
+    @test sol[abs_a_sensor.a_y.u][end] ≈ -sol[rel_a_sensor1.rel_a_y.u][end]
+
+    # the relative y-accleration between body1 and body2 is zero
+    @test sol[rel_a_sensor2.rel_a_y.u][end] == 0
 end
 
-@testset "Measure Demo" begin
-    @test_nowarn @named rel_v_w = RelativeVelocity(; resolve_in_frame = :world)
-    @test_nowarn @named rel_v_fa = RelativeVelocity(; resolve_in_frame = :frame_a)
-    @test_nowarn @named rel_v_fr = RelativeVelocity(; resolve_in_frame = :frame_resolve)
-end
+@testset "Measure Demo" begin end

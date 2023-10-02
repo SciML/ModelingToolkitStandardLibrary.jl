@@ -678,7 +678,7 @@ end
     return compose(ODESystem(eqs, t, [], []; name = name), systems...)
 end
 
-@component function AbsoluteAccleration(; name, resolve_in_frame)
+@component function AbsoluteAcceleration(; name, resolve_in_frame = :frame_a)
     @named partial_abs_sensor = PartialAbsoluteSensor()
     @unpack frame_a, = partial_abs_sensor
 
@@ -723,6 +723,63 @@ end
         push!(eqs,
             connect(transform_absolute_vector.zero_pos.frame_resolve,
                 zero_pos1.frame_resolve))
+    end
+
+    return compose(ODESystem(eqs, t, [], []; name = name), systems...)
+end
+
+@component function RelativeAcceleration(; name, resolve_in_frame = :frame_a)
+    @named partial_rel_sensor = PartialRelativeSensor()
+    @unpack frame_a, frame_b = partial_rel_sensor
+
+    @named rel_a_x = RealOutput()
+    @named rel_a_y = RealOutput()
+    @named rel_α = RealOutput()
+
+    @named rel_pos = RelativePosition(; resolve_in_frame = :frame_a)
+    @named transform_relative_vector = TransformRelativeVector(;
+        frame_in = :frame_a,
+        frame_out = resolve_in_frame)
+
+    systems = [
+        frame_a,
+        frame_b,
+        rel_a_x,
+        rel_a_y,
+        rel_α,
+        rel_pos,
+        transform_relative_vector,
+    ]
+
+    eqs = [
+        # connect(der_r_rel.y, transformRelativeVector.r_in)
+        # connect(transformRelativeVector.r_out, der_r_rel1.u)
+        # connect(relativePosition.r_rel, der_r_rel.u)
+        D(D(rel_pos.rel_x.u)) ~ transform_relative_vector.x_in.u,
+        D(D(rel_pos.rel_y.u)) ~ transform_relative_vector.y_in.u,
+        D(D(rel_pos.rel_phi.u)) ~ transform_relative_vector.phi_in.u,
+        # connect(der_r_rel1.y, a_rel),
+        transform_relative_vector.x_out.u ~ rel_a_x.u,
+        transform_relative_vector.y_out.u ~ rel_a_y.u,
+        transform_relative_vector.phi_out.u ~ rel_α.u,
+        connect(rel_pos.frame_a, frame_a),
+        connect(rel_pos.frame_b, frame_b),
+        connect(transform_relative_vector.frame_a, frame_a),
+        connect(transform_relative_vector.frame_b, frame_b),
+    ]
+
+    if resolve_in_frame == :frame_resolve
+        @named frame_resolve = FrameResolve()
+        push!(systems, frame_resolve)
+        push!(eqs, connect(transform_relative_vector.frame_resolve, frame_resolve))
+    end
+
+    if resolve_in_frame != :frame_resolve
+        @named zero_pos = ZeroPosition()
+        push!(systems, zero_pos)
+        push!(eqs,
+            connect(transform_relative_vector.zero_pos.frame_resolve,
+                zero_pos.frame_resolve))
     end
 
     return compose(ODESystem(eqs, t, [], []; name = name), systems...)

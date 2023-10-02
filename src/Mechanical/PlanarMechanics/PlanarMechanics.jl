@@ -23,6 +23,7 @@ export Revolute, Prismatic
 include("joints.jl")
 
 export AbsolutePosition,
-    RelativePosition, AbsoluteVelocity, RelativeVelocity, AbsoluteAccleration
+    RelativePosition, AbsoluteVelocity, RelativeVelocity, AbsoluteAcceleration,
+    RelativeAcceleration
 include("sensors.jl")
 end
