@@ -303,9 +303,6 @@ end
     name,
     frame_in = :frame_a,
     frame_out = frame_in)
-    @named frame_a = Frame()
-    @named frame_b = Frame()
-
     @named x_in = RealInput()
     @named y_in = RealInput()
     @named phi_in = RealInput()
@@ -314,6 +311,8 @@ end
     @named y_out = RealOutput()
     @named phi_out = RealOutput()
 
+    @named frame_a = Frame()
+    @named frame_b = Frame()
     @named frame_resolve = FrameResolve()
 
     systems = [frame_a, frame_b, frame_resolve, x_in, y_in, phi_in, x_out, y_out, phi_out]
@@ -479,6 +478,91 @@ end
         push!(eqs,
             connect(transform_absolute_vector.zero_pos.frame_resolve,
                 zero_pos1.frame_resolve))
+    end
+
+    return compose(ODESystem(eqs, t, [], []; name = name), systems...)
+end
+
+@named function BasicTransformRelativeVector(;
+    name,
+    frame_in = :frame_a,
+    frame_out = frame_in)
+    @named x_in = RealInput()
+    @named y_in = RealInput()
+    @named phi_in = RealInput()
+
+    @named x_out = RealOutput()
+    @named y_out = RealOutput()
+    @named phi_out = RealOutput()
+
+    @named partial_relative_base_sensor = PartialRelativeBaseSensor()
+    @unpack frame_a, frame_b, frame_resolve = partial_relative_base_sensor
+
+    systems = [
+        x_in,
+        y_in,
+        phi_in,
+        x_out,
+        y_out,
+        phi_out,
+        frame_a,
+        frame_b,
+        frame_resolve,
+    ]
+
+    eqs = Equation[]
+
+    R1 = Matrix{Float64}(undef, 3, 3)
+
+    if frame_out == frame_in
+        append!(eqs, [
+            x_out.u ~ x_in.u,
+            y_out.u ~ y_in.u,
+            phi_out.u ~ phi_in.u,
+        ])
+    else
+        if frame_in == :world
+            R1 = [1.0 0.0 0.0;
+                0.0 1.0 0.0;
+                0.0 0.0 1.0]
+        elseif frame_in == :frame_a
+            R1 = [cos(frame_a.phi) -sin(frame_a.phi) 0.0;
+                sin(frame_a.phi) cos(frame_a.phi) 0.0;
+                0.0 0.0 1.0]
+        elseif frame_in == :frame_b
+            R1 = [cos(frame_b.phi) -sin(frame_b.phi) 0.0;
+                sin(frame_b.phi) cos(frame_b.phi) 0.0;
+                0.0 0.0 1.0]
+        else
+            R1 = [cos(frame_resolve.phi) -sin(frame_resolve.phi) 0.0;
+                sin(frame_resolve.phi) cos(frame_resolve.phi) 0.0;
+                0.0 0.0 1.0]
+        end
+
+        r_in = [x_in.u, y_in.u, phi_in.u]
+        if frame_out == :world
+            r_out = R1 * r_in
+        elseif frame_out == :frame_a
+            rotation_matrix = [cos(frame_a.phi) -sin(frame_a.phi) 0.0;
+                sin(frame_a.phi) cos(frame_a.phi) 0.0;
+                0.0 0.0 1.0]
+            r_out = transpose(rotation_matrix) * (R1 * r_in)
+        elseif frame_out == :frame_b
+            rotation_matrix = [cos(frame_b.phi) -sin(frame_b.phi) 0.0;
+                sin(frame_b.phi) cos(frame_b.phi) 0.0;
+                0.0 0.0 1.0]
+            r_out = transpose(rotation_matrix) * (R1 * r_in)
+        else
+            rotation_matrix = [cos(frame_resolve.phi) -sin(frame_resolve.phi) 0.0;
+                sin(frame_resolve.phi) cos(frame_resolve.phi) 0.0;
+                0.0 0.0 1.0]
+            r_out = transpose(rotation_matrix) * (R1 * r_in)
+        end
+        append!(eqs, [
+            x_out.u ~ r_out[1],
+            y_out.u ~ r_out[2],
+            phi_out.u ~ r_out[3],
+        ])
     end
 
     return compose(ODESystem(eqs, t, [], []; name = name), systems...)
