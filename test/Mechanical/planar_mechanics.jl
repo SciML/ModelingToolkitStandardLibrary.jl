@@ -75,6 +75,7 @@ end
 
     @named abs_pos_sensor = AbsolutePosition(; resolve_in_frame)
     @named abs_v_sensor = AbsoluteVelocity(; resolve_in_frame)
+    @named abs_a_sensor = AbsoluteAccleration(; resolve_in_frame)
     @named rel_pos_sensor1 = RelativePosition(; resolve_in_frame)
     @named rel_pos_sensor2 = RelativePosition(; resolve_in_frame)
     @named rel_v_sensor1 = RelativeVelocity(; resolve_in_frame)
@@ -82,6 +83,8 @@ end
 
     connections = [
         connect(body1.frame, abs_pos_sensor.frame_a),
+        connect(abs_v_sensor.frame_a, body1.frame),
+        connect(abs_a_sensor.frame_a, body1.frame),
         connect(rel_pos_sensor1.frame_a, body1.frame),
         connect(rel_v_sensor1.frame_a, body1.frame),
         connect(rel_pos_sensor1.frame_b, base.frame),
@@ -90,7 +93,6 @@ end
         connect(rel_v_sensor2.frame_b, body1.frame),
         connect(rel_pos_sensor2.frame_a, body2.frame),
         connect(rel_v_sensor2.frame_a, body2.frame),
-        connect(abs_v_sensor.frame_a, body1.frame),
         [s ~ 0 for s in (body1.phi, body2.phi, body1.fx, body1.fy, body2.fx, body2.fy)]...,
     ]
 
@@ -104,6 +106,7 @@ end
             base,
             abs_pos_sensor,
             abs_v_sensor,
+            abs_a_sensor,
             rel_pos_sensor1,
             rel_pos_sensor2,
             rel_v_sensor1,
@@ -137,6 +140,9 @@ end
 
     # the relative y-velocity between body1 and body2 is zero
     @test sol[rel_v_sensor2.rel_v_y.u][end] == 0
+
+    # the body is under constant acclertation = g
+    @test all(sol[abs_a_sensor.a_y.u] .≈ g)
 end
 
 @testset "Measure Demo" begin

@@ -677,3 +677,53 @@ end
 
     return compose(ODESystem(eqs, t, [], []; name = name), systems...)
 end
+
+@component function AbsoluteAccleration(; name, resolve_in_frame)
+    @named partial_abs_sensor = PartialAbsoluteSensor()
+    @unpack frame_a, = partial_abs_sensor
+
+    @named a_x = RealOutput()
+    @named a_y = RealOutput()
+    @named α = RealOutput()
+
+    @named pos = BasicAbsolutePosition(; resolve_in_frame = :world)
+    @named zero_pos = ZeroPosition()
+
+    @named transform_absolute_vector = TransformAbsoluteVector(;
+        frame_in = :world,
+        frame_out = resolve_in_frame)
+
+    systems = [frame_a, a_x, a_y, α, pos, zero_pos, transform_absolute_vector]
+
+    eqs = [
+        # connect(position.r, der1.u)
+        # connect(der1.y, der2.u)
+        # connect(der2.y, transformAbsoluteVector.r_in)
+        D(D(pos.x.u)) ~ transform_absolute_vector.x_in.u,
+        D(D(pos.y.u)) ~ transform_absolute_vector.y_in.u,
+        D(D(pos.phi.u)) ~ transform_absolute_vector.phi_in.u,
+        # connect(transformAbsoluteVector.r_out, a) 
+        transform_absolute_vector.x_out.u ~ a_x.u,
+        transform_absolute_vector.y_out.u ~ a_y.u,
+        transform_absolute_vector.phi_out.u ~ α.u,
+        connect(pos.frame_a, frame_a),
+        connect(zero_pos.frame_resolve, pos.frame_resolve),
+        connect(transform_absolute_vector.frame_a, frame_a),
+    ]
+
+    if resolve_in_frame == :frame_resolve
+        @named frame_resolve = FrameResolve()
+        push!(systems, frame_resolve)
+        push!(eqs, connect(transform_absolute_vector.frame_resolve, frame_resolve))
+    end
+
+    if resolve_in_frame != :frame_resolve
+        @named zero_pos1 = ZeroPosition()
+        push!(systems, zero_pos1)
+        push!(eqs,
+            connect(transform_absolute_vector.zero_pos.frame_resolve,
+                zero_pos1.frame_resolve))
+    end
+
+    return compose(ODESystem(eqs, t, [], []; name = name), systems...)
+end
