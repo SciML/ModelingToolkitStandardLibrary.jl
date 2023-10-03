@@ -172,14 +172,19 @@ Initial value of the state `x` can be set with `x`, and of derivative state `xd`
 end
 
 """
-    PI(;name, gainPI.k = 1.0, T, int.x = 0.0)
+    PI(;name, k = 1.0, T = 1.0, int.x = 0.0)
 
 Textbook version of a PI-controller without actuator saturation and anti-windup measure.
-The proportional gain can be set with `gainPI.k`
+The proportional gain can be set with `k`
 Initial value of integrator state `x` can be set with `int.x`
 
-# Parameters:
+The PI controller is implemented on standard form:
+```math
+U(s) = k (1 + \\dfrac{1}{sT}) E(S)
+```
 
+# Parameters:
+  - `k`: Proportional gain
   - `T`: [s] Integrator time constant (T>0 required)
 
 # Connectors:
@@ -191,7 +196,8 @@ See also [`LimPI`](@ref)
 """
 @mtkmodel PI begin
     @parameters begin
-        T, [description = "Integrator time constant"]
+        k=1.0, [description = "Proportional gain"]
+        T=1.0, [description = "Integrator time constant"]
     end
     begin
         @symcheck T > 0 ||
@@ -293,6 +299,12 @@ end
     LimPI(; name, k = 1.0, T, Ta, int__x = 0.0, u_max = 1.0, u_min = -u_max)
 
 Text-book version of a PI-controller with actuator saturation and anti-windup measure.
+
+The PI controller is implemented on standard form
+```math
+u(t) = sat(k (e(t) + ∫\\dfrac{1}{T}e(t) dt) )
+```
+The simplified expression above is given without the anti-windup protection.
 
 # Parameters:
 
