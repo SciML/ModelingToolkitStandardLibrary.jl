@@ -196,8 +196,8 @@ See also [`LimPI`](@ref)
 """
 @mtkmodel PI begin
     @parameters begin
-        k=1.0, [description = "Proportional gain"]
-        T=1.0, [description = "Integrator time constant"]
+        k = 1.0, [description = "Proportional gain"]
+        T = 1.0, [description = "Integrator time constant"]
     end
     begin
         @symcheck T > 0 ||
