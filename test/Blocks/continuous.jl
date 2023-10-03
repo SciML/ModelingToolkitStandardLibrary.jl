@@ -148,7 +148,7 @@ end
 @testset "PI" begin
     re_val = 2
     @named ref = Constant(; k = re_val)
-    @named pi_controller = PI(int.k = 1, T = 1)
+    @named pi_controller = PI(k = 1, T = 1)
     @named plant = Plant()
     @named fb = Feedback()
     @named model = ODESystem([
