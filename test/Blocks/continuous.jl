@@ -172,12 +172,11 @@ end
 end
 
 @testset "PID" begin
-    
-    @parameters Ti=0.5 Td=1/100
+    @parameters Ti=0.5 Td=1 / 100
     @named pid_controller = PID(; k = 3, Ti, Td)
 
     re_val = 2
-    @named ref = Constant(; k = re_val)    
+    @named ref = Constant(; k = re_val)
     @named plant = Plant()
     @named fb = Feedback()
     @named model = ODESystem([
@@ -290,7 +289,8 @@ end
 @testset "LimPID" begin
     re_val = 1
     @named ref = Constant(; k = re_val)
-    @named pid_controller = LimPID(; k = 3, Ti = 0.5, Td = 1 / 100, u_max = 1.5, u_min = -1.5,
+    @named pid_controller = LimPID(; k = 3, Ti = 0.5, Td = 1 / 100, u_max = 1.5,
+        u_min = -1.5,
         Ni = 0.1 / 0.5)
     @named plant = Plant()
     @named model = ODESystem([
@@ -331,7 +331,7 @@ end
         @test all(-1.5 .<= sol[pid_controller.ctr_output.u] .<= 1.5) # test limit
     end
     @testset "PD" begin
-        @named pid_controller = LimPID(; k = 10,  Ti = false, Td = 1, u_max = 1.5,
+        @named pid_controller = LimPID(; k = 10, Ti = false, Td = 1, u_max = 1.5,
             u_min = -1.5)
         @named model = ODESystem([
                 connect(ref.output, pid_controller.reference),

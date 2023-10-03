@@ -234,9 +234,9 @@ Text-book version of a PID-controller without actuator saturation and anti-windu
 
 See also [`LimPID`](@ref)
 """
-@component function PID(with_I = true, with_D = true; name, k = 1, Ti = 0.1, Td = 0.1, Nd = 10, int__x = 0,
+@component function PID(with_I = true, with_D = true; name, k = 1, Ti = 0.1, Td = 0.1,
+    Nd = 10, int__x = 0,
     der__x = 0)
-    
     pars = @parameters begin
         k = k
         Ti = Ti
@@ -250,24 +250,26 @@ See also [`LimPID`](@ref)
     @named ctr_output = RealOutput() # control signal
 
     with_I &&
-        (@symcheck Ti ≥ 0 || throw(ArgumentError("Ti out of bounds, got $(Ti) but expected Ti ≥ 0")))
+        (@symcheck Ti ≥ 0 ||
+                   throw(ArgumentError("Ti out of bounds, got $(Ti) but expected Ti ≥ 0")))
     with_D &&
-        (@symcheck Td ≥ 0 || throw(ArgumentError("Td out of bounds, got $(Td) but expected Td ≥ 0")))
+        (@symcheck Td ≥ 0 ||
+                   throw(ArgumentError("Td out of bounds, got $(Td) but expected Td ≥ 0")))
 
     @symcheck Nd > 0 ||
-        throw(ArgumentError("Nd out of bounds, got $(Nd) but expected Nd ≥ 0"))
+              throw(ArgumentError("Nd out of bounds, got $(Nd) but expected Nd ≥ 0"))
 
     @named gainPID = Gain(; k)
     @named addPID = Add3()
     if with_I
-        @named int = Integrator(;k = 1 / Ti, x = int__x)
+        @named int = Integrator(; k = 1 / Ti, x = int__x)
     else
-        @named Izero = Constant(;k = 0)
+        @named Izero = Constant(; k = 0)
     end
     if with_D
-        @named der = Derivative(;k = Td, T = 1 / Nd, x = der__x)
+        @named der = Derivative(; k = Td, T = 1 / Nd, x = der__x)
     else
-        @named Dzero = Constant(;k = 0)
+        @named Dzero = Constant(; k = 0)
     end
     sys = [err_input, ctr_output, gainPID, addPID]
     if with_I
@@ -303,9 +305,9 @@ end
 with_I(type::Union{AbstractString, Symbol}) = contains(lowercase(string(type)), "i")
 with_D(type::Union{AbstractString, Symbol}) = contains(lowercase(string(type)), "d")
 
-PID(type::Union{AbstractString, Symbol}; kwargs...) = PID(with_I(type), with_D(type); kwargs...)
-
-
+function PID(type::Union{AbstractString, Symbol}; kwargs...)
+    PID(with_I(type), with_D(type); kwargs...)
+end
 
 """
     LimPI(; name, k = 1.0, T, Ta, int__x = 0.0, u_max = 1.0, u_min = -u_max)

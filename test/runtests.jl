@@ -6,7 +6,6 @@ using ModelingToolkitStandardLibrary
 @parameters x = 1
 @symcheck x > 0
 
-
 # Blocks
 @safetestset "Blocks: math" begin
     include("Blocks/math.jl")
