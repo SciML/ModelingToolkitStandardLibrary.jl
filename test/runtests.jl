@@ -1,4 +1,11 @@
 using SafeTestsets
+using ModelingToolkitStandardLibrary
+
+# ModelingToolkitStandardLibrary
+# symcheck
+@parameters x = 1
+@symcheck x > 0
+
 
 # Blocks
 @safetestset "Blocks: math" begin

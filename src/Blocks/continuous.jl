@@ -214,15 +214,15 @@ See also [`LimPI`](@ref)
 end
 
 """
-    PID(;name, k=1, Ti=false, Td=false, Nd=10, int__x=0, der__x=0)
+    PID(with_I = true, with_D = true; name, k=1, Ti=0.1, Td=0.1, Nd=10, int__x=0, der__x=0)
 
 Text-book version of a PID-controller without actuator saturation and anti-windup measure.
 
 # Parameters:
 
   - `k`: Gain
-  - `Ti`: [s] Integrator time constant (Ti>0 required). If set to false, no integral action is used.
-  - `Td`: [s] Derivative time constant (Td>0 required). If set to false, no derivative action is used.
+  - `Ti`: [s] Integrator time constant (Ti>0 required). If `with_I` set to false, no integral action is used.
+  - `Td`: [s] Derivative time constant (Td>0 required). If `with_D` set to false, no derivative action is used.
   - `Nd`: [s] Time constant for the derivative approximation (Nd>0 required; Nd=0 is ideal derivative).
   - `int__x`: Initial value for the integrator.
   - `der__x`: Initial value for the derivative state.
@@ -234,29 +234,40 @@ Text-book version of a PID-controller without actuator saturation and anti-windu
 
 See also [`LimPID`](@ref)
 """
-@component function PID(; name, k = 1, Ti = false, Td = false, Nd = 10, int__x = 0,
+@component function PID(with_I = true, with_D = true; name, k = 1, Ti = 0.1, Td = 0.1, Nd = 10, int__x = 0,
     der__x = 0)
-    with_I = !isequal(Ti, false)
-    with_D = !isequal(Td, false)
+    
+    pars = @parameters begin
+        k = k
+        Ti = Ti
+        Td = Td
+        Nd = Nd
+        int__x = int__x
+        der__x = der__x
+    end
+
     @named err_input = RealInput() # control error
     @named ctr_output = RealOutput() # control signal
-    !isequal(Ti, false) &&
-        (Ti ≥ 0 || throw(ArgumentError("Ti out of bounds, got $(Ti) but expected Ti ≥ 0")))
-    !isequal(Td, false) &&
-        (Td ≥ 0 || throw(ArgumentError("Td out of bounds, got $(Td) but expected Td ≥ 0")))
-    Nd > 0 || throw(ArgumentError("Nd out of bounds, got $(Nd) but expected Nd > 0"))
 
-    @named gainPID = Gain(k)
+    with_I &&
+        (@symcheck Ti ≥ 0 || throw(ArgumentError("Ti out of bounds, got $(Ti) but expected Ti ≥ 0")))
+    with_D &&
+        (@symcheck Td ≥ 0 || throw(ArgumentError("Td out of bounds, got $(Td) but expected Td ≥ 0")))
+
+    @symcheck Nd > 0 ||
+        throw(ArgumentError("Nd out of bounds, got $(Nd) but expected Nd ≥ 0"))
+
+    @named gainPID = Gain(; k)
     @named addPID = Add3()
     if with_I
-        @named int = Integrator(k = 1 / Ti, x = int__x)
+        @named int = Integrator(;k = 1 / Ti, x = int__x)
     else
-        @named Izero = Constant(k = 0)
+        @named Izero = Constant(;k = 0)
     end
     if with_D
-        @named der = Derivative(k = Td, T = 1 / Nd, x = der__x)
+        @named der = Derivative(;k = Td, T = 1 / Nd, x = der__x)
     else
-        @named Dzero = Constant(k = 0)
+        @named Dzero = Constant(;k = 0)
     end
     sys = [err_input, ctr_output, gainPID, addPID]
     if with_I
@@ -286,8 +297,15 @@ See also [`LimPID`](@ref)
     else
         push!(eqs, connect(Dzero.output, addPID.input3))
     end
-    ODESystem(eqs, t, [], []; name = name, systems = sys)
+    ODESystem(eqs, t, [], pars; name = name, systems = sys)
 end
+
+with_I(type::Union{AbstractString, Symbol}) = contains(lowercase(string(type)), "i")
+with_D(type::Union{AbstractString, Symbol}) = contains(lowercase(string(type)), "d")
+
+PID(type::Union{AbstractString, Symbol}; kwargs...) = PID(with_I(type), with_D(type); kwargs...)
+
+
 
 """
     LimPI(; name, k = 1.0, T, Ta, int__x = 0.0, u_max = 1.0, u_min = -u_max)
