@@ -119,7 +119,7 @@ end
 Symbolics.derivative(::typeof(friction_factor), args, ::Val{1}) = 0
 Symbolics.derivative(::typeof(friction_factor), args, ::Val{4}) = 0
 function ChainRulesCore.frule(_, ::typeof(friction_factor), args...)
-    (friction_factor(args...), ChainRulesCore.ZeroTangent)
+    (friction_factor(args...), ChainRulesCore.ZeroTangent())
 end
 
 function transition(x1, x2, y1, y2, x)
