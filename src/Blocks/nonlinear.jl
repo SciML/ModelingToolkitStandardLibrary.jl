@@ -18,7 +18,8 @@ Limit the range of a signal.
 """
 @component function Limiter(; name, y_max, y_min = y_max > 0 ? -y_max : -Inf)
     @symcheck y_max ≥ y_min || throw(ArgumentError("`y_min` must be smaller than `y_max`"))
-    @named siso = SISO()
+    m = (y_max + y_min) / 2
+    @named siso = SISO(u_start = m, y_start = m) # Default signals to center of saturation to minimize risk of saturation while linearizing etc.
     @unpack u, y = siso
     pars = @parameters y_max=y_max [description = "Maximum allowed output of Limiter $name"] y_min=y_min [
         description = "Minimum allowed output of Limiter $name",
