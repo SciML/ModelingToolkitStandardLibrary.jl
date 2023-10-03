@@ -206,7 +206,7 @@ See also [`LimPI`](@ref)
     @components begin
         err_input = RealInput() # control error
         ctr_output = RealOutput() # control signal
-        gainPI = Gain(; k = 1.0)
+        gainPI = Gain(; k)
         addPI = Add()
         int = Integrator(k = 1 / T, x = 0.0)
     end
