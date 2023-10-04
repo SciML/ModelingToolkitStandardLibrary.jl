@@ -74,8 +74,8 @@ Single input single output (SISO) continuous system block.
         y(t) = y_start, [description = "Output of SISO system"]
     end
     @components begin
-        input = RealInput(u_start = 0.0)
-        output = RealOutput(u_start = 0.0)
+        input = RealInput(u_start = u_start)
+        output = RealOutput(u_start = y_start)
     end
     @equations begin
         u ~ input.u
