@@ -59,7 +59,7 @@ Body component with mass and inertia
 
   - `frame`: 2-dim. Coordinate system
 """
-@component function Body(; name, m, j, r = nothing, gy = -9.807)
+@component function Body(; name, m, j, rx = 0, ry = 0, gy = -9.807)
     @named frame = Frame()
     pars = @parameters begin
         m = m
@@ -70,8 +70,8 @@ Body component with mass and inertia
     vars = @variables begin
         fx(t) = 0
         fy(t) = 0
-        rx(t) = 0
-        ry(t) = 0
+        rx(t) = rx
+        ry(t) = ry
         vx(t) = 0
         vy(t) = 0
         ax(t) = 0
@@ -100,11 +100,6 @@ Body component with mass and inertia
         ay ~ ifelse(gy !== nothing, fy / m + gy, fy / m),
         j * α ~ frame.j,
     ]
-
-    if r !== nothing
-        rx = r[1]
-        ry = r[2]
-    end
 
     return compose(ODESystem(eqs, t, vars, pars; name = name),
         frame)
@@ -138,25 +133,20 @@ A fixed translation between two components (rigid rod)
         ]
     end
 
-    @variables begin
-        r0x(t), [description = "x-length of the rod resolved w.r.t to inertal frame"]
-        r0y(t), [description = "y-length of the rod resolved w.r.t to inertal frame"]
-        cos_phi(t), [description = "cos(phi)"]
-        sin_phi(t), [description = "sin(phi)"]
+    begin
+        R = [cos(frame_a.phi) -sin(frame_a.phi);
+            sin(frame_a.phi) cos(frame_a.phi)]
+        r0 = R * [rx, ry]
     end
 
     @equations begin
         # rigidly connect positions
-        frame_a.x + rx ~ frame_b.x
-        frame_a.y + ry ~ frame_b.y
+        frame_a.x + r0[1] ~ frame_b.x
+        frame_a.y + r0[2] ~ frame_b.y
         frame_a.phi ~ frame_b.phi
         # balancing force including lever principle
         frame_a.fx + frame_b.fx ~ 0
         frame_a.fy + frame_b.fy ~ 0
-        cos_phi ~ cos(frame_a.phi)
-        sin_phi ~ sin(frame_a.phi)
-        r0x ~ cos_phi * rx - sin_phi * ry
-        r0y ~ sin_phi * rx + cos_phi * rx
-        frame_a.j + frame_b.j + r0x * (frame_b.fy - frame_a.fy) - r0y * (frame_b.fx - frame_a.fx) ~ 0
+        frame_a.j + frame_b.j + r0[1] * frame_b.fy - r0[2] * frame_b.fx ~ 0
     end
 end
