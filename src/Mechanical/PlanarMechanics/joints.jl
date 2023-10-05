@@ -27,13 +27,6 @@ A revolute joint
     @named fixed = Rotational.Fixed()
     systems = [frame_a, frame_b, fixed]
 
-    if use_flange
-        @named flange_a = Rotational.Flange(; phi, tau)
-        push!(systems, flange_a)
-        @named support = Rotational.Support()
-        push!(systems, support)
-    end
-
     vars = @variables begin
         phi(t) = phi
         ω(t) = ω
@@ -57,6 +50,10 @@ A revolute joint
     ]
 
     if use_flange
+        @named flange_a = Rotational.Flange(; phi, tau)
+        push!(systems, flange_a)
+        @named support = Rotational.Support()
+        push!(systems, support)
         push!(eqs, connect(fixed.flange, support))
     else
         # actutation torque
