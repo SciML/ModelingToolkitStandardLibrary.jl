@@ -48,12 +48,8 @@ end
         [],
         systems = [body, revolute, rod, ceiling])
     sys = structural_simplify(model)
-    unset_vars = setdiff(states(sys), keys(ModelingToolkit.defaults(sys)))
-    prob = ODEProblem(sys, unset_vars .=> 0.0, tspan, []; jac = true)
-    sol = solve(prob, Rodas5P())
 
-    # phi and omega for the pendulum body
-    @test length(states(sys)) == 2
+    @test length(states(sys)) == 7
 end
 
 @testset "Prismatic" begin
@@ -62,6 +58,53 @@ end
     @named prismatic = Prismatic(rx = r[1], ry = r[2], ex = e[1], ey = e[2])
     # just testing instantiation
     @test true
+end
+
+@testset "AbsoluteAccCentrifugal" begin
+    # https://github.com/dzimmer/PlanarMechanics/blob/443b007bcc1522bb172f13012e2d7a8ecc3f7a9b/PlanarMechanicsTest/Sensors.mo#L221-L332
+    m = 1
+    j = 0.1
+    ω = 10
+    resolve_in_frame = :world
+
+    # components
+    @named body = Body(; m, j, gy = 0.0)
+    @named fixed_translation = FixedTranslation(; rx = 10.0, ry = 0.0)
+    @named fixed = Fixed()
+    @named revolute = Revolute(ω = ω)
+
+    eqs = [
+        connect(fixed_translation.frame_b, body.frame),
+        connect(fixed.frame, revolute.frame_a),
+        connect(revolute.frame_b, fixed_translation.frame_a),
+    ]
+
+    @named model = ODESystem(eqs,
+        t,
+        [],
+        [],
+        systems = [
+            body,
+            fixed_translation,
+            fixed,
+            revolute,
+        ])
+    sys = structural_simplify(model)
+    prob = ODEProblem(sys, [0.0, 10.0, 0.0], tspan, []; jac = true)
+    sol = solve(prob, Rodas5P())
+
+    # phi 
+    @test sol[body.phi][end] ≈ tspan[end] * ω
+    @test all(sol[body.ω] .≈ ω)
+
+    test_points = [i / ω for i in 0:0.1:10]
+    # instantaneous linear velocity
+    v_singal(t) = -ω^2 * sin.(ω .* t)
+    @test all(v_singal.(test_points) .≈ sol.(test_points; idxs = body.vx))
+
+    # instantaneous linear acceleration
+    a_singal(t) = -ω^3 * cos.(ω .* t)
+    @test all(a_singal.(test_points) .≈ sol.(test_points; idxs = body.ax))
 end
 
 @testset "Sensors (two free falling bodies)" begin
