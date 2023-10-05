@@ -159,7 +159,7 @@ Measure absolute position and orientation of the origin of frame connector
   - `resolve_in_frame`: Frame in which output x, y, phi is resolved (1: :world, 2: :frame_a, 3: :frame_resolve)
 """
 @component function AbsolutePosition(; name, resolve_in_frame = :frame_a)
-    @named pos = BasicAbsolutePosition()
+    @named pos = BasicAbsolutePosition(; resolve_in_frame)
     @named partial_abs_sensor = PartialAbsoluteSensor()
     @unpack frame_a, = partial_abs_sensor
 
@@ -402,33 +402,33 @@ end
     @named x_out = RealOutput()
     @named y_out = RealOutput()
     @named phi_out = RealOutput()
-    @named basic_transformb_vector = BasicTransformAbsoluteVector(; frame_in, frame_out)
+    @named basic_transform_vector = BasicTransformAbsoluteVector(; frame_in, frame_out)
 
-    systems = [frame_a, x_in, y_in, phi_in, x_out, y_out, phi_out, basic_transformb_vector]
+    systems = [frame_a, x_in, y_in, phi_in, x_out, y_out, phi_out, basic_transform_vector]
 
     eqs = [
-        connect(basic_transformb_vector.frame_a, frame_a),
+        connect(basic_transform_vector.frame_a, frame_a),
         # out
-        connect(basic_transformb_vector.x_out, x_out),
-        connect(basic_transformb_vector.y_out, y_out),
-        connect(basic_transformb_vector.phi_out, phi_out),
+        connect(basic_transform_vector.x_out, x_out),
+        connect(basic_transform_vector.y_out, y_out),
+        connect(basic_transform_vector.phi_out, phi_out),
         # in
-        connect(basic_transformb_vector.x_in, x_in),
-        connect(basic_transformb_vector.y_in, y_in),
-        connect(basic_transformb_vector.phi_in, phi_in),
+        connect(basic_transform_vector.x_in, x_in),
+        connect(basic_transform_vector.y_in, y_in),
+        connect(basic_transform_vector.phi_in, phi_in),
     ]
 
     if frame_in == :frame_resolve || frame_out == :frame_resolve
         @named frame_resolve = FrameResolve()
         push!(systems, frame_resolve)
-        push!(eqs, connect(basic_transformb_vector.frame_resolve, frame_resolve))
+        push!(eqs, connect(basic_transform_vector.frame_resolve, frame_resolve))
     end
 
     if !(frame_in == :frame_resolve || frame_out == :frame_resolve)
         @named zero_pos = ZeroPosition()
         push!(systems, zero_pos)
         push!(eqs,
-            connect(zero_pos.frame_resolve, basic_transformb_vector.frame_resolve))
+            connect(zero_pos.frame_resolve, basic_transform_vector.frame_resolve))
     end
 
     return compose(ODESystem(eqs, t, [], []; name = name), systems...)
