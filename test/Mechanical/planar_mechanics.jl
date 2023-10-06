@@ -34,7 +34,7 @@ end
     @named ceiling = Fixed()
     @named rod = FixedTranslation(rx = 1.0, ry = 0.0)
     @named body = Body(m = 1, j = 0.1)
-    @named revolute = Revolute(phi = 0.0, ω = 0.0)
+    @named revolute = Revolute()
 
     connections = [
         connect(ceiling.frame, revolute.frame_a),
@@ -65,18 +65,25 @@ end
     m = 1
     j = 0.1
     ω = 10
-    resolve_in_frame = :world
 
     # components
     @named body = Body(; m, j, gy = 0.0)
     @named fixed_translation = FixedTranslation(; rx = 10.0, ry = 0.0)
     @named fixed = Fixed()
-    @named revolute = Revolute(ω = ω)
+    @named revolute = Revolute(constant_ω = ω)
+
+    # sensors
+    @named abs_pos_sensor = AbsolutePosition()
 
     eqs = [
-        connect(fixed_translation.frame_b, body.frame),
         connect(fixed.frame, revolute.frame_a),
         connect(revolute.frame_b, fixed_translation.frame_a),
+        connect(fixed_translation.frame_b, body.frame),
+        connect(abs_pos_sensor.frame_a, body.frame),
+        # TODO: the following equations shouldn't be necessary
+        body.ω ~ revolute.ω,
+        fixed.frame.fy ~ -body.fy,
+        fixed.frame.fx ~ -body.fx,
     ]
 
     @named model = ODESystem(eqs,
@@ -88,9 +95,10 @@ end
             fixed_translation,
             fixed,
             revolute,
+            abs_pos_sensor,
         ])
     sys = structural_simplify(model)
-    prob = ODEProblem(sys, [0.0, 10.0, 0.0], tspan, []; jac = true)
+    prob = ODEProblem(sys, [0.0], tspan, []; jac = true)
     sol = solve(prob, Rodas5P())
 
     # phi 

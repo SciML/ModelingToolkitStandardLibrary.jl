@@ -123,11 +123,11 @@ A fixed translation between two components (rigid rod)
     @extend frame_a, frame_b = partial_frames = PartialTwoFrames()
 
     @parameters begin
-        rx,
+        rx = 0,
         [
             description = "Fixed x-length of the rod resolved w.r.t to body frame_a at phi = 0",
         ]
-        ry,
+        ry = 0,
         [
             description = "Fixed y-length of the rod resolved w.r.t to body frame_a at phi = 0",
         ]

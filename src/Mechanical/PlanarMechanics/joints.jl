@@ -21,22 +21,28 @@ A revolute joint
   - `support` [Support](@ref) if `use_flange == true`
 
 """
-@component function Revolute(; name, phi = 0.0, ω = 0.0, tau = 0.0, use_flange = false)
+@component function Revolute(;
+    name,
+    constant_phi = nothing,
+    constant_ω = nothing,
+    constat_tau = nothing,
+    use_flange = false)
     @named partial_frames = PartialTwoFrames()
     @unpack frame_a, frame_b = partial_frames
     @named fixed = Rotational.Fixed()
     systems = [frame_a, frame_b, fixed]
 
     vars = @variables begin
-        phi(t) = phi
-        ω(t) = ω
+        phi(t) = 0.0
+        ω(t) = 0.0
         α(t) = 0.0
-        j(t) = tau
+        j(t) = 0.0
     end
 
     eqs = [
-        ω ~ D(phi),
-        α ~ D(ω),
+        phi ~ ifelse(constant_phi === nothing, phi, constant_phi),
+        ω ~ ifelse(constant_ω === nothing, D(phi), constant_ω),
+        α ~ ifelse(constant_ω === nothing, D(ω), 0.0),
         # rigidly connect positions
         frame_a.x ~ frame_b.x,
         frame_a.y ~ frame_b.y,
@@ -46,6 +52,7 @@ A revolute joint
         frame_a.fy + frame_b.fy ~ 0,
         # balance torques
         frame_a.j + frame_b.j ~ 0,
+        j ~ ifelse(constat_tau === nothing, j, constat_tau),
         frame_a.j ~ j,
     ]
 
