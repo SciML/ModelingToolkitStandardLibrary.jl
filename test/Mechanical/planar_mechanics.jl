@@ -53,11 +53,8 @@ end
 end
 
 @testset "Prismatic" begin
-    r = [1.0, 0.0]
-    e = r / sqrt(r' * r)
-    @named prismatic = Prismatic(rx = r[1], ry = r[2], ex = e[1], ey = e[2])
     # just testing instantiation
-    @test true
+    @test_nowarn @named prismatic = Prismatic(x = 1.0, y = 0.0)
 end
 
 @testset "AbsoluteAccCentrifugal" begin

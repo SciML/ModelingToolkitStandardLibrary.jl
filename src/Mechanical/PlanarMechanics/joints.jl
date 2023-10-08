@@ -78,25 +78,17 @@ end
 A prismatic joint
 
 # parameters
-  - `rx`: [m] x-direction of the rod wrt. body system at phi=0
-  - `ry`: [m] y-direction of the rod wrt. body system at phi=0
-  - `ex`: [m] x-component of unit vector in direction of r
-  - `ey`: [m] y-component of unit vector in direction of r
-  - `f`: [N] Force in direction of elongation
-  - `s`: [m] Elongation of the joint"
+  - `x`: [m] x-direction of the rod wrt. body system at phi=0
+  - `y`: [m] y-direction of the rod wrt. body system at phi=0
+  - `constant_f`: [N] Constant force in direction of elongation
+  - `constant_s`: [m] Constant elongation of the joint"
   - `use_flange=false`: If `true`, a force flange is enabled, otherwise implicitly grounded"
 
 # states
   - `s(t)`: [m] Elongation of the joint
   - `v(t)`: [m/s] Velocity of elongation
   - `a(t)`: [m/s²] Acceleration of elongation
-  - `e0x(t)`: [m] x-component of unit vector resolved w.r.t inertial frame
-  - `e0y(t)`: [m] y-component of unit vector resolved w.r.t inertial frame
-  - `r0x(t)`: [m] x-component of the rod resolved w.r.t to inertal frame
-  - `r0y(t)`: [m] y-length of the rod resolved w.r.t to inertal frame
-  - `cos_phi(t)`: [degree] cos(phi)
-  - `sin_phi(t)`: [degree] sin(phi)
-    
+  - `f(t)`: [N] Force in direction of elongation
 
 # Connectors
   - `frame_a` [Frame](@ref)
@@ -105,14 +97,20 @@ A prismatic joint
   - `flange_a` [Flange](@ref) if `use_flange == true`
   - `support` [Support](@ref) if `use_flange == true`
 """
-@component function Prismatic(; name, rx, ry, ex, ey, f = 0, s = 0, use_flange = false)
+@component function Prismatic(;
+    name,
+    x,
+    y,
+    constant_f = 0,
+    constant_s = 0,
+    use_flange = false)
     @named partial_frames = PartialTwoFrames()
     @unpack frame_a, frame_b = partial_frames
     @named fixed = TranslationalModelica.Support()
     systems = [frame_a, frame_b, fixed]
 
     if use_flange
-        @named flange_a = TranslationalModelica.Flange(; f, s)
+        @named flange_a = TranslationalModelica.Flange(; f = constant_f, constant_s)
         push!(systems, flange_a)
         @named support = TranslationalModelica.Support()
         push!(systems, support)
@@ -122,40 +120,34 @@ A prismatic joint
         s(t) = 0.0
         v(t) = 0.0
         a(t) = 0.0
-        e0x(t)
-        e0y(t)
-        r0x(t)
-        r0y(t)
-        cos_phi(t)
-        sin_phi(t)
+        f(t) = 0.0
     end
 
+    R = [cos(frame_a.phi) -sin(frame_a.phi);
+        sin(frame_a.phi) cos(frame_a.phi)]
+    e0 = R * [x, y]
+    r0 = e0 * s
+
     eqs = [
+        ifelse(constant_s === nothing, s ~ s, s ~ constant_s),
+        ifelse(constant_f === nothing, f ~ f, f ~ constant_f),
         v ~ D(s),
         a ~ D(v),
         # rigidly connect positions
-        frame_a.x + rx ~ frame_b.x,
-        frame_a.y + ry ~ frame_b.y,
+        frame_a.x + r0[1] ~ frame_b.x,
+        frame_a.y + r0[2] ~ frame_b.y,
         frame_a.phi ~ frame_b.phi,
-        # balance forces
         frame_a.fx + frame_b.fx ~ 0,
         frame_a.fy + frame_b.fy ~ 0,
-        # balance torques
-        cos_phi ~ cos(frame_a.phi),
-        sin_phi ~ sin(frame_a.phi),
-        e0x ~ cos_phi * ex - sin_phi * ey,
-        e0y ~ sin_phi * ex + cos_phi * ey,
-        r0x ~ e0x * s,
-        r0y ~ e0y * s,
-        frame_a.j + frame_b.j + r0x * (frame_b.fy - frame_a.fy) - r0y * (frame_b.fx - frame_a.fx) ~ 0,
-        frame_a.fx * e0y - frame_a.fy * e0x ~ f,
+        frame_a.j + frame_b.j + r0[1] * frame_b.fy - r0[2] * frame_b.fx ~ 0,
+        e0[1] * frame_a.fx + e0[2] * frame_a.fy ~ f,
     ]
 
     if use_flange
         push!(eqs, connect(fixed.flange, support))
     else
         # actutation torque
-        push!(eqs, f ~ 0)
+        push!(eqs, constant_f ~ 0)
     end
 
     pars = []
