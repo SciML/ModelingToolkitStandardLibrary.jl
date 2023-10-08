@@ -138,6 +138,9 @@ Measure absolute position and orientation (same as Sensors.AbsolutePosition, but
         x.u ~ r[1],
         y.u ~ r[2],
         phi.u ~ r[3],
+        frame_a.fx ~ 0,
+        frame_a.fy ~ 0,
+        frame_a.j ~ 0,
     ]
 
     return compose(ODESystem(eqs, t, [], []; name = name),
@@ -244,6 +247,12 @@ Measure relative position and orientation between the origins of two frame conne
         rel_x.u ~ r[1],
         rel_y.u ~ r[2],
         rel_phi.u ~ r[3],
+        frame_a.fx ~ 0,
+        frame_a.fy ~ 0,
+        frame_a.j ~ 0,
+        frame_b.fx ~ 0,
+        frame_b.fy ~ 0,
+        frame_b.j ~ 0,
     ]
 
     return compose(ODESystem(eqs, t, [], []; name = name),
@@ -709,6 +718,9 @@ end
         connect(pos.frame_a, frame_a),
         connect(zero_pos.frame_resolve, pos.frame_resolve),
         connect(transform_absolute_vector.frame_a, frame_a),
+        frame_a.fx ~ 0,
+        frame_a.fy ~ 0,
+        frame_a.j ~ 0,
     ]
 
     if resolve_in_frame == :frame_resolve
@@ -783,4 +795,13 @@ end
     end
 
     return compose(ODESystem(eqs, t, [], []; name = name), systems...)
+end
+
+function connect_sensor(component_frame, sensor_frame)
+    # TODO: make this an override of the `connect` method
+    return [
+        component_frame.x ~ sensor_frame.x,
+        component_frame.y ~ sensor_frame.y,
+        component_frame.phi ~ sensor_frame.phi,
+    ]
 end

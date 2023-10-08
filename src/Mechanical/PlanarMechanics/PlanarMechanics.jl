@@ -24,6 +24,6 @@ include("joints.jl")
 
 export AbsolutePosition,
     RelativePosition, AbsoluteVelocity, RelativeVelocity, AbsoluteAcceleration,
-    RelativeAcceleration
+    RelativeAcceleration, connect_sensor
 include("sensors.jl")
 end

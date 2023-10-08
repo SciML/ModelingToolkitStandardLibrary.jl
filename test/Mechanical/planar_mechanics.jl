@@ -79,11 +79,7 @@ end
         connect(fixed.frame, revolute.frame_a),
         connect(revolute.frame_b, fixed_translation.frame_a),
         connect(fixed_translation.frame_b, body.frame),
-        connect(abs_pos_sensor.frame_a, body.frame),
-        # TODO: the following equations shouldn't be necessary
-        body.ω ~ revolute.ω,
-        fixed.frame.fy ~ -body.fy,
-        fixed.frame.fx ~ -body.fx,
+        connect_sensor(abs_pos_sensor.frame_a, body.frame)...,
     ]
 
     @named model = ODESystem(eqs,
@@ -98,7 +94,8 @@ end
             abs_pos_sensor,
         ])
     sys = structural_simplify(model)
-    prob = ODEProblem(sys, [0.0], tspan, []; jac = true)
+    u0 = [0.0, ω, 0.0]
+    prob = ODEProblem(sys, u0, tspan, []; jac = true)
     sol = solve(prob, Rodas5P())
 
     # phi 
@@ -135,22 +132,21 @@ end
     @named rel_a_sensor2 = RelativeAcceleration(; resolve_in_frame)
 
     connections = [
-        connect(body1.frame, abs_pos_sensor.frame_a),
-        connect(abs_v_sensor.frame_a, body1.frame),
-        connect(abs_a_sensor.frame_a, body1.frame),
-        connect(rel_pos_sensor1.frame_a, body1.frame),
-        connect(rel_v_sensor1.frame_a, body1.frame),
-        connect(rel_pos_sensor1.frame_b, base.frame),
-        connect(rel_v_sensor1.frame_b, base.frame),
-        connect(rel_pos_sensor2.frame_b, body1.frame),
-        connect(rel_v_sensor2.frame_b, body1.frame),
-        connect(rel_pos_sensor2.frame_a, body2.frame),
-        connect(rel_v_sensor2.frame_a, body2.frame),
-        connect(rel_a_sensor1.frame_a, body1.frame),
-        connect(rel_a_sensor1.frame_b, base.frame),
-        connect(rel_a_sensor2.frame_a, body1.frame),
-        connect(rel_a_sensor2.frame_b, body2.frame),
-        [s ~ 0 for s in (body1.phi, body2.phi, body1.fx, body1.fy, body2.fx, body2.fy)]...,
+        connect_sensor(body1.frame, abs_pos_sensor.frame_a)...,
+        connect_sensor(body1.frame, abs_v_sensor.frame_a)...,
+        connect_sensor(body1.frame, abs_a_sensor.frame_a)...,
+        connect_sensor(body1.frame, rel_pos_sensor1.frame_a)...,
+        connect_sensor(base.frame, rel_pos_sensor1.frame_b)...,
+        connect_sensor(body1.frame, rel_pos_sensor2.frame_a)...,
+        connect_sensor(body2.frame, rel_pos_sensor2.frame_b)...,
+        connect_sensor(base.frame, rel_v_sensor1.frame_a)...,
+        connect_sensor(body1.frame, rel_v_sensor1.frame_b)...,
+        connect_sensor(body1.frame, rel_v_sensor2.frame_a)...,
+        connect_sensor(body2.frame, rel_v_sensor2.frame_b)...,
+        connect_sensor(body1.frame, rel_a_sensor1.frame_a)...,
+        connect_sensor(base.frame, rel_a_sensor1.frame_b)...,
+        connect_sensor(body1.frame, rel_a_sensor2.frame_a)...,
+        connect_sensor(body2.frame, rel_a_sensor2.frame_b)...,
     ]
 
     @named model = ODESystem(connections,
@@ -195,7 +191,7 @@ end
 
     # velocity after t seconds v = g * t, so the relative y-velocity between body1 and the base is
     # equal to the absolute y-velocity of body1
-    @test sol[abs_v_sensor.v_y.u][end] ≈ -sol[rel_v_sensor1.rel_v_y.u][end] ≈ g * tspan[end]
+    @test sol[abs_v_sensor.v_y.u][end] ≈ sol[rel_v_sensor1.rel_v_y.u][end] ≈ g * tspan[end]
 
     # the relative y-velocity between body1 and body2 is zero
     @test sol[rel_v_sensor2.rel_v_y.u][end] == 0
