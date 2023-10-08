@@ -65,6 +65,7 @@ end
     m = 1
     j = 0.1
     ω = 10
+    resolve_in_frame = :world
 
     # components
     @named body = Body(; m, j, gy = 0.0)
@@ -73,13 +74,13 @@ end
     @named revolute = Revolute(constant_ω = ω)
 
     # sensors
-    @named abs_pos_sensor = AbsolutePosition()
+    @named abs_v_sensor = AbsoluteVelocity(; resolve_in_frame)
 
     eqs = [
         connect(fixed.frame, revolute.frame_a),
         connect(revolute.frame_b, fixed_translation.frame_a),
         connect(fixed_translation.frame_b, body.frame),
-        connect_sensor(abs_pos_sensor.frame_a, body.frame)...,
+        connect_sensor(body.frame, abs_v_sensor.frame_a)...,
     ]
 
     @named model = ODESystem(eqs,
@@ -91,7 +92,7 @@ end
             fixed_translation,
             fixed,
             revolute,
-            abs_pos_sensor,
+            abs_v_sensor,
         ])
     sys = structural_simplify(model)
     u0 = [0.0, ω, 0.0]
@@ -103,9 +104,10 @@ end
     @test all(sol[body.ω] .≈ ω)
 
     test_points = [i / ω for i in 0:0.1:10]
+
     # instantaneous linear velocity
     v_singal(t) = -ω^2 * sin.(ω .* t)
-    @test all(v_singal.(test_points) .≈ sol.(test_points; idxs = body.vx))
+    @test all(v_singal.(test_points) .≈ sol.(test_points; idxs = abs_v_sensor.v_x.u))
 
     # instantaneous linear acceleration
     a_singal(t) = -ω^3 * cos.(ω .* t)

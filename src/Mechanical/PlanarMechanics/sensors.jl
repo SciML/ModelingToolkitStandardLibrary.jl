@@ -718,9 +718,6 @@ end
         connect(pos.frame_a, frame_a),
         connect(zero_pos.frame_resolve, pos.frame_resolve),
         connect(transform_absolute_vector.frame_a, frame_a),
-        frame_a.fx ~ 0,
-        frame_a.fy ~ 0,
-        frame_a.j ~ 0,
     ]
 
     if resolve_in_frame == :frame_resolve
