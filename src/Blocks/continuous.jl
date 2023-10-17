@@ -553,7 +553,6 @@ StateSpace(A, B, C, D = nothing; kwargs...) = StateSpace(; A, B, C, D, kwargs...
 symbolic_eps(t) = eps(t)
 @register_symbolic symbolic_eps(t)
 
-
 """
     TransferFunction(; b, a, name)
 
