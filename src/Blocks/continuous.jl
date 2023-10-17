@@ -1,8 +1,8 @@
 """
     Integrator(;name, k = 1, x = 0.0)
 
-Outputs `y = ∫k*u dt`, corresponding to the transfer function `1/s`.
-Initial value of integrator state `x` can be set with `x`
+Outputs `y = ∫k*u dt`, corresponding to the transfer function ``1/s``.
+Initial value of integrator state ``x`` can be set with `x`
 
 # Connectors:
 
@@ -19,7 +19,7 @@ Initial value of integrator state `x` can be set with `x`
         x(t) = 0.0, [description = "State of Integrator"]
     end
     @parameters begin
-        k = 1, [description = "Gain of Integrator"]
+        k = 1, [description = "Gain"]
     end
     @equations begin
         D(x) ~ k * u
@@ -30,7 +30,7 @@ end
     Derivative(; name, k = 1, T, x = 0.0)
 
 Outputs an approximate derivative of the input. The transfer function of this block is
-Initial value of the state `x` can be set with `x`
+Initial value of the state ``x`` can be set with `x`
 
 ```
 k       k
@@ -57,11 +57,11 @@ A smaller `T` leads to a more ideal approximation of the derivative.
 @mtkmodel Derivative begin
     @extend u, y = siso = SISO()
     @variables begin
-        x(t) = 0.0, [description = "State of Derivative"]
+        x(t) = 0.0, [description = "Derivative-filter state"]
     end
     @parameters begin
-        T = T, [description = "Time constant of Derivative"]
-        k = 1, [description = "Gain of Derivative"]
+        T = T, [description = "Time constant"]
+        k = 1, [description = "Gain"]
     end
     begin
         @symcheck T > 0 ||
@@ -77,8 +77,8 @@ end
     FirstOrder(; name, k = 1.0, T, x = 0.0, lowpass = true)
 
 A first-order filter with a single real pole in `s = -T` and gain `k`. If `lowpass=true` (default), the transfer function
-is given by `Y(s)/U(s) = `
-Initial value of the state `x` can be set with `x`
+is given by ``Y(s)/U(s) = ``
+
 
 ```
    k
@@ -94,10 +94,12 @@ sT + 1 - k
   sT + 1
 ```
 
+Initial value of the state `x` can be set with `x`
+
 # Parameters:
 
   - `k`: Gain
-  - `T`: [s] Time constants (T>0 required)
+  - `T`: [s] Time constant (T>0 required)
 
 # Connectors:
 
@@ -108,13 +110,15 @@ See also [`SecondOrder`](@ref)
 """
 @mtkmodel FirstOrder begin
     @extend u, y = siso = SISO()
+    @structural_parameters begin
+        lowpass = true
+    end
     @variables begin
         x(t) = 0.0, [description = "State of FirstOrder filter"]
     end
     @parameters begin
-        lowpass = true
-        T = T, [description = "Time constant of FirstOrder filter"]
-        k = 1.0, [description = "Gain of FirstOrder"]
+        T = T, [description = "Time constant"]
+        k = 1.0, [description = "Gain"]
     end
     begin
         @symcheck T > 0 ||
@@ -122,12 +126,12 @@ See also [`SecondOrder`](@ref)
     end
     @equations begin
         D(x) ~ (k * u - x) / T
-        getdefault(lowpass) ? y ~ x : y ~ k * u - x
+        lowpass ? y ~ x : y ~ k * u - x
     end
 end
 
 """
-    SecondOrder(; name, k = 1.0, w, d, x = 0.0, xd = 0.0)
+    SecondOrder(; name, k = 1.0, w = 1.0, d = 1.0, x = 0.0, xd = 0.0)
 
 A second-order filter with gain `k`, a bandwidth of `w` rad/s and relative damping `d`. The transfer function
 is given by `Y(s)/U(s) = `
@@ -160,9 +164,9 @@ Initial value of the state `x` can be set with `x`, and of derivative state `xd`
         xd(t) = 0.0, [description = "Derivative state of SecondOrder filter"]
     end
     @parameters begin
-        k = 1.0, [description = "Gain of SecondOrder"]
-        w, [description = "Bandwidth of SecondOrder"]
-        d, [description = "Relative damping of SecondOrder"]
+        k = 1.0, [description = "Gain"]
+        w = 1.0, [description = "Bandwidth (angular frequency)"]
+        d = 1.0, [description = "Relative damping"]
     end
     @equations begin
         D(x) ~ xd
