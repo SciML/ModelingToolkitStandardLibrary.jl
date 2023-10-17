@@ -549,3 +549,86 @@ linearized around the operating point `x₀, u₀`, we have `y0, u0 = h(x₀, u�
 end
 
 StateSpace(A, B, C, D = nothing; kwargs...) = StateSpace(; A, B, C, D, kwargs...)
+
+symbolic_eps(t) = eps(t)
+@register_symbolic symbolic_eps(t)
+
+
+"""
+    TransferFunction(; b, a, name)
+
+A linear time-invariant system provided as a transfer-function.
+```
+Y(s) = b(s) / a(s)  U(s)
+```
+where `b` and `a` are vectors of coefficients of the numerator and denominator polynomials, respectively, ordered such that the coefficient of the highest power of `s` is first.
+
+The internal state realization is on controller canonical form, with state variable `x`, output variable `y` and input variable `u`. For numerical robustness, the realization used by the integrator is scaled by the last entry of the `a` parameter. The internally scaled state variable is available as `x_scaled`.
+
+To set the initial state, it's recommended to set the initial condition for `x`, and let that of `x_scaled` be computed automatically.
+
+# Parameters:
+- `b`: Numerator polynomial coefficients, e.g., `2s + 3` is specified as `[2, 3]`
+- `a`: Denomenator polynomial coefficients, e.g., `s + 2ws + w^2` is specified as `[1, 2w, w^2]`
+
+# Connectors:
+  - `input`
+  - `output`
+
+See also [`StateSpace`](@ref) as well as [ControlSystemsMTK.jl](https://juliacontrol.github.io/ControlSystemsMTK.jl/stable/) for an interface between [ControlSystems.jl](https://juliacontrol.github.io/ControlSystems.jl/stable/) and ModelingToolkit.jl for advanced manipulation of transfer functions and linear statespace systems. For linearization, see [`linearize`](@ref) and [Linear Analysis](https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/API/linear_analysis/).
+"""
+@component function TransferFunction(; b = [1], a = [1, 1], name)
+    nb = length(b)
+    na = length(a)
+    nb <= na ||
+        error("Transfer function is not proper, the numerator must not be longer than the denominator")
+    nx = na - 1
+    nbb = max(0, na - nb)
+
+    @named begin
+        input = RealInput()
+        output = RealOutput()
+    end
+
+    @parameters begin
+        b[1:nb] = b,
+        [
+            description = "Numerator coefficients of transfer function (e.g., 2s + 3 is specified as [2,3])",
+        ]
+        a[1:na] = a,
+        [
+            description = "Denominator coefficients of transfer function (e.g., s + 2ws + w^2 is specified as [1, 2w, w^2])",
+        ]
+        bb[1:(nbb + nb)] = [zeros(nbb); b]
+        d = bb[1] / a[1]
+    end
+
+    a = collect(a)
+    @parameters a_end = ifelse(a[end] > 100 * symbolic_eps(sqrt(a' * a)), a[end], 1.0)
+
+    pars = [collect(b); a; collect(bb); d; a_end]
+    @variables begin
+        x(t)[1:nx] = zeros(nx),
+        [description = "State of transfer function on controller canonical form"]
+        x_scaled(t)[1:nx] = collect(x) * a_end, [description = "Scaled vector x"]
+        u(t), [description = "Input of transfer function"]
+        y(t), [description = "Output of transfer function"]
+    end
+
+    x = collect(x)
+    x_scaled = collect(x_scaled)
+
+    sts = [x; x_scaled; y; u]
+
+    if nx == 0
+        eqs = [y ~ d * u]
+    else
+        eqs = [D(x_scaled[1]) ~ (-a[2:na]'x_scaled + a_end * u) / a[1]
+            D.(x_scaled[2:nx]) .~ x_scaled[1:(nx - 1)]
+            y ~ ((bb[2:na] - d * a[2:na])'x_scaled) / a_end + d * u
+            x .~ x_scaled ./ a_end]
+    end
+    push!(eqs, input.u ~ u)
+    push!(eqs, output.u ~ y)
+    compose(ODESystem(eqs, t, sts, pars; name = name), input, output)
+end

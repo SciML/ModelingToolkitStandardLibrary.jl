@@ -408,4 +408,62 @@ end
         @test sol[plant.output.u][end]≈re_val atol=1e-3 # zero control error after 100s
         @test all(-1.5 .<= sol[pid_controller.ctr_output.u] .<= 1.5) # test limit
     end
+
+    @testset "TransferFunction" begin
+        pt1_func(t, k, T) = k * (1 - exp(-t / T)) # Known solution to first-order system
+
+        @named c = Constant(; k = 1)
+        @named pt1 = TransferFunction(b = [1.2], a = [3.14, 1])
+        @named iosys = ODESystem(connect(c.output, pt1.input), t, systems = [pt1, c])
+        sys = structural_simplify(iosys)
+        prob = ODEProblem(sys, Pair[pt1.a_end => 1], (0.0, 100.0))
+        sol = solve(prob, Rodas4())
+        @test sol.retcode == Success
+        @test sol[pt1.output.u]≈pt1_func.(sol.t, 1.2, 3.14) atol=1e-3
+
+        # Test logic for a_end by constructing an integrator
+        @named c = Constant(; k = 1)
+        @named pt1 = TransferFunction(b = [1.2], a = [3.14, 0])
+        @named iosys = ODESystem(connect(c.output, pt1.input), t, systems = [pt1, c])
+        sys = structural_simplify(iosys)
+        prob = ODEProblem(sys, Pair[pt1.a_end => 1], (0.0, 100.0))
+        sol = solve(prob, Rodas4())
+        @test sol.retcode == Success
+        @test sol[pt1.output.u] ≈ sol.t .* (1.2 / 3.14)
+        @test sol[pt1.x[1]] ≈ sol.t .* (1 / 3.14) # Test that scaling of state works properly
+
+        # Test higher order
+
+        function pt2_func(t, k, w, d)
+            y = if d == 0
+                -k * (-1 + cos(t * w))
+            else
+                d = complex(d)
+                real(k * (1 +
+                      (-cosh(sqrt(-1 + d^2) * t * w) -
+                       (d * sinh(sqrt(-1 + d^2) * t * w)) / sqrt(-1 + d^2)) /
+                      exp(d * t * w)))
+            end
+        end
+
+        k, w, d = 1.0, 1.0, 0.5
+        @named pt1 = TransferFunction(b = [w^2], a = [1, 2d * w, w^2])
+        @named iosys = ODESystem(connect(c.output, pt1.input), t, systems = [pt1, c])
+        sys = structural_simplify(iosys)
+        prob = ODEProblem(sys, Pair[pt1.a_end => 1], (0.0, 100.0))
+        sol = solve(prob, Rodas4())
+        @test sol.retcode == Success
+        @test sol[pt1.output.u]≈pt2_func.(sol.t, k, w, d) atol=1e-3
+
+        # test zeros (high-pass version of first test)
+        @named c = Constant(; k = 1)
+        @named pt1 = TransferFunction(b = [1, 0], a = [1, 1])
+        @named iosys = ODESystem(connect(c.output, pt1.input), t, systems = [pt1, c])
+        sys = structural_simplify(iosys)
+        prob = ODEProblem(sys, Pair[pt1.a_end => 1], (0.0, 100.0))
+        sol = solve(prob, Rodas4())
+        @test sol.retcode == Success
+        @test sol[pt1.output.u]≈1 .- pt1_func.(sol.t, 1, 1) atol=1e-3
+        @test sol[pt1.x[1]]≈pt1_func.(sol.t, 1, 1) atol=1e-3 # Test that scaling of state works properly
+    end
 end
