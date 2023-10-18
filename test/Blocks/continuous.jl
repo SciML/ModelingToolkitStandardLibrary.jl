@@ -1,6 +1,7 @@
 using ModelingToolkit, ModelingToolkitStandardLibrary, OrdinaryDiffEq
 using ModelingToolkitStandardLibrary.Blocks
 using OrdinaryDiffEq: ReturnCode.Success
+using Test
 
 @parameters t
 
@@ -465,5 +466,14 @@ end
         @test sol.retcode == Success
         @test sol[pt1.output.u]≈1 .- pt1_func.(sol.t, 1, 1) atol=1e-3
         @test sol[pt1.x[1]]≈pt1_func.(sol.t, 1, 1) atol=1e-3 # Test that scaling of state works properly
+
+        # Test with no state
+        @named pt1 = TransferFunction(b = [2.7], a = [pi])
+        @named iosys = ODESystem(connect(c.output, pt1.input), t, systems = [pt1, c])
+        sys = structural_simplify(iosys)
+        prob = ODEProblem(sys, Pair[pt1.a_end => 1], (0.0, 100.0))
+        sol = solve(prob, Rodas4())
+        @test sol.retcode == Success
+        @test all(==(2.7 / pi), sol[pt1.output.u])
     end
 end

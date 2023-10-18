@@ -556,7 +556,7 @@ symbolic_eps(t) = eps(t)
 """
     TransferFunction(; b, a, name)
 
-A linear time-invariant system provided as a transfer-function.
+A single input, single output, linear time-invariant system provided as a transfer-function.
 ```
 Y(s) = b(s) / a(s)  U(s)
 ```
@@ -568,13 +568,13 @@ To set the initial state, it's recommended to set the initial condition for `x`,
 
 # Parameters:
 - `b`: Numerator polynomial coefficients, e.g., `2s + 3` is specified as `[2, 3]`
-- `a`: Denomenator polynomial coefficients, e.g., `s + 2ws + w^2` is specified as `[1, 2w, w^2]`
+- `a`: Denomenator polynomial coefficients, e.g., `s² + 2ωs + ω^2` is specified as `[1, 2ω, ω^2]`
 
 # Connectors:
   - `input`
   - `output`
 
-See also [`StateSpace`](@ref) as well as [ControlSystemsMTK.jl](https://juliacontrol.github.io/ControlSystemsMTK.jl/stable/) for an interface between [ControlSystems.jl](https://juliacontrol.github.io/ControlSystems.jl/stable/) and ModelingToolkit.jl for advanced manipulation of transfer functions and linear statespace systems. For linearization, see [`linearize`](@ref) and [Linear Analysis](https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/API/linear_analysis/).
+See also [`StateSpace`](@ref) which handles MIMO systems, as well as [ControlSystemsMTK.jl](https://juliacontrol.github.io/ControlSystemsMTK.jl/stable/) for an interface between [ControlSystems.jl](https://juliacontrol.github.io/ControlSystems.jl/stable/) and ModelingToolkit.jl for advanced manipulation of transfer functions and linear statespace systems. For linearization, see [`linearize`](@ref) and [Linear Analysis](https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/API/linear_analysis/).
 """
 @component function TransferFunction(; b = [1], a = [1, 1], name)
     nb = length(b)
@@ -596,10 +596,10 @@ See also [`StateSpace`](@ref) as well as [ControlSystemsMTK.jl](https://juliacon
         ]
         a[1:na] = a,
         [
-            description = "Denominator coefficients of transfer function (e.g., s + 2ws + w^2 is specified as [1, 2w, w^2])",
+            description = "Denominator coefficients of transfer function (e.g., `s² + 2ωs + ω^2` is specified as [1, 2ω, ω^2])",
         ]
         bb[1:(nbb + nb)] = [zeros(nbb); b]
-        d = bb[1] / a[1]
+        d = bb[1] / a[1], [description = "Direct feedthrough gain"]
     end
 
     a = collect(a)
