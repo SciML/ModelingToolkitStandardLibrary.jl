@@ -26,7 +26,7 @@ export Limiter, DeadZone, SlewRateLimiter
 include("nonlinear.jl")
 
 export Integrator, Derivative, FirstOrder, SecondOrder, StateSpace
-export PI, LimPI, PID, LimPID
+export PI, LimPI, PID, PD, LimPID
 include("continuous.jl")
 
 export AnalysisPoint, get_sensitivity, get_comp_sensitivity,

@@ -1,3 +1,4 @@
+using Test
 using ModelingToolkit, ModelingToolkitStandardLibrary, OrdinaryDiffEq
 using ModelingToolkitStandardLibrary.Blocks
 using OrdinaryDiffEq: ReturnCode.Success
@@ -12,9 +13,13 @@ an integrator with a constant input is often used together with the system under
 =#
 
 @testset "Constant" begin
-    @named c = Constant(; k = 1)
-    @named int = Integrator(x = 1)
-    @named iosys = ODESystem(connect(c.output, int.input), t, systems = [int, c])
+    pars = @parameters begin
+        k = 1
+        x = 1
+    end
+    @named c = Constant(; k)
+    @named int = Integrator(; x)
+    @named iosys = ODESystem(connect(c.output, int.input), t, [], pars; systems = [int, c])
     sys = structural_simplify(iosys)
     prob = ODEProblem(sys, Pair[], (0.0, 1.0))
     sol = solve(prob, Rodas4())
@@ -167,9 +172,11 @@ end
 end
 
 @testset "PID" begin
+    @parameters Ti=0.5 Td=1 / 100
+    @named pid_controller = PID(; k = 3, Ti, Td)
+
     re_val = 2
     @named ref = Constant(; k = re_val)
-    @named pid_controller = PID(k = 3, Ti = 0.5, Td = 1 / 100)
     @named plant = Plant()
     @named fb = Feedback()
     @named model = ODESystem([
@@ -178,8 +185,7 @@ end
             connect(fb.output, pid_controller.err_input),
             connect(pid_controller.ctr_output, plant.input),
         ],
-        t,
-        systems = [pid_controller, plant, ref, fb])
+        t, [], [Ti, Td]; systems = [pid_controller, plant, ref, fb])
     sys = structural_simplify(model)
     prob = ODEProblem(sys, Pair[], (0.0, 100.0))
     sol = solve(prob, Rodas4())
@@ -188,15 +194,14 @@ end
     @test sol[plant.output.u][end]≈re_val atol=1e-3 # zero control error after 100s
 
     @testset "PI" begin
-        @named pid_controller = PID(k = 3, Ti = 0.5, Td = false)
+        @named pid_controller = PID("PI"; k = 3, Ti)
         @named model = ODESystem([
                 connect(ref.output, fb.input1),
                 connect(plant.output, fb.input2),
                 connect(fb.output, pid_controller.err_input),
                 connect(pid_controller.ctr_output, plant.input),
             ],
-            t,
-            systems = [pid_controller, plant, ref, fb])
+            t, [], [Ti]; systems = [pid_controller, plant, ref, fb])
         sys = structural_simplify(model)
         prob = ODEProblem(sys, Pair[], (0.0, 100.0))
         sol = solve(prob, Rodas4())
@@ -206,7 +211,7 @@ end
     end
 
     @testset "PD" begin
-        @named pid_controller = PID(k = 10, Ti = false, Td = 1)
+        @named pid_controller = PID("PD"; k = 10, Td = 1)
         @named model = ODESystem([
                 connect(ref.output, fb.input1),
                 connect(plant.output, fb.input2),
@@ -284,7 +289,8 @@ end
 @testset "LimPID" begin
     re_val = 1
     @named ref = Constant(; k = re_val)
-    @named pid_controller = LimPID(k = 3, Ti = 0.5, Td = 1 / 100, u_max = 1.5, u_min = -1.5,
+    @named pid_controller = LimPID(; k = 3, Ti = 0.5, Td = 1 / 100, u_max = 1.5,
+        u_min = -1.5,
         Ni = 0.1 / 0.5)
     @named plant = Plant()
     @named model = ODESystem([
@@ -305,7 +311,7 @@ end
     @test all(-1.5 .<= sol[pid_controller.ctr_output.u] .<= 1.5) # test limit
 
     @testset "PI" begin
-        @named pid_controller = LimPID(k = 3, Ti = 0.5, Td = false, u_max = 1.5,
+        @named pid_controller = LimPID(; k = 3, Ti = 0.5, Td = false, u_max = 1.5,
             u_min = -1.5, Ni = 0.1 / 0.5)
         @named model = ODESystem([
                 connect(ref.output, pid_controller.reference),
@@ -325,7 +331,7 @@ end
         @test all(-1.5 .<= sol[pid_controller.ctr_output.u] .<= 1.5) # test limit
     end
     @testset "PD" begin
-        @named pid_controller = LimPID(k = 10, Ti = false, Td = 1, u_max = 1.5,
+        @named pid_controller = LimPID(; k = 10, Ti = false, Td = 1, u_max = 1.5,
             u_min = -1.5)
         @named model = ODESystem([
                 connect(ref.output, pid_controller.reference),
@@ -346,7 +352,7 @@ end
     end
     @testset "set-point weights" begin
         @testset "wp" begin
-            @named pid_controller = LimPID(k = 3, Ti = 0.5, Td = 1 / 100, u_max = 1.5,
+            @named pid_controller = LimPID(; k = 3, Ti = 0.5, Td = 1 / 100, u_max = 1.5,
                 u_min = -1.5, Ni = 0.1 / 0.5, wp = 0, wd = 1)
             @named model = ODESystem([
                     connect(ref.output, pid_controller.reference),
@@ -367,7 +373,7 @@ end
             @test all(-1.5 .<= sol[pid_controller.ctr_output.u] .<= 1.5) # test limit
         end
         @testset "wd" begin
-            @named pid_controller = LimPID(k = 3, Ti = 0.5, Td = 1 / 100, u_max = 1.5,
+            @named pid_controller = LimPID(; k = 3, Ti = 0.5, Td = 1 / 100, u_max = 1.5,
                 u_min = -1.5, Ni = 0.1 / 0.5, wp = 1, wd = 0)
             @named model = ODESystem([
                     connect(ref.output, pid_controller.reference),
@@ -389,7 +395,7 @@ end
         end
     end
     @testset "PI without AWM" begin
-        @named pid_controller = LimPID(k = 3, Ti = 0.5, Td = false, u_max = 1.5,
+        @named pid_controller = LimPID(; k = 3, Ti = 0.5, Td = false, u_max = 1.5,
             u_min = -1.5, Ni = Inf)
         @named model = ODESystem([
                 connect(ref.output, pid_controller.reference),
