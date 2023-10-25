@@ -12,7 +12,7 @@ D = Differential(t)
 @testset "Free" begin
     function System(; name)
         systems = @named begin
-            acc = TV.Acceleration()
+            acc = TV.Acceleration(false)
             a = Constant(; k = -10, output.unit = u"m/s^2")
             mass = TV.Mass(; m = 100)
             free = TV.Free()
