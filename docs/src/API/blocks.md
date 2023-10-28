@@ -80,6 +80,7 @@ Derivative
 FirstOrder
 SecondOrder
 StateSpace
+TransferFunction
 PI
 LimPI
 PID
