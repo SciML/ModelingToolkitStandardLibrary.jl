@@ -1,6 +1,6 @@
 # Cauer Low Pass Analog Filter
 
-The example Cauer Filter is a low-pass-filter of the fifth order.
+The example Cauer Filter is a low-pass filter of the fifth order.
 It is realized using an analog network.
 The [`Electrical.Voltage`](@ref) source is the input voltage (whose value varies as defined by [`Blocks.Step`](@ref)), and the `resistor.p.v` is the filter output voltage.
 The pulse response is calculated.
