@@ -221,7 +221,7 @@ If you try and run `ODEProblem(model, (0.0, 60.0))` then you will encounter the 
 ERROR: ArgumentError: Equations (7), states (7), and initial conditions (2) are of different lengths.
 ```
 
-This occurs because dummy derivatives where generated without defined initial values.
+This occurs because dummy derivatives were generated without defined initial values.
 Thankfully, `ModelingToolkit` provides `missing_variable_defaults` as a solution to this problem.
 See [ModelingToolkit FAQ](https://docs.sciml.ai/ModelingToolkit/stable/basics/FAQ/) for more information on this and other common questions.
 
