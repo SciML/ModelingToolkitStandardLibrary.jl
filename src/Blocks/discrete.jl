@@ -458,6 +458,11 @@ With the coeffiencents specified in decreasing orders of ``z``, i.e., ``b = [b_{
 ## Connectors:
 - `input`: Input signal
 - `output`: Output signal
+
+# Extended help:
+This component supports SISO systems only. To simulate MIMO transfer functions, use [ControlSystemsBase.jl](https://juliacontrol.github.io/ControlSystems.jl/stable/man/creating_systems/) to convert the transfer function to a statespace system, optionally compute a minimal realization using [`minreal`](https://juliacontrol.github.io/ControlSystems.jl/stable/lib/constructors/#ControlSystemsBase.minreal), and then use a [`DiscreteStateSpace`](@ref) component instead.
+
+See also [ControlSystemsMTK.jl](https://juliacontrol.github.io/ControlSystemsMTK.jl/stable/) for an interface between [ControlSystems.jl](https://juliacontrol.github.io/ControlSystems.jl/stable/) and ModelingToolkit.jl for advanced manipulation of transfer functions and linear statespace systems. For linearization, see [`linearize`](@ref) and [Linear Analysis](https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/API/linear_analysis/).
 """
 @mtkmodel DiscreteTransferFunction begin
     @parameters begin
@@ -487,3 +492,5 @@ With the coeffiencents specified in decreasing orders of ``z``, i.e., ``b = [b_{
         output.u ~ y
     end
 end
+
+DiscreteTransferFunction(b, a; kwargs...) = DiscreteTransferFunction(; b, a, kwargs...)
