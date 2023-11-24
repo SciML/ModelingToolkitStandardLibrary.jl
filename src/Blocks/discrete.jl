@@ -438,3 +438,52 @@ y_k = C x_k + D (u_k - u_0) + y_0
 end
 
 DiscreteStateSpace(A, B, C, D = nothing; kwargs...) = DiscreteStateSpace(; A, B, C, D, kwargs...)
+
+
+"""
+    DiscreteTransferFunction(; b, a)
+
+A discrete-time transfer function on the form
+```math
+H(z) = \\dfrac{b_{n_b} z^{n_b} + b_{n_b-1} z^{n_b-1} + \\cdots + b_1 z + b_0}{a_{n_a} z^{n_a} + a_{n_a-1} z^{n_a-1} + \\cdots + a_1 z + a_0}
+```
+
+With the coeffiencents specified in decreasing orders of ``z``, i.e., ``b = [b_{n_b}, b_{n_b-1}, \\cdots, b_1, b_0]`` and ``a = [a_{n_a}, a_{n_a-1}, \\cdots, a_1, a_0]``.
+
+## Parameters:
+- `b`: Numerator coefficients of transfer function (e.g., z - 1 is specified as `[1,-1]`)
+- `a`: Denominator coefficients of transfer function (e.g., z^2 - 0.78z + 0.37 is specified as `[1, -0.78, 0.37]`)
+- `verbose`: Whether or not to print a warning if the numerator degree is larger than the denominator degree.
+
+## Connectors:
+- `input`: Input signal
+- `output`: Output signal
+"""
+@mtkmodel DiscreteTransferFunction begin
+    @parameters begin
+        b = [1], [description = "Numerator coefficients of transfer function (e.g., z - 1 is specified as [1,-1])"]
+        a = [1], [description = "Denominator coefficients of transfer function (e.g., z^2 - 0.78z + 0.37 is specified as [1, -0.78, 0.37])"]
+    end
+    @structural_parameters begin
+        verbose = true
+    end
+    begin
+        na = length(a)
+        nb = length(b)
+        verbose && nb > na && @warn "DiscreteTransferFunction: Numerator degree is larger than denominator degree, this is not a proper transfer function. Simulation of a model including this transfer funciton will require at least $(nb-na) samples additional delay in series. Silence this warning with verbose=false"
+        Ts = sampletime()
+    end
+    @components begin
+        input = RealInput()
+        output = RealOutput()
+    end
+    @variables begin
+        u(t) = 0.0, [description = "Input"]
+        y(t) = 0.0, [description = "Output"]
+    end
+    @equations begin
+        sum(y(z+k-1) * a[na-k+1] for k in 1:na) ~ sum(u(z+k-1) * b[nb-k+1] for k in 1:nb)
+        input.u ~ u
+        output.u ~ y
+    end
+end
