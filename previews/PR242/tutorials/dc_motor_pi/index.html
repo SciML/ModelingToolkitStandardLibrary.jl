@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>DC Motor with Speed Controller · ModelingToolkitStandardLibrary.jl</title><meta name="title" content="DC Motor with Speed Controller · ModelingToolkitStandardLibrary.jl"/><meta property="og:title" content="DC Motor with Speed Controller · ModelingToolkitStandardLibrary.jl"/><meta property="twitter:title" content="DC Motor with Speed Controller · ModelingToolkitStandardLibrary.jl"/><meta name="description" content="Documentation for ModelingToolkitStandardLibrary.jl."/><meta property="og:description" content="Documentation for ModelingToolkitStandardLibrary.jl."/><meta property="twitter:description" content="Documentation for ModelingToolkitStandardLibrary.jl."/><meta property="og:url" content="https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/tutorials/dc_motor_pi/"/><meta property="twitter:url" content="https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/tutorials/dc_motor_pi/"/><link rel="canonical" href="https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/tutorials/dc_motor_pi/"/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script><link href="../../assets/favicon.ico" rel="icon" type="image/x-icon"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img src="../../assets/logo.png" alt="ModelingToolkitStandardLibrary.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">ModelingToolkitStandardLibrary.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">ModelingToolkitStandardLibrary.jl: A Standard Library for ModelingToolkit</a></li><li><span class="tocitem">Tutorials</span><ul><li><a class="tocitem" href="../rc_circuit/">RC Circuit</a></li><li><a class="tocitem" href="../custom_component/">Custom Components</a></li><li><a class="tocitem" href="../thermal_model/">Thermal Conduction Model</a></li><li class="is-active"><a class="tocitem" href>DC Motor with Speed Controller</a><ul class="internal"><li><a class="tocitem" href="#Modeling-and-simulation"><span>Modeling and simulation</span></a></li><li><a class="tocitem" href="#Closed-loop-analysis"><span>Closed-loop analysis</span></a></li></ul></li><li><a class="tocitem" href="../input_component/">SampledData Component</a></li></ul></li><li><a class="tocitem" href="../../connectors/connections/">About Acausal Connections</a></li><li><span class="tocitem">API</span><ul><li><a class="tocitem" href="../../API/blocks/">Basic Blocks</a></li><li><a class="tocitem" href="../../API/electrical/">Electrical Components</a></li><li><a class="tocitem" href="../../API/magnetic/">Magnetic Components</a></li><li><a class="tocitem" href="../../API/mechanical/">Mechanical Components</a></li><li><a class="tocitem" href="../../API/thermal/">Thermal Components</a></li><li><a class="tocitem" href="../../API/hydraulic/">Hydraulic Components</a></li><li><a class="tocitem" href="../../API/linear_analysis/">Linear Analysis</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Tutorials</a></li><li class="is-active"><a href>DC Motor with Speed Controller</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>DC Motor with Speed Controller</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/SciML/ModelingToolkitStandardLibrary.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/SciML/ModelingToolkitStandardLibrary.jl/blob/main/docs/src/tutorials/dc_motor_pi.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="DC-Motor-with-PI-controller"><a class="docs-heading-anchor" href="#DC-Motor-with-PI-controller">DC Motor with PI-controller</a><a id="DC-Motor-with-PI-controller-1"></a><a class="docs-heading-anchor-permalink" href="#DC-Motor-with-PI-controller" title="Permalink"></a></h1><p>In this example, a PI-controller is set up for speed control of a DC-motor. An equivalent circuit diagram is depicted below.</p><p><img src="https://user-images.githubusercontent.com/50108075/196108356-0e8605e3-61a9-4006-8559-786252e55928.png" alt="DC-motor"/></p><h2 id="Modeling-and-simulation"><a class="docs-heading-anchor" href="#Modeling-and-simulation">Modeling and simulation</a><a id="Modeling-and-simulation-1"></a><a class="docs-heading-anchor-permalink" href="#Modeling-and-simulation" title="Permalink"></a></h2><p>The electrical part consists of a resistance and inductance. The coupling between the electrical and rotational domain is done via an electro-motive force (EMF) component. The voltage across the EMF is proportional to the angular velocity and the current is proportional to the torque. On the mechanical side, viscous friction in, e.g., a bearing and the inertia of the shaft is modelled.</p><p>A PI-controller with anti-windup measure should be used as a speed controller. A simulation is performed to verify the tracking performance of the controller and the disturbance rejection capabilities.</p><p>First, the needed packages are imported and the parameters of the model defined.</p><pre><code class="language-julia hljs">using ModelingToolkit
+using ModelingToolkitStandardLibrary.Electrical
+using ModelingToolkitStandardLibrary.Mechanical.Rotational
+using ModelingToolkitStandardLibrary.Blocks
+using OrdinaryDiffEq
+using Plots
+
+@parameters t
+
+R = 0.5 # [Ohm] armature resistance
+L = 4.5e-3 # [H] armature inductance
+k = 0.5 # [N.m/A] motor constant
+J = 0.02 # [kg.m²] inertia
+f = 0.01 # [N.m.s/rad] friction factor
+tau_L_step = -0.3 # [N.m] amplitude of the load torque step</code></pre><p>The actual model can now be composed.</p><pre><code class="language-julia hljs">@named ground = Ground()
+@named source = Voltage()
+@named ref = Blocks.Step(height = 1, start_time = 0)
+@named pi_controller = Blocks.LimPI(k = 1.1, T = 0.035, u_max = 10, Ta = 0.035)
+@named feedback = Blocks.Feedback()
+@named R1 = Resistor(R = R)
+@named L1 = Inductor(L = L)
+@named emf = EMF(k = k)
+@named fixed = Fixed()
+@named load = Torque()
+@named load_step = Blocks.Step(height = tau_L_step, start_time = 3)
+@named inertia = Inertia(J = J)
+@named friction = Damper(d = f)
+@named speed_sensor = SpeedSensor()
+
+connections = [connect(fixed.flange, emf.support, friction.flange_b)
+    connect(emf.flange, friction.flange_a, inertia.flange_a)
+    connect(inertia.flange_b, load.flange)
+    connect(inertia.flange_b, speed_sensor.flange)
+    connect(load_step.output, load.tau)
+    connect(ref.output, feedback.input1)
+    connect(speed_sensor.w, :y, feedback.input2)
+    connect(feedback.output, pi_controller.err_input)
+    connect(pi_controller.ctr_output, :u, source.V)
+    connect(source.p, R1.p)
+    connect(R1.n, L1.p)
+    connect(L1.n, emf.p)
+    connect(emf.n, source.n, ground.g)]
+
+@named model = ODESystem(connections, t,
+    systems = [
+        ground,
+        ref,
+        pi_controller,
+        feedback,
+        source,
+        R1,
+        L1,
+        emf,
+        fixed,
+        load,
+        load_step,
+        inertia,
+        friction,
+        speed_sensor,
+    ])</code></pre><p>Now the model can be simulated. Typical rotational mechanical systems are described via <code>DAE</code> (differential algebraic equations), however in this case, ModelingToolkit can simplify the model enough so that it can be represented as a system of <code>ODEs</code> (ordinary differential equations).</p><pre><code class="language-julia hljs">sys = structural_simplify(model)
+prob = ODEProblem(sys, [], (0, 6.0))
+sol = solve(prob, Rodas4())
+
+p1 = Plots.plot(sol.t, sol[inertia.w], ylabel = &quot;Angular Vel. in rad/s&quot;,
+    label = &quot;Measurement&quot;, title = &quot;DC Motor with Speed Controller&quot;)
+Plots.plot!(sol.t, sol[ref.output.u], label = &quot;Reference&quot;)
+p2 = Plots.plot(sol.t, sol[load.tau.u], ylabel = &quot;Disturbance in Nm&quot;, label = &quot;&quot;)
+Plots.plot(p1, p2, layout = (2, 1))</code></pre><img src="f47445b0.svg" alt="Example block output"/><h2 id="Closed-loop-analysis"><a class="docs-heading-anchor" href="#Closed-loop-analysis">Closed-loop analysis</a><a id="Closed-loop-analysis-1"></a><a class="docs-heading-anchor-permalink" href="#Closed-loop-analysis" title="Permalink"></a></h2><p>When implementing and tuning a control system in simulation, it is a good practice to analyze the closed-loop properties and verify robustness of the closed-loop with respect to, e.g., modeling errors. To facilitate this, we added two analysis points to the set of connections above, more specifically, we added the analysis points named <code>:y</code> and <code>:u</code> to the connections (for more details on analysis points, see <a href="../../API/linear_analysis/#Linear-Analysis">Linear Analysis</a>)</p><pre><code class="language-julia hljs">connect(speed_sensor.w, :y, feedback.input2)
+connect(pi_controller.ctr_output, :u, source.V)</code></pre><p>one at the plant output (<code>:y</code>) and one at the plant input (<code>:u</code>). We may use these analysis points to calculate, e.g., sensitivity functions, illustrated below. Here, we calculate the sensitivity function <span>$S(s)$</span> and the complimentary sensitivity function <span>$T(s) = I - S(s)$</span>, defined as</p><p class="math-container">\[\begin{aligned}
+S(s) &amp;= \dfrac{1}{I + P(s)C(s)} \\
+T(s) &amp;= \dfrac{P(s)C(s)}{I + P(s)C(s)}
+\end{aligned}\]</p><pre><code class="language-julia hljs">using ControlSystemsBase
+matrices_S, simplified_sys = Blocks.get_sensitivity(model, :y)
+So = ss(matrices_S...) |&gt; minreal # The output-sensitivity function as a StateSpace system
+matrices_T, simplified_sys = Blocks.get_comp_sensitivity(model, :y)
+To = ss(matrices_T...)# The output complementary sensitivity function as a StateSpace system
+bodeplot([So, To], label = [&quot;S&quot; &quot;T&quot;], plot_title = &quot;Sensitivity functions&quot;,
+    plotphase = false)</code></pre><img src="0a311e4a.svg" alt="Example block output"/><p>Similarly, we may compute the loop-transfer function and plot its Nyquist curve</p><pre><code class="language-julia hljs">matrices_L, simplified_sys = Blocks.get_looptransfer(model, :y)
+L = -ss(matrices_L...) # The loop-transfer function as a StateSpace system. The negative sign is to negate the built-in negative feedback
+Ms, ωMs = hinfnorm(So) # Compute the peak of the sensitivity function to draw a circle in the Nyquist plot
+nyquistplot(L, label = &quot;\$L(s)\$&quot;, ylims = (-2.5, 0.5), xlims = (-1.2, 0.1),
+    Ms_circles = Ms)</code></pre><img src="c7d2246d.svg" alt="Example block output"/></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../thermal_model/">« Thermal Conduction Model</a><a class="docs-footer-nextpage" href="../input_component/">SampledData Component »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="auto">Automatic (OS)</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.1.2 on <span class="colophon-date" title="Friday 24 November 2023 08:19">Friday 24 November 2023</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
