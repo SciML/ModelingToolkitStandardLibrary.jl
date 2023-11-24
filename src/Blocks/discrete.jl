@@ -13,13 +13,11 @@ where `T_s` is the sample time of the integrator.
 Initial value of integrator state ``x`` can be set with `x`
 
 # Connectors:
-
-  - `input`
-  - `output`
+- `input`
+- `output`
 
 # Parameters:
-
-  - `k`: Gain of integrator
+ - `k`: Gain of integrator
 """
 @mtkmodel DiscreteIntegrator begin
     @extend u, y = siso = SISO()
@@ -47,6 +45,21 @@ Initial value of integrator state ``x`` can be set with `x`
     end
 end
 
+"""
+    DiscreteDerivative(; k = 1)
+
+A discrete-time derivative filter, corresponding to the transfer function
+``k (z-1) / (T_s z)``
+
+where `T_s` is the sample time of the derivative filter.
+
+# Connectors:
+- `input`
+- `output`
+
+# Parameters:
+ - `k`: Gain of derivative filter
+"""
 @mtkmodel DiscreteDerivative begin
     @extend u, y = siso = SISO()
     @parameters begin
@@ -60,7 +73,18 @@ end
     end
 end
 
+"""
+    Delay(; n = 1)
 
+A discrete-time delay of `n` samples, corresponding to the transfer function ``z^{-n}``.
+
+# Connectors:
+- `input`
+- `output`
+
+# Parameters:
+ - `n`: Number of delay samples
+"""
 @mtkmodel Delay begin
     @extend u, y = siso = SISO()
     @parameters begin
@@ -71,6 +95,15 @@ end
     end
 end
 
+"""
+    Difference()
+
+A discrete-tiem difference operator, corresponding to the transfer function ``1 - z^{-1}``.
+
+# Connectors:
+- `input`
+- `output`
+"""
 @mtkmodel Difference begin
     @extend u, y = siso = SISO()
     @equations begin
@@ -78,7 +111,15 @@ end
     end
 end
 
+"""
+    ZeroOrderHold()
 
+Zero-order-Hold translates a discrete time (clocked) signal into continuous time by holding the value of the discrete signal constant until the next sample.
+
+# Connectors:
+- `input` (discrete-time signal)
+- `output` (continuous-time signal)
+"""
 @mtkmodel ZeroOrderHold begin
     @extend u, y = siso = SISO()
     @equations begin
@@ -86,6 +127,15 @@ end
     end
 end
 
+"""
+    Sampler()
+
+Sampler translates a continuous-time signal into discrete time by sampling the input signal every time the associated clock ticks.
+
+# Connectors:
+- `input` (continuous-time signal)
+- `output` (discrete-time signal)
+"""
 @mtkmodel Sampler begin
     @extend u, y = siso = SISO()
     # @parameters begin
@@ -95,9 +145,6 @@ end
         y ~ Sample(t)(u)
     end
 end
-
-
-
 
 
 """
@@ -445,7 +492,7 @@ DiscreteStateSpace(A, B, C, D = nothing; kwargs...) = DiscreteStateSpace(; A, B,
 
 A discrete-time transfer function on the form
 ```math
-H(z) = \\dfrac{b_{n_b} z^{n_b} + b_{n_b-1} z^{n_b-1} + \\cdots + b_1 z + b_0}{a_{n_a} z^{n_a} + a_{n_a-1} z^{n_a-1} + \\cdots + a_1 z + a_0}
+H(z) = \\dfrac{B(z)}{A(z)} = \\dfrac{b_{n_b} z^{n_b} + b_{n_b-1} z^{n_b-1} + \\cdots + b_1 z + b_0}{a_{n_a} z^{n_a} + a_{n_a-1} z^{n_a-1} + \\cdots + a_1 z + a_0}
 ```
 
 With the coeffiencents specified in decreasing orders of ``z``, i.e., ``b = [b_{n_b}, b_{n_b-1}, \\cdots, b_1, b_0]`` and ``a = [a_{n_a}, a_{n_a-1}, \\cdots, a_1, a_0]``.
@@ -483,8 +530,8 @@ See also [ControlSystemsMTK.jl](https://juliacontrol.github.io/ControlSystemsMTK
         output = RealOutput()
     end
     @variables begin
-        u(t) = 0.0, [description = "Input"]
-        y(t) = 0.0, [description = "Output"]
+        u(t) = 0.0, [description = "Input flowing through connector `input`"]
+        y(t) = 0.0, [description = "Output flowing through connector `output`"]
     end
     @equations begin
         sum(y(z+k-1) * a[na-k+1] for k in 1:na) ~ sum(u(z+k-1) * b[nb-k+1] for k in 1:nb)

@@ -622,8 +622,8 @@ See also [`StateSpace`](@ref) which handles MIMO systems, as well as [ControlSys
         x(t)[1:nx] = zeros(nx),
         [description = "State of transfer function on controller canonical form"]
         x_scaled(t)[1:nx] = collect(x) * a_end, [description = "Scaled vector x"]
-        u(t), [description = "Input of transfer function"]
-        y(t), [description = "Output of transfer function"]
+        u(t), [description = "Input flowing through connector `input`"]
+        y(t), [description = "Output flowing through connector `output`"]
     end
 
     x = collect(x)
