@@ -1,7 +1,7 @@
 z = ShiftIndex()
 
 """
-    Integrator(;name, k = 1, x = 0.0, method = :forward)
+    DiscreteIntegrator(;name, k = 1, x = 0.0, method = :forward)
 
 Outputs `y = ∫k*u dt`, corresponding to the discrete-time transfer function
 - `method = :forward`: ``T_s / (z - 1)``
@@ -38,7 +38,7 @@ Initial value of integrator state ``x`` can be set with `x`
             I(z) ~ I(z-1) + k * Ts * u(z-1)
         elseif method === :backward
             I(z) ~ I(z-1) + k * Ts * u(z)
-        elseif method === :trapezoidal
+        elseif method ∈ (:trapezoidal, :tustin)
             I(z) ~ I(z-1) + k * Ts * (u(z) + u(z-1)) / 2
         end
         y ~ I(z)
@@ -408,7 +408,7 @@ To use the controller in 1DOF mode, i.e., with only the control error as input, 
                 I(z) ~ I(z-1) + Ts * ki * eI(z-1)
             elseif Imethod === :backward
                 I(z) ~ I(z-1) + Ts * ki * eI(z)
-            elseif Imethod === :trapezoidal
+            elseif Imethod ∈ (:trapezoidal, :tustin)
                 I(z) ~ I(z-1) + Ts * ki * (eI(z) + eI(z-1)) / 2
             else
                 error("Unknown integrator discretization method $Imethod, must be one of :forward, :backward, :trapezoidal")
