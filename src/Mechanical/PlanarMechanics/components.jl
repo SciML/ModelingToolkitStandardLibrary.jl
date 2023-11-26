@@ -12,6 +12,8 @@ Frame fixed in the planar world frame at a given position and orientation
 # Connectors:
 
   - `frame: 2-dim. Coordinate system
+
+https://github.com/dzimmer/PlanarMechanics/blob/743462f58858a808202be93b708391461cbe2523/PlanarMechanics/Parts/Fixed.mo
 """
 @mtkmodel Fixed begin
     @parameters begin
@@ -58,6 +60,8 @@ Body component with mass and inertia
 # Connectors:
 
   - `frame`: 2-dim. Coordinate system
+
+https://github.com/dzimmer/PlanarMechanics/blob/743462f58858a808202be93b708391461cbe2523/PlanarMechanics/Parts/Body.mo
 """
 @component function Body(; name, m, j, rx = 0, ry = 0, gy = -9.807)
     @named frame = Frame()
@@ -115,9 +119,11 @@ A fixed translation between two components (rigid rod)
   - `ry`: [m] Fixed y-length of the rod resolved w.r.t to body frame_a at phi = 0
 
 # Connectors:
-    
+
       - `frame_a` [Frame](@ref) Coordinate system fixed to the component with one cut-force and cut-torque
       - `frame_b` [Frame](@ref) Coordinate system fixed to the component with one cut-force and cut-torque
+
+https://github.com/dzimmer/PlanarMechanics/blob/743462f58858a808202be93b708391461cbe2523/PlanarMechanics/Parts/FixedTranslation.mo
 """
 @mtkmodel FixedTranslation begin
     @extend frame_a, frame_b = partial_frames = PartialTwoFrames()
@@ -141,12 +147,12 @@ A fixed translation between two components (rigid rod)
 
     @equations begin
         # rigidly connect positions
-        frame_a.x + r0[1] ~ frame_b.x
-        frame_a.y + r0[2] ~ frame_b.y
+        frame_a.x + rx ~ frame_b.x
+        frame_a.y + ry ~ frame_b.y
         frame_a.phi ~ frame_b.phi
         # balancing force including lever principle
         frame_a.fx + frame_b.fx ~ 0
         frame_a.fy + frame_b.fy ~ 0
-        frame_a.j + frame_b.j + r0[1] * frame_b.fy - r0[2] * frame_b.fx ~ 0
+        frame_a.j + frame_b.j + r0' * [frame_b.fy, -frame_b.fx] ~ 0
     end
 end

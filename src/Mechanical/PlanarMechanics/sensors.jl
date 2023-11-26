@@ -309,9 +309,9 @@ Measure relative position and orientation between the origins of two frame conne
 end
 
 @component function BasicTransformAbsoluteVector(;
-    name,
-    frame_in = :frame_a,
-    frame_out = frame_in)
+        name,
+        frame_in = :frame_a,
+        frame_out = frame_in)
     @named x_in = RealInput()
     @named y_in = RealInput()
     @named phi_in = RealInput()
@@ -399,9 +399,9 @@ end
 end
 
 @component function TransformAbsoluteVector(;
-    name,
-    frame_in = :frame_a,
-    frame_out = frame_in)
+        name,
+        frame_in = :frame_a,
+        frame_out = frame_in)
     @named frame_a = Frame()
 
     @named x_in = RealInput()
@@ -493,9 +493,9 @@ end
 end
 
 @component function BasicTransformRelativeVector(;
-    name,
-    frame_in = :frame_a,
-    frame_out = frame_in)
+        name,
+        frame_in = :frame_a,
+        frame_out = frame_in)
     @named x_in = RealInput()
     @named y_in = RealInput()
     @named phi_in = RealInput()
@@ -578,9 +578,9 @@ end
 end
 
 @component function TransformRelativeVector(;
-    name,
-    frame_in = :frame_a,
-    frame_out = frame_in)
+        name,
+        frame_in = :frame_a,
+        frame_out = frame_in)
     @named x_in = RealInput()
     @named y_in = RealInput()
     @named phi_in = RealInput()
