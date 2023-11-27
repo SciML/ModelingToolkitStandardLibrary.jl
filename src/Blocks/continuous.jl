@@ -1,8 +1,8 @@
 """
     Integrator(;name, k = 1, x = 0.0)
 
-Outputs `y = ∫k*u dt`, corresponding to the transfer function `1/s`.
-Initial value of integrator state `x` can be set with `x`
+Outputs `y = ∫k*u dt`, corresponding to the transfer function ``1/s``.
+Initial value of integrator state ``x`` can be set with `x`
 
 # Connectors:
 
@@ -19,7 +19,7 @@ Initial value of integrator state `x` can be set with `x`
         x(t) = 0.0, [description = "State of Integrator"]
     end
     @parameters begin
-        k = 1, [description = "Gain of Integrator"]
+        k = 1, [description = "Gain"]
     end
     @equations begin
         D(x) ~ k * u
@@ -30,7 +30,7 @@ end
     Derivative(; name, k = 1, T, x = 0.0)
 
 Outputs an approximate derivative of the input. The transfer function of this block is
-Initial value of the state `x` can be set with `x`
+Initial value of the state ``x`` can be set with `x`
 
 ```
 k       k
@@ -57,11 +57,11 @@ A smaller `T` leads to a more ideal approximation of the derivative.
 @mtkmodel Derivative begin
     @extend u, y = siso = SISO()
     @variables begin
-        x(t) = 0.0, [description = "State of Derivative"]
+        x(t) = 0.0, [description = "Derivative-filter state"]
     end
     @parameters begin
-        T = T, [description = "Time constant of Derivative"]
-        k = 1, [description = "Gain of Derivative"]
+        T = T, [description = "Time constant"]
+        k = 1, [description = "Gain"]
     end
     begin
         @symcheck T > 0 ||
@@ -77,8 +77,8 @@ end
     FirstOrder(; name, k = 1.0, T, x = 0.0, lowpass = true)
 
 A first-order filter with a single real pole in `s = -T` and gain `k`. If `lowpass=true` (default), the transfer function
-is given by `Y(s)/U(s) = `
-Initial value of the state `x` can be set with `x`
+is given by ``Y(s)/U(s) = ``
+
 
 ```
    k
@@ -94,10 +94,12 @@ sT + 1 - k
   sT + 1
 ```
 
+Initial value of the state `x` can be set with `x`
+
 # Parameters:
 
   - `k`: Gain
-  - `T`: [s] Time constants (T>0 required)
+  - `T`: [s] Time constant (T>0 required)
 
 # Connectors:
 
@@ -108,13 +110,15 @@ See also [`SecondOrder`](@ref)
 """
 @mtkmodel FirstOrder begin
     @extend u, y = siso = SISO()
+    @structural_parameters begin
+        lowpass = true
+    end
     @variables begin
         x(t) = 0.0, [description = "State of FirstOrder filter"]
     end
     @parameters begin
-        lowpass = true
-        T = T, [description = "Time constant of FirstOrder filter"]
-        k = 1.0, [description = "Gain of FirstOrder"]
+        T = T, [description = "Time constant"]
+        k = 1.0, [description = "Gain"]
     end
     begin
         @symcheck T > 0 ||
@@ -122,12 +126,12 @@ See also [`SecondOrder`](@ref)
     end
     @equations begin
         D(x) ~ (k * u - x) / T
-        getdefault(lowpass) ? y ~ x : y ~ k * u - x
+        lowpass ? y ~ x : y ~ k * u - x
     end
 end
 
 """
-    SecondOrder(; name, k = 1.0, w, d, x = 0.0, xd = 0.0)
+    SecondOrder(; name, k = 1.0, w = 1.0, d = 1.0, x = 0.0, xd = 0.0)
 
 A second-order filter with gain `k`, a bandwidth of `w` rad/s and relative damping `d`. The transfer function
 is given by `Y(s)/U(s) = `
@@ -160,9 +164,9 @@ Initial value of the state `x` can be set with `x`, and of derivative state `xd`
         xd(t) = 0.0, [description = "Derivative state of SecondOrder filter"]
     end
     @parameters begin
-        k = 1.0, [description = "Gain of SecondOrder"]
-        w, [description = "Bandwidth of SecondOrder"]
-        d, [description = "Relative damping of SecondOrder"]
+        k = 1.0, [description = "Gain"]
+        w = 1.0, [description = "Bandwidth (angular frequency)"]
+        d = 1.0, [description = "Relative damping"]
     end
     @equations begin
         D(x) ~ xd
@@ -172,14 +176,19 @@ Initial value of the state `x` can be set with `x`, and of derivative state `xd`
 end
 
 """
-    PI(;name, gainPI.k = 1.0, T, int.x = 0.0)
+    PI(;name, k = 1.0, T = 1.0, int.x = 0.0)
 
 Textbook version of a PI-controller without actuator saturation and anti-windup measure.
-The proportional gain can be set with `gainPI.k`
+The proportional gain can be set with `k`
 Initial value of integrator state `x` can be set with `int.x`
 
-# Parameters:
+The PI controller is implemented on standard form:
+```math
+U(s) = k (1 + \\dfrac{1}{sT}) E(S)
+```
 
+# Parameters:
+  - `k`: Proportional gain
   - `T`: [s] Integrator time constant (T>0 required)
 
 # Connectors:
@@ -191,7 +200,8 @@ See also [`LimPI`](@ref)
 """
 @mtkmodel PI begin
     @parameters begin
-        T, [description = "Integrator time constant"]
+        k = 1.0, [description = "Proportional gain"]
+        T = 1.0, [description = "Integrator time constant"]
     end
     begin
         @symcheck T > 0 ||
@@ -200,7 +210,7 @@ See also [`LimPI`](@ref)
     @components begin
         err_input = RealInput() # control error
         ctr_output = RealOutput() # control signal
-        gainPI = Gain(; k = 1.0)
+        gainPI = Gain(; k)
         addPI = Add()
         int = Integrator(k = 1 / T, x = 0.0)
     end
@@ -293,6 +303,12 @@ end
     LimPI(; name, k = 1.0, T, Ta, int__x = 0.0, u_max = 1.0, u_min = -u_max)
 
 Text-book version of a PI-controller with actuator saturation and anti-windup measure.
+
+The PI controller is implemented on standard form
+```math
+u(t) = sat(k (e(t) + ∫\\dfrac{1}{T}e(t) dt) )
+```
+The simplified expression above is given without the anti-windup protection.
 
 # Parameters:
 
@@ -537,3 +553,85 @@ linearized around the operating point `x₀, u₀`, we have `y0, u0 = h(x₀, u�
 end
 
 StateSpace(A, B, C, D = nothing; kwargs...) = StateSpace(; A, B, C, D, kwargs...)
+
+symbolic_eps(t) = eps(t)
+@register_symbolic symbolic_eps(t)
+
+"""
+    TransferFunction(; b, a, name)
+
+A single input, single output, linear time-invariant system provided as a transfer-function.
+```
+Y(s) = b(s) / a(s)  U(s)
+```
+where `b` and `a` are vectors of coefficients of the numerator and denominator polynomials, respectively, ordered such that the coefficient of the highest power of `s` is first.
+
+The internal state realization is on controller canonical form, with state variable `x`, output variable `y` and input variable `u`. For numerical robustness, the realization used by the integrator is scaled by the last entry of the `a` parameter. The internally scaled state variable is available as `x_scaled`.
+
+To set the initial state, it's recommended to set the initial condition for `x`, and let that of `x_scaled` be computed automatically.
+
+# Parameters:
+- `b`: Numerator polynomial coefficients, e.g., `2s + 3` is specified as `[2, 3]`
+- `a`: Denomenator polynomial coefficients, e.g., `s² + 2ωs + ω^2` is specified as `[1, 2ω, ω^2]`
+
+# Connectors:
+  - `input`
+  - `output`
+
+See also [`StateSpace`](@ref) which handles MIMO systems, as well as [ControlSystemsMTK.jl](https://juliacontrol.github.io/ControlSystemsMTK.jl/stable/) for an interface between [ControlSystems.jl](https://juliacontrol.github.io/ControlSystems.jl/stable/) and ModelingToolkit.jl for advanced manipulation of transfer functions and linear statespace systems. For linearization, see [`linearize`](@ref) and [Linear Analysis](https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/API/linear_analysis/).
+"""
+@component function TransferFunction(; b = [1], a = [1, 1], name)
+    nb = length(b)
+    na = length(a)
+    nb <= na ||
+        error("Transfer function is not proper, the numerator must not be longer than the denominator")
+    nx = na - 1
+    nbb = max(0, na - nb)
+
+    @named begin
+        input = RealInput()
+        output = RealOutput()
+    end
+
+    @parameters begin
+        b[1:nb] = b,
+        [
+            description = "Numerator coefficients of transfer function (e.g., 2s + 3 is specified as [2,3])",
+        ]
+        a[1:na] = a,
+        [
+            description = "Denominator coefficients of transfer function (e.g., `s² + 2ωs + ω^2` is specified as [1, 2ω, ω^2])",
+        ]
+        bb[1:(nbb + nb)] = [zeros(nbb); b]
+        d = bb[1] / a[1], [description = "Direct feedthrough gain"]
+    end
+
+    a = collect(a)
+    @parameters a_end = ifelse(a[end] > 100 * symbolic_eps(sqrt(a' * a)), a[end], 1.0)
+
+    pars = [collect(b); a; collect(bb); d; a_end]
+    @variables begin
+        x(t)[1:nx] = zeros(nx),
+        [description = "State of transfer function on controller canonical form"]
+        x_scaled(t)[1:nx] = collect(x) * a_end, [description = "Scaled vector x"]
+        u(t), [description = "Input of transfer function"]
+        y(t), [description = "Output of transfer function"]
+    end
+
+    x = collect(x)
+    x_scaled = collect(x_scaled)
+
+    sts = [x; x_scaled; y; u]
+
+    if nx == 0
+        eqs = [y ~ d * u]
+    else
+        eqs = [D(x_scaled[1]) ~ (-a[2:na]'x_scaled + a_end * u) / a[1]
+            D.(x_scaled[2:nx]) .~ x_scaled[1:(nx - 1)]
+            y ~ ((bb[2:na] - d * a[2:na])'x_scaled) / a_end + d * u
+            x .~ x_scaled ./ a_end]
+    end
+    push!(eqs, input.u ~ u)
+    push!(eqs, output.u ~ y)
+    compose(ODESystem(eqs, t, sts, pars; name = name), input, output)
+end
