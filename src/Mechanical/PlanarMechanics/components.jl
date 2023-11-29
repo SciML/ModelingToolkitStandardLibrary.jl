@@ -150,3 +150,66 @@ A fixed translation between two components (rigid rod)
         frame_a.j + frame_b.j + r0[1] * frame_b.fy - r0[2] * frame_b.fx ~ 0
     end
 end
+
+"""
+
+https://github.com/dzimmer/PlanarMechanics/blob/743462f58858a808202be93b708391461cbe2523/PlanarMechanics/Parts/SpringDamper.mo#L154C20-L154C20
+"""
+@mtkmodel SpringDamper begin
+    @extend frame_a, frame_b = partial_frames = PartialTwoFrames()
+
+    @parameters begin
+        c_x = 1, [description = "Spring constant in x dir"]
+        c_y = 1, [description = "Spring constant in y dir"]
+        c_phi = 1.0e5, [description = "Spring constant in phi dir"]
+        d_x = 1, [description = "Damping constant in x dir"]
+        d_y = 1, [description = "Damping constant in y dir"]
+        d_phi = 1, [description = "Damping constant in phi dir"]
+        s_relx0 = 0, [description = "Unstretched spring length"]
+        s_rely0 = 0, [description = "Unstretched spring length"]
+        phi_rel0 = 0, [description = "Unstretched spring length"]
+        s_small = 1.e-10,
+        [
+            description = "Prevent zero-division if distance between frame_a and frame_b is zero",
+        ]
+    end
+
+    @variables begin
+        v_relx(t)
+        v_rely(t)
+        ω_rel(t) = 0
+        s_relx(t)
+        s_rely(t)
+        phi_rel(t) = 0
+        f_x(t)
+        f_y(t)
+        j(t)
+    end
+
+    begin
+        r_rel_0 = [s_relx, s_rely, 0]
+        l = sqrt(r_rel_0' * r_rel_0)
+        e_rel_0 = r_rel_0 / max(l, s_small)
+    end
+
+    @equations begin
+        s_relx ~ frame_b.x - frame_a.x
+        s_rely ~ frame_b.y - frame_a.y
+        phi_rel ~ frame_b.phi - frame_a.phi
+        v_relx ~ D(s_relx)
+        v_rely ~ D(s_rely)
+        ω_rel ~ D(phi_rel)
+
+        j ~ c_phi * (phi_rel - phi_rel0) + d_phi * ω_rel
+        frame_a.j ~ -j
+        frame_b.j ~ j
+        f_x ~ c_x * (s_relx - s_relx0) + d_x * v_relx
+        f_y ~ c_y * (s_rely - s_rely0) + d_y * v_rely
+        frame_a.fx ~ -f_x
+        frame_b.fx ~ f_x
+        frame_a.fy ~ -f_y
+        frame_b.fy ~ f_y
+
+        # lossPower ~ d_x * v_relx * v_relx + d_y * v_rely * v_rely
+    end
+end

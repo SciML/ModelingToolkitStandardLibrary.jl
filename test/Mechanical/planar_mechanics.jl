@@ -207,3 +207,40 @@ end
 end
 
 @testset "Measure Demo" begin end
+
+@testset "SpringDamper" begin
+    # https://github.com/dzimmer/PlanarMechanics/blob/master/PlanarMechanics/Examples/SpringDamperDemo.mo
+    @named spring_damper = SpringDamper(;
+        s_relx0 = 0,
+        d_y = 1,
+        s_rely0 = 0,
+        d_phi = 0,
+        c_y = 5,
+        c_x = 5,
+        d_x = 1,
+        c_phi = 0)
+    @named body = Body(; j = 0.1, m = 0.5, rx = 1, ry = 1)
+    @named fixed = Fixed()
+    @named fixed_translation = FixedTranslation(; rx = -1, ry = 0)
+
+    connections = [
+        connect(fixed.frame, fixed_translation.frame_a),
+        connect(fixed_translation.frame_b, spring_damper.frame_a),
+        connect(spring_damper.frame_b, body.frame),
+    ]
+    @named model = ODESystem(connections,
+        t,
+        [],
+        [],
+        systems = [
+            spring_damper,
+            body,
+            fixed,
+            fixed_translation,
+        ])
+    sys = structural_simplify(model)
+    unset_vars = setdiff(states(sys), keys(ModelingToolkit.defaults(sys)))
+    prob = ODEProblem(sys, unset_vars .=> 0.0, (0, 5), []; jac = true)
+    sol = solve(prob, Rodas5P())
+    @test SciMLBase.successful_retcode(sol)
+end

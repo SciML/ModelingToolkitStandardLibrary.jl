@@ -16,7 +16,7 @@ D = Differential(t)
 export Frame, FrameResolve, PartialTwoFrames, ZeroPosition
 include("utils.jl")
 
-export Fixed, Body, FixedTranslation
+export Fixed, Body, FixedTranslation, SpringDamper
 include("components.jl")
 
 export Revolute, Prismatic
