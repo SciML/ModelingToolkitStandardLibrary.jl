@@ -1,6 +1,5 @@
 using ModelingToolkit, OrdinaryDiffEq, Test
 using ModelingToolkitStandardLibrary.Mechanical.PlanarMechanics
-# using Plots
 
 @parameters t
 D = Differential(t)
@@ -237,6 +236,41 @@ end
             body,
             fixed,
             fixed_translation,
+        ])
+    sys = structural_simplify(model)
+    unset_vars = setdiff(states(sys), keys(ModelingToolkit.defaults(sys)))
+    prob = ODEProblem(sys, unset_vars .=> 0.0, (0, 5), []; jac = true)
+    sol = solve(prob, Rodas5P())
+    @test SciMLBase.successful_retcode(sol)
+end
+
+@testset "Spring and damper demo" begin
+    # https://github.com/dzimmer/PlanarMechanics/blob/743462f58858a808202be93b708391461cbe2523/PlanarMechanics/Examples/SpringDemo.mo
+    @named body = Body(; m = 0.5, j = 0.1)
+    @named fixed = Fixed()
+    @named spring = Spring(; c_y = 10, s_rely0 = -0.5, c_x = 1, c_phi = 1e5)
+    @named damper = Damper(d = 1)
+    @named prismatic = Prismatic(; x = 0, y = 1)
+
+    connections = [
+        connect(fixed.frame, spring.frame_a),
+        connect(spring.frame_b, body.frame),
+        connect(damper.frame_a, spring.frame_a),
+        connect(damper.frame_b, spring.frame_b),
+        connect(spring.frame_a, prismatic.frame_a),
+        connect(prismatic.frame_b, spring.frame_b),
+    ]
+
+    @named model = ODESystem(connections,
+        t,
+        [],
+        [],
+        systems = [
+            body,
+            fixed,
+            spring,
+            damper,
+            prismatic,
         ])
     sys = structural_simplify(model)
     unset_vars = setdiff(states(sys), keys(ModelingToolkit.defaults(sys)))

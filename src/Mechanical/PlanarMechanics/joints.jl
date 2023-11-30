@@ -22,11 +22,11 @@ A revolute joint
 
 """
 @component function Revolute(;
-    name,
-    constant_phi = nothing,
-    constant_ω = nothing,
-    constat_tau = nothing,
-    use_flange = false)
+        name,
+        constant_phi = nothing,
+        constant_ω = nothing,
+        constat_tau = nothing,
+        use_flange = false)
     @named partial_frames = PartialTwoFrames()
     @unpack frame_a, frame_b = partial_frames
     @named fixed = Rotational.Fixed()
@@ -98,12 +98,12 @@ A prismatic joint
   - `support` [Support](@ref) if `use_flange == true`
 """
 @component function Prismatic(;
-    name,
-    x,
-    y,
-    constant_f = 0,
-    constant_s = 0,
-    use_flange = false)
+        name,
+        x,
+        y,
+        constant_f = 0,
+        constant_s = 0,
+        use_flange = false)
     @named partial_frames = PartialTwoFrames()
     @unpack frame_a, frame_b = partial_frames
     @named fixed = TranslationalModelica.Support()
@@ -129,7 +129,7 @@ A prismatic joint
     r0 = e0 * s
 
     eqs = [
-        ifelse(constant_s === nothing, s ~ s, s ~ constant_s),
+        # ifelse(constant_s === nothing, s ~ s, s ~ constant_s),
         ifelse(constant_f === nothing, f ~ f, f ~ constant_f),
         v ~ D(s),
         a ~ D(v),
