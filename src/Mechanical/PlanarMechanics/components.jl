@@ -107,6 +107,7 @@ end
 
 """
     FixedTranslation(; name, r::AbstractArray, l)
+
 A fixed translation between two components (rigid rod)
 
 # Parameters:
@@ -116,8 +117,8 @@ A fixed translation between two components (rigid rod)
 
 # Connectors:
     
-      - `frame_a` [Frame](@ref) Coordinate system fixed to the component with one cut-force and cut-torque
-      - `frame_b` [Frame](@ref) Coordinate system fixed to the component with one cut-force and cut-torque
+    - `frame_a` [Frame](@ref) Coordinate system fixed to the component with one cut-force and cut-torque
+    - `frame_b` [Frame](@ref) Coordinate system fixed to the component with one cut-force and cut-torque
 """
 @mtkmodel FixedTranslation begin
     @extend frame_a, frame_b = partial_frames = PartialTwoFrames()
@@ -152,8 +153,30 @@ A fixed translation between two components (rigid rod)
 end
 
 """
+    SpringDamper(; name, c_x = 1, c_y = 1, c_phi = 1e5, d_x = 1, d_y = 1, d_phi = 1, s_relx0 = 0, s_rely0 = 0, phi_rel0 = 0, s_small = 1.e-10)
 
-https://github.com/dzimmer/PlanarMechanics/blob/743462f58858a808202be93b708391461cbe2523/PlanarMechanics/Parts/SpringDamper.mo#L154C20-L154C20
+Linear 2D translational spring damper model
+
+# Parameters:
+
+    - `c_x`: [N/m] Spring constant in x dir
+    - `c_y`: [N/m] Spring constant in y dir
+    - `c_phi`: [N.m/rad] Spring constant in phi dir
+    - `d_x`: [N.s/m] Damping constant in x dir
+    - `d_y`: [N.s/m] Damping constant in y dir
+    - `d_phi`: [N.m.s/rad] Damping constant in phi dir
+    - `s_relx0`: [m] Unstretched spring length
+    - `s_rely0`: [m] Unstretched spring length
+    - `phi_rel0`: [rad] Unstretched spring angle
+    - `s_small`: [m] Prevent zero-division if distance between frame_a and frame_b is zero
+
+
+# Connectors:
+
+    - `frame_a` [Frame](@ref) Coordinate system fixed to the component with one cut-force and cut-torque
+    - `frame_b` [Frame](@ref) Coordinate system fixed to the component with one cut-force and cut-torque
+
+https://github.com/dzimmer/PlanarMechanics/blob/743462f58858a808202be93b708391461cbe2523/PlanarMechanics/Parts/SpringDamper.mo
 """
 @mtkmodel SpringDamper begin
     @extend frame_a, frame_b = partial_frames = PartialTwoFrames()
@@ -167,7 +190,7 @@ https://github.com/dzimmer/PlanarMechanics/blob/743462f58858a808202be93b70839146
         d_phi = 1, [description = "Damping constant in phi dir"]
         s_relx0 = 0, [description = "Unstretched spring length"]
         s_rely0 = 0, [description = "Unstretched spring length"]
-        phi_rel0 = 0, [description = "Unstretched spring length"]
+        phi_rel0 = 0, [description = "Unstretched spring angle"]
         s_small = 1.e-10,
         [
             description = "Prevent zero-division if distance between frame_a and frame_b is zero",
