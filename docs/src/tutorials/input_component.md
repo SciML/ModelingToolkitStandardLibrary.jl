@@ -47,7 +47,7 @@ prob = ODEProblem(sys, [], (0, time[end]))
 sol = solve(prob, ImplicitEuler())
 ```
 
-If we want to run a new data set, this requires building a new `LinearInterpolation` and `ODESystem` followed by running `structural_simplify`, all of which takes time.  Therefore, to run serveral pieces of data it's better to re-use an `ODESystem`.  The next couple methods will demonstrate how to do this.
+If we want to run a new data set, this requires building a new `LinearInterpolation` and `ODESystem` followed by running `structural_simplify`, all of which takes time.  Therefore, to run several pieces of data it's better to re-use an `ODESystem`.  The next couple methods will demonstrate how to do this.
 
 ## Custom Component with External Data
 
@@ -105,7 +105,7 @@ Additional code could be added to resolve this issue, for example by using a `Re
 
 ## `SampledData` Component
 
-To resolve the issues presented above, the `ModelingToolkitStandardLibrary.Blocks.SampledData` component can be used which allows for a resusable `ODESystem` and self contained data which ensures a solution which remains valid for it's lifetime.  Now it's possible to also parallize the call to `solve()`.
+To resolve the issues presented above, the `ModelingToolkitStandardLibrary.Blocks.SampledData` component can be used which allows for a resusable `ODESystem` and self contained data which ensures a solution which remains valid for it's lifetime.  Now it's possible to also parallelize the call to `solve()`.
 
 ```julia
 function System(; name)
@@ -146,4 +146,4 @@ sol2 = Ref{ODESolution}()
 end
 ```
 
-Note, in the above example, we can build the system with an empty `SampledData` component, only setting the expected data type: `@named src = SampledData(Float64)`.  It's also possible to initialize the component with real sampled data: `@named src = SampledData(data, dt)`.  Additionally note that before running an `ODEProblem` using the `SampledData` component, one must be careful about the parameter vector Type.  The `SampledData` component contains a `buffer` parameter of type `Parameter`, therefore we must generate the problem using `tofloat=false`.  This will initially give a parameter vector of type `Vector{Any}` with a mix of numbers and `Parameter` type.  We can convert the vector to a uniform `Parameter` type by running `p = Parameter.(p)`.  This will wrap all the single values in a `Parameter` which will be mathmatically equivalent to a `Number`.
+Note, in the above example, we can build the system with an empty `SampledData` component, only setting the expected data type: `@named src = SampledData(Float64)`.  It's also possible to initialize the component with real sampled data: `@named src = SampledData(data, dt)`.  Additionally note that before running an `ODEProblem` using the `SampledData` component, one must be careful about the parameter vector Type.  The `SampledData` component contains a `buffer` parameter of type `Parameter`, therefore we must generate the problem using `tofloat=false`.  This will initially give a parameter vector of type `Vector{Any}` with a mix of numbers and `Parameter` type.  We can convert the vector to a uniform `Parameter` type by running `p = Parameter.(p)`.  This will wrap all the single values in a `Parameter` which will be mathematically equivalent to a `Number`.

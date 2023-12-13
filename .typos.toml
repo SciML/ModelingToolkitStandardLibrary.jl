@@ -1,0 +1,4 @@
+[default.extend-words]
+Nd = "Nd"
+nin = "nin"
+coul = "coul"
