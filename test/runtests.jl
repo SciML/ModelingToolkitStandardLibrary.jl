@@ -1,5 +1,9 @@
 using SafeTestsets
 
+@safetestset "Quality Assurance" begin
+    include("qa.jl")
+end
+
 # Blocks
 @safetestset "Blocks: math" begin
     include("Blocks/math.jl")
