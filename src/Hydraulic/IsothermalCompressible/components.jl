@@ -497,7 +497,7 @@ dm ────►               │  │ area
     name)
     @assert(N>=0,
         "the Tube component must be defined with 0 or more segments (i.e. N>=0), found N=$N")
-    @assert (direction == +1)||(direction == -1) "direction arument must be +/-1, found $direction"
+    @assert (direction == +1)||(direction == -1) "direction argument must be +/-1, found $direction"
 
     #TODO: How to set an assert effective_length >= length ??
     pars = @parameters begin

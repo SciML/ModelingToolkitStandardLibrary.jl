@@ -1,10 +1,10 @@
-@enum Logic Uninitialized=1 ForcingUnknown ForcingZero ForcingOne HighImpedence WeakUnknown WeakZero WeakOne DontCare
+@enum Logic Uninitialized=1 ForcingUnknown ForcingZero ForcingOne HighImpedance WeakUnknown WeakZero WeakOne DontCare
 
 const U = Uninitialized
 const X = ForcingUnknown
 const F0 = ForcingZero
 const F1 = ForcingOne
-const Z = HighImpedence
+const Z = HighImpedance
 const W = WeakUnknown
 const L = WeakZero
 const H = WeakOne
