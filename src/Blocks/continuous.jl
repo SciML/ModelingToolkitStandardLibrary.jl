@@ -572,7 +572,7 @@ To set the initial state, it's recommended to set the initial condition for `x`,
 
 # Parameters:
 - `b`: Numerator polynomial coefficients, e.g., `2s + 3` is specified as `[2, 3]`
-- `a`: Denomenator polynomial coefficients, e.g., `s² + 2ωs + ω^2` is specified as `[1, 2ω, ω^2]`
+- `a`: Denominator polynomial coefficients, e.g., `s² + 2ωs + ω^2` is specified as `[1, 2ω, ω^2]`
 
 # Connectors:
   - `input`

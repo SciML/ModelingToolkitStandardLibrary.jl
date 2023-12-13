@@ -9,7 +9,7 @@ Omits the check expression if the argument `J` is symbolic.
 """
 macro symcheck(ex)
     ex.args[1].head === :call ||
-        error("Expected an expresion on the form sym > val || error()")
+        error("Expected an expression on the form sym > val || error()")
     sym = ex.args[1].args[2]
     quote
         _issymbolic(x) = !(unwrap(x) isa Real)

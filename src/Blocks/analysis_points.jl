@@ -52,7 +52,7 @@ eqs = [connect(P.output, C.input)
        connect(C.output, :plant_input, P.input)]
 sys = ODESystem(eqs, t, systems = [P, C], name = :feedback_system)
 
-matrices_S, _ = get_sensitivity(sys, :plant_input) # Compute the matrices of a state-space representation of the (input) sensitivity funciton.
+matrices_S, _ = get_sensitivity(sys, :plant_input) # Compute the matrices of a state-space representation of the (input) sensitivity function.
 matrices_T, _ = get_comp_sensitivity(sys, :plant_input)
 ```
 
