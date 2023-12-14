@@ -32,7 +32,7 @@ the documentation, which contains the unreleased features.
 
 ## Libraries
 
-The following are the constituant libraries of the ModelingToolkit Standard Library.
+The following are the constituent libraries of the ModelingToolkit Standard Library.
 
   - [Basic Blocks](https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/API/blocks/)
   - [Mechanical Components](https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/API/mechanical/)

@@ -32,7 +32,7 @@ using OrdinaryDiffEq: ReturnCode.Success
     @test typeof(logic.logic) == Vector{Logic}
     @test get_logic_level(logic) == [1, 6, 2, 4]
 
-    # Predefiend logic vectors
+    # Predefined logic vectors
     @test std_ulogic.logic == [U, X, F0, F1, Z, W, L, H, DC]
     @test UX01.logic == [U, X, F0, F1]
     @test UX01Z.logic == [U, X, F0, F1, Z]
