@@ -7,6 +7,7 @@ tspan = (0.0, 3.0)
 g = -9.807
 
 @testset "Free body" begin
+    # https://github.com/dzimmer/PlanarMechanics/blob/743462f58858a808202be93b708391461cbe2523/PlanarMechanics/Examples/FreeBody.mo
     m = 2
     j = 1
     @named body = Body(; m, j)
@@ -30,6 +31,7 @@ g = -9.807
 end
 
 @testset "Pendulum" begin
+    # https://github.com/dzimmer/PlanarMechanics/blob/743462f58858a808202be93b708391461cbe2523/PlanarMechanics/Examples/Pendulum.mo
     @named ceiling = Fixed()
     @named rod = FixedTranslation(rx = 1.0, ry = 0.0)
     @named body = Body(m = 1, j = 0.1)
@@ -205,7 +207,61 @@ end
     @test sol[rel_a_sensor2.rel_a_y.u][end] == 0
 end
 
-@testset "Measure Demo" begin end
+@testset "Measure Demo" begin
+    # https://github.com/dzimmer/PlanarMechanics/blob/743462f58858a808202be93b708391461cbe2523/PlanarMechanics/Examples/MeasureDemo.mo
+    @named body = Body(; m = 1, j = 0.1)
+    @named fixed_translation = FixedTranslation(; rx = 1, ry = 0)
+    @named fixed = Fixed()
+    @named body1 = Body(; m = 0.4, j = 0.02)
+    @named fixed_translation1 = FixedTranslation(; rx = 0.4, ry = 0)
+    @named abs_pos_sensor = AbsolutePosition(; resolve_in_frame = :world)
+    @named rel_pos_sensor = RelativePosition(; resolve_in_frame = :world)
+    @named revolute1 = Revolute()
+    @named abs_v_sensor = AbsoluteVelocity(; resolve_in_frame = :frame_a)
+    @named rel_v_sensor = RelativeVelocity(; resolve_in_frame = :frame_b)
+    @named abs_a_sensor = AbsoluteAcceleration(; resolve_in_frame = :world)
+    @named rel_a_sensor = RelativeAcceleration(; resolve_in_frame = :frame_b)
+    @named revolute2 = Revolute()
+
+    connections = [
+        connect(fixed_translation.frame_b, body.frame),
+        connect(fixed_translation1.frame_b, body1.frame),
+        connect(fixed.frame, revolute1.frame_a),
+        connect(revolute1.frame_b, fixed_translation.frame_a),
+        # connect(abs_a_sensor.frame_resolve, abs_a_sensor.frame_a),
+        connect(revolute2.frame_b, fixed_translation1.frame_a),
+        connect(revolute2.frame_a, fixed_translation.frame_b),
+        # connect_sensor(fixed_translation.frame_b, rel_a_sensor.frame_a)...,
+        # connect(fixed_translation.frame_b, rel_v_sensor.frame_a),
+        # connect(fixed_translation.frame_b, rel_v_sensor.frame_a),
+        # connect(rel_a_sensor.frame_b, body1.frame_a),
+        # connect(rel_v_sensor.frame_b, body1.frame_a),
+        # connect(rel_v_sensor.frame_b, body1.frame_a),
+        connect_sensor(body1.frame, abs_a_sensor.frame_a)...,
+        # connect_sensor(body1.frame, abs_v_sensor.frame_a)...,
+        # connect_sensor(body1.frame, abs_pos_sensor.frame_a)...,
+    ]
+
+    @named model = ODESystem(connections,
+        t,
+        [],
+        [],
+        systems = [
+            fixed_translation,
+            body,
+            fixed,
+            body1,
+            fixed_translation1,
+            revolute1,
+            revolute2,
+            abs_pos_sensor,
+        ])
+    sys = structural_simplify(model)
+    unset_vars = setdiff(states(sys), keys(ModelingToolkit.defaults(sys)))
+    prob = ODEProblem(sys, unset_vars .=> 0.0, (0, 5), []; jac = true)
+    sol = solve(prob, Rodas5P())
+    @test_broken SciMLBase.successful_retcode(sol)
+end
 
 @testset "SpringDamper" begin
     # https://github.com/dzimmer/PlanarMechanics/blob/master/PlanarMechanics/Examples/SpringDamperDemo.mo
