@@ -143,7 +143,7 @@ lsys = sminreal(ss(matrices...))
 
 matrices_So, _ = get_sensitivity(sys_outer, :inner_plant_output)
 lsyso = sminreal(ss(matrices_So...))
-@test lsys == lsyso || lsys == -1 * lsyso * (-1) # Output and input sensitivites are equal for SISO systems
+@test lsys == lsyso || lsys == -1 * lsyso * (-1) # Output and input sensitivities are equal for SISO systems
 
 ## A more complicated test case
 using ModelingToolkit, OrdinaryDiffEq, LinearAlgebra

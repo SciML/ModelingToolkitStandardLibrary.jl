@@ -7,7 +7,7 @@ using Test
 
 #=
 Testing strategy:
-The general strategy is to test systems using simple intputs where the solution
+The general strategy is to test systems using simple inputs where the solution
 is known on closed form. For algebraic systems (without differential variables),
 an integrator with a constant input is often used together with the system under test.
 =#
