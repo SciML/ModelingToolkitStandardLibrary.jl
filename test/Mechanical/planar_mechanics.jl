@@ -1,3 +1,5 @@
+# using Revise
+# using Plots
 using ModelingToolkit, OrdinaryDiffEq, Test
 using ModelingToolkitStandardLibrary.Mechanical.PlanarMechanics
 
@@ -9,8 +11,8 @@ g = -9.807
 @testset "Free body" begin
     # https://github.com/dzimmer/PlanarMechanics/blob/743462f58858a808202be93b708391461cbe2523/PlanarMechanics/Examples/FreeBody.mo
     m = 2
-    j = 1
-    @named body = Body(; m, j)
+    I = 1
+    @named body = Body(; m, I)
     @named model = ODESystem(Equation[],
         t,
         [],
@@ -34,7 +36,7 @@ end
     # https://github.com/dzimmer/PlanarMechanics/blob/743462f58858a808202be93b708391461cbe2523/PlanarMechanics/Examples/Pendulum.mo
     @named ceiling = Fixed()
     @named rod = FixedTranslation(rx = 1.0, ry = 0.0)
-    @named body = Body(m = 1, j = 0.1)
+    @named body = Body(m = 1, I = 0.1)
     @named revolute = Revolute()
 
     connections = [
@@ -50,7 +52,12 @@ end
         systems = [body, revolute, rod, ceiling])
     sys = structural_simplify(model)
 
-    @test length(states(sys)) == 7
+    @test_broken length(states(sys)) == 2
+    unset_vars = setdiff(states(sys), keys(ModelingToolkit.defaults(sys)))
+    prob = ODEProblem(sys, unset_vars .=> 0.0, tspan, []; jac = true)
+
+    sol = solve(prob, Rodas5P())
+    @test_broken SciMLBase.successful_retcode(sol)
 end
 
 @testset "Prismatic" begin
@@ -61,12 +68,12 @@ end
 @testset "AbsoluteAccCentrifugal" begin
     # https://github.com/dzimmer/PlanarMechanics/blob/443b007bcc1522bb172f13012e2d7a8ecc3f7a9b/PlanarMechanicsTest/Sensors.mo#L221-L332
     m = 1
-    j = 0.1
+    I = 0.1
     ω = 10
     resolve_in_frame = :world
 
     # components
-    @named body = Body(; m, j, gy = 0.0)
+    @named body = Body(; m, I, gy = 0.0)
     @named fixed_translation = FixedTranslation(; rx = 10.0, ry = 0.0)
     @named fixed = Fixed()
     @named revolute = Revolute(constant_ω = ω)
@@ -114,11 +121,11 @@ end
 
 @testset "Sensors (two free falling bodies)" begin
     m = 1
-    j = 1
+    I = 1
     resolve_in_frame = :world
 
-    @named body1 = Body(; m, j)
-    @named body2 = Body(; m, j)
+    @named body1 = Body(; m, I)
+    @named body2 = Body(; m, I)
     @named base = Fixed()
 
     @named abs_pos_sensor = AbsolutePosition(; resolve_in_frame)
@@ -209,10 +216,10 @@ end
 
 @testset "Measure Demo" begin
     # https://github.com/dzimmer/PlanarMechanics/blob/743462f58858a808202be93b708391461cbe2523/PlanarMechanics/Examples/MeasureDemo.mo
-    @named body = Body(; m = 1, j = 0.1)
+    @named body = Body(; m = 1, I = 0.1)
     @named fixed_translation = FixedTranslation(; rx = 1, ry = 0)
     @named fixed = Fixed()
-    @named body1 = Body(; m = 0.4, j = 0.02)
+    @named body1 = Body(; m = 0.4, I = 0.02)
     @named fixed_translation1 = FixedTranslation(; rx = 0.4, ry = 0)
     @named abs_pos_sensor = AbsolutePosition(; resolve_in_frame = :world)
     @named rel_pos_sensor = RelativePosition(; resolve_in_frame = :world)
@@ -274,7 +281,7 @@ end
         c_x = 5,
         d_x = 1,
         c_phi = 0)
-    @named body = Body(; j = 0.1, m = 0.5, rx = 1, ry = 1)
+    @named body = Body(; I = 0.1, m = 0.5, rx = 1, ry = 1)
     @named fixed = Fixed()
     @named fixed_translation = FixedTranslation(; rx = -1, ry = 0)
 
@@ -302,7 +309,7 @@ end
 
 @testset "Spring and damper demo" begin
     # https://github.com/dzimmer/PlanarMechanics/blob/743462f58858a808202be93b708391461cbe2523/PlanarMechanics/Examples/SpringDemo.mo
-    @named body = Body(; m = 0.5, j = 0.1)
+    @named body = Body(; m = 0.5, I = 0.1)
     @named fixed = Fixed()
     @named spring = Spring(; c_y = 10, s_rely0 = -0.5, c_x = 1, c_phi = 1e5)
     @named damper = Damper(d = 1)

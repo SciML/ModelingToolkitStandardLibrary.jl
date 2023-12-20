@@ -20,6 +20,7 @@ A revolute joint
   - `flange_a` [Flange](@ref) if `use_flange == true`
   - `support` [Support](@ref) if `use_flange == true`
 
+https://github.com/dzimmer/PlanarMechanics/blob/743462f58858a808202be93b708391461cbe2523/PlanarMechanics/Joints/Revolute.mo
 """
 @component function Revolute(;
         name,
@@ -96,6 +97,8 @@ A prismatic joint
   - `fixed` [Fixed](@ref) if `use_flange == false`
   - `flange_a` [Flange](@ref) if `use_flange == true`
   - `support` [Support](@ref) if `use_flange == true`
+
+https://github.com/dzimmer/PlanarMechanics/blob/743462f58858a808202be93b708391461cbe2523/PlanarMechanics/Joints/Prismatic.mo
 """
 @component function Prismatic(;
         name,
