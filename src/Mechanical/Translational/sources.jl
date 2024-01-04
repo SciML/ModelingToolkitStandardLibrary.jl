@@ -15,7 +15,7 @@ Linear 1D force input source
     end
 
     @equations begin
-        flange.f ~ -f.u
+        flange.f ~ f.u
     end
 end
 
