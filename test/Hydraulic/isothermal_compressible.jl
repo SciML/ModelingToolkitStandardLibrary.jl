@@ -97,6 +97,51 @@ end
     @test sol[s.vol.port.p][end]≈10e5 atol=1e5
 end
 
+
+@testset "Volume" begin
+
+    dx = 4.71238898038469
+    drho = -30556.685668435468
+    dm = -263.9489641054512
+    
+    mass_flow_fun(t) = dm*cos.(2π*t*15)
+
+    function MassVolume(; name, dx, drho, dm)
+
+        pars = @parameters begin
+            A = 0.01 #m²
+            x₀ = 1.0 #m
+            M = 10_000 #kg
+            g = 9.807 #m/s²
+            amp = 5e-2 #m
+            f = 15 #Hz   
+            p_int=M*g/A
+            dx=dx
+            drho=drho
+            dm=dm
+        end
+        vars = []
+        systems = @named begin
+            fluid = HydraulicFluid(; density = 876, bulk_modulus = 1.2e9)
+            mass = Mass(;v=dx,m=M,g=-g)
+            vol = Volume(;area=A, x=x₀, p=p_int, dx, drho, dm)
+            mass_flow = MassFlow(;p_int)
+            mass_flow_input = TimeVaryingFunction(;f = mass_flow_fun)
+        end
+    
+        eqs = [
+            connect(mass.flange, vol.flange)
+            connect(vol.port, mass_flow.port)
+            connect(mass_flow.dm, mass_flow_input.output)
+            connect(mass_flow.port, fluid)
+        ]
+    
+        return ODESystem(eqs, t, vars, pars; systems, name)
+    end
+
+end
+
+
 @testset "DynamicVolume and minimum_volume feature" begin
     function System(N; name, area = 0.01, length = 0.1, damping_volume)
         pars = []
