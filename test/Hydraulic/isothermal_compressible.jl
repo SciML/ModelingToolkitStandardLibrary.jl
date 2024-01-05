@@ -1,4 +1,4 @@
-using ModelingToolkit, OrdinaryDiffEq Test
+using ModelingToolkit, OrdinaryDiffEq, Test
 import ModelingToolkitStandardLibrary.Hydraulic.IsothermalCompressible as IC
 import ModelingToolkitStandardLibrary.Blocks as B
 import ModelingToolkitStandardLibrary.Mechanical.Translational as T
@@ -97,9 +97,7 @@ end
     @test sol[s.vol.port.p][end]≈10e5 atol=1e5
 end
 
-
 @testset "Volume" begin
-   
     dt = 1e-4 #s
     t_end = 0.2 #s
     time = 0:dt:t_end
@@ -113,7 +111,6 @@ end
     dm = dm_fun(0.0)
 
     function MassVolume(; name, dx, drho, dm)
-
         pars = @parameters begin
             A = 0.01 #m²
             x₀ = 1.0 #m
@@ -121,36 +118,34 @@ end
             g = 9.807 #m/s²
             amp = 5e-2 #m
             f = 15 #Hz   
-            p_int=M*g/A
-            dx=dx
-            drho=drho
-            dm=dm
+            p_int = M * g / A
+            dx = dx
+            drho = drho
+            dm = dm
         end
         vars = []
         systems = @named begin
             fluid = IC.HydraulicFluid(; density = 876, bulk_modulus = 1.2e9)
-            mass = T.Mass(;v=dx,m=M,g=-g)
-            vol = IC.Volume(;area=A, x=x₀, p=p_int, dx, drho, dm)
-            mass_flow = IC.MassFlow(;p_int)
-            mass_flow_input = B.TimeVaryingFunction(;f = dm_fun)
+            mass = T.Mass(; v = dx, m = M, g = -g)
+            vol = IC.Volume(; area = A, x = x₀, p = p_int, dx, drho, dm)
+            mass_flow = IC.MassFlow(; p_int)
+            mass_flow_input = B.TimeVaryingFunction(; f = dm_fun)
         end
-    
-        eqs = [
-            connect(mass.flange, vol.flange)
+
+        eqs = [connect(mass.flange, vol.flange)
             connect(vol.port, mass_flow.port)
             connect(mass_flow.dm, mass_flow_input.output)
-            connect(mass_flow.port, fluid)
-        ]
-    
+            connect(mass_flow.port, fluid)]
+
         return ODESystem(eqs, t, vars, pars; systems, name)
     end
 
     @named odesys = MassVolume(; dx, drho, dm)
     sys = structural_simplify(odesys) |> complete
     prob = ODEProblem(sys, [], (0, 0.2))
-    sol = solve(prob, Rodas5P(); dt=1e-4, adaptive=false)
+    sol = solve(prob, Rodas5P(); dt = 1e-4, adaptive = false)
 
-    correct_x = 5e-2*sin.(2π*sol.t*15) .+ 1.0
+    correct_x = 5e-2 * sin.(2π * sol.t * 15) .+ 1.0
     err = sol[sys.vol.x] .- correct_x
     @test OrdinaryDiffEq.norm(err) < 1e-4
 
@@ -162,9 +157,7 @@ end
     fig
     =#
 
-
 end
-
 
 @testset "DynamicVolume and minimum_volume feature" begin
     function System(N; name, area = 0.01, length = 0.1, damping_volume)
