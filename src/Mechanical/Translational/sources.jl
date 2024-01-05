@@ -1,4 +1,28 @@
 """
+    ConstantForce(; f=0, name)
+
+Linear 1D constant force input source
+
+# Connectors:
+  - `flange`: 1-dim. translational flange
+
+# Parameters:
+  - `f`: input force
+"""
+@mtkmodel ConstantForce begin
+    @parameters begin
+        f=0
+    end
+    @components begin
+        flange = MechanicalPort()
+    end
+    @equations begin
+        # connectors
+        flange.f ~ f  
+    end
+end
+
+"""
     Force(; name)
 
 Linear 1D force input source

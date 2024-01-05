@@ -98,7 +98,7 @@ Variable length internal flow model of the fully developed incompressible flow f
 
     # let ----------------------
     Δp = port_a.p - port_b.p
-    dm = port_a.dm
+    dm = port_b.dm # positive flow
 
     d_h = 4 * area / perimeter
 
@@ -295,7 +295,7 @@ end
 
     # let ------
     Δp = port_a.p - port_b.p
-    dm = port_a.dm
+    dm = port_b.dm
     c = if reversible
         Cd
     else
@@ -377,17 +377,25 @@ end
         rho(t) = liquid_density(port)
         drho(t) = 0
         vol(t) = dead_volume + area * x_int
+        dm(t) = 0
+        p(t) = 0
     end
 
-    # let
-    dm = port.dm
-    p = port.p
 
-    eqs = [vol ~ dead_volume + area * x
+    eqs = [
+        # derivatives
         D(x) ~ dx
         D(rho) ~ drho
+
+        # connectors
+        port.dm ~ -dm
+        port.p ~ p
+    
+        # physics
+        vol ~ dead_volume + area * x
         rho ~ full_density(port, p)
-        dm ~ drho * vol * Χ1 + rho * area * dx * Χ2]
+        dm ~ drho * vol * Χ1 + rho * area * dx * Χ2
+    ]
 
     ODESystem(eqs, t, vars, pars; name, systems)
 end
@@ -406,31 +414,35 @@ Fixed fluid volume.
 
 See also [`Volume`](@ref), [`DynamicVolume`](@ref)
 """
-@component function FixedVolume(; vol, p_int, name)
-    pars = @parameters begin
-        p_int = p_int
-        vol = vol
+@mtkmodel FixedVolume begin
+    @parameters begin
+        p_int
+        vol
     end
-
-    systems = @named begin
+    @components begin
         port = HydraulicPort(; p_int)
     end
-
-    vars = @variables begin
+    @variables begin
         rho(t) = liquid_density(port)
         drho(t) = 0
+        dm(t) = 0
+        p(t) = p_int
     end
+    @equations begin
+        # derivatives 
+        D(rho) ~ drho
 
-    # let
-    dm = port.dm
-    p = port.p
-
-    eqs = [D(rho) ~ drho
+        # connectors
+        port.p ~ p
+        port.dm ~ -dm
+        
+        # physics
         rho ~ full_density(port, p)
-        dm ~ drho * vol]
-
-    ODESystem(eqs, t, vars, pars; name, systems)
+        dm ~ drho * vol
+    end
 end
+
+
 
 """
     Volume(; x, dx=0, p, drho=0, dm=0, area, direction = +1, name)
@@ -499,7 +511,7 @@ See also [`FixedVolume`](@ref), [`DynamicVolume`](@ref)
     eqs = [
     # connectors
         port.p ~ p
-        port.dm ~ dm
+        port.dm ~ -dm
         flange.v * direction ~ dx
         flange.f * direction ~ f
 
@@ -508,7 +520,7 @@ See also [`FixedVolume`](@ref), [`DynamicVolume`](@ref)
         D(rho) ~ drho
 
     # physics
-        rho ~ liquid_density(port, p)
+        rho ~ full_density(port, p)
         f ~ p * area
         dm ~ drho * x * area + rho * dx * area]
 
