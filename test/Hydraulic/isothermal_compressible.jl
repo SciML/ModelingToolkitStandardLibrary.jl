@@ -1,4 +1,4 @@
-using ModelingToolkit, OrdinaryDiffEq, Test
+using ModelingToolkit, OrdinaryDiffEq Test
 import ModelingToolkitStandardLibrary.Hydraulic.IsothermalCompressible as IC
 import ModelingToolkitStandardLibrary.Blocks as B
 import ModelingToolkitStandardLibrary.Mechanical.Translational as T
@@ -99,12 +99,18 @@ end
 
 
 @testset "Volume" begin
+   
+    dt = 1e-4 #s
+    t_end = 0.2 #s
+    time = 0:dt:t_end
+
+    using DataInterpolations
+    u = include("ref/dm.jl")
+    dm_fun = LinearInterpolation(u, time)
 
     dx = 4.71238898038469
     drho = -30556.685668435468
-    dm = -263.9489641054512
-    
-    mass_flow_fun(t) = dm*cos.(2π*t*15)
+    dm = dm_fun(0.0)
 
     function MassVolume(; name, dx, drho, dm)
 
@@ -122,11 +128,11 @@ end
         end
         vars = []
         systems = @named begin
-            fluid = HydraulicFluid(; density = 876, bulk_modulus = 1.2e9)
-            mass = Mass(;v=dx,m=M,g=-g)
-            vol = Volume(;area=A, x=x₀, p=p_int, dx, drho, dm)
-            mass_flow = MassFlow(;p_int)
-            mass_flow_input = TimeVaryingFunction(;f = mass_flow_fun)
+            fluid = IC.HydraulicFluid(; density = 876, bulk_modulus = 1.2e9)
+            mass = T.Mass(;v=dx,m=M,g=-g)
+            vol = IC.Volume(;area=A, x=x₀, p=p_int, dx, drho, dm)
+            mass_flow = IC.MassFlow(;p_int)
+            mass_flow_input = B.TimeVaryingFunction(;f = dm_fun)
         end
     
         eqs = [
@@ -138,6 +144,24 @@ end
     
         return ODESystem(eqs, t, vars, pars; systems, name)
     end
+
+    @named odesys = MassVolume(; dx, drho, dm)
+    sys = structural_simplify(odesys) |> complete
+    prob = ODEProblem(sys, [], (0, 0.2))
+    sol = solve(prob, Rodas5P(); dt=1e-4, adaptive=false)
+
+    correct_x = 5e-2*sin.(2π*sol.t*15) .+ 1.0
+    err = sol[sys.vol.x] .- correct_x
+    @test OrdinaryDiffEq.norm(err) < 1e-4
+
+    #=
+    fig = Figure()
+    ax = Axis(fig[1,1])
+    lines!(ax, sol.t, sol[sys.vol.x]; linewidth=2)
+    lines!(ax, sol.t, correct_x)
+    fig
+    =#
+
 
 end
 

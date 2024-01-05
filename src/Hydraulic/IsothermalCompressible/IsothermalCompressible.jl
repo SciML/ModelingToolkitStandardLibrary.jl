@@ -16,7 +16,7 @@ D = Differential(t)
 export HydraulicPort, HydraulicFluid
 include("utils.jl")
 
-export Cap, Tube, FixedVolume, DynamicVolume
+export Cap, Tube, FixedVolume, Volume, DynamicVolume
 include("components.jl")
 
 export MassFlow, Pressure, FixedPressure
