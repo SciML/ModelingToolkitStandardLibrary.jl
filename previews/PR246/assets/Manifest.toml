@@ -80,9 +80,9 @@ version = "7.7.0"
 
 [[deps.ArrayLayouts]]
 deps = ["FillArrays", "LinearAlgebra"]
-git-tree-sha1 = "b08a4043e1c14096ef8efe4dd97e07de5cacf240"
+git-tree-sha1 = "ab9e65a1a0cfa0c1add8525f75533aea063cd8b4"
 uuid = "4c555306-a7a7-4459-81d9-ec55ddd5c99a"
-version = "1.4.5"
+version = "1.5.0"
 weakdeps = ["SparseArrays"]
 
     [deps.ArrayLayouts.extensions]
@@ -434,9 +434,9 @@ uuid = "8ba89e20-285c-5b6f-9357-94700520ee1b"
 
 [[deps.Distributions]]
 deps = ["FillArrays", "LinearAlgebra", "PDMats", "Printf", "QuadGK", "Random", "SpecialFunctions", "Statistics", "StatsAPI", "StatsBase", "StatsFuns"]
-git-tree-sha1 = "9242eec9b7e2e14f9952e8ea1c7e31a50501d587"
+git-tree-sha1 = "a4532d110ce91bd744b99280193a317310960c46"
 uuid = "31c24e10-a181-5473-b8eb-7969acd0382f"
-version = "0.25.104"
+version = "0.25.106"
 
     [deps.Distributions.extensions]
     DistributionsChainRulesCoreExt = "ChainRulesCore"
@@ -1380,9 +1380,9 @@ version = "1.6.3"
 
 [[deps.OrdinaryDiffEq]]
 deps = ["ADTypes", "Adapt", "ArrayInterface", "DataStructures", "DiffEqBase", "DocStringExtensions", "ExponentialUtilities", "FastBroadcast", "FastClosures", "FillArrays", "FiniteDiff", "ForwardDiff", "FunctionWrappersWrappers", "IfElse", "InteractiveUtils", "LineSearches", "LinearAlgebra", "LinearSolve", "Logging", "MacroTools", "MuladdMacro", "NonlinearSolve", "Polyester", "PreallocationTools", "PrecompileTools", "Preferences", "RecursiveArrayTools", "Reexport", "SciMLBase", "SciMLOperators", "SimpleNonlinearSolve", "SimpleUnPack", "SparseArrays", "SparseDiffTools", "StaticArrayInterface", "StaticArrays", "TruncatedStacktraces"]
-git-tree-sha1 = "17680b691a3b3f9961db6fc4ece88c4f720d3d8b"
+git-tree-sha1 = "51268a88f26c3a098949329d4c66dc20fdb0b7db"
 uuid = "1dea7af3-3e70-54e6-95c3-0bf5283fa5ed"
-version = "6.68.0"
+version = "6.68.1"
 
 [[deps.PCRE2_jll]]
 deps = ["Artifacts", "Libdl"]
@@ -1595,9 +1595,9 @@ version = "0.6.12"
 
 [[deps.RecursiveArrayTools]]
 deps = ["Adapt", "ArrayInterface", "DocStringExtensions", "GPUArraysCore", "IteratorInterfaceExtensions", "LinearAlgebra", "RecipesBase", "SparseArrays", "StaticArraysCore", "Statistics", "SymbolicIndexingInterface", "Tables"]
-git-tree-sha1 = "264026749612181b79275685eede9af07c0ee588"
+git-tree-sha1 = "ba6dc2ce929bb8502e468a4981c1c69cab07c8b8"
 uuid = "731186ca-8d62-57ce-b412-fbd966d074cd"
-version = "3.4.0"
+version = "3.4.1"
 
     [deps.RecursiveArrayTools.extensions]
     RecursiveArrayToolsFastBroadcastExt = "FastBroadcast"
@@ -1995,9 +1995,9 @@ uuid = "a759f4b9-e2f1-59dc-863e-4aeb61b1ea8f"
 version = "0.5.23"
 
 [[deps.Tokenize]]
-git-tree-sha1 = "0454d9a9bad2400c7ccad19ca832a2ef5a8bc3a1"
+git-tree-sha1 = "3ac1ac11b09e8033ec93a7993acdb9b68252be6d"
 uuid = "0796e94c-ce3b-5d07-9a54-7f471281c624"
-version = "0.5.26"
+version = "0.5.27"
 
 [[deps.TranscodingStreams]]
 git-tree-sha1 = "1fbeaaca45801b4ba17c251dd8603ef24801dd84"
