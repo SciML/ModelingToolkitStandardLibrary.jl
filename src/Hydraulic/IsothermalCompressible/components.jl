@@ -381,21 +381,19 @@ end
         p(t) = 0
     end
 
-
     eqs = [
-        # derivatives
+    # derivatives
         D(x) ~ dx
         D(rho) ~ drho
 
-        # connectors
+    # connectors
         port.dm ~ -dm
         port.p ~ p
-    
-        # physics
+
+    # physics
         vol ~ dead_volume + area * x
         rho ~ full_density(port, p)
-        dm ~ drho * vol * Χ1 + rho * area * dx * Χ2
-    ]
+        dm ~ drho * vol * Χ1 + rho * area * dx * Χ2]
 
     ODESystem(eqs, t, vars, pars; name, systems)
 end
@@ -435,14 +433,12 @@ See also [`Volume`](@ref), [`DynamicVolume`](@ref)
         # connectors
         port.p ~ p
         port.dm ~ -dm
-        
+
         # physics
         rho ~ full_density(port, p)
         dm ~ drho * vol
     end
 end
-
-
 
 """
     Volume(; x, dx=0, p, drho=0, dm=0, area, direction = +1, name)

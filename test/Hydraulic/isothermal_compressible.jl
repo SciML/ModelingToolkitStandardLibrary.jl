@@ -373,24 +373,23 @@ end
     @test sol[s.piston.x][end]≈0.05 atol=0.01
 end
 
-# @testset "Prevent Negative Pressure" begin
+@testset "Prevent Negative Pressure" begin
     @component function System(; name)
         pars = @parameters let_gas = 1
 
+        # TODO: DynamicVolume doesn't work with N>1
         systems = @named begin
             fluid = IC.HydraulicFluid(; let_gas)
-            vol = IC.DynamicVolume(5; p_int = 100e5, area = 0.001, x_int = 0.05,
-                  x_max = 0.1, x_damp = 0.02, x_min = 0.01, direction = +1)
+            vol = IC.DynamicVolume(1; p_int = 100e5, area = 0.001, x_int = 0.05,
+                x_max = 0.1, x_damp = 0.02, x_min = 0.01, direction = +1)
             # vol = IC.Volume(; x = 0.05, p=100e5, area = 0.001)
             mass = T.Mass(; m = 100, g = -9.807, s = 0.05)
             cap = IC.Cap(; p_int = 100e5)
         end
 
-        eqs = [
-            connect(fluid, cap.port)
+        eqs = [connect(fluid, cap.port)
             connect(cap.port, vol.port)
-            connect(vol.flange, mass.flange)
-            ]
+            connect(vol.flange, mass.flange)]
 
         ODESystem(eqs, t, [], pars; name, systems)
     end
@@ -401,10 +400,6 @@ end
     prob1 = ODEProblem(sys, ModelingToolkit.missing_variable_defaults(sys), (0, 0.05))
     prob2 = ODEProblem(sys, ModelingToolkit.missing_variable_defaults(sys), (0, 0.05),
         [s.let_gas => 0])
-
-    using SimpleEuler
-    sol1 = solve(prob1, BackwardEuler())
-    sol2 = solve(prob2, BackwardEuler())
 
     @time sol1 = solve(prob1, ImplicitEuler(nlsolve = NEWTON); adaptive = false, dt = 1e-4)
     @time sol2 = solve(prob2, Rodas4())
@@ -418,16 +413,15 @@ end
     @test minimum(sol1[s.vol.port.p]) > -1000
     @test minimum(sol2[s.vol.port.p]) < -1000
 
-
     fig = Figure()
-    ax = Axis(fig[1,1])
+    ax = Axis(fig[1, 1])
     lines!(ax, sol1.t, sol1[s.vol.port.p])
     lines!(ax, sol2.t, sol2[s.vol.port.p])
 
-    ax = Axis(fig[1,2])
+    ax = Axis(fig[1, 2])
     lines!(ax, sol1.t, sol1[s.mass.s])
     lines!(ax, sol2.t, sol2[s.mass.s])
     fig
-# end
+end
 
 #TODO: Test Valve Inversion

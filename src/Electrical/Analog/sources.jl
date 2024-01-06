@@ -63,7 +63,7 @@ Acts as an ideal constant current source with no internal resistance.
 """
 @mtkmodel ConstantCurrent begin
     @parameters begin
-        i=0
+        i = 0
     end
     @components begin
         p = Pin()

@@ -11,14 +11,14 @@ Linear 1D constant force input source
 """
 @mtkmodel ConstantForce begin
     @parameters begin
-        f=0
+        f = 0
     end
     @components begin
         flange = MechanicalPort()
     end
     @equations begin
         # connectors
-        flange.f ~ f  
+        flange.f ~ f
     end
 end
 
