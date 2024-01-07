@@ -78,7 +78,7 @@ full_equations(sys)
 
 ## Electrical
 
-Here we can see that a positive input current results in an increasing voltage. Note that the electrical domain uses pins `p` and `n` and each side of the source and energy storage components.  The direction of connection is not important here, only that a positive connector `p` connects with a negative connector `n`.
+Here we can see that a positive input current results in an increasing voltage. Note that the electrical domain uses pins `p` and `n` at each side of the source and energy storage components.  The direction of connection is not important here, only that a positive connector `p` connects with a negative connector `n`.
 
 ```@example sign_convention
 using ModelingToolkitStandardLibrary.Electrical
@@ -118,7 +118,7 @@ full_equations(sys)
 
 ## Hydraulic
 
-A positve input mass flow leads to an increasing pressure.  Note, in this case we get incresing density (`rho`), which is directly related to an increasing pressure.
+A positve input mass flow leads to an increasing pressure (in this case we get incresing density (`rho`), which is directly related to an increasing pressure).
 
 ```@example sign_convention
 using ModelingToolkitStandardLibrary.Hydraulic.IsothermalCompressible
