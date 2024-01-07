@@ -21,7 +21,7 @@ For example, the following would be the *correct* sign convention for the `Mecha
 end
 ```
 
-And writting the following would be the *incorrect* sign convention.
+And writing the following would be the *incorrect* sign convention.
 
 ```julia
 @equations begin
@@ -34,7 +34,7 @@ To visualize the sign convention, one can draw the orientation of the connector 
 
 ![mass](mass.svg)
 
-In this case we know from Newton that mass times acceleration equals force, therefore the direction of movement is in the opposite direction of the force.  In other words, if we push the mass from left to right (i.e. in the positive direction), then the mass will generate a force in the negative direction.  This would be the general rule for a single port component of any domain.  The exception is for a *thourgh* variable **input** component, which should align the component and port connection *through* variables.  For example, a force input diagram would look like this:
+In this case we know from Newton that mass times acceleration equals force, therefore the direction of movement is in the opposite direction of the force.  In other words, if we push the mass from left to right (i.e. in the positive direction), then the mass will generate a force in the negative direction.  This would be the general rule for a single port component of any domain.  The exception is for a *through* variable **input** component, which should align the component and port connection *through* variables.  For example, a force input diagram would look like this:
 
 ![force](force_input.svg)
 
@@ -50,7 +50,7 @@ The energy disipation equation that governs the acausal connection definitions s
 \frac{\partial \blue across}{\partial t} = \text{ {\green through} input}
 ```
 
-This is demonstrated in the following domains of `Mechanical`, `Electrial`, and `Hydraulic`.
+This is demonstrated in the following domains of `Mechanical`, `Electrical`, and `Hydraulic`.
 
 ## Mechanical
 
@@ -118,7 +118,7 @@ full_equations(sys)
 
 ## Hydraulic
 
-A positve input mass flow leads to an increasing pressure (in this case we get incresing density (`rho`), which is directly related to an increasing pressure).
+A positive input mass flow leads to an increasing pressure (in this case we get increasing density (`rho`), which is directly related to an increasing pressure).
 
 ```@example sign_convention
 using ModelingToolkitStandardLibrary.Hydraulic.IsothermalCompressible
