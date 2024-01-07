@@ -34,7 +34,7 @@ To visualize the sign convention, one can draw the orientation of the connector 
 
 ![mass](mass.svg)
 
-In this case we know from Newton that mass times acceleration equals force, therefore the direction of movement is in the opposite direction of the force.  In other words, if we push the mass from left to right (i.e. in the positive direction), then the mass will generate a force in the negative direction.  This would be the general rule for a single port component of any domain.  The exception is for a *thourgh* variable input component, which should align the component and port connection *through* variables
+In this case we know from Newton that mass times acceleration equals force, therefore the direction of movement is in the opposite direction of the force.  In other words, if we push the mass from left to right (i.e. in the positive direction), then the mass will generate a force in the negative direction.  This would be the general rule for a single port component of any domain.  The exception is for a *thourgh* variable **input** component, which should align the component and port connection *through* variables.  For example, a force input diagram would look like this:
 
 ![force](force_input.svg)
 
@@ -73,7 +73,7 @@ D = Differential(t)
     end
 end
 @mtkbuild sys = System()
-foreach(println, full_equations(sys))
+full_equations(sys)
 ```
 
 ## Electrical
