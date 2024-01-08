@@ -47,3 +47,30 @@ See [OnePort](@ref)
         i ~ I.u
     end
 end
+
+"""
+    ConstantCurrent(; i=0, name)
+
+Acts as an ideal constant current source with no internal resistance.
+
+# Connectors:
+  - `p`: positive pin
+  - `n`: negative pin
+
+# Parameters:
+  - `i`: input current
+
+"""
+@mtkmodel ConstantCurrent begin
+    @parameters begin
+        i = 0
+    end
+    @components begin
+        p = Pin()
+        n = Pin()
+    end
+    @equations begin
+        0 ~ p.i + n.i
+        i ~ -n.i
+    end
+end
