@@ -217,7 +217,7 @@ lsys = ss(matrices...) |> sminreal
 @test lsys.nx == 8
 
 stepres = ControlSystemsBase.step(c2d(lsys, 0.001), 4)
-@test stepres.y[:]≈sol(0:0.001:4, idxs = model.inertia2.phi) rtol=1e-4
+@test stepres.y[:]≈Array(sol(0:0.001:4, idxs = model.inertia2.phi)) rtol=1e-4
 
 # plot(stepres, plotx=true, ploty=true, size=(800, 1200), leftmargin=5Plots.mm)
 # plot!(sol, vars = [model.inertia2.phi], sp=1, l=:dash)
