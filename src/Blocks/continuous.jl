@@ -245,7 +245,7 @@ Text-book version of a PID-controller without actuator saturation and anti-windu
 See also [`LimPID`](@ref)
 """
 @component function PID(; name, k = 1, Ti = false, Td = false, Nd = 10, int__x = 0,
-    der__x = 0)
+        der__x = 0)
     with_I = !isequal(Ti, false)
     with_D = !isequal(Td, false)
     @named err_input = RealInput() # control error
@@ -386,13 +386,13 @@ where the transfer function for the derivative includes additional filtering, se
   - `ctr_output`
 """
 @component function LimPID(; name, k = 1, Ti = false, Td = false, wp = 1, wd = 1,
-    Ni = Ti == 0 ? Inf : √(max(Td / Ti, 1e-6)),
-    Nd = 10,
-    u_max = Inf,
-    u_min = u_max > 0 ? -u_max : -Inf,
-    gains = false,
-    int__x = 0.0,
-    der__x = 0.0)
+        Ni = Ti == 0 ? Inf : √(max(Td / Ti, 1e-6)),
+        Nd = 10,
+        u_max = Inf,
+        u_min = u_max > 0 ? -u_max : -Inf,
+        gains = false,
+        int__x = 0.0,
+        der__x = 0.0)
     with_I = !isequal(Ti, false)
     with_D = !isequal(Td, false)
     with_AWM = Ni != Inf
@@ -522,7 +522,7 @@ y &= h(x, u)
 linearized around the operating point `x₀, u₀`, we have `y0, u0 = h(x₀, u₀), u₀`.
 """
 @component function StateSpace(; A, B, C, D = nothing, x = zeros(size(A, 1)), name,
-    u0 = zeros(size(B, 2)), y0 = zeros(size(C, 1)))
+        u0 = zeros(size(B, 2)), y0 = zeros(size(C, 1)))
     nx, nu, ny = size(A, 1), size(B, 2), size(C, 1)
     size(A, 2) == nx || error("`A` has to be a square matrix.")
     size(B, 1) == nx || error("`B` has to be of dimension ($nx x $nu).")

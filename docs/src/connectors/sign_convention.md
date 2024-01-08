@@ -43,7 +43,6 @@ In this case we know from Newton that mass times acceleration equals force, ther
 For a 2 port connection component, then the *through* variable is exiting each connection port in opposing directions.  Using a damper as an example, if the positive direction is to the right, then the force of the damper is pushing left (i.e. in the negative direction) on connection port `a` and right (positive direction) on connection port `b`.
 
 ![damper](damper.svg) -->
-
 # Discussion
 
 The energy disipation equation that governs the acausal connection definitions should be such that a positive *through* variable input will lead to an increasing *across* variable value.
@@ -55,6 +54,7 @@ The energy disipation equation that governs the acausal connection definitions s
 This is demonstrated in the following domains of `Mechanical`, `Electrical`, and `Hydraulic`.
 
 ## Mechanical
+
 The flow variable (i.e. force) input component for the `Mechanical` domain is
 
 ```julia
@@ -95,6 +95,7 @@ full_equations(sys)
 ```
 
 ## Electrical
+
 The flow variable (i.e. current) input component for the `Electrial` domain is
 
 ```julia
@@ -121,7 +122,7 @@ using ModelingToolkitStandardLibrary.Electrical
 @mtkmodel System begin
     @components begin
         capacitor = Capacitor(; C = 10)
-        current = ConstantCurrent(; i=1)
+        current = ConstantCurrent(; i = 1)
         ground = Ground()
     end
     @equations begin
@@ -139,7 +140,7 @@ Reversing the pins gives the same result
 @mtkmodel System begin
     @components begin
         capacitor = Capacitor(; C = 10)
-        current = ConstantCurrent(; i=1)
+        current = ConstantCurrent(; i = 1)
         ground = Ground()
     end
     @equations begin
@@ -151,8 +152,8 @@ end
 full_equations(sys)
 ```
 
-
 ## Hydraulic
+
 The flow variable (i.e. mass flow) input component for the `Hydraulic` domain is
 
 ```julia
@@ -178,7 +179,7 @@ using ModelingToolkitStandardLibrary.Hydraulic.IsothermalCompressible
 @mtkmodel System begin
     @components begin
         volume = FixedVolume(; vol = 10.0, p_int = 0.0)
-        flow = ConstantMassFlow(; dm=1)
+        flow = ConstantMassFlow(; dm = 1)
         fluid = HydraulicFluid()
     end
     @equations begin
