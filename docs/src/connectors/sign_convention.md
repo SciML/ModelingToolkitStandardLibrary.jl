@@ -96,7 +96,7 @@ full_equations(sys)
 
 ## Electrical
 
-The flow variable (i.e. current) input component for the `Electrial` domain is
+The flow variable (i.e. current) input component for the `Electrical` domain is
 
 ```julia
 @mtkmodel ConstantCurrent begin
