@@ -47,5 +47,3 @@ See [OnePort](@ref)
         i ~ I.u
     end
 end
-
-
