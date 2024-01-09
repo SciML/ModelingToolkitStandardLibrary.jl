@@ -8,29 +8,6 @@ Hydraulic mass flow input source
   - `port`: hydraulic port
   - `dm`: real input 
 """
-@mtkmodel ConstantMassFlow begin
-    @parameters begin
-        p_int
-        dm = 0
-    end
-    @components begin
-        port = HydraulicPort(; p_int)
-    end
-    @equations begin
-        port.dm ~ -dm
-    end
-end
-
-"""
-    MassFlow(; name, p_int)
-
-Hydraulic mass flow input source
-
-# Connectors:
-
-  - `port`: hydraulic port
-  - `dm`: real input 
-"""
 @component function MassFlow(; name, p_int)
     pars = @parameters p_int = p_int
 

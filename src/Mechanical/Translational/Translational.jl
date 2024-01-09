@@ -18,7 +18,7 @@ include("utils.jl")
 export Mass, Spring, Damper, Fixed
 include("components.jl")
 
-export ConstantForce, Force, Position, Velocity, Acceleration
+export Force, Position, Velocity, Acceleration
 include("sources.jl")
 
 export ForceSensor, PositionSensor

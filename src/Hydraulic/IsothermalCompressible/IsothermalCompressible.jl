@@ -19,7 +19,7 @@ include("utils.jl")
 export Cap, Tube, FixedVolume, DynamicVolume
 include("components.jl")
 
-export ConstantMassFlow, MassFlow, Pressure, FixedPressure
+export MassFlow, Pressure, FixedPressure
 include("sources.jl")
 
 end
