@@ -13,9 +13,12 @@
 end</code></pre><p>And writing the following would be the <em>incorrect</em> sign convention.</p><pre><code class="language-julia hljs">@equations begin
     # connectors
     flange.f ~ f # &lt;-- wrong through variable input sign!
-end</code></pre><p>&lt;!– To visualize the sign convention, one can draw the orientation of the connector port <em>across</em> and <em>through</em> variables and the subsequent component variables.  For example, the <code>Mechanical.Translation</code> mass component would look like</p><p><img src="mass.svg" alt="mass"/></p><p>In this case we know from Newton that mass times acceleration equals force, therefore the direction of movement is in the opposite direction of the force.  In other words, if we push the mass from left to right (i.e. in the positive direction), then the mass will generate a force in the negative direction.  This would be the general rule for a single port component of any domain.  The exception is for a <em>through</em> variable <strong>input</strong> component, which should align the component and port connection <em>through</em> variables.  For example, a force input diagram would look like this:</p><p><img src="force_input.svg" alt="force"/></p><p>For a 2 port connection component, then the <em>through</em> variable is exiting each connection port in opposing directions.  Using a damper as an example, if the positive direction is to the right, then the force of the damper is pushing left (i.e. in the negative direction) on connection port <code>a</code> and right (positive direction) on connection port <code>b</code>.</p><p><img src="damper.svg" alt="damper"/> –&gt;</p><h1 id="Discussion"><a class="docs-heading-anchor" href="#Discussion">Discussion</a><a id="Discussion-1"></a><a class="docs-heading-anchor-permalink" href="#Discussion" title="Permalink"></a></h1><p>The energy disipation equation that governs the acausal connection definitions should be such that a positive <em>through</em> variable input will lead to an increasing <em>across</em> variable value.</p><p class="math-container">\[\frac{\partial \blue across}{\partial t} = \text{ {\green through} input}\]</p><p>This is demonstrated in the following domains of <code>Mechanical</code>, <code>Electrical</code>, and <code>Hydraulic</code>.</p><h2 id="Mechanical"><a class="docs-heading-anchor" href="#Mechanical">Mechanical</a><a id="Mechanical-1"></a><a class="docs-heading-anchor-permalink" href="#Mechanical" title="Permalink"></a></h2><p>The flow variable (i.e. force) input component for the <code>Mechanical</code> domain is</p><pre><code class="language-julia hljs">@mtkmodel ConstantForce begin
+end</code></pre><p>&lt;!– To visualize the sign convention, one can draw the orientation of the connector port <em>across</em> and <em>through</em> variables and the subsequent component variables.  For example, the <code>Mechanical.Translation</code> mass component would look like</p><p><img src="mass.svg" alt="mass"/></p><p>In this case we know from Newton that mass times acceleration equals force, therefore the direction of movement is in the opposite direction of the force.  In other words, if we push the mass from left to right (i.e. in the positive direction), then the mass will generate a force in the negative direction.  This would be the general rule for a single port component of any domain.  The exception is for a <em>through</em> variable <strong>input</strong> component, which should align the component and port connection <em>through</em> variables.  For example, a force input diagram would look like this:</p><p><img src="force_input.svg" alt="force"/></p><p>For a 2 port connection component, then the <em>through</em> variable is exiting each connection port in opposing directions.  Using a damper as an example, if the positive direction is to the right, then the force of the damper is pushing left (i.e. in the negative direction) on connection port <code>a</code> and right (positive direction) on connection port <code>b</code>.</p><p><img src="damper.svg" alt="damper"/> –&gt;</p><h1 id="Discussion"><a class="docs-heading-anchor" href="#Discussion">Discussion</a><a id="Discussion-1"></a><a class="docs-heading-anchor-permalink" href="#Discussion" title="Permalink"></a></h1><p>The energy disipation equation that governs the acausal connection definitions should be such that a positive <em>through</em> variable input will lead to an increasing <em>across</em> variable value.</p><p class="math-container">\[\frac{\partial \blue across}{\partial t} = \text{ {\green through} input}\]</p><p>This is demonstrated in the following domains of <code>Mechanical</code>, <code>Electrical</code>, and <code>Hydraulic</code>.</p><h2 id="Mechanical"><a class="docs-heading-anchor" href="#Mechanical">Mechanical</a><a id="Mechanical-1"></a><a class="docs-heading-anchor-permalink" href="#Mechanical" title="Permalink"></a></h2><p>The flow variable (i.e. force) input component for the <code>Mechanical</code> domain is</p><pre><code class="language-julia hljs">using ModelingToolkit
+using ModelingToolkitStandardLibrary.Mechanical.Translational
+
+@mtkmodel ConstantForce begin
     @parameters begin
-        f = 0
+        f
     end
     @components begin
         flange = MechanicalPort()
@@ -24,13 +27,7 @@ end</code></pre><p>&lt;!– To visualize the sign convention, one can draw the o
         # connectors
         flange.f ~ -f
     end
-end</code></pre><p>Here we can see that a positive input force results in an increasing velocity.</p><pre><code class="language-julia hljs">using ModelingToolkit
-using ModelingToolkitStandardLibrary.Mechanical.Translational
-
-@parameters t
-D = Differential(t)
-
-@mtkmodel System begin
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ModelingToolkit.Model{typeof(Main.__ConstantForce__), Dict{Symbol, Any}}(Main.__ConstantForce__, Dict{Symbol, Any}(:components =&gt; Any[Union{Expr, Symbol}[:flange, :MechanicalPort]], :kwargs =&gt; Dict{Symbol, Any}(:f =&gt; nothing), :independent_variable =&gt; t, :parameters =&gt; Dict{Symbol, Dict{Symbol, Any}}(:f =&gt; Dict()), :equations =&gt; Any[&quot;flange.f ~ -f&quot;]), false)</code></pre><p>Here we can see that a positive input force results in an increasing velocity.</p><pre><code class="language-julia hljs">@mtkmodel System begin
     @components begin
         mass = Mass(; m = 10)
         force = ConstantForce(; f = 1)
@@ -43,9 +40,11 @@ end
 full_equations(sys)</code></pre><p class="math-container">\[ \begin{align}
 \frac{\mathrm{d} mass_{+}v\left( t \right)}{\mathrm{d}t} =&amp; \frac{force_{+}f}{mass_{+}m}
 \end{align}
- \]</p><h2 id="Electrical"><a class="docs-heading-anchor" href="#Electrical">Electrical</a><a id="Electrical-1"></a><a class="docs-heading-anchor-permalink" href="#Electrical" title="Permalink"></a></h2><p>The flow variable (i.e. current) input component for the <code>Electrical</code> domain is</p><pre><code class="language-julia hljs">@mtkmodel ConstantCurrent begin
+ \]</p><h2 id="Electrical"><a class="docs-heading-anchor" href="#Electrical">Electrical</a><a id="Electrical-1"></a><a class="docs-heading-anchor-permalink" href="#Electrical" title="Permalink"></a></h2><p>The flow variable (i.e. current) input component for the <code>Electrical</code> domain is</p><pre><code class="language-julia hljs">using ModelingToolkitStandardLibrary.Electrical
+
+@mtkmodel ConstantCurrent begin
     @parameters begin
-        i = 0
+        i
     end
     @components begin
         p = Pin()
@@ -55,9 +54,7 @@ full_equations(sys)</code></pre><p class="math-container">\[ \begin{align}
         0 ~ p.i + n.i
         i ~ -n.i # can also be written as i ~ p.i
     end
-end</code></pre><p>Here we can see that a positive input current results in an increasing voltage. Note that the electrical domain uses pins <code>p</code> and <code>n</code> at each side of the source and energy storage components.  The direction of connection is not important here, only that a positive connector <code>p</code> connects with a negative connector <code>n</code>.</p><pre><code class="language-julia hljs">using ModelingToolkitStandardLibrary.Electrical
-
-@mtkmodel System begin
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ModelingToolkit.Model{typeof(Main.__ConstantCurrent__), Dict{Symbol, Any}}(Main.__ConstantCurrent__, Dict{Symbol, Any}(:components =&gt; Any[Union{Expr, Symbol}[:p, :Pin], Union{Expr, Symbol}[:n, :Pin]], :kwargs =&gt; Dict{Symbol, Any}(:i =&gt; nothing), :independent_variable =&gt; t, :parameters =&gt; Dict{Symbol, Dict{Symbol, Any}}(:i =&gt; Dict()), :equations =&gt; Any[&quot;0 ~ p.i + n.i&quot;, &quot;0 ~ p.i + n.i&quot;, &quot;i ~ -(n.i)&quot;]), false)</code></pre><p>Here we can see that a positive input current results in an increasing voltage. Note that the electrical domain uses pins <code>p</code> and <code>n</code> at each side of the source and energy storage components.  The direction of connection is not important here, only that a positive connector <code>p</code> connects with a negative connector <code>n</code>.</p><pre><code class="language-julia hljs">@mtkmodel System begin
     @components begin
         capacitor = Capacitor(; C = 10)
         current = ConstantCurrent(; i = 1)
@@ -87,10 +84,12 @@ end
 full_equations(sys)</code></pre><p class="math-container">\[ \begin{align}
 \frac{\mathrm{d} capacitor_{+}v\left( t \right)}{\mathrm{d}t} =&amp; \frac{current_{+}i}{capacitor_{+}C}
 \end{align}
- \]</p><h2 id="Hydraulic"><a class="docs-heading-anchor" href="#Hydraulic">Hydraulic</a><a id="Hydraulic-1"></a><a class="docs-heading-anchor-permalink" href="#Hydraulic" title="Permalink"></a></h2><p>The flow variable (i.e. mass flow) input component for the <code>Hydraulic</code> domain is</p><pre><code class="language-julia hljs">@mtkmodel ConstantMassFlow begin
+ \]</p><h2 id="Hydraulic"><a class="docs-heading-anchor" href="#Hydraulic">Hydraulic</a><a id="Hydraulic-1"></a><a class="docs-heading-anchor-permalink" href="#Hydraulic" title="Permalink"></a></h2><p>The flow variable (i.e. mass flow) input component for the <code>Hydraulic</code> domain is</p><pre><code class="language-julia hljs">using ModelingToolkitStandardLibrary.Hydraulic.IsothermalCompressible
+
+@mtkmodel ConstantMassFlow begin
     @parameters begin
         p_int
-        dm = 0
+        dm
     end
     @components begin
         port = HydraulicPort(; p_int)
@@ -98,9 +97,7 @@ full_equations(sys)</code></pre><p class="math-container">\[ \begin{align}
     @equations begin
         port.dm ~ -dm
     end
-end</code></pre><p>A positive input mass flow leads to an increasing pressure (in this case we get increasing density (<code>rho</code>), which is directly related to an increasing pressure).</p><pre><code class="language-julia hljs">using ModelingToolkitStandardLibrary.Hydraulic.IsothermalCompressible
-
-@mtkmodel System begin
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ModelingToolkit.Model{typeof(Main.__ConstantMassFlow__), Dict{Symbol, Any}}(Main.__ConstantMassFlow__, Dict{Symbol, Any}(:components =&gt; Any[Union{Expr, Symbol}[:port, :HydraulicPort]], :kwargs =&gt; Dict{Symbol, Any}(:p_int =&gt; nothing, :dm =&gt; nothing), :independent_variable =&gt; t, :parameters =&gt; Dict{Symbol, Dict{Symbol, Any}}(:p_int =&gt; Dict(), :dm =&gt; Dict()), :equations =&gt; Any[&quot;port.dm ~ -dm&quot;]), false)</code></pre><p>A positive input mass flow leads to an increasing pressure (in this case we get increasing density (<code>rho</code>), which is directly related to an increasing pressure).</p><pre><code class="language-julia hljs">@mtkmodel System begin
     @components begin
         volume = FixedVolume(; vol = 10.0, p_int = 0.0)
         flow = ConstantMassFlow(; dm = 1)
@@ -115,4 +112,4 @@ end
 full_equations(sys) |&gt; first</code></pre><p class="math-container">\[ \begin{equation}
 \frac{\mathrm{d} volume_{+}rho\left( t \right)}{\mathrm{d}t} = \frac{flow_{+}dm}{volume_{+}vol}
 \end{equation}
- \]</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../connections/">« Theory</a><a class="docs-footer-nextpage" href="../../API/blocks/">Basic Blocks »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="auto">Automatic (OS)</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.2.1 on <span class="colophon-date" title="Tuesday 9 January 2024 12:48">Tuesday 9 January 2024</span>. Using Julia version 1.10.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+ \]</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../connections/">« Theory</a><a class="docs-footer-nextpage" href="../../API/blocks/">Basic Blocks »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="auto">Automatic (OS)</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.2.1 on <span class="colophon-date" title="Tuesday 9 January 2024 14:06">Tuesday 9 January 2024</span>. Using Julia version 1.10.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
