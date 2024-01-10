@@ -261,3 +261,43 @@ Electromotoric force (electric/mechanic transformer)
         flange.tau ~ -k * i
     end
 end
+
+"""
+    ChuaDiode(; name, Ga, Gb, Ve)
+
+Chua's Diode
+
+# States
+
+See [OnePort](@ref)
+
+# Connectors:
+
+  - `p` Positive pin
+  - `n` Negative pin
+
+# Parameters:
+
+  - `Ga` : [`Ohm`] Negative of the slope of the V-I curve when v < -Ve and v > V
+  - `Gb` : [`Ohm`] Negative of the slope of the V-I curve when -Ve < v < Ve
+  - `Ve` : [`V`] Absolute value of voltage where the behaviour of the diode changes
+"""
+@mtkmodel ChuaDiode begin
+    @extend v, i = oneport = OnePort()
+    @parameters begin
+        Ga = 1.0,
+        [description = "Negative of the slope of the V-I curve when v < -Ve and v > Ve"]
+        Gb = 1.0, [description = "Negative of the slope of the V-I curve when -Ve < v < Ve"]
+        Ve = 1.0,
+        [
+            description = "Absolute value of voltage where the behaviour of the diode changes",
+        ]
+    end
+    @equations begin
+        i ~ ifelse(v < -Ve,
+            Gb * (v + Ve) - Ga * Ve,
+            ifelse(v > Ve,
+                Gb * (v - Ve) + Ga * Ve,
+                Ga * v))
+    end
+end

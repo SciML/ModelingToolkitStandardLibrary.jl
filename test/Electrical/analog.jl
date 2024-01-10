@@ -369,3 +369,30 @@ end
         # savefig(plt, "test_current_$(source.name)")
     end
 end
+
+@testset "ChuaCircuit" begin
+    @parameters t
+    @named ChuaD = ChuaDiode(Ga = -0.757576, Gb = -0.409091, Ve = 1)
+    @named L = Inductor(L = 18, i = 0.0)
+    @named Ro = Resistor(R = 12.5e-3)
+    @named G = Conductor(G = 0.565)
+    @named C1 = Capacitor(C = 10, v = 4)
+    @named C2 = Capacitor(C = 100, v = 0.0)
+    @named Gnd = Ground()
+
+    connections = [connect(L.p, G.p)
+        connect(G.n, ChuaD.p)
+        connect(ChuaD.n, Gnd.g)
+        connect(C1.p, G.n)
+        connect(L.n, Ro.p)
+        connect(G.p, C2.p)
+        connect(C1.n, Gnd.g)
+        connect(C2.n, Gnd.g)
+        connect(Ro.n, Gnd.g)]
+
+    @named model = ODESystem(connections, t, systems = [L, Ro, G, C1, C2, ChuaD, Gnd])
+    sys = structural_simplify(model)
+    prob = ODEProblem(sys, Pair[], (0, 5e4), saveat = 0.01)
+    sol = solve(prob, Rodas4())
+    @test sol.retcode == Success
+end
