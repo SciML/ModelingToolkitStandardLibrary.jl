@@ -6,6 +6,7 @@ pages = [
         "Thermal Conduction Model" => "tutorials/thermal_model.md",
         "DC Motor with Speed Controller" => "tutorials/dc_motor_pi.md",
         "SampledData Component" => "tutorials/input_component.md",
+        "tutorials/cauer_low_pass_analog.md"
     ],
     "About Acausal Connections" => "connectors/connections.md",
     "API" => [
