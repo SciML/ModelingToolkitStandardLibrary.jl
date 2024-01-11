@@ -1,29 +1,47 @@
+
 name: IntegrationTest
 on:
-  push:
-    branches: [master]
-    tags: [v*]
   pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - 'docs/**'
+  push:
+    branches:
+      - main
+    tags:
+      - v*
+    paths-ignore:
+      - 'docs/**'
+  schedule:
+    - cron: '41 10 * * 0'
 
 jobs:
   test:
-    name: ${{ matrix.package.repo }}/${{ matrix.package.group }}/${{ matrix.julia-version }}
+    name: ${{ matrix.package.repo }}/${{ matrix.package.group }}/${{ matrix.version }}
     runs-on: ${{ matrix.os }}
     env:
       GROUP: ${{ matrix.package.group }}
     strategy:
       fail-fast: false
       matrix:
-        julia-version: [1]
-        os: [ubuntu-latest]
         package:
-          - {user: SciML, repo: ModelingToolkit.jl}
+          - {user: SciML, repo: ModelingToolkit.jl, group: All}
+        version:
+          - '1'
+        os:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
     steps:
       - uses: actions/checkout@v4
       - uses: julia-actions/setup-julia@v1
         with:
-          version: ${{ matrix.julia-version }}
+          version: ${{ matrix.version }}
           arch: x64
+      - uses: julia-actions/cache@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
       - uses: julia-actions/julia-buildpkg@latest
       - name: Clone Downstream
         uses: actions/checkout@v4
@@ -31,7 +49,7 @@ jobs:
           repository: ${{ matrix.package.user }}/${{ matrix.package.repo }}
           path: downstream
       - name: Load this and run the downstream tests
-        shell: julia --color=yes --project=downstream {0}
+        shell: julia --color=yes --depwarn=error --project=downstream {0}
         run: |
           using Pkg
           try

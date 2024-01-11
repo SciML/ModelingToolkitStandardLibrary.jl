@@ -276,7 +276,7 @@ _damped_sine_wave(x, f, A, st, ϕ, d) = exp((st - x) * d) * A * sin(2 * π * f *
 
     for i in 1:lastindex(sources)
         source = sources[i]
-        @info "Testing Voltage with $(source.name) source"
+        @info "Testing Voltage with $(source.get_name) source"
         eqs = [connect(source.output, voltage.V)
             connect(voltage.p, voltage_sensor.p, res.p)
             connect(res.n, cap.p)
