@@ -592,7 +592,7 @@ dm ────►               │  │ area
         x_min = x_min
         x_damp = x_damp
 
-        direction = direction
+        # direction = direction
 
         perimeter = perimeter
         shape_factor = shape_factor
@@ -671,18 +671,20 @@ dm ────►               │  │ area
             push!(volumes, comp)
         end
 
-        push!(eqs, connect(moving_volume.port, volumes[1].port, pipe_bases[1].port_a))
-        push!(eqs, connect(pipe_bases[end].port_b, damper.port_a))
-        for i in 2:N
+        push!(eqs, connect(moving_volume.port, volumes[end].port, pipe_bases[end].port_a))
+        push!(eqs, connect(pipe_bases[1].port_b, damper.port_a))
+        for i in 1:N-1
             push!(eqs,
-                connect(volumes[i].port, pipe_bases[i - 1].port_b, pipe_bases[i].port_a))
+                connect(volumes[i].port, pipe_bases[i + 1].port_b, pipe_bases[i].port_a))
         end
 
         for i in 1:N
-            push!(eqs,
-                volumes[i].dx ~ ifelse((vol >= (i - 1) * (x_max / N) * area) &
-                                       (vol < (i) * (x_max / N) * area),
-                    flange.v * direction, 0))
+            
+                push!(eqs,
+                    volumes[i].dx ~ ifelse((vol >= (i - 1) * (x_max / N) * area) &
+                                           (vol < (i) * (x_max / N) * area),
+                        direction*flange.v, 0))
+
             push!(eqs, pipe_bases[i].x ~ volumes[i].vol / volumes[i].area)
         end
     else
