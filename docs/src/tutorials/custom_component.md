@@ -132,7 +132,7 @@ Plots.savefig("chua_phase_plane.png")
 nothing # hide
 
 Plots.plot(sol; idxs = [C1.v, C2.v, L.i],
-    labels = ["C1 Voltage in V" "C1 Voltage in V" "Inductor Current in A"])
+    labels = ["C1 Voltage in V" "C2 Voltage in V" "Inductor Current in A"])
 Plots.savefig("chua.png")
 nothing # hide
 ```
