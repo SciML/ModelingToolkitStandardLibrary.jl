@@ -105,7 +105,7 @@ Additional code could be added to resolve this issue, for example by using a `Re
 
 ## `SampledData` Component
 
-To resolve the issues presented above, the `ModelingToolkitStandardLibrary.Blocks.SampledData` component can be used which allows for a resusable `ODESystem` and self contained data which ensures a solution which remains valid for it's lifetime.  Now it's possible to also parallelize the call to `solve()`.
+To resolve the issues presented above, the `ModelingToolkitStandardLibrary.Blocks.SampledData` component can be used which allows for a resusable `ODESystem` and self contained data which ensures a solution which remains valid for its lifetime.  Now it's possible to also parallelize the call to `solve()`.
 
 ```julia
 function System(; name)
