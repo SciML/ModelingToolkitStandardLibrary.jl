@@ -109,7 +109,7 @@ To resolve the issues presented above, the `ModelingToolkitStandardLibrary.Block
 
 ```julia
 function System(; name)
-    src = SampledData(Float64)
+    @named src = SampledData(Float64)
 
     vars = @variables f(t)=0 x(t)=0 dx(t)=0 ddx(t)=0
     pars = @parameters m=10 k=1000 d=1
