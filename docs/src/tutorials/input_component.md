@@ -22,7 +22,7 @@ using OrdinaryDiffEq
 D = Differential(t)
 
 function System(f; name)
-    src = TimeVaryingFunction(f)
+    @named src = TimeVaryingFunction(f)
 
     vars = @variables f(t)=0 x(t)=0 dx(t)=0 ddx(t)=0
     pars = @parameters m=10 k=1000 d=1
