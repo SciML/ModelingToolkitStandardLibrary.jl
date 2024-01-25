@@ -13,7 +13,7 @@ function ap_var(sys)
         # collect to turn symbolic arrays into arrays of symbols
         return length(sys.u) == 1 ? sys.u : collect(sys.u)
     end
-    x = states(sys)
+    x = unknowns(sys)
     length(x) == 1 && return x[1]
     error("Could not determine the analysis-point variable in system $(nameof(sys)). To use an analysis point, apply it to a connection between two causal blocks containing connectors of type `RealInput/RealOutput` from ModelingToolkitStandardLibrary.Blocks.")
 end

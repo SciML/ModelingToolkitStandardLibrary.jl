@@ -23,11 +23,11 @@ eqs = [connect(link1.TX1, cart.flange) #, force.flange)
 @named model = ODESystem(eqs, t, [], []; systems = [link1, link2, cart, fixed])
 
 sys = structural_simplify(model)
-@test length(states(sys)) == 6
+@test length(unknowns(sys)) == 6
 
 # The below code does work...
 #=
-unset_vars = setdiff(states(sys), keys(ModelingToolkit.defaults(sys)))
+unset_vars = setdiff(unknowns(sys), keys(ModelingToolkit.defaults(sys)))
 prob = ODEProblem(sys, unset_vars .=> 0.0, (0.0, 20), []; jac = true)
 sol = solve(prob, Rodas5P())
 
@@ -45,7 +45,7 @@ f
 
 function plot_link(sol, sys, tmax)
     tm = Observable(0.0)
-    idx = Dict(reverse.(enumerate(states(sys))))
+    idx = Dict(reverse.(enumerate(unknowns(sys))))
 
     fig = Figure()
     a = Axis(fig[1,1], aspect=DataAspect(), )
