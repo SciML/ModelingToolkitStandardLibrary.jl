@@ -7,7 +7,10 @@ pages = [
         "DC Motor with Speed Controller" => "tutorials/dc_motor_pi.md",
         "SampledData Component" => "tutorials/input_component.md",
     ],
-    "About Acausal Connections" => "connectors/connections.md",
+    "About Acausal Connections" => [
+        "Theory" => "connectors/connections.md",
+        "Sign Convention" => "connectors/sign_convention.md",
+    ],
     "API" => [
         "Basic Blocks" => "API/blocks.md",
         "Electrical Components" => "API/electrical.md",

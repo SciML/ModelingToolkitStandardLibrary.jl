@@ -65,9 +65,9 @@ Variable length internal flow model of the fully developed incompressible flow f
 - `port_b`: hydraulic port
 """
 @component function TubeBase(add_inertia = true, variable_length = true; p_int, area,
-    length_int, head_factor = 1,
-    perimeter = 2 * sqrt(area * pi),
-    shape_factor = 64, name)
+        length_int, head_factor = 1,
+        perimeter = 2 * sqrt(area * pi),
+        shape_factor = 64, name)
     pars = @parameters begin
         p_int = p_int
         area = area
@@ -150,8 +150,8 @@ Constant length internal flow model discretized by `N` (`FixedVolume`: `N`, `Tub
 - `port_b`: hydraulic port
 """
 @component function Tube(N, add_inertia = true; p_int, area, length, head_factor = 1,
-    perimeter = 2 * sqrt(area * pi),
-    shape_factor = 64, name)
+        perimeter = 2 * sqrt(area * pi),
+        shape_factor = 64, name)
     @assert(N>0,
         "the Tube component must be defined with at least 1 segment (i.e. N>0), found N=$N")
 
@@ -263,7 +263,7 @@ Reduces the flow from `port_a` to `port_b` by `n`.  Useful for modeling parallel
 end
 
 @component function ValveBase(reversible = false; p_a_int, p_b_int, minimum_area = 0,
-    area_int, Cd, Cd_reverse = Cd, name)
+        area_int, Cd, Cd_reverse = Cd, name)
     pars = @parameters begin
         p_a_int = p_a_int
         p_b_int = p_b_int
@@ -329,9 +329,9 @@ Valve with `area` input and discharge coefficient `Cd` defined by https://en.wik
 - `area`: real input setting the valve `area`.  When `reversible = true`, negative input reverses flow direction, otherwise a floor of `minimum_area` is enforced.
 """
 @component function Valve(reversible = false; p_a_int, p_b_int,
-    area_int, Cd, Cd_reverse = Cd,
-    minimum_area = 0,
-    name)
+        area_int, Cd, Cd_reverse = Cd,
+        minimum_area = 0,
+        name)
     pars = @parameters begin
         p_a_int = p_a_int
         p_b_int = p_b_int
@@ -359,7 +359,7 @@ Valve with `area` input and discharge coefficient `Cd` defined by https://en.wik
 end
 
 @component function VolumeBase(; p_int, x_int = 0, area, dead_volume = 0, Χ1 = 1, Χ2 = 1,
-    name)
+        name)
     pars = @parameters begin
         p_int = p_int
         x_int = x_int
@@ -431,6 +431,89 @@ Fixed fluid volume.
 end
 
 """
+    Volume(; x, dx=0, p, drho=0, dm=0, area, direction = +1, name)
+
+Volume with moving wall with `flange` connector for converting hydraulic energy to 1D mechanical.  The `direction` argument aligns the mechanical port with the hydraulic port, useful when connecting two dynamic volumes together in oppsing directions to create an actuator.
+
+```
+     ┌─────────────────┐ ───
+     │                 │  ▲
+                       │  │
+dm ────►               │  │ area
+                       │  │
+     │                 │  ▼
+     └─────────────────┤ ───
+                       │
+                       └─► x (= ∫ flange.v * direction)
+```
+
+# Parameters:
+## volume
+- `p`: [Pa] initial pressure
+- `area`: [m^2] moving wall area
+- `x`: [m] initial wall position
+- `dx=0`: [m/s] initial wall velocity
+- `drho=0`: [kg/m^3/s] initial density derivative
+- `dm=0`: [kg/s] initial flow
+
+- `direction`: [+/-1] applies the direction conversion from the `flange` to `x`
+
+# Connectors:
+- `port`: hydraulic port
+- `flange`: mechanical translational port
+
+See also [`FixedVolume`](@ref), [`DynamicVolume`](@ref)
+"""
+@component function Volume(;
+        #initial conditions
+        x,
+        dx = 0,
+        p,
+        drho = 0,
+        dm = 0,
+
+        #parameters
+        area,
+        direction = +1, name)
+    pars = @parameters begin
+        area = area
+    end
+
+    vars = @variables begin
+        x(t) = x
+        dx(t) = dx
+        p(t) = p
+        f(t) = p * area
+        rho(t)
+        drho(t) = drho
+        dm(t) = dm
+    end
+
+    systems = @named begin
+        port = HydraulicPort(; p_int = p)
+        flange = MechanicalPort(; f, v = dx)
+    end
+
+    eqs = [
+    # connectors
+        port.p ~ p
+        port.dm ~ dm
+        flange.v * direction ~ dx
+        flange.f * direction ~ -f
+
+    # differentials
+        D(x) ~ dx
+        D(rho) ~ drho
+
+    # physics
+        rho ~ liquid_density(port, p)
+        f ~ p * area
+        dm ~ drho * x * area + rho * dx * area]
+
+    ODESystem(eqs, t, vars, pars; name, systems, defaults = [rho => liquid_density(port)])
+end
+
+"""
 DynamicVolume(N, add_inertia=true; p_int,  area, x_int = 0, x_max, x_min = 0, x_damp = x_min, direction = +1, perimeter = 2 * sqrt(area * pi), shape_factor = 64, head_factor = 1, Cd = 1e2, Cd_reverse = Cd, name)
 
 Volume with moving wall with `flange` connector for converting hydraulic energy to 1D mechanical.  The `direction` argument aligns the mechanical port with the hydraulic port, useful when connecting two dynamic volumes together in oppsing directions to create an actuator.
@@ -477,24 +560,24 @@ dm ────►               │  │ area
 - `flange`: mechanical translational port
 """
 @component function DynamicVolume(N, add_inertia = true, reversible = false;
-    p_int,
-    area,
-    x_int = 0,
-    x_max,
-    x_min = 0,
-    x_damp = x_min,
-    direction = +1,
+        p_int,
+        area,
+        x_int = 0,
+        x_max,
+        x_min = 0,
+        x_damp = x_min,
+        direction = +1,
 
-    # Tube
-    perimeter = 2 * sqrt(area * pi),
-    shape_factor = 64,
-    head_factor = 1,
+        # Tube
+        perimeter = 2 * sqrt(area * pi),
+        shape_factor = 64,
+        head_factor = 1,
 
-    # Valve
-    Cd = 1e2,
-    Cd_reverse = Cd,
-    minimum_area = 0,
-    name)
+        # Valve
+        Cd = 1e2,
+        Cd_reverse = Cd,
+        minimum_area = 0,
+        name)
     @assert(N>=0,
         "the Tube component must be defined with 0 or more segments (i.e. N>=0), found N=$N")
     @assert (direction == +1)||(direction == -1) "direction argument must be +/-1, found $direction"
@@ -509,7 +592,7 @@ dm ────►               │  │ area
         x_min = x_min
         x_damp = x_damp
 
-        direction = direction
+        # direction = direction
 
         perimeter = perimeter
         shape_factor = shape_factor
@@ -588,18 +671,19 @@ dm ────►               │  │ area
             push!(volumes, comp)
         end
 
-        push!(eqs, connect(moving_volume.port, volumes[1].port, pipe_bases[1].port_a))
-        push!(eqs, connect(pipe_bases[end].port_b, damper.port_a))
-        for i in 2:N
+        push!(eqs, connect(moving_volume.port, volumes[end].port, pipe_bases[end].port_a))
+        push!(eqs, connect(pipe_bases[1].port_b, damper.port_a))
+        for i in 1:(N - 1)
             push!(eqs,
-                connect(volumes[i].port, pipe_bases[i - 1].port_b, pipe_bases[i].port_a))
+                connect(volumes[i].port, pipe_bases[i + 1].port_b, pipe_bases[i].port_a))
         end
 
         for i in 1:N
             push!(eqs,
                 volumes[i].dx ~ ifelse((vol >= (i - 1) * (x_max / N) * area) &
                                        (vol < (i) * (x_max / N) * area),
-                    flange.v * direction, 0))
+                    direction * flange.v, 0))
+
             push!(eqs, pipe_bases[i].x ~ volumes[i].vol / volumes[i].area)
         end
     else
@@ -647,7 +731,7 @@ end
 end
 
 @component function SpoolValve2Way(reversible = false; p_s_int, p_a_int, p_b_int, p_r_int,
-    m, g, x_int, Cd, d, name)
+        m, g, x_int, Cd, d, name)
     pars = @parameters begin
         p_s_int = p_s_int
         p_a_int = p_a_int
@@ -690,28 +774,28 @@ end
 end
 
 @component function Actuator(N, add_inertia = true, reversible = false;
-    p_a_int,
-    p_b_int,
-    area_a,
-    area_b,
-    perimeter_a = 2 * sqrt(area_a * pi),
-    perimeter_b = 2 * sqrt(area_b * pi),
-    length_a_int,
-    length_b_int,
-    shape_factor_a = 64,
-    shape_factor_b = 64,
-    head_factor_a = 1,
-    head_factor_b = 1,
-    m,
-    g,
-    x_int = 0,
-    minimum_volume_a = 0,
-    minimum_volume_b = 0,
-    damping_volume_a = minimum_volume_a,
-    damping_volume_b = minimum_volume_b,
-    Cd = 1e4,
-    Cd_reverse = Cd,
-    name)
+        p_a_int,
+        p_b_int,
+        area_a,
+        area_b,
+        perimeter_a = 2 * sqrt(area_a * pi),
+        perimeter_b = 2 * sqrt(area_b * pi),
+        length_a_int,
+        length_b_int,
+        shape_factor_a = 64,
+        shape_factor_b = 64,
+        head_factor_a = 1,
+        head_factor_b = 1,
+        m,
+        g,
+        x_int = 0,
+        minimum_volume_a = 0,
+        minimum_volume_b = 0,
+        damping_volume_a = minimum_volume_a,
+        damping_volume_b = minimum_volume_b,
+        Cd = 1e4,
+        Cd_reverse = Cd,
+        name)
     pars = @parameters begin
         p_a_int = p_a_int
         p_b_int = p_b_int

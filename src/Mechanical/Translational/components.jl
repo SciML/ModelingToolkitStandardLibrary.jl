@@ -117,7 +117,7 @@ Linear 1D translational spring
 end # default
 
 @component function Spring(::Val{:relative}; name, k, delta_s = 0.0, flange_a__v = 0.0,
-    flange_b__v = 0.0)
+        flange_b__v = 0.0)
     pars = @parameters begin
         k = k
     end
@@ -140,7 +140,7 @@ end
 
 const ABS = Val(:absolute)
 @component function Spring(::Val{:absolute}; name, k, sa = 0, sb = 0, flange_a__v = 0.0,
-    flange_b__v = 0.0, l = 0)
+        flange_b__v = 0.0, l = 0)
     pars = @parameters begin
         k = k
         l = l
