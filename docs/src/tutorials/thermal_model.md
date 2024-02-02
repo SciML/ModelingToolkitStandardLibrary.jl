@@ -8,8 +8,7 @@ from dividing the total initial energy in the system by the sum of the heat capa
 
 ```@example
 using ModelingToolkitStandardLibrary.Thermal, ModelingToolkit, OrdinaryDiffEq, Plots
-
-@parameters t
+using ModelingToolkit: t
 
 C1 = 15
 C2 = 15

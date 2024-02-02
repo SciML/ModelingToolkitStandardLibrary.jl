@@ -1,4 +1,5 @@
 using ModelingToolkit
+using ModelingToolkit: t
 using ModelingToolkitStandardLibrary.Mechanical.MultiBody2D
 using ModelingToolkitStandardLibrary.Mechanical.TranslationalPosition
 using OrdinaryDiffEq

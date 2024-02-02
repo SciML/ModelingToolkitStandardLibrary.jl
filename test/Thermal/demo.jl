@@ -1,9 +1,7 @@
 using ModelingToolkitStandardLibrary.Thermal, ModelingToolkit, OrdinaryDiffEq, Test
+using ModelingToolkit: t, D
 using OrdinaryDiffEq: ReturnCode.Success
 using DynamicQuantities: @u_str
-
-@parameters t [unit = u"s"]
-D = Differential(t)
 
 # Modelica example
 @testset "demo" begin

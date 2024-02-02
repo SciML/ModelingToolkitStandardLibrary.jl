@@ -1,13 +1,11 @@
 using ModelingToolkitStandardLibrary.Mechanical.Rotational,
       ModelingToolkit, OrdinaryDiffEq,
       Test
+using ModelingToolkit: t, D
 import ModelingToolkitStandardLibrary.Blocks
 using OrdinaryDiffEq: ReturnCode.Success
 
 # using Plots
-
-@parameters t [unit = u"s"]
-D = Differential(t)
 
 @testset "two inertias" begin
     @named fixed = Fixed()

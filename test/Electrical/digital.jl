@@ -4,7 +4,7 @@ using ModelingToolkitStandardLibrary.Electrical: U, X, F0, F1, Z, W, L, H, DC, U
 using ModelingToolkitStandardLibrary.Electrical: AndTable, OrTable, NotTable, XorTable
 using ModelingToolkitStandardLibrary.Electrical: get_logic_level
 using OrdinaryDiffEq: ReturnCode.Success
-
+# using ModelingToolkit: t, D
 # using ModelingToolkitStandardLibrary.Electrical: Set, Reset
 
 @testset "Logic, logic-vectors and helpers" begin
@@ -95,8 +95,6 @@ end
 end
 
 #=
-
-@parameters t
 
 @named set1 = Set()
 @named reset1 = Reset()

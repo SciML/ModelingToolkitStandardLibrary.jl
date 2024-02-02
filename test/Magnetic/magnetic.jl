@@ -4,10 +4,9 @@ import ModelingToolkitStandardLibrary.Electrical
 import ModelingToolkitStandardLibrary.Blocks
 import ModelingToolkitStandardLibrary.Magnetic
 using ModelingToolkit, OrdinaryDiffEq, Test
+using ModelingToolkit: t, D
 using OrdinaryDiffEq: ReturnCode.Success
 # using Plots
-
-@parameters t
 
 @testset "Inductor" begin
     mu_air = 1

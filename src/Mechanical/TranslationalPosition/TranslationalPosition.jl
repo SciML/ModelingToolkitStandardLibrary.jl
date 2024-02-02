@@ -4,11 +4,9 @@ Library to model 1-dimensional, translational mechanical components.
 module TranslationalPosition
 
 using ModelingToolkit, Symbolics, IfElse
-using ...Blocks: RealInput, RealOutput
-using ...DynamicQuantities: @u_str
+using ModelingToolkit: t, D
 
-@parameters t [unit = u"s"]
-D = Differential(t)
+using ...Blocks: RealInput, RealOutput
 
 export Flange
 include("utils.jl")

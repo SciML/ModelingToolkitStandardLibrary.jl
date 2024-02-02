@@ -5,6 +5,7 @@ This library contains electrical components to build up analog circuits.
 module Electrical
 
 using ModelingToolkit, Symbolics, IfElse
+using ModelingToolkit: t, D
 using ..Thermal: HeatPort
 using ..Mechanical.Rotational: Flange, Support
 using ..Blocks: RealInput, RealOutput
@@ -13,9 +14,6 @@ using ..DynamicQuantities: @u_str
 
 import ..rad
 import ..S
-
-@parameters t [unit = u"s"]
-D = Differential(t)
 
 export Pin, OnePort
 include("utils.jl")

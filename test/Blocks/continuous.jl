@@ -1,11 +1,15 @@
 using ModelingToolkit, ModelingToolkitStandardLibrary, OrdinaryDiffEq
+using ModelingToolkit: t
 using ModelingToolkitStandardLibrary.Blocks
 using OrdinaryDiffEq: ReturnCode.Success
 using DynamicQuantities: @u_str
 using Test
 
+<<<<<<< HEAD
 @parameters t [unit = u"s"]
 
+=======
+>>>>>>> 645278c (refactor: use default t and D from MTKv9)
 #=
 Testing strategy:
 The general strategy is to test systems using simple inputs where the solution
@@ -139,7 +143,6 @@ Second order demo plant
 @component function Plant(; name, x = zeros(2))
     @named input = RealInput()
     @named output = RealOutput()
-    D = Differential(t)
     sts = @variables x1(t)=x[1] x2(t)=x[2]
     eqs = [D(x1) ~ x2
            D(x2) ~ -x1 - 0.5 * x2 + input.u

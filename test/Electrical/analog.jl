@@ -1,4 +1,5 @@
 using ModelingToolkitStandardLibrary.Electrical, ModelingToolkit, OrdinaryDiffEq, Test
+using ModelingToolkit: t
 using ModelingToolkitStandardLibrary.Blocks: Step,
                                              Constant, Sine, Cosine, ExpSine, Ramp,
                                              Square, Triangular

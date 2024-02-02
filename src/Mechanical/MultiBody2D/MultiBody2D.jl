@@ -1,11 +1,9 @@
 module MultiBody2D
 
 using ModelingToolkit, Symbolics, IfElse
-using ..Translational
-using ...DynamicQuantities: @u_str
+using ModelingToolkit: t, D
 
-@parameters t [unit = u"s"]
-D = Differential(t)
+using ..TranslationalPosition
 
 export Link
 include("components.jl")

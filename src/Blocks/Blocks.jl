@@ -5,11 +5,7 @@ module Blocks
 using ModelingToolkit, Symbolics
 import IfElse: ifelse
 import ..@symcheck
-using ModelingToolkit: getdefault
-using ..DynamicQuantities: @u_str
-
-@parameters t [unit = u"s"]
-D = Differential(t)
+using ModelingToolkit: getdefault, t, D
 
 export RealInput, RealOutput, SISO
 include("utils.jl")

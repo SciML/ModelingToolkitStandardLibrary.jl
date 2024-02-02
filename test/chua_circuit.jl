@@ -1,4 +1,5 @@
 using ModelingToolkit
+using ModelingToolkit: t
 using ModelingToolkitStandardLibrary.Electrical
 using ModelingToolkitStandardLibrary.Electrical: OnePort
 using OrdinaryDiffEq
@@ -7,8 +8,6 @@ using IfElse: ifelse
 using DynamicQuantities: @u_str
 
 @testset "Chua Circuit" begin
-    @parameters t [unit = u"s"]
-
     @mtkmodel NonlinearResistor begin
         @extend OnePort()
         @parameters begin

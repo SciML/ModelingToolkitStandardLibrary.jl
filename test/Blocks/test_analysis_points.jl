@@ -2,7 +2,7 @@ using Test, LinearAlgebra
 using ModelingToolkit
 using ModelingToolkitStandardLibrary.Blocks
 using OrdinaryDiffEq
-using ModelingToolkit: get_eqs, vars, @set!, get_iv
+using ModelingToolkit: get_eqs, vars, @set!, get_iv, t
 using ControlSystemsBase
 using DynamicQuantities: @u_str
 
@@ -232,7 +232,6 @@ Si = ss(matrices...)
 @test tf(So) ≈ tf(Si)
 
 ## A simple multi-level system with loop openings
-@parameters t [unit = u"s"]
 @named P_inner = FirstOrder(k = 1, T = 1)
 @named feedback = Feedback()
 @named ref = Step()

@@ -1,10 +1,9 @@
 using ModelingToolkitStandardLibrary.Thermal, ModelingToolkit, OrdinaryDiffEq, Test
+using ModelingToolkit: t, D
 using ModelingToolkitStandardLibrary.Blocks: Constant, Step
 using OrdinaryDiffEq: ReturnCode.Success
 using DynamicQuantities: @u_str
 
-@parameters t [unit = u"s"]
-D = Differential(t)
 #=
 # Test HeatCapacitor, TemperatureSensor, RelativeTemperatureSensor, FixedTemperature
 @testset "Heat systems" begin

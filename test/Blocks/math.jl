@@ -1,11 +1,9 @@
 using ModelingToolkitStandardLibrary.Blocks
 using ModelingToolkit, OrdinaryDiffEq, Test
 using ModelingToolkitStandardLibrary.Blocks: _clamp, _dead_zone
-using ModelingToolkit: inputs, unbound_inputs, bound_inputs
+using ModelingToolkit: inputs, unbound_inputs, bound_inputs, t
 using OrdinaryDiffEq: ReturnCode.Success
 using DynamicQuantities: @u_str
-
-@parameters t [unit = u"s"]
 
 @testset "Gain" begin
     @named c = Constant(; k = 1)
