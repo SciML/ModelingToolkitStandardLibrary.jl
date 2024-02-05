@@ -153,4 +153,24 @@ end
     s_b = 2 - delta_s + 1
 
     @test sol[s.pos_value.u][end]≈s_b atol=1e-3
+
+    @testset "AccelerationSensor" begin
+        @named acc = TV.AccelerationSensor()
+        m = 4
+        @named mass = TV.Mass(m = m)
+        @named force = TV.Force()
+        @named source = Sine(frequency = 2, amplitude = 1)
+        @named acc_output = RealOutput()
+        eqs = [
+            connect(force.f, source.output),
+            connect(force.flange, mass.flange),
+            connect(acc.flange, mass.flange),
+            connect(acc_output, acc.output)
+        ]
+        @named sys = ODESystem(eqs, t, [], []; systems = [force, source, mass, acc, acc_output])
+        s = complete(structural_simplify(sys))
+        prob = ODEProblem(s, [], (0.0, pi))
+        sol = solve(prob, Tsit5())
+        @test sol[sys.acc_output.u] ≈ (sol[sys.mass.f] ./ m)
+    end
 end
