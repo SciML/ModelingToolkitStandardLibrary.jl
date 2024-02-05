@@ -64,7 +64,7 @@ end
 
 const REL = Val(:relative)
 @component function Spring(::Val{:relative}; name, k, va = 0.0, vb = 0.0,
-    delta_s = 0, flange_a__s = 0, flange_b__s = 0)
+        delta_s = 0, flange_a__s = 0, flange_b__s = 0)
     pars = @parameters begin
         k = k
     end
@@ -118,8 +118,8 @@ function Spring(; name, k, flange_a__s = 0, flange_b__s = 0, l = 0)
 end #default function
 
 @component function Spring(::Val{:absolute};
-    name, k, flange_a__s = 0,
-    flange_b__s = 0, l = 0)
+        name, k, flange_a__s = 0,
+        flange_b__s = 0, l = 0)
     pars = @parameters begin
         k = k, [description = "Spring constant", unit = u"N/m"]
         l = l, [description = "Unstretched spring length", unit = u"m"]

@@ -130,13 +130,13 @@ Generate sine signal.
   - `output`
 """
 @component function Sine(; name,
-    frequency,
-    amplitude = 1,
-    phase = 0,
-    offset = 0,
-    start_time = 0,
-    smooth = false,
-    output__unit = nothing)
+        frequency,
+        amplitude = 1,
+        phase = 0,
+        offset = 0,
+        start_time = 0,
+        smooth = false,
+        output__unit = nothing)
     @named output = RealOutput(; unit = output__unit)
     pars = @parameters offset=offset start_time=start_time amplitude=amplitude frequency=frequency phase=phase
     equation = if smooth == false
@@ -174,13 +174,13 @@ Cosine signal.
 """
 
 @component function Cosine(; name,
-    frequency,
-    amplitude = 1,
-    phase = 0,
-    offset = 0,
-    start_time = 0,
-    smooth = false,
-    output__unit = nothing)
+        frequency,
+        amplitude = 1,
+        phase = 0,
+        offset = 0,
+        start_time = 0,
+        smooth = false,
+        output__unit = nothing)
     @named output = RealOutput(; unit = output__unit)
     pars = @parameters offset=offset start_time=start_time amplitude=amplitude frequency=frequency phase=phase
     equation = if smooth == false
@@ -240,12 +240,12 @@ Generate ramp signal.
   - `output`
 """
 @component function Ramp(; name,
-    height = 1,
-    duration = 1,
-    offset = 0,
-    start_time = 0,
-    smooth = false,
-    output__unit = nothing)
+        height = 1,
+        duration = 1,
+        offset = 0,
+        start_time = 0,
+        smooth = false,
+        output__unit = nothing)
     @named output = RealOutput(; unit = output__unit)
     pars = @parameters offset=offset start_time=start_time height=height duration=duration
     equation = if smooth == false
@@ -283,8 +283,8 @@ Generate smooth square signal.
   - `output`
 """
 @component function Square(; name, frequency = 1.0, amplitude = 1.0,
-    offset = 0.0, start_time = 0.0, smooth = false,
-    output__unit = nothing)
+        offset = 0.0, start_time = 0.0, smooth = false,
+        output__unit = nothing)
     @named output = RealOutput(; unit = output__unit)
     pars = @parameters begin
         frequency = frequency
@@ -326,7 +326,7 @@ Generate step signal.
   - `output`
 """
 @component function Step(; name, height = 1, offset = 0, start_time = 0, duration = Inf,
-    smooth = 1e-5, output__unit = nothing)
+        smooth = 1e-5, output__unit = nothing)
     @named output = RealOutput(; unit = output__unit)
     duration_numeric = duration
     pars = @parameters offset=offset start_time=start_time height=height duration=duration
@@ -370,14 +370,14 @@ Exponentially damped sine signal.
   - `output`
 """
 @component function ExpSine(; name,
-    frequency,
-    amplitude = 1,
-    damping = 0.1,
-    phase = 0,
-    offset = 0,
-    start_time = 0,
-    smooth = false,
-    output__unit = nothing)
+        frequency,
+        amplitude = 1,
+        damping = 0.1,
+        phase = 0,
+        offset = 0,
+        start_time = 0,
+        smooth = false,
+        output__unit = nothing)
     @named output = RealOutput(; unit = output__unit)
     pars = @parameters offset=offset start_time=start_time amplitude=amplitude frequency=frequency phase=phase damping=damping
 
@@ -418,8 +418,8 @@ Generate smooth triangular signal for frequencies less than or equal to 25 Hz
   - `output`
 """
 @component function Triangular(; name, amplitude = 1.0, frequency = 1.0,
-    offset = 0.0, start_time = 0.0, smooth = false,
-    output__unit = nothing)
+        offset = 0.0, start_time = 0.0, smooth = false,
+        output__unit = nothing)
     @named output = RealOutput(; unit = output__unit)
     pars = @parameters begin
         amplitude = amplitude
@@ -569,9 +569,9 @@ function first_order_backwards_difference(t, buffer, Δt, circular_buffer)
 end
 
 function get_sampled_data(t,
-    buffer::Vector{T},
-    dt::T,
-    circular_buffer = true) where {T <: Real}
+        buffer::Vector{T},
+        dt::T,
+        circular_buffer = true) where {T <: Real}
     if t < 0
         t = zero(t)
     end
@@ -630,7 +630,12 @@ function Symbolics.derivative(::typeof(get_sampled_data), args::NTuple{4, Any}, 
     circular_buffer = @inbounds args[4]
     first_order_backwards_difference(t, buffer, sample_time, circular_buffer)
 end
-function ChainRulesCore.frule((_, ẋ, _), ::typeof(get_sampled_data), t, buffer, sample_time, circular_buffer)
+function ChainRulesCore.frule((_, ẋ, _),
+        ::typeof(get_sampled_data),
+        t,
+        buffer,
+        sample_time,
+        circular_buffer)
     first_order_backwards_difference(t, buffer, sample_time, circular_buffer) * ẋ
 end
 
@@ -655,7 +660,11 @@ data input component.
 # Connectors:
   - `output`
 """
-@component function SampledData(::Val{SampledDataType.vector_based}; name, buffer, sample_time, circular_buffer=true)
+@component function SampledData(::Val{SampledDataType.vector_based};
+        name,
+        buffer,
+        sample_time,
+        circular_buffer = true)
     pars = @parameters begin
         buffer = buffer #::Vector{Real}
         sample_time = sample_time #::Real
@@ -704,16 +713,19 @@ SampledData(x::SampledDataType.Option; kwargs...) = SampledData(Val(x); kwargs..
 SampledData(T::Type, circular_buffer = true; name) = SampledData(SampledDataType.struct_based; name, buffer = Parameter(T[], zero(T), circular_buffer))
 
 # vector_based
-SampledData(sample_time::T, circular_buffer = true; name) where {T <: Real} = SampledData(SampledDataType.vector_based; name, buffer=T[], sample_time, circular_buffer)
-SampledData(buffer::Vector{<:Real}, sample_time::Real, circular_buffer = true; name) = SampledData(SampledDataType.vector_based; name, buffer, sample_time, circular_buffer)
-SampledData(; name, buffer, sample_time, circular_buffer) = SampledData(SampledDataType.vector_based; name, buffer, sample_time, circular_buffer)
-
-
-
-
-
-
-
-
-
-
+function SampledData(sample_time::T, circular_buffer = true; name) where {T <: Real}
+    SampledData(SampledDataType.vector_based;
+        name,
+        buffer = T[],
+        sample_time,
+        circular_buffer)
+end
+function SampledData(buffer::Vector{<:Real},
+        sample_time::Real,
+        circular_buffer = true;
+        name)
+    SampledData(SampledDataType.vector_based; name, buffer, sample_time, circular_buffer)
+end
+function SampledData(; name, buffer, sample_time, circular_buffer)
+    SampledData(SampledDataType.vector_based; name, buffer, sample_time, circular_buffer)
+end
