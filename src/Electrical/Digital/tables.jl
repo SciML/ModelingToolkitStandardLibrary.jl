@@ -17,7 +17,7 @@ function Base.getindex(s::LogicTable, i1::Logic, i2::Logic)
     getindex(s.logic, get_logic_level(i1), get_logic_level(i2))
 end
 function Base.getindex(s::LogicTable, i1::Logic, i2::Logic,
-    I::Logic...)
+        I::Logic...)
     getindex(s.logic, get_logic_level(i1), get_logic_level(i2), get_logic_level(I...)...)
 end
 
