@@ -46,13 +46,13 @@ Sliding mass with inertia
 
   - `m`: [kg] mass of sliding body
   - `v_0`: [m/s] Initial value of absolute linear velocity of sliding mass (default 0 m/s)
-  - `s`: [m] (optional) initial value of absolute position of sliding mass
-  - `g`: [m/s²] (optional) gravity field acting on the mass, positive value acts in the positive direction
+  - `s`: [m] initial value of absolute position of sliding mass (optional)
+  - `g`: [m/s²] gravity field acting on the mass, positive value acts in the positive direction (optional)
 
 # States:
 
   - `v`: [m/s] absolute linear velocity of sliding mass
-  - `s`: [m] (optional with parameter s) absolute position of sliding mass
+  - `s`: [m] absolute position of sliding mass (optional with parameter s)
 
 # Connectors:
 
