@@ -5,6 +5,9 @@ Base.@kwdef mutable struct AnalysisPoint
     out = nothing
     name::Symbol = :nothing
 end
+if Base.isdefined(ModelingToolkit, :isconnection)
+    ModelingToolkit.isconnection(::AnalysisPoint) = true
+end
 
 Base.nameof(ap::AnalysisPoint) = ap.name
 
