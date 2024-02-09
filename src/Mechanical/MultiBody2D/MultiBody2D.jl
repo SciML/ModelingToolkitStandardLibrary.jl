@@ -2,8 +2,9 @@ module MultiBody2D
 
 using ModelingToolkit, Symbolics, IfElse
 using ..Translational
+using ...DynamicQuantities: @u_str
 
-@parameters t
+@parameters t [unit = u"s"]
 D = Differential(t)
 
 export Link
