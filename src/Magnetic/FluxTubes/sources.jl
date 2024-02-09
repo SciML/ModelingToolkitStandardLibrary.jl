@@ -7,6 +7,7 @@ Parameters:
 
   - `V_m`: [A] Magnetic potential difference
 """
+
 @mtkmodel ConstantMagneticPotentialDifference begin
     @components begin
         port_p = PositiveMagneticPort()

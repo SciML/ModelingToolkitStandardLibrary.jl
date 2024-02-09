@@ -1,8 +1,10 @@
 module FluxTubes
 using ModelingToolkit
 using ...Electrical: Pin
+import ...Wb
+using ...DynamicQuantities: @u_str
 
-@parameters t
+@parameters t [unit = u"s"]
 D = Differential(t)
 
 export PositiveMagneticPort, NegativeMagneticPort, TwoPort

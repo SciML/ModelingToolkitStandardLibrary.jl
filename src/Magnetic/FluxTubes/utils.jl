@@ -32,14 +32,11 @@ Partial component with magnetic potential difference between two magnetic ports 
     end
     @variables begin
         V_m(t) = 0.0, [description = "Magnetic potential at the port", unit = u"A"]
-        function Phi(t)
-            0.0,
-            [
-                connect = Flow,
-                description = "Magnetic flux flowing into the port",
-                unit = u"Wb",
-            ]
-        end
+        Phi(t) = 0.0, [
+            connect = Flow,
+            description = "Magnetic flux flowing into the port",
+            unit = u"Wb",
+        ]
     end
     @equations begin
         V_m ~ port_p.V_m - port_n.V_m

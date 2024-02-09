@@ -1,6 +1,6 @@
 module Magnetic
 
-using ModelingToolkit, Unitful
+using ModelingToolkit
 
 # FluxTubes
 include("FluxTubes/FluxTubes.jl")

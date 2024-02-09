@@ -117,7 +117,7 @@ Initial magnetic flux flowing into the port_p can be set with `Phi` ([Wb])
         v(t),
         [description = "Voltage difference from positive to negative pin", unit = u"V"]
         i(t), [description = "Current", unit = u"A"]
-        Phi, [description = "Magnetic flux", unit = u"Wb"]
+        Phi, [description = "Magnetic flux", unit = Wb]
     end
     @extend V_m, Phi = two_port = TwoPort(; Phi = Phi)
     @components begin
@@ -148,7 +148,7 @@ Initial magnetic flux flowing into the port_p can be set with `Phi` ([`Wb`])
 """
 @mtkmodel EddyCurrent begin
     @variables begin
-        Phi, [description = "Magnetic flux", unit = u"Wb"]
+        Phi, [description = "Magnetic flux", unit = Wb]
     end
     @parameters begin
         rho = 0.098e-6, [description = "Resistivity of flux tube material", unit = u"Ω*m"]
