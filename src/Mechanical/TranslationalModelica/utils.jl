@@ -1,6 +1,6 @@
 @connector Flange begin
-    s(t)
-    f(t), [connect = Flow]
+    s(t), [description = "Absolute position of sliding mass", unit = u"m"]
+    f(t), [description = "Cut force into the flange", unit = u"N", connect = Flow]
 end
 Base.@doc """
     Flange(;name)
@@ -13,8 +13,8 @@ Base.@doc """
 """ Flange
 
 @connector Support begin
-    s(t)
-    f(t), [connect = Flow]
+    s(t), [description = "Absolute position of sliding mass", unit = u"m"]
+    f(t), [description = "Cut force into the flange", unit = u"N", connect = Flow]
 end
 Base.@doc """
     Support(;name)
@@ -46,8 +46,8 @@ Partial model for the compliant connection of two translational 1-dim. flanges.
 @mtkmodel PartialCompliant begin
     @extend (flange_a, flange_b) = pt = PartialTwoFlanges()
     @variables begin
-        s_rel(t) = 0.0, [description = "Relative distance between flanges"]
-        f(t) = 0.0, [description = "Force between flanges"]
+        s_rel(t) = 0.0, [description = "Relative distance between flanges", unit = u"m"]
+        f(t) = 0.0, [description = "Force between flanges", unit = u"N"]
     end
 
     @equations begin
@@ -71,9 +71,9 @@ Partial model for the compliant connection of two translational 1-dim. flanges.
 @mtkmodel PartialCompliantWithRelativeStates begin
     @extend flange_a, flange_b = pt = PartialTwoFlanges()
     @variables begin
-        s_rel(t) = 0.0, [description = "Relative distance between flanges"]
-        v_rel(t) = 0.0, [description = "Relative linear velocity))"]
-        f(t) = 0.0, [description = "Forces between flanges"]
+        s_rel(t) = 0.0, [description = "Relative distance between flanges", unit = u"m"]
+        v_rel(t) = 0.0, [description = "Relative linear velocity", unit = u"m/s"]
+        f(t) = 0.0, [description = "Forces between flanges", unit = u"N"]
     end
 
     @equations begin
@@ -99,9 +99,11 @@ Partial model for a component with one translational 1-dim. shaft flange and a s
 """
 function PartialElementaryOneFlangeAndSupport2(; name, use_support = false)
     @named flange = Flange()
-    @variables s_support(t) [description = "Absolute position of support flange"]
+    @variables s_support(t) [description = "Absolute position of support flange", unit = u"m"]
     @variables s(t) [
         description = "Distance between flange and support (= flange.s - support.s)",
+        unit = u"m"
+
     ]
     eqs = [s ~ flange.s - s_support]
     if use_support
@@ -130,9 +132,9 @@ Partial model for a component with two translational 1-dim. flanges and a suppor
 function PartialElementaryTwoFlangesAndSupport2(; name, use_support = false)
     @named flange = Flange()
 
-    @variables s_a(t) [description = "Distance between left flange and support"]
-    @variables s_b(t) [description = "Distance between right flange and support"]
-    @variables s_support(t) [description = "Absolute position of support flange"]
+    @variables s_a(t) [description = "Distance between left flange and support", unit = u"m"]
+    @variables s_b(t) [description = "Distance between right flange and support", unit = u"m"]
+    @variables s_support(t) [description = "Absolute position of support flange", unit = u"m"]
 
     eqs = [s_a ~ flange_a.s - s_support
         s_b ~ flange_b.s - s_support]
@@ -149,10 +151,10 @@ end
 @mtkmodel PartialRigid begin
     @extend flange_a, flange_b = ptf = PartialTwoFlanges()
     @variables begin
-        s(t) = 0.0, [description = "Absolute position of center of component"]
+        s(t) = 0.0, [description = "Absolute position of center of component", unit = u"m"]
     end
     @parameters begin
-        L = 0.0, [description = "Length of component, from left flange to right flange"]
+        L = 0.0, [description = "Length of component, from left flange to right flange", unit = u"m"]
     end
     @equations begin
         flange_a.s ~ s - L / 2

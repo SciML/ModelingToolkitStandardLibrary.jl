@@ -1,16 +1,17 @@
 using ModelingToolkit, OrdinaryDiffEq, Test
 
 using ModelingToolkitStandardLibrary.Blocks
-import ModelingToolkitStandardLibrary.Mechanical.TranslationalModelica as TP
+import ModelingToolkitStandardLibrary.Mechanical.TranslationalModelica as TM
+using DynamicQuantities: @u_str
 
-@parameters t
+@parameters t [unit = u"s"]
 D = Differential(t)
 
 @testset "spring damper mass fixed" begin
-    @named damper = TP.Damper(; d = 1)
-    @named spring = TP.Spring(; c = 1, s_rel0 = 1)
-    @named mass = TP.Mass(; m = 1, v = 1)
-    @named fixed = TP.Fixed(s0 = 1)
+    @named damper = TM.Damper(; d = 1)
+    @named spring = TM.Spring(; c = 1, s_rel0 = 1)
+    @named mass = TM.Mass(; m = 1, v = 1)
+    @named fixed = TM.Fixed(s0 = 1)
 
     eqs = [connect(spring.flange_a, mass.flange_a, damper.flange_a)
         connect(spring.flange_b, damper.flange_b, fixed.flange)]
@@ -29,12 +30,12 @@ D = Differential(t)
 end
 
 @testset "driven spring damper mass" begin
-    @named damper = TP.Damper(; d = 1)
-    @named spring = TP.Spring(; c = 1, s_rel0 = 1)
-    @named mass = TP.Mass(; m = 1, v = 1)
-    @named fixed = TP.Fixed(; s0 = 1)
-    @named force = TP.Force(use_support = false)
-    @named source = Sine(frequency = 3, amplitude = 2)
+    @named damper = TM.Damper(; d = 1)
+    @named spring = TM.Spring(; c = 1, s_rel0 = 1)
+    @named mass = TM.Mass(; m = 1, v = 1)
+    @named fixed = TM.Fixed(; s0 = 1)
+    @named force = TM.Force(use_support = false)
+    @named source = Sine(frequency = 3, amplitude = 2, output__unit = u"N")
 
     eqs = [connect(force.f, source.output)
         connect(force.flange, mass.flange_a)

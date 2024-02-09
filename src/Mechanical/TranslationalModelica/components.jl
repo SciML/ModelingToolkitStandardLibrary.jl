@@ -13,7 +13,7 @@ Flange fixed in housing at a given position.
 """
 @mtkmodel Fixed begin
     @parameters begin
-        s0
+        s0 = 0.0, [description = "Absolute position of sliding mass", unit = u"m"]
     end
 
     @components begin
@@ -44,15 +44,14 @@ Sliding mass with inertia
   - `flange: 1-dim. translational flange of mass`
 """
 @mtkmodel Mass begin
+    @extend flange_a, flange_b, s = pr = PartialRigid(; L = 0.0, s = 0.0)
     @parameters begin
-        m = 0.0, [description = "Mass of sliding mass [kg]"]
+        m = 0.0, [description = "Mass of sliding mass", unit = u"kg"]
     end
     @variables begin
-        s
-        v(t) = 0.0, [description = "Absolute linear velocity of sliding mass [m/s]"]
-        a(t) = 0.0, [description = "Absolute linear acceleration of sliding mass [m/s^2]"]
+        v(t) = 0.0, [description = "Absolute linear velocity of sliding mass", unit = u"m/s"]
+        a(t) = 0.0, [description = "Absolute linear acceleration of sliding mass", unit = u"m/s^2"]
     end
-    @extend flange_a, flange_b, s = pr = PartialRigid(; L = 0.0, s = s)
     @equations begin
         v ~ D(s)
         a ~ D(v)
@@ -78,8 +77,8 @@ Linear 1D translational spring
 @mtkmodel Spring begin
     @extend flange_a, flange_b, s_rel, f = pc = PartialCompliant()
     @parameters begin
-        c = 0.0, [description = "Spring constant [N/m]"]
-        s_rel0 = 0.0, [description = "Unstretched spring length [m]"]
+        c = 0.0, [description = "Spring constant", unit = u"N/m"]
+        s_rel0 = 0.0, [description = "Unstretched spring length", unit = u"m"]
     end
 
     @equations begin
@@ -104,10 +103,10 @@ Linear 1D translational damper
 @mtkmodel Damper begin
     @extend flange_a, flange_b, v_rel, f = pc = PartialCompliantWithRelativeStates()
     @parameters begin
-        d = 0.0, [description = "Damping constant [Ns/m]"]
+        d = 0.0, [description = "Damping constant", unit = u"N*s/m"]
     end
     @variables begin
-        lossPower(t) = 0.0, [description = "Power dissipated by the damper [W]"]
+        lossPower(t) = 0.0, [description = "Power dissipated by the damper", unit = u"W"]
     end
     @equations begin
         f ~ d * v_rel
