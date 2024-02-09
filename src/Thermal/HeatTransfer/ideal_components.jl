@@ -21,11 +21,11 @@ Lumped thermal element storing heat
         port = HeatPort()
     end
     @parameters begin
-        C, [description = "Heat capacity of element"]
+        C, [description = "Heat capacity of element", unit = u"J/K"]
     end
     @variables begin
-        T(t) = 273.15 + 20
-        der_T(t) = 0.0
+        T(t) = 273.15 + 20, [description = "Temperature of element", unit = u"K"]
+        der_T(t) = 0.0, [description = "Time derivative of temperature", unit = u"K/s"]
     end
 
     @equations begin
@@ -56,7 +56,7 @@ see [`Element1D`](@ref)
 @mtkmodel ThermalConductor begin
     @extend Q_flow, dT = element1d = Element1D()
     @parameters begin
-        G
+        G, [description = "Constant thermal conductance of material", unit = u"W/K"]
     end
     @equations begin
         Q_flow ~ G * dT
@@ -85,7 +85,7 @@ Lumped thermal element transporting heat without storing it.
 @mtkmodel ThermalResistor begin
     @extend Q_flow, dT = element1d = Element1D()
     @parameters begin
-        R
+        R, [description = "Constant thermal resistance of material", unit = u"K/W"]
     end
     @equations begin
         dT ~ R * Q_flow
@@ -114,7 +114,7 @@ Lumped thermal element for heat convection.
 @mtkmodel ConvectiveConductor begin
     @extend Q_flow, dT = convective_element1d = ConvectiveElement1D()
     @parameters begin
-        G
+        G, [description = "Convective thermal conductance", unit = u"W/K"]
     end
     @equations begin
         Q_flow ~ G * dT
@@ -143,7 +143,7 @@ Lumped thermal element for heat convection.
 @mtkmodel ConvectiveResistor begin
     @extend Q_flow, dT = convective_element1d = ConvectiveElement1D()
     @parameters begin
-        R
+        R, [description = "Constant thermal resistance of material", unit = u"K/W"]
     end
     @equations begin
         dT ~ R * Q_flow
@@ -176,7 +176,7 @@ Lumped thermal element for radiation heat transfer.
 
     @extend Q_flow, dT, port_a, port_b = element1d = Element1D()
     @parameters begin
-        G
+        G, [description = "Net radiation conductance between two surfaces", unit = "m^2"]
     end
     @equations begin
         Q_flow ~ G * sigma * (port_a.T^4 - port_b.T^4)

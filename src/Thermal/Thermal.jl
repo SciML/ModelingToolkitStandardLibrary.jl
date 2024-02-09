@@ -3,9 +3,10 @@ Library of thermal system components to model heat transfer.
 """
 module Thermal
 using ModelingToolkit, Symbolics, IfElse
-using ...Blocks: RealInput, RealOutput
+using ..Blocks: RealInput, RealOutput
+using ..DynamicQuantities: @u_str
 
-@parameters t
+@parameters t [unit = u"s"]
 D = Differential(t)
 
 export HeatPort, Element1D

@@ -20,7 +20,7 @@ lags are associated with this sensor model.
         port = HeatPort()
     end
     @variables begin
-        T(t)
+        T(t), [description = "Absolute temperature", unit = u"K"]
     end
     @equations begin
         T ~ port.T
@@ -51,7 +51,7 @@ output signal in kelvin.
         port_b = HeatPort()
     end
     @variables begin
-        T(t)
+        T(t), [description = "Relative temperature", unit = u"K"]
     end
     @equations begin
         T ~ port_a.T - port_b.T
@@ -85,7 +85,7 @@ The output signal is positive, if the heat flows from `port_a` to `port_b`.
         port_b = HeatPort()
     end
     @variables begin
-        Q_flow(t)
+        Q_flow(t), [connect = Flow, description = "Heat flow rate", unit = u"W"]
     end
     @equations begin
         port_a.T ~ port_b.T

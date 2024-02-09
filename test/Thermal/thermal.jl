@@ -1,8 +1,9 @@
 using ModelingToolkitStandardLibrary.Thermal, ModelingToolkit, OrdinaryDiffEq, Test
 using ModelingToolkitStandardLibrary.Blocks: Constant, Step
 using OrdinaryDiffEq: ReturnCode.Success
+using DynamicQuantities: @u_str
 
-@parameters t
+@parameters t [unit = u"s"]
 D = Differential(t)
 #=
 # Test HeatCapacitor, TemperatureSensor, RelativeTemperatureSensor, FixedTemperature
@@ -210,8 +211,8 @@ end
     @named T_core = TemperatureSensor()
     @named convection = ConvectiveConductor(G = 25)
     @named environment = PrescribedTemperature()
-    @named amb = Constant(k = T_amb)
-    @named core_losses_const = Constant(k = 500)
+    @named amb = Constant(k = T_amb, output.unit = u"K")
+    @named core_losses_const = Constant(k = 500, output.unit = u"")
     @named winding_losses = Step(height = 900, offset = 100, start_time = 360,
         duration = Inf, smooth = false)
     connections = [connect(windingLosses.port, winding.port)

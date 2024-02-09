@@ -1,6 +1,6 @@
 @connector HeatPort begin
-    T(t) = 273.15 + 20.0
-    Q_flow(t) = 0.0, [connect = Flow]
+    T(t) = 273.15 + 20.0, [description = "Temperature", unit = u"K"]
+    Q_flow(t) = 0.0, [connect = Flow, description = "Heat flow rate", unit = u"W"]
 end
 Base.@doc """
     HeatPort(; name, T = 273.15 + 20.0, Q_flow = 0.0)
@@ -35,8 +35,8 @@ flow rate through the element from `port_a` to `port_b`, `Q_flow`.
         port_b = HeatPort()
     end
     @variables begin
-        dT(t) = 0.0
-        Q_flow(t) = 0.0
+        dT(t) = 0.0, [description = "Temperature difference across the component", unit = u"K"]
+        Q_flow(t) = 0.0, [connect = Flow, description = "Heat flow rate", unit = u"W"]
     end
     @equations begin
         dT ~ port_a.T - port_b.T
@@ -69,8 +69,8 @@ flow rate through the element from `solid` to `fluid`, `Q_flow`.
         fluid = HeatPort()
     end
     @variables begin
-        dT(t) = 0.0
-        Q_flow(t) = 0.0
+        dT(t) = 0.0, [description = "Temperature difference across the component", unit = u"K"]
+        Q_flow(t) = 0.0, [connect = Flow, description = "Heat flow rate", unit = u"W"]
     end
     @equations begin
         dT ~ solid.T - fluid.T

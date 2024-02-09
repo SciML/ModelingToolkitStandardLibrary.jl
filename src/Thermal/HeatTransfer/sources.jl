@@ -19,9 +19,9 @@ the component FixedHeatFlow is connected, if parameter `Q_flow` is positive.
 """
 @mtkmodel FixedHeatFlow begin
     @parameters begin
-        Q_flow = 1.0, [description = "Fixed heat flow rate at port"]
-        T_ref = 293.15, [description = "Reference temperature"]
-        alpha = 0.0, [description = "Temperature coefficient of heat flow rate"]
+        Q_flow = 1.0, [description = "Fixed heat flow rate at port", unit = u"W"]
+        T_ref = 293.15, [description = "Reference temperature", unit = u"K"]
+        alpha = 0.0, [description = "Temperature coefficient of heat flow rate", unit = u"1/K"]
     end
     @components begin
         port = HeatPort()
@@ -52,7 +52,7 @@ This model defines a fixed temperature `T` at its port in kelvin, i.e., it defin
         port = HeatPort()
     end
     @parameters begin
-        T, [description = "Fixed temperature boundary condition"]
+        T, [description = "Fixed temperature boundary condition", unit = u"K"]
     end
     @equations begin
         port.T ~ T
@@ -82,12 +82,12 @@ dependent losses (which are given a reference temperature T_ref).
 """
 @mtkmodel PrescribedHeatFlow begin
     @parameters begin
-        T_ref = 293.15, [description = "Reference temperature"]
-        alpha = 0.0, [description = "Temperature coefficient of heat flow rate"]
+        T_ref = 293.15, [description = "Reference temperature", unit = u"K"]
+        alpha = 0.0, [description = "Temperature coefficient of heat flow rate", unit = u"1/K"]
     end
     @components begin
         port = HeatPort()
-        Q_flow = RealInput()
+        Q_flow = RealInput(; unit = u"W")
     end
     @equations begin
         port.Q_flow ~ -Q_flow.u * (1 + alpha * (port.T - T_ref))
@@ -111,7 +111,7 @@ the temperature at the specified value.
 @mtkmodel PrescribedTemperature begin
     @components begin
         port = HeatPort()
-        T = RealInput()
+        T = RealInput(; unit = u"K")
     end
     @equations begin
         port.T ~ T.u
