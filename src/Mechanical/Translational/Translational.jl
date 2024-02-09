@@ -8,8 +8,9 @@ using ModelingToolkit: getdefault
 
 using ModelingToolkitStandardLibrary.Blocks: RealInput, RealOutput
 using IfElse: ifelse
+using ...DynamicQuantities: @u_str
 
-@parameters t
+@parameters t [unit = u"s"]
 D = Differential(t)
 
 export MechanicalPort

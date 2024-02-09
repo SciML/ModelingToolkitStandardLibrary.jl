@@ -11,7 +11,7 @@ Linear 1D force input sensor.
 @mtkmodel ForceSensor begin
     @components begin
         flange = MechanicalPort()
-        output = RealOutput()
+        output = RealOutput(unit = u"N")
     end
 
     @equations begin
@@ -36,11 +36,11 @@ Linear 1D position input sensor.
 @mtkmodel PositionSensor begin
     @components begin
         flange = MechanicalPort()
-        output = RealOutput()
+        output = RealOutput(unit = u"m")
     end
 
     @variables begin
-        s(t) = 0.0
+        s(t) = 0.0, [description = "Absolute position", unit = u"m"]
     end
 
     @equations begin

@@ -12,7 +12,7 @@ Use to close a system that has un-connected `MechanicalPort`'s where the force s
         flange = MechanicalPort()
     end
     @variables begin
-        f(t) = 0.0
+        f(t) = 0.0, [description = "Force", unit = u"N"]
     end
     @equations begin
         flange.f ~ f
@@ -60,21 +60,20 @@ Sliding mass with inertia
 """
 @component function Mass(; name, v = 0.0, m, s = nothing, g = nothing)
     pars = @parameters begin
-        m = m
+        m = m,  [description = "Mass of sliding body", unit = u"kg"]
     end
     @named flange = MechanicalPort(; v = v)
 
-    vars = @variables begin
-        v(t) = v
-        f(t) = 0
-    end
+    @variables v(t) = v [description = "Absolute linear velocity of sliding mass", unit = u"m/s"]
+    @variables f(t) = 0 [description = "Force", unit = u"N"]
+    vars = [v, f]
 
     eqs = [flange.v ~ v
         flange.f ~ f]
 
     # gravity option
     if g !== nothing
-        @parameters g = g
+        @parameters g = g [description = "Gravitational force", unit = u"N"]
         push!(pars, g)
         push!(eqs, D(v) ~ f / m + g)
     else
@@ -83,7 +82,7 @@ Sliding mass with inertia
 
     # position option
     if s !== nothing
-        @variables s(t) = s
+        @variables s(t) = s [description = "Absolute position of sliding mass", unit = u"m"]
         push!(vars, s)
 
         push!(eqs, D(s) ~ v)
@@ -103,7 +102,7 @@ Linear 1D translational spring
 # Parameters:
 
   - `k`: [N/m] Spring constant
-  - `delta_s`: initial spring stretch
+  - `delta_s`: [m] initial spring stretch
   - `va`: [m/s] Initial value of absolute linear velocity at flange_a (default 0 m/s)
   - `v_b_0`: [m/s] Initial value of absolute linear velocity at flange_b (default 0 m/s)
 
@@ -119,12 +118,10 @@ end # default
 @component function Spring(::Val{:relative}; name, k, delta_s = 0.0, flange_a__v = 0.0,
     flange_b__v = 0.0)
     pars = @parameters begin
-        k = k
+        k = k, [description = "Spring constant", unit = u"N/m"]
     end
-    vars = @variables begin
-        delta_s(t) = delta_s
-        f(t) = 0
-    end
+    @variables delta_s(t) = delta_s [description = "Initial spring stretch", unit = u"m"]
+    @variables f(t) = 0 [description = "Force", unit = u"N"]
 
     @named flange_a = MechanicalPort(; v = flange_a__v)
     @named flange_b = MechanicalPort(; v = flange_b__v)
@@ -133,7 +130,7 @@ end # default
         f ~ k * delta_s
         flange_a.f ~ +f
         flange_b.f ~ -f]
-    return compose(ODESystem(eqs, t, vars, pars; name = name),
+    return compose(ODESystem(eqs, t, [delta_s, f], pars; name = name),
         flange_a,
         flange_b) #flange_a.f => +k*delta_s, flange_b.f => -k*delta_s
 end
@@ -142,14 +139,12 @@ const ABS = Val(:absolute)
 @component function Spring(::Val{:absolute}; name, k, sa = 0, sb = 0, flange_a__v = 0.0,
     flange_b__v = 0.0, l = 0)
     pars = @parameters begin
-        k = k
+        k = k, [description = "Spring constant", unit = u"N/m"]
         l = l
     end
-    vars = @variables begin
-        sa(t) = sa
-        sb(t) = sb
-        f(t) = 0
-    end
+    @variables sa(t) = sa [unit = u"m"]
+    @variables sb(t) = sb [unit = u"m"]
+    @variables f(t) = 0 [description = "Force", unit = u"N"]
 
     @named flange_a = MechanicalPort(; v = flange_a__v)
     @named flange_b = MechanicalPort(; v = flange_b__v)
@@ -159,7 +154,7 @@ const ABS = Val(:absolute)
         f ~ k * (sa - sb - l) #delta_s
         flange_a.f ~ +f
         flange_b.f ~ -f]
-    return compose(ODESystem(eqs, t, vars, pars; name = name),
+    return compose(ODESystem(eqs, t, [sa, sb, f], pars; name = name),
         flange_a,
         flange_b) #, flange_a.f => k * (flange_a__s - flange_b__s - l)
 end
@@ -180,11 +175,11 @@ Linear 1D translational damper
 """
 @mtkmodel Damper begin
     @parameters begin
-        d
+        d, [description = "Damping constant", unit = u"N*s/m"]
     end
     @variables begin
-        v(t)
-        f(t) = 0.0
+        v(t), [description = "Velocity", unit = u"m/s"]
+        f(t) = 0.0, [description = "Force", unit = u"N"]
     end
 
     @components begin
