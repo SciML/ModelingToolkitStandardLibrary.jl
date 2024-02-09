@@ -11,7 +11,7 @@ Ideal sensor to measure the absolute flange angle
 @mtkmodel AngleSensor begin
     @components begin
         flange = Flange()
-        phi = RealOutput()
+        phi = RealOutput(unit = u"rad")
     end
     @equations begin
         phi.u ~ flange.phi
@@ -32,7 +32,7 @@ Ideal sensor to measure the absolute flange angular velocity
 @mtkmodel SpeedSensor begin
     @components begin
         flange = Flange()
-        w = RealOutput()
+        w = RealOutput(unit = u"rad/s")
     end
     @equations begin
         D(flange.phi) ~ w.u
@@ -55,7 +55,7 @@ Ideal sensor to measure the torque between two flanges (`= flange_a.tau`)
     @components begin
         flange_a = Flange()
         flange_b = Flange()
-        tau = RealOutput()
+        tau = RealOutput(unit = u"N*m")
     end
     @equations begin
         flange_a.phi ~ flange_b.phi
@@ -78,10 +78,10 @@ Ideal sensor to measure the relative angular velocity
     @components begin
         flange_a = Flange()
         flange_b = Flange()
-        w_rel = RealOutput()
+        w_rel = RealOutput(unit = u"rad/s")
     end
     @variables begin
-        phi_rel(t) = 0.0, [description = "Relative rotation angle", units = u"rad"]
+        phi_rel(t) = 0.0, [description = "Relative rotation angle", unit = u"rad"]
     end
     @equations begin
         0 ~ flange_a.tau + flange_b.tau

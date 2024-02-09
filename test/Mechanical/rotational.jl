@@ -6,7 +6,7 @@ using OrdinaryDiffEq: ReturnCode.Success
 
 # using Plots
 
-@parameters t
+@parameters t [unit = u"s"]
 D = Differential(t)
 
 @testset "two inertias" begin

@@ -57,7 +57,7 @@ end
     @variables begin
         phi(t) = 0.0, [description = "Absolute rotation angle", unit = u"rad"]
         w(t) = 0.0, [description = "Absolute angular velocity", unit = u"rad*s^-1"]
-        a(t) = 0.0, [description = "Absolute angular acceleration", rad = u"rad*s^-2"]
+        a(t) = 0.0, [description = "Absolute angular acceleration", unit = u"rad*s^-2"]
     end
     @equations begin
         phi ~ flange_a.phi
@@ -94,7 +94,7 @@ Linear 1D rotational spring
         @symcheck c > 0 || throw(ArgumentError("Expected `c` to be positive"))
     end
     @parameters begin
-        c, [description = "Spring constant", unit = u"N*m*rad^-1"]
+        c, [description = "Spring constant", unit = u"N*m"]
         phi_rel0 = 0.0, [description = "Unstretched spring angle", unit = u"rad"]
     end
     @equations begin
@@ -208,14 +208,8 @@ This element characterizes any type of gear box which is fixed in the ground and
         ratio, [description = "Transmission ratio"]
     end
     @variables begin
-        function phi_a(t)
-            0.0,
-            [description = "Relative angle between shaft a and the support", unit = u"rad"]
-        end
-        function phi_b(t)
-            0.0,
-            [description = "Relative angle between shaft b and the support", unit = u"rad"]
-        end
+        phi_a(t) = 0.0, [description = "Relative angle between shaft a and the support", unit = u"rad"]
+        phi_b(t) = 0.0, [description = "Relative angle between shaft b and the support", unit = u"rad"]
     end
     @equations begin
         phi_a ~ flange_a.phi - phi_support

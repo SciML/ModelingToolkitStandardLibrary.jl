@@ -71,10 +71,8 @@ Partial model for the compliant connection of two rotational 1-dim. shaft flange
         flange_b = Flange()
     end
     @variables begin
-        function phi_rel(t)
-            0.0, [description = "Relative rotation angle between flanges", units = u"rad"]
-        end
-        tau(t) = 0.0, [description = "Torque between flanges", u"N*m"]
+        phi_rel(t)= 0.0, [description = "Relative rotation angle between flanges", unit = u"rad"]
+        tau(t) = 0.0, [description = "Torque between flanges", unit = u"N*m"]
     end
     @equations begin
         phi_rel ~ flange_b.phi - flange_a.phi
@@ -106,20 +104,12 @@ Partial model for the compliant connection of two rotational 1-dim. shaft flange
         flange_b = Flange()
     end
     @variables begin
-        function phi_rel(t)
-            0.0, [description = "Relative rotation angle between flanges", unit = u"rad"]
-        end
-        function w_rel(t)
-            0.0,
-            [description = "Relative angular velocity between flanges", unit = u"rad*s^-1"]
-        end
-        function a_rel(t)
-            0.0,
-            [
+        phi_rel(t) = 0.0, [description = "Relative rotation angle between flanges", unit = u"rad"]
+        w_rel(t) = 0.0, [description = "Relative angular velocity between flanges", unit = u"rad*s^-1"]
+        a_rel(t) = 0.0, [
                 description = "Relative angular acceleration between flanges",
                 unit = u"rad*s^-2",
             ]
-        end
         tau(t) = 0.0, [description = "Torque between flanges", unit = u"N*m"]
     end
     @equations begin

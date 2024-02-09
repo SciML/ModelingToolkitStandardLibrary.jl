@@ -6,8 +6,11 @@ module Rotational
 using ModelingToolkit, Symbolics, IfElse
 using ...Blocks: RealInput, RealOutput
 import ...@symcheck
+using ...DynamicQuantities: @u_str
+import ...Wb
+import ...rad
 
-@parameters t
+@parameters t [unit = u"s"]
 D = Differential(t)
 
 export Flange, Support
@@ -21,5 +24,6 @@ include("sources.jl")
 
 export AngleSensor, SpeedSensor, TorqueSensor, RelSpeedSensor
 include("sensors.jl")
+
 
 end
