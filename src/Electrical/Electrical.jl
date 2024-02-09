@@ -8,8 +8,13 @@ using ModelingToolkit, Symbolics, IfElse
 using ..Thermal: HeatPort
 using ..Mechanical.Rotational: Flange, Support
 using ..Blocks: RealInput, RealOutput
+using ..DynamicQuantities
+using ..DynamicQuantities: @u_str
 
-@parameters t
+import ..rad
+import ..S
+
+@parameters t [unit = u"s"]
 D = Differential(t)
 
 export Pin, OnePort

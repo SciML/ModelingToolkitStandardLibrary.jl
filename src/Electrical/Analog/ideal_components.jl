@@ -93,13 +93,10 @@ See [OnePort](@ref)
   - `C`: [`F`] Capacitance
 """
 @mtkmodel Capacitor begin
+    @extend v, i = oneport = OnePort(; v = 0.0)
     @parameters begin
         C, [description = "Capacitance",unit = u"F"]
     end
-    @variables begin
-        v
-    end
-    @extend v, i = oneport = OnePort(; v = v)
     @equations begin
         D(v) ~ i / C
     end
@@ -125,13 +122,10 @@ See [OnePort](@ref)
   - `L`: [`H`] Inductance
 """
 @mtkmodel Inductor begin
+    @extend v, i = oneport = OnePort(; i = 0.0)
     @parameters begin
         L, [description = "Inductance", unit = u"H"]
     end
-    @variables begin
-        i
-    end
-    @extend v, i = oneport = OnePort(; i = i)
     @equations begin
         D(i) ~ 1 / L * v
     end
@@ -211,9 +205,9 @@ Temperature dependent electrical resistor
         heat_port = HeatPort()
     end
     @parameters begin
-        R_ref = 1.0, [description = "Reference resistance"]
-        T_ref = 300.15, [description = "Reference temperature"]
-        alpha = 0, [description = "Temperature coefficient of resistance"]
+        R_ref = 1.0, [description = "Reference resistance", unit = u"Ω"]
+        T_ref = 300.15, [description = "Reference temperature", unit = u"K"]
+        alpha = 0, [description = "Temperature coefficient of resistance", unit = u"1/K"]
     end
     @variables begin
         R(t) = R_ref
@@ -248,25 +242,19 @@ Electromotoric force (electric/mechanic transformer)
   - `k`: [`N⋅m/A`] Transformation coefficient
 """
 @mtkmodel EMF begin
+    @extend OnePort()
     @components begin
-        p = Pin()
-        n = Pin()
         flange = Flange()
         support = Support()
     end
     @parameters begin
-        k, [description = "Transformation coefficient"]
+        k, [description = "Transformation coefficient", unit = u"N*m/A"]
     end
     @variables begin
-        v(t) = 0.0
-        i(t) = 0.0
-        phi(t) = 0.0
-        w(t) = 0.0
+        phi(t) = 0.0, [description = "Rotation angle", unit = u"rad"]
+        w(t) = 0.0, [description = "Angular velocity", unit = u"rad/s"]
     end
     @equations begin
-        v ~ p.v - n.v
-        0 ~ p.i + n.i
-        i ~ p.i
         phi ~ flange.phi - support.phi
         D(phi) ~ w
         k * w ~ v

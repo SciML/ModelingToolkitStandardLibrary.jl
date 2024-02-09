@@ -4,13 +4,15 @@ using ModelingToolkitStandardLibrary.Blocks: Step,
     Square, Triangular
 using ModelingToolkitStandardLibrary.Blocks: square, triangular
 using OrdinaryDiffEq: ReturnCode.Success
+using DynamicQuantities: @u_str
+
+@parameters t [unit = u"s"]
+D = Differential(t)
 
 # using Plots
 
-@parameters t
-
 @testset "sensors" begin
-    @named source = Sine(offset = 1, amplitude = 10, frequency = 5)
+    @named source = Sine(offset = 1, amplitude = 10, frequency = 5, output__unit = u"V")
     @named voltage = Voltage()
     @named resistor = Resistor(R = 1)
     @named capacitor = Capacitor(C = 1, v = 0.0)
@@ -43,7 +45,7 @@ using OrdinaryDiffEq: ReturnCode.Success
             power_sensor,
         ])
     sys = structural_simplify(model)
-    prob = ODAEProblem(sys, [], (0.0, 10.0))
+    prob = ODEProblem(sys, [], (0.0, 10.0))
     sol = solve(prob, Tsit5())
 
     # Plots.plot(sol; vars=[capacitor.v, voltage_sensor.v])
@@ -57,7 +59,7 @@ end
 
 # simple voltage divider
 @testset "voltage divider with a short branch" begin
-    @named source = Constant(k = 10)
+    @named source = Constant(k = 10, output.unit = u"V")
     @named voltage = Voltage()
     @named R0 = Resistor(R = 1e3)
     @named R1 = Resistor(R = 1e3)
@@ -86,7 +88,7 @@ end
 
 # simple RC
 @testset "RC" begin
-    @named source = Constant(k = 10)
+    @named source = Constant(k = 10, output.unit = u"V")
     @named voltage = Voltage()
     @named resistor = Resistor(R = 1)
     @named capacitor = Capacitor(C = 1, v = 0.0)
@@ -100,7 +102,7 @@ end
     @named model = ODESystem(connections, t;
         systems = [resistor, capacitor, source, voltage, ground])
     sys = structural_simplify(model)
-    prob = ODAEProblem(sys, Pair[], (0.0, 10.0))
+    prob = ODEProblem(sys, Pair[], (0.0, 10.0))
     sol = solve(prob, Tsit5())
 
     # Plots.plot(sol; vars=[source.v, capacitor.v])
@@ -110,7 +112,7 @@ end
 
 # simple RL
 @testset "RL" begin
-    @named source = Constant(k = 10)
+    @named source = Constant(k = 10, output.unit = u"V")
     @named voltage = Voltage()
     @named resistor = Resistor(R = 1)
     @named inductor = Inductor(L = 1.0, i = 0.0)
@@ -124,7 +126,7 @@ end
     @named model = ODESystem(connections, t;
         systems = [resistor, inductor, source, voltage, ground])
     sys = structural_simplify(model)
-    prob = ODAEProblem(sys, Pair[], (0.0, 10.0))
+    prob = ODEProblem(sys, Pair[], (0.0, 10.0))
     sol = solve(prob, Tsit5())
 
     # Plots.plot(sol; vars=[inductor.i, inductor.i])
@@ -135,15 +137,15 @@ end
 @testset "RC with voltage sources" begin
     R, C = 1, 1
     @named voltage = Voltage()
-    @named source_const = Constant(k = 10)
+    @named source_const = Constant(k = 10, output.unit = u"V")
     @named source_sin = Sine(offset = 1, amplitude = 10, frequency = 2, start_time = 0.5,
-        phase = 0)
-    @named source_step = Step(offset = 1, height = 10, start_time = 0.5)
+        phase = 0, output__unit = u"V")
+    @named source_step = Step(offset = 1, height = 10, start_time = 0.5, output__unit = u"V")
     @named source_tri = Triangular(offset = 1, start_time = 0.5, amplitude = 10,
-        frequency = 2)
+        frequency = 2, output__unit = u"V")
     @named source_dsin = ExpSine(offset = 1, amplitude = 10, frequency = 2,
-        start_time = 0.5, phase = 0, damping = 0.5)
-    @named source_ramp = Ramp(offset = 1, height = 10, start_time = 0.5, duration = 1)
+        start_time = 0.5, phase = 0, damping = 0.5, output__unit = u"V")
+    @named source_ramp = Ramp(offset = 1, height = 10, start_time = 0.5, duration = 1, output__unit = u"V")
     sources = [source_const, source_sin, source_step, source_tri, source_dsin, source_ramp]
 
     @named resistor = Resistor(; R)
@@ -159,7 +161,7 @@ end
         @named model = ODESystem(connections, t;
             systems = [resistor, capacitor, source, ground, voltage])
         sys = structural_simplify(model)
-        prob = ODAEProblem(sys, Pair[], (0.0, 10.0))
+        prob = ODEProblem(sys, Pair[], (0.0, 10.0))
         sol = solve(prob, Tsit5())
         @test sol.retcode == Success
         sol = solve(prob, Rodas4())
@@ -173,7 +175,7 @@ end
 @testset "RC with current sources" begin
     start_time = 2
     @named current = Current()
-    @named source = Step(start_time = 2)
+    @named source = Step(start_time = 2, output__unit = u"A")
     @named resistor = Resistor(R = 1)
     @named capacitor = Capacitor(C = 1, v = 0.0)
     @named ground = Ground()
@@ -186,7 +188,7 @@ end
     @named model = ODESystem(connections, t;
         systems = [ground, resistor, current, capacitor, source])
     sys = structural_simplify(model)
-    prob = ODAEProblem(sys, Pair[], (0.0, 10.0))
+    prob = ODEProblem(sys, Pair[], (0.0, 10.0))
     sol = solve(prob, Tsit5())
     y(x, st) = (x .> st) .* abs.(collect(x) .- st)
     @test sol.retcode == Success
@@ -202,7 +204,7 @@ end
     @named R2 = Resistor(R = 100 * R)
     @named C1 = Capacitor(C = 1 / (2 * pi * f * R), v = 0.0)
     @named opamp = IdealOpAmp()
-    @named square_source = Square(amplitude = Vin)
+    @named square_source = Square(amplitude = Vin, output__unit = u"V")
     @named voltage = Voltage()
     @named sensor = VoltageSensor()
 
@@ -251,15 +253,19 @@ _damped_sine_wave(x, f, A, st, ϕ, d) = exp((st - x) * d) * A * sin(2 * π * f *
     @named ground = Ground()
     @named voltage = Voltage()
     @named voltage_sensor = VoltageSensor()
-    @named step = Step(start_time = st, offset = o, height = h)
+    @named step = Step(start_time = st, offset = o, height = h, output__unit = u"V")
     @named cosine = Cosine(offset = o, amplitude = A, frequency = f, start_time = st,
-        phase = ϕ)
-    @named sine = Sine(offset = o, amplitude = A, frequency = f, start_time = st, phase = ϕ)
+        phase = ϕ, output__unit = u"V")
+    @named sine = Sine(offset = o, amplitude = A, frequency = f, start_time = st,
+        phase = ϕ, output__unit = u"V")
     @named damped_sine = ExpSine(offset = o, amplitude = A, frequency = f, start_time = st,
-        phase = ϕ, damping = d)
-    @named ramp = Ramp(offset = o, start_time = st, duration = et - st, height = h)
-    @named vsquare = Square(offset = o, start_time = st, amplitude = A, frequency = f)
-    @named tri = Triangular(offset = o, start_time = st, amplitude = A, frequency = f)
+        phase = ϕ, damping = d, output__unit = u"V")
+    @named ramp = Ramp(offset = o, start_time = st, duration = et - st, height = h,
+        output__unit = u"V")
+    @named vsquare = Square(offset = o, start_time = st, amplitude = A, frequency = f,
+        output__unit = u"V")
+    @named tri = Triangular(offset = o, start_time = st, amplitude = A, frequency = f,
+        output__unit = u"V")
     # @named vsawtooth = SawTooth(amplitude=A, start_time=st, frequency=f, offset=o)
 
     sources = [step, cosine, sine, damped_sine, ramp, tri, vsquare] #, vsawtooth]
@@ -294,7 +300,7 @@ _damped_sine_wave(x, f, A, st, ϕ, d) = exp((st - x) * d) * A * sin(2 * π * f *
 
         u0 = [cap.v => 0.0]
 
-        prob = ODAEProblem(vsys, u0, (0, 10.0))
+        prob = ODEProblem(vsys, u0, (0, 10.0))
         sol = solve(prob, dt = 0.1, Tsit5())
 
         @test sol.retcode == Success
@@ -314,15 +320,19 @@ end
     @named cap = Capacitor(C = 1, v = 0.0)
     @named current_sensor = CurrentSensor()
     @named current = Current()
-    @named step = Step(start_time = st, offset = o, height = h)
+    @named step = Step(start_time = st, offset = o, height = h, output__unit = u"A")
     @named cosine = Cosine(offset = o, amplitude = A, frequency = f, start_time = st,
-        phase = ϕ)
-    @named sine = Sine(offset = o, amplitude = A, frequency = f, start_time = st, phase = ϕ)
+        phase = ϕ, output__unit = u"A")
+    @named sine = Sine(offset = o, amplitude = A, frequency = f, start_time = st,
+        phase = ϕ, output__unit = u"A")
     @named damped_sine = ExpSine(offset = o, amplitude = A, frequency = f, start_time = st,
-        phase = ϕ, damping = d)
-    @named ramp = Ramp(offset = o, start_time = st, duration = et - st, height = h)
-    @named vsquare = Square(offset = o, start_time = st, amplitude = A, frequency = f)
-    @named tri = Triangular(offset = o, start_time = st, amplitude = A, frequency = f)
+        phase = ϕ, damping = d, output__unit = u"A")
+    @named ramp = Ramp(offset = o, start_time = st, duration = et - st, height = h,
+        output__unit = u"A")
+    @named vsquare = Square(offset = o, start_time = st, amplitude = A, frequency = f,
+        output__unit = u"A")
+    @named tri = Triangular(offset = o, start_time = st, amplitude = A, frequency = f,
+        output__unit = u"A")
     # @named isawtooth = SawTooth(amplitude=A, start_time=st, frequency=f, offset=o)
 
     sources = [step, cosine, sine, damped_sine, ramp, tri, vsquare] #, idamped_sine]
@@ -358,7 +368,7 @@ end
 
         u0 = [cap.v => 0.0]
 
-        prob = ODAEProblem(isys, u0, (0, 10.0))
+        prob = ODEProblem(isys, u0, (0, 10.0))
         sol = solve(prob, dt = 0.1, Tsit5())
 
         @test sol.retcode == Success

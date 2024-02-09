@@ -1,6 +1,6 @@
 @connector Pin begin
-    v(t)                    # Potential at the pin [V]
-    i(t), [connect = Flow]    # Current flowing into the pin [A]
+    v(t), [description = "Voltage", unit = u"V"]                  # Potential at the pin [V]
+    i(t), [description = "Current", unit = u"A", connect = Flow]    # Current flowing into the pin [A]
 end
 @doc """
     Pin(; name)
@@ -34,7 +34,7 @@ Component with two electrical pins `p` and `n` and current `i` flows from `p` to
     end
     @variables begin
         v(t) = 0.0, [description = "Voltage", unit = u"V"]
-        i(t) = 0.0, [description = "Current", unit = u"A"]
+        i(t) = 0.0, [description = "Current", unit = u"A", connect = Flow]
     end
     @equations begin
         v ~ p.v - n.v

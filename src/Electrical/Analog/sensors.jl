@@ -19,7 +19,7 @@ an ideal ammeter.
         n = Pin()
     end
     @variables begin
-        i(t)
+        i(t), [description = "Measured current", unit = u"A"]
     end
     @equations begin
         p.v ~ n.v
