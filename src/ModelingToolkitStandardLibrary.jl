@@ -1,9 +1,10 @@
 module ModelingToolkitStandardLibrary
 import Symbolics: unwrap
+using DynamicQuantities
 
 """
   @symcheck J > 0 || throw(ArgumentError("Expected `J` to be positive"))
-  
+
 Omits the check expression if the argument `J` is symbolic.
 """
 macro symcheck(ex)
@@ -16,6 +17,7 @@ macro symcheck(ex)
     end
 end
 
+include("utils.jl")
 include("Blocks/Blocks.jl")
 include("Mechanical/Mechanical.jl")
 include("Thermal/Thermal.jl")
