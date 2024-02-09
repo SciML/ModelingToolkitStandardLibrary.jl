@@ -4,22 +4,25 @@ using ModelingToolkitStandardLibrary.Electrical: OnePort
 using OrdinaryDiffEq
 using OrdinaryDiffEq: ReturnCode.Success
 using IfElse: ifelse
+using DynamicQuantities: @u_str
 
 @testset "Chua Circuit" begin
-    @parameters t
+    @parameters t [unit = u"s"]
 
-    @component function NonlinearResistor(; name, Ga, Gb, Ve)
-        @named oneport = OnePort()
-        @unpack v, i = oneport
-        pars = @parameters Ga=Ga Gb=Gb Ve=Ve
-        eqs = [
+    @mtkmodel NonlinearResistor begin
+        @extend OnePort()
+        @parameters begin
+            Ga, [description = "Conductance in inner voltage range", unit = u"1/Ω"]
+            Gb, [description = "Conductance in outer voltage range", unit = u"1/Ω"]
+            Ve, [description = "Inner voltage range limit", unit = u"V"]
+        end
+        @equations begin
             i ~ ifelse(v < -Ve,
                 Gb * (v + Ve) - Ga * Ve,
                 ifelse(v > Ve,
                     Gb * (v - Ve) + Ga * Ve,
-                    Ga * v)),
-        ]
-        extend(ODESystem(eqs, t, [], pars; name = name), oneport)
+                    Ga * v))
+        end
     end
 
     @named L = Inductor(L = 18, i = 0.0)
