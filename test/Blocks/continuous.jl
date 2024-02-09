@@ -1,8 +1,9 @@
 using ModelingToolkit, ModelingToolkitStandardLibrary, OrdinaryDiffEq
 using ModelingToolkitStandardLibrary.Blocks
 using OrdinaryDiffEq: ReturnCode.Success
+using DynamicQuantities: @u_str
 
-@parameters t
+@parameters t [unit = u"s"]
 
 #=
 Testing strategy:

@@ -38,19 +38,19 @@ Output the product of a gain matrix with the input signal vector.
   - `output`
 """
 @mtkmodel MatrixGain begin
-    @parameters begin
-        K, [description = "Matrix gain"]
+    @structural_parameters begin
+        K
     end
     begin
-        nout = size(getdefault(K), 1)
-        nin = size(getdefault(K), 2)
+        nout = size(K, 1)
+        nin = size(K, 2)
     end
     @components begin
-        input = RealInput(; nin = size(K, 2))
-        output = RealOutput(; nout = size(K, 1))
+        input = RealInput(; nin = nin)
+        output = RealOutput(; nout = nout)
     end
     @equations begin
-        [(@info i, j; output.u[i] ~ sum(getdefault(K)[i, j] * input.u[j])) for j in 1:nin
+        [(output.u[i] ~ sum(K[i, j] * input.u[j])) for j in 1:nin
          for i in 1:nout]...
     end
 end

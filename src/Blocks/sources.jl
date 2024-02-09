@@ -76,7 +76,7 @@ Generate constant signal.
 """
 @mtkmodel Constant begin
     @components begin
-        output = RealOutput()
+        output = RealOutput(; unit)
     end
     @parameters begin
         k = 0.0, [description = "Constant output value of block"]
@@ -101,7 +101,7 @@ The input variable `t` can be changed by passing a different variable as the key
         f
     end
     @components begin
-        output = RealOutput()
+        output = RealOutput(; unit)
     end
     @equations begin
         output.u ~ first(getdefault(f))(t)
@@ -135,8 +135,9 @@ Generate sine signal.
     phase = 0,
     offset = 0,
     start_time = 0,
-    smooth = false)
-    @named output = RealOutput()
+    smooth = false,
+    output__unit = nothing)
+    @named output = RealOutput(; unit = output__unit)
     pars = @parameters offset=offset start_time=start_time amplitude=amplitude frequency=frequency phase=phase
     equation = if smooth == false
         offset + ifelse(t < start_time, 0,
@@ -178,8 +179,9 @@ Cosine signal.
     phase = 0,
     offset = 0,
     start_time = 0,
-    smooth = false)
-    @named output = RealOutput()
+    smooth = false,
+    output__unit = nothing)
+    @named output = RealOutput(; unit = output__unit)
     pars = @parameters offset=offset start_time=start_time amplitude=amplitude frequency=frequency phase=phase
     equation = if smooth == false
         offset + ifelse(t < start_time, zero(t),
@@ -209,8 +211,8 @@ Generate current time signal.
 
   - `output`
 """
-@component function ContinuousClock(; name, offset = 0, start_time = 0)
-    @named output = RealOutput()
+@component function ContinuousClock(; name, offset = 0, start_time = 0, output__unit = nothing)
+    @named output = RealOutput(; unit = output__unit)
     pars = @parameters offset=offset start_time=start_time
     eqs = [
         output.u ~ offset + ifelse(t < start_time, zero(t), t - start_time),
@@ -242,8 +244,9 @@ Generate ramp signal.
     duration = 1,
     offset = 0,
     start_time = 0,
-    smooth = false)
-    @named output = RealOutput()
+    smooth = false,
+    output__unit = nothing)
+    @named output = RealOutput(; unit = output__unit)
     pars = @parameters offset=offset start_time=start_time height=height duration=duration
     equation = if smooth == false
         offset + ifelse(t < start_time, 0,
@@ -280,8 +283,9 @@ Generate smooth square signal.
   - `output`
 """
 @component function Square(; name, frequency = 1.0, amplitude = 1.0,
-    offset = 0.0, start_time = 0.0, smooth = false)
-    @named output = RealOutput()
+    offset = 0.0, start_time = 0.0, smooth = false,
+    output__unit = nothing)
+    @named output = RealOutput(; unit = output__unit)
     pars = @parameters begin
         frequency = frequency
         amplitude = amplitude
@@ -322,8 +326,8 @@ Generate step signal.
   - `output`
 """
 @component function Step(; name, height = 1, offset = 0, start_time = 0, duration = Inf,
-    smooth = 1e-5)
-    @named output = RealOutput()
+    smooth = 1e-5, output__unit = nothing)
+    @named output = RealOutput(; unit = output__unit)
     duration_numeric = duration
     pars = @parameters offset=offset start_time=start_time height=height duration=duration
     equation = if smooth == false # use comparison in case smooth is a float
@@ -372,8 +376,9 @@ Exponentially damped sine signal.
     phase = 0,
     offset = 0,
     start_time = 0,
-    smooth = false)
-    @named output = RealOutput()
+    smooth = false,
+    output__unit = nothing)
+    @named output = RealOutput(; unit = output__unit)
     pars = @parameters offset=offset start_time=start_time amplitude=amplitude frequency=frequency phase=phase damping=damping
 
     equation = if smooth == false
@@ -413,8 +418,9 @@ Generate smooth triangular signal for frequencies less than or equal to 25 Hz
   - `output`
 """
 @component function Triangular(; name, amplitude = 1.0, frequency = 1.0,
-    offset = 0.0, start_time = 0.0, smooth = false)
-    @named output = RealOutput()
+    offset = 0.0, start_time = 0.0, smooth = false,
+    output__unit = nothing)
+    @named output = RealOutput(; unit = output__unit)
     pars = @parameters begin
         amplitude = amplitude
         frequency = frequency
@@ -604,13 +610,13 @@ data input component.
 # Connectors:
   - `output`
 """
-@component function SampledData(; name, buffer)
+@component function SampledData(; name, buffer, unit = nothing)
     pars = @parameters begin
         buffer = buffer
     end
     vars = []
     systems = @named begin
-        output = RealOutput()
+        output = RealOutput(; unit)
     end
     eqs = [
         output.u ~ get_sampled_data(t, buffer),

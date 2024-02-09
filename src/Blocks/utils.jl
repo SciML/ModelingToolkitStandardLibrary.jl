@@ -1,14 +1,30 @@
-@connector function RealInput(; name, nin = 1, u_start = nin > 1 ? zeros(nin) : 0.0)
+@connector function RealInput(; name, nin = 1, u_start = nin > 1 ? zeros(nin) : 0.0, unit = nothing)
     if nin == 1
-        @variables u(t)=u_start [
-            input = true,
-            description = "Inner variable in RealInput $name",
-        ]
+        if unit !== nothing
+            @variables u(t)=u_start [
+                input = true,
+                description = "Inner variable in RealInput $name",
+                unit = unit
+            ]
+        else
+            @variables u(t)=u_start [
+                input = true,
+                description = "Inner variable in RealInput $name",
+            ]
+        end
     else
-        @variables u(t)[1:nin]=u_start [
-            input = true,
-            description = "Inner variable in RealInput $name",
-        ]
+        if unit !== nothing
+            @variables u(t)[1:nin]=u_start [
+                input = true,
+                description = "Inner variable in RealInput $name",
+                unit = unit
+            ]
+        else
+            @variables u(t)[1:nin]=u_start [
+                input = true,
+                description = "Inner variable in RealInput $name",
+            ]
+        end
         u = collect(u)
     end
     ODESystem(Equation[], t, [u...], []; name = name)
@@ -26,18 +42,34 @@ Connector with one input signal of type Real.
 - `u`: Value of the connector; if nin=1 this is a scalar
 """ RealInput
 
-@connector function RealOutput(; name, nout = 1, u_start = nout > 1 ? zeros(nout) : 0.0)
+@connector function RealOutput(; name, nout = 1, u_start = nout > 1 ? zeros(nout) : 0.0, unit = nothing)
     if nout == 1
-        @variables u(t)=u_start [
-            output = true,
-            description = "Inner variable in RealOutput $name",
-        ]
+        if unit !== nothing
+            @variables u(t)=u_start [
+                output = true,
+                description = "Inner variable in RealOutput $name",
+                unit = unit
+            ]
+        else
+            @variables u(t)=u_start [
+                output = true,
+                description = "Inner variable in RealOutput $name",
+            ]
+        end
     else
-        @variables u(t)[1:nout]=u_start [
-            output = true,
-            description = "Inner variable in RealOutput $name",
-        ]
-        u = collect(u)
+        if unit !== nothing
+            @variables u(t)[1:nout]=u_start [
+                output = true,
+                description = "Inner variable in RealOutput $name",
+                unit = unit
+            ]
+        else
+            @variables u(t)[1:nout]=u_start [
+                output = true,
+                description = "Inner variable in RealOutput $name",
+                ]
+            end
+            u = collect(u)
     end
     ODESystem(Equation[], t, [u...], []; name = name)
 end

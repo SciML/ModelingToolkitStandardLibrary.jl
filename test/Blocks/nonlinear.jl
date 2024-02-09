@@ -2,8 +2,9 @@ using ModelingToolkit, OrdinaryDiffEq
 using ModelingToolkitStandardLibrary.Blocks
 using ModelingToolkitStandardLibrary.Blocks: _clamp, _dead_zone
 using OrdinaryDiffEq: ReturnCode.Success
+using DynamicQuantities: @u_str
 
-@parameters t
+@parameters t [unit = u"s"]
 
 @testset "Limiter" begin
     @testset "Constant" begin

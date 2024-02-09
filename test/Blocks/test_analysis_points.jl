@@ -4,6 +4,7 @@ using ModelingToolkitStandardLibrary.Blocks
 using OrdinaryDiffEq
 using ModelingToolkit: get_eqs, vars, @set!, get_iv
 using ControlSystemsBase
+using DynamicQuantities: @u_str
 
 @named P = FirstOrder(k = 1, T = 1)
 @named C = Gain(; k = -1)
@@ -231,10 +232,11 @@ Si = ss(matrices...)
 @test tf(So) ≈ tf(Si)
 
 ## A simple multi-level system with loop openings
-@parameters t
+@parameters t [unit = u"s"]
 @named P_inner = FirstOrder(k = 1, T = 1)
 @named feedback = Feedback()
 @named ref = Step()
+### TODO
 @named sys_inner = ODESystem([connect(P_inner.output, :y, feedback.input2)
         connect(feedback.output, :u, P_inner.input)
         connect(ref.output, :r, feedback.input1)], t,

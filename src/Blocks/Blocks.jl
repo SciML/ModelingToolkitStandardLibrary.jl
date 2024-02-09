@@ -6,8 +6,9 @@ using ModelingToolkit, Symbolics
 import IfElse: ifelse
 import ..@symcheck
 using ModelingToolkit: getdefault
+using ..DynamicQuantities: @u_str
 
-@parameters t
+@parameters t [unit = u"s"]
 D = Differential(t)
 
 export RealInput, RealOutput, SISO
