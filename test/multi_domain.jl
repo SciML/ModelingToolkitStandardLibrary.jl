@@ -6,9 +6,10 @@ using ModelingToolkitStandardLibrary.Thermal
 import ModelingToolkitStandardLibrary
 using ModelingToolkit, OrdinaryDiffEq, Test
 using OrdinaryDiffEq: ReturnCode.Success
+using DynamicQuantities: @u_str
 # using Plots
 
-@parameters t
+@parameters t [unit = u"s"]
 D = Differential(t)
 
 @testset "DC motor" begin
@@ -21,13 +22,13 @@ D = Differential(t)
     tau_L_step = -3
     @named ground = Ground()
     @named source = Voltage()
-    @named voltage_step = Blocks.Step(height = V_step, start_time = 0)
+    @named voltage_step = Blocks.Step(height = V_step, start_time = 0, output__unit = u"V")
     @named R1 = Resistor(R = R)
     @named L1 = Inductor(L = L, i = 0.0)
     @named emf = EMF(k = k)
     @named fixed = Fixed()
     @named load = Torque(use_support = false)
-    @named load_step = Blocks.Step(height = tau_L_step, start_time = 3)
+    @named load_step = Blocks.Step(height = tau_L_step, start_time = 3, output__unit = u"N*m")
     @named inertia = Inertia(J = J)
     @named friction = Damper(d = f)
 
@@ -72,7 +73,7 @@ D = Differential(t)
     @test sol[inertia.w][idx_t]≈(dc_gain * [V_step; -tau_L_step])[2] rtol=1e-3
     @test sol[emf.i][idx_t]≈(dc_gain * [V_step; -tau_L_step])[1] rtol=1e-3
 
-    prob = DAEProblem(sys, D.(states(sys)) .=> 0.0, Pair[], (0, 6.0))
+    prob = DAEProblem(sys, D.(unknowns(sys)) .=> 0.0, Pair[], (0, 6.0))
     sol = solve(prob, DFBDF())
     @test sol.retcode == Success
     # EMF equations
@@ -103,13 +104,13 @@ end
     tau_L_step = -3
     @named ground = Ground()
     @named source = Voltage()
-    @named voltage_step = Blocks.Step(height = V_step, start_time = 0)
+    @named voltage_step = Blocks.Step(height = V_step, start_time = 0, output__unit = u"V")
     @named R1 = Resistor(R = R)
     @named L1 = Inductor(L = L, i = 0.0)
     @named emf = EMF(k = k)
     @named fixed = Fixed()
     @named load = Torque(use_support = false)
-    @named load_step = Blocks.Step(height = tau_L_step, start_time = 3)
+    @named load_step = Blocks.Step(height = tau_L_step, start_time = 3, output__unit = u"N*m")
     @named inertia = Inertia(J = J)
     @named friction = Damper(d = f)
     @named speed_sensor = SpeedSensor()
@@ -161,7 +162,7 @@ end
 
     @test all(sol[inertia.w] .== sol[speed_sensor.w.u])
 
-    prob = DAEProblem(sys, D.(states(sys)) .=> 0.0, Pair[], (0, 6.0))
+    prob = DAEProblem(sys, D.(unknowns(sys)) .=> 0.0, Pair[], (0, 6.0))
     sol = solve(prob, DFBDF())
 
     @test sol.retcode == Success
@@ -183,7 +184,7 @@ end
 @testset "El. Heating Circuit" begin
     @named ground = Ground()
     @named source = Voltage()
-    @named voltage_sine = Blocks.Sine(amplitude = 220, frequency = 1)
+    @named voltage_sine = Blocks.Sine(amplitude = 220, frequency = 1, output__unit = u"V")
     @named heating_resistor = HeatingResistor(R_ref = 100, alpha = 1e-3, T_ref = 293.15)
     @named thermal_conductor = ThermalConductor(G = 50)
     @named env = FixedTemperature(T = 273.15 + 20)
@@ -207,5 +208,6 @@ end
     prob = ODEProblem(sys, Pair[], (0, 6.0))
     sol = solve(prob, Rodas4())
     @test sol.retcode == Success
+    ### TODO
     @test sol[source.v * source.i] == -sol[env.port.Q_flow]
 end
