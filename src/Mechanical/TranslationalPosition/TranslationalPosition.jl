@@ -5,8 +5,9 @@ module TranslationalPosition
 
 using ModelingToolkit, Symbolics, IfElse
 using ...Blocks: RealInput, RealOutput
+using ...DynamicQuantities: @u_str
 
-@parameters t
+@parameters t [unit = u"s"]
 D = Differential(t)
 
 export Flange

@@ -1,17 +1,19 @@
 using ModelingToolkit, OrdinaryDiffEq, Test
 
 using ModelingToolkitStandardLibrary.Blocks
+import ModelingToolkitStandardLibrary: Mechanical
 import ModelingToolkitStandardLibrary.Mechanical.Translational as TV
 import ModelingToolkitStandardLibrary.Mechanical.TranslationalPosition as TP
+using DynamicQuantities: @u_str
 
-@parameters t
+@parameters t [unit = u"s"]
 D = Differential(t)
 
 @testset "Free" begin
     function System(; name)
         systems = @named begin
             acc = TV.Acceleration()
-            a = Constant(; k = -10)
+            a = Constant(; k = -10, output.unit = u"m/s^2")
             mass = TV.Mass(; m = 100)
             free = TV.Free()
         end
@@ -85,7 +87,7 @@ end
     @named fv = TV.Force()
     @named fp = TP.Force(use_support = false)
 
-    @named source = Sine(frequency = 3, amplitude = 2)
+    @named source = Sine(frequency = 3, amplitude = 2, unit = u"N")
 
     function System(damping, spring, body, ground, f, source)
         eqs = [connect(f.f, source.output)
@@ -126,11 +128,11 @@ end
 
             spring = TV.Spring(; k = 1000)
 
-            src1 = Sine(frequency = 100, amplitude = 2)
-            src2 = Sine(frequency = 100, amplitude = -1)
+            src1 = Sine(frequency = 100, amplitude = 2, output__unit = u"m")
+            src2 = Sine(frequency = 100, amplitude = -1, output__unit = u"N")
 
-            pos_value = RealInput()
-            force_output = RealOutput()
+            pos_value = RealInput(unit = u"m")
+            force_output = RealOutput(unit = u"N")
         end
 
         eqs = [connect(pos.s, src1.output)

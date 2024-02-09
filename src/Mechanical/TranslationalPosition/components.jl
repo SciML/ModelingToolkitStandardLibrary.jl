@@ -48,10 +48,7 @@ Sliding mass with inertia
     end
     @variables begin
         s(t) = 0.0, [description = "Absolute position of sliding mass", unit = u"m"]
-        function v(t)
-            0.0,
-            [description = "Absolute linear velocity of sliding mass", unit = u"m*s^-1"]
-        end
+        v(t) = 0.0, [description = "Absolute linear velocity of sliding mass", unit = u"m*s^-1"]
         f(t) = 0.0, [description = "Force", unit = u"N"]
     end
     @components begin
@@ -107,7 +104,7 @@ Linear 1D translational spring
 # Parameters:
 
   - `k`: [N/m] Spring constant
-  - `l`: Unstretched spring length
+  - `l`: [m] Unstretched spring length
   - `flange_a__s`: [m] Initial value of absolute position of flange_a
   - `flange_b__s`: [m] Initial value of absolute position of flange_b
 
@@ -124,12 +121,10 @@ end #default function
     name, k, flange_a__s = 0,
     flange_b__s = 0, l = 0)
     pars = @parameters begin
-        k = k
-        l = l
+        k = k, [description = "Spring constant", unit = u"N/m"]
+        l = l, [description = "Unstretched spring length", unit = u"m"]
     end
-    vars = @variables begin
-        f(t) = k * (flange_a__s - flange_b__s - l)
-    end
+    @variables f(t) = k * (flange_a__s - flange_b__s - l) [description = "Force", unit = u"N"]
 
     @named flange_a = Flange(; s = flange_a__s, f = k * (flange_a__s - flange_b__s - l))
     @named flange_b = Flange(; s = flange_a__s, f = -k * (flange_a__s - flange_b__s - l))
@@ -139,7 +134,7 @@ end #default function
         f ~ k * (flange_a.s - flange_b.s - l) #delta_s
         flange_a.f ~ +f
         flange_b.f ~ -f]
-    return compose(ODESystem(eqs, t, vars, pars; name = name), flange_a, flange_b)
+    return compose(ODESystem(eqs, t, [f], pars; name = name), flange_a, flange_b)
 end
 
 """
@@ -160,12 +155,12 @@ Linear 1D translational damper
 """
 @mtkmodel Damper begin
     @parameters begin
-        d, [description = "Damping constant", unit = u"N.s/m"]
+        d, [description = "Damping constant", unit = u"N*s/m"]
     end
     @variables begin
-        va(t) = 0.0
-        vb(t) = 0.0
-        f(t) = +(va - vb) * d
+        va(t) = 0.0, [description = "Velocity of flage a", unit = u"m/s"]
+        vb(t) = 0.0, [description = "Velocity of flage b", unit = u"m/s"]
+        f(t) = +(va - vb) * d, [description = "Force", unit = u"N"]
     end
 
     @components begin

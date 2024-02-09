@@ -42,8 +42,8 @@ Partial model for the compliant connection of two translational 1-dim. flanges.
         flange_b = Flange()
     end
     @variables begin
-        v_a(t) = 0.0
-        v_b(t) = 0.0
+        v_a(t) = 0.0, [description = "Velocity", unit = u"m/s"]
+        v_b(t) = 0.0, [description = "Velocity", unit = u"m/s"]
         s_rel(t) = 0.0, [description = "Relative distance ", unit = u"m"]
         f(t) = 0.0, [description = "Force between flanges", unit = u"N"]
     end
@@ -72,7 +72,7 @@ Partial model for the compliant connection of two translational 1-dim. flanges.
         flange_b = Flange()
     end
     @variables begin
-        delta_s(t) = 0.0
+        delta_s(t) = 0.0, [unit = u"m"]
         f(t) = 0.0, [description = "Force between flanges", unit = u"N"]
     end
     @equations begin
@@ -128,9 +128,7 @@ Partial model for a component with two translational 1-dim. flanges and a suppor
     @named flange_a = Flange()
     @named flange_b = Flange()
     sys = [flange_a, flange_b]
-    @variables function s_support(t)
-        0.0, [description = "Absolute position of support flange", unit = u"m"]
-    end
+    @variables s_support(t) = 0.0 [description = "Absolute position of support flange", unit = u"m"]
     if use_support
         @named support = Support()
         eqs = [support.s ~ s_support
