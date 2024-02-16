@@ -98,7 +98,7 @@ end
 """
     Difference()
 
-A discrete-tiem difference operator, corresponding to the transfer function ``1 - z^{-1}``.
+A discrete-time difference operator, corresponding to the transfer function ``1 - z^{-1}``.
 
 # Connectors:
 - `input`
@@ -142,7 +142,7 @@ Sampler translates a continuous-time signal into discrete time by sampling the i
     #     Ts = 1, [description = "Sample interval"]
     # end # TODO: figure out how to connect a clock
     @equations begin
-        y ~ Sample(t)(u)
+        y ~ Sample(u)
     end
 end
 
