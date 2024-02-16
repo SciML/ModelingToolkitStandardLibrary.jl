@@ -474,3 +474,32 @@ end
         @test sol[ddy][end]≈2 atol=1e-3
     end
 end
+
+using Symbolics
+using Symbolics: Struct, StructElement, getelements, symstruct
+using Test
+using ModelingToolkitStandardLibrary.Blocks
+using ModelingToolkitStandardLibrary.Blocks: structelem2connector
+
+# Test struct
+struct BarStruct
+    speed::Float64
+    isSpeedValid::Int
+end
+
+bar = BarStruct(1.0, 1)
+structdef = symstruct(BarStruct)
+selected_fields = [:speed]
+
+@mtkmodel BusSelectTest begin
+    @components begin
+        inputbus = Blocks.StructOutput(; structdef)
+        output = BusSelect(; structdef, selected_fields)
+    end
+    @equations begin
+        inputbus.u ~ bar
+        connect(inputbus, output)
+    end
+end
+
+@named sys = BusSelectTest()

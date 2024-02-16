@@ -107,3 +107,41 @@ Base class for a multiple input multiple output (MIMO) continuous system block.
     ]
     return ODESystem(eqs, t, vcat(u..., y...), []; name = name, systems = [input, output])
 end
+
+
+
+@connector function StructInput(; structdef, name)
+    n = Symbolics.juliatype(structdef)
+    @variables u(t)::n [input = true] # Dummy default value due to bug in Symbolics
+    ODESystem(Equation[], t, [u], []; name)
+end
+
+@connector function StructOutput(; structdef, name)
+    n = Symbolics.juliatype(structdef)
+    @variables u(t)::n [output = true] # Dummy default value due to bug in Symbolics
+    ODESystem(Equation[], t, [u], []; name)
+end
+
+function _structelem2connector(elem::StructElement)
+    T = Symbolics.decodetyp(elem.typ)
+    if T <: Bool
+        return BoolOutput(; name = elem.name)
+    elseif T <: Real
+        return RealOutput(; name = elem.name)
+    end
+end
+
+@component function BusSelect(;name, structdef, selected_fields)
+    @parameters t
+    nout = length(selected_fields)
+    inputbus = Blocks.StructInput(; structdef, name = Symbol("inputbus"))
+    @variables input(t)
+
+    output_elements = filter(e->e.name in selected_fields, getelements(structdef))
+    output_connectors = map(_structelem2connector, output_elements)
+
+    eqs = [
+        getproperty(inputbus.u, field) ~ con.u for (field, con) in zip(selected_fields, output_connectors)
+    ]
+    return ODESystem(eqs, t; name = name, systems = [inputbus; output_connectors])
+end
