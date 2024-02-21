@@ -1,10 +1,11 @@
 using ModelingToolkit: get_eqs, vars, @set!, get_iv
 
-Base.@kwdef mutable struct AnalysisPoint <: Real
+Base.@kwdef mutable struct AnalysisPoint
     in = nothing
     out = nothing
     name::Symbol = :nothing
 end
+Base.broadcastable(x::AnalysisPoint) = Ref(x)
 if Base.isdefined(ModelingToolkit, :isconnection)
     ModelingToolkit.isconnection(::AnalysisPoint) = true
 end
