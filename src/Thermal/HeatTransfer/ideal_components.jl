@@ -205,7 +205,7 @@ This is a model to collect the heat flows from `m` heatports to one single heatp
     port_a = [HeatPort(name = Symbol(:port_a, i)) for i in 1:m]
     @named port_b = HeatPort()
     eqs = [port_b.Q_flow + sum(k -> k.Q_flow, port_a) ~ 0
-        port_b.T ~ port_a[1].T]
+           port_b.T ~ port_a[1].T]
     for i in 1:(m - 1)
         push!(eqs, port_a[i].T ~ port_a[i + 1].T)
     end

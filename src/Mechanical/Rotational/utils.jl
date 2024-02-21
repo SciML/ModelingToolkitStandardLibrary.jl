@@ -148,7 +148,7 @@ Partial model for a component with one rotational 1-dim. shaft flange and a supp
     if use_support
         @named support = Support()
         eqs = [support.phi ~ phi_support
-            support.tau ~ -flange.tau]
+               support.tau ~ -flange.tau]
         push!(sys, support)
     else
         eqs = [phi_support ~ 0]
@@ -186,7 +186,7 @@ Partial model for a component with two rotational 1-dim. shaft flanges and a sup
     if use_support
         @named support = Support()
         eqs = [support.phi ~ phi_support
-            support.tau ~ -flange_a.tau - flange_b.tau]
+               support.tau ~ -flange_a.tau - flange_b.tau]
         push!(sys, support)
     else
         eqs = [phi_support ~ 0]

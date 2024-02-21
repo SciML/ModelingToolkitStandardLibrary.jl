@@ -18,7 +18,7 @@ Hydraulic mass flow input source
 
     vars = []
     eqs = [
-        port.dm ~ -dm.u,
+        port.dm ~ -dm.u
     ]
 
     ODESystem(eqs, t, vars, pars; name, systems)
@@ -47,7 +47,7 @@ Fixed pressure source
     end
 
     eqs = [
-        port.p ~ p,
+        port.p ~ p
     ]
 
     ODESystem(eqs, t, vars, pars; name, systems)
@@ -79,7 +79,7 @@ input pressure source
     end
 
     eqs = [
-        port.p ~ p.u,
+        port.p ~ p.u
     ]
 
     ODESystem(eqs, t, vars, pars; name, systems)

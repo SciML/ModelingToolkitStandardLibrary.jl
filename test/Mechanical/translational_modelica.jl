@@ -14,7 +14,7 @@ D = Differential(t)
     @named fixed = TM.Fixed(s0 = 1)
 
     eqs = [connect(spring.flange_a, mass.flange_a, damper.flange_a)
-        connect(spring.flange_b, damper.flange_b, fixed.flange)]
+           connect(spring.flange_b, damper.flange_b, fixed.flange)]
 
     @named model = ODESystem(eqs, t; systems = [fixed, mass, spring, damper])
 
@@ -38,9 +38,9 @@ end
     @named source = Sine(frequency = 3, amplitude = 2, output__unit = u"N")
 
     eqs = [connect(force.f, source.output)
-        connect(force.flange, mass.flange_a)
-        connect(spring.flange_a, mass.flange_b, damper.flange_a)
-        connect(spring.flange_b, damper.flange_b, fixed.flange)]
+           connect(force.flange, mass.flange_a)
+           connect(spring.flange_a, mass.flange_b, damper.flange_a)
+           connect(spring.flange_b, damper.flange_b, fixed.flange)]
 
     @named model = ODESystem(eqs, t;
         systems = [fixed, mass, spring, damper, force, source])

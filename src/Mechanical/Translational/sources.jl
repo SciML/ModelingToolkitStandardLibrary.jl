@@ -62,7 +62,7 @@ Linear 1D position input source.  Set `solves_force=false` to force input force 
     end
 
     eqs = [
-        v.u ~ flange.v,
+        v.u ~ flange.v
     ]
 
     !solves_force && push!(eqs, 0 ~ flange.f)

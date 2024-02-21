@@ -13,8 +13,8 @@ export HeatPort, Element1D
 include("utils.jl")
 
 export BodyRadiation, ConvectiveConductor, ConvectiveResistor, HeatCapacitor,
-    ThermalConductor,
-    ThermalResistor, ThermalCollector
+       ThermalConductor,
+       ThermalResistor, ThermalCollector
 include("HeatTransfer/ideal_components.jl")
 
 export RelativeTemperatureSensor, HeatFlowSensor, TemperatureSensor

@@ -216,16 +216,16 @@ end
     @named winding_losses = Step(height = 900, offset = 100, start_time = 360,
         duration = Inf, smooth = false)
     connections = [connect(windingLosses.port, winding.port)
-        connect(coreLosses.port, core.port)
-        connect(winding.port, winding2core.port_a)
-        connect(winding2core.port_b, core.port)
-        connect(winding.port, T_winding.port)
-        connect(core.port, T_core.port)
-        connect(winding2core.port_b, convection.solid)
-        connect(convection.fluid, environment.port)
-        connect(amb.output, environment.T)
-        connect(winding_losses.output, windingLosses.Q_flow)
-        connect(core_losses_const.output, coreLosses.Q_flow)]
+                   connect(coreLosses.port, core.port)
+                   connect(winding.port, winding2core.port_a)
+                   connect(winding2core.port_b, core.port)
+                   connect(winding.port, T_winding.port)
+                   connect(core.port, T_core.port)
+                   connect(winding2core.port_b, convection.solid)
+                   connect(convection.fluid, environment.port)
+                   connect(amb.output, environment.T)
+                   connect(winding_losses.output, windingLosses.Q_flow)
+                   connect(core_losses_const.output, coreLosses.Q_flow)]
 
     @named model = ODESystem(connections, t,
         systems = [

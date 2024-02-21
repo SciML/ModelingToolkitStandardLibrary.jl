@@ -46,7 +46,7 @@ function NonlinearResistor(; name, Ga, Gb, Ve)
             Gb * (v + Ve) - Ga * Ve,
             ifelse(v > Ve,
                 Gb * (v - Ve) + Ga * Ve,
-                Ga * v)),
+                Ga * v))
     ]
     extend(ODESystem(eqs, t, [], pars; name = name), oneport)
 end
@@ -102,14 +102,14 @@ The final model can now be created with the components from the library and the 
 @named Gnd = Ground()
 
 connections = [connect(L.p, G.p)
-    connect(G.n, Nr.p)
-    connect(Nr.n, Gnd.g)
-    connect(C1.p, G.n)
-    connect(L.n, Ro.p)
-    connect(G.p, C2.p)
-    connect(C1.n, Gnd.g)
-    connect(C2.n, Gnd.g)
-    connect(Ro.n, Gnd.g)]
+               connect(G.n, Nr.p)
+               connect(Nr.n, Gnd.g)
+               connect(C1.p, G.n)
+               connect(L.n, Ro.p)
+               connect(G.p, C2.p)
+               connect(C1.n, Gnd.g)
+               connect(C2.n, Gnd.g)
+               connect(Ro.n, Gnd.g)]
 
 @named model = ODESystem(connections, t, systems = [L, Ro, G, C1, C2, Nr, Gnd])
 nothing # hide

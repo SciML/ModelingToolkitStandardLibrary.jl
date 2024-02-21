@@ -69,7 +69,7 @@ Sliding mass with inertia
     vars = [v, f]
 
     eqs = [flange.v ~ v
-        flange.f ~ f]
+           flange.f ~ f]
 
     # gravity option
     if g !== nothing
@@ -127,9 +127,9 @@ end # default
     @named flange_b = MechanicalPort(; v = flange_b__v)
 
     eqs = [D(delta_s) ~ flange_a.v - flange_b.v
-        f ~ k * delta_s
-        flange_a.f ~ +f
-        flange_b.f ~ -f]
+           f ~ k * delta_s
+           flange_a.f ~ +f
+           flange_b.f ~ -f]
     return compose(ODESystem(eqs, t, [delta_s, f], pars; name = name),
         flange_a,
         flange_b) #flange_a.f => +k*delta_s, flange_b.f => -k*delta_s
@@ -150,10 +150,10 @@ const ABS = Val(:absolute)
     @named flange_b = MechanicalPort(; v = flange_b__v)
 
     eqs = [D(sa) ~ flange_a.v
-        D(sb) ~ flange_b.v
-        f ~ k * (sa - sb - l) #delta_s
-        flange_a.f ~ +f
-        flange_b.f ~ -f]
+           D(sb) ~ flange_b.v
+           f ~ k * (sa - sb - l) #delta_s
+           flange_a.f ~ +f
+           flange_b.f ~ -f]
     return compose(ODESystem(eqs, t, [sa, sb, f], pars; name = name),
         flange_a,
         flange_b) #, flange_a.f => k * (flange_a__s - flange_b__s - l)

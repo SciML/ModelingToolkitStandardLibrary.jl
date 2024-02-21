@@ -11,9 +11,10 @@ using DynamicQuantities: @u_str
         @named c = Constant(; k = 1)
         @named int = Integrator(; k = 1)
         @named sat = Limiter(; y_min = -0.6, y_max = 0.8)
-        @named model = ODESystem([
+        @named model = ODESystem(
+            [
                 connect(c.output, int.input),
-                connect(int.output, sat.input),
+                connect(int.output, sat.input)
             ],
             t,
             systems = [int, c, sat])
@@ -31,9 +32,10 @@ using DynamicQuantities: @u_str
         @named source = Sine(; frequency = 1 / 2)
         @named lim = Limiter(; y_max = y_max, y_min = y_min)
         @named int = Integrator(; k = 1)
-        @named iosys = ODESystem([
+        @named iosys = ODESystem(
+            [
                 connect(source.output, lim.input),
-                connect(lim.output, int.input),
+                connect(lim.output, int.input)
             ],
             t,
             systems = [source, lim, int])
@@ -58,9 +60,10 @@ end
         @named c = Constant(; k = 1)
         @named int = Integrator(; k = 1)
         @named dz = DeadZone(; u_min = -2, u_max = 1)
-        @named model = ODESystem([
+        @named model = ODESystem(
+            [
                 connect(c.output, int.input),
-                connect(int.output, dz.input),
+                connect(int.output, dz.input)
             ],
             t,
             systems = [int, c, dz])
@@ -77,9 +80,10 @@ end
         @named source = Sine(; amplitude = 3, frequency = 1 / 2)
         @named dz = DeadZone(; u_min = u_min, u_max = u_max)
         @named int = Integrator(; k = 1)
-        @named model = ODESystem([
+        @named model = ODESystem(
+            [
                 connect(source.output, dz.input),
-                connect(dz.output, int.input),
+                connect(dz.output, int.input)
             ],
             t,
             systems = [int, source, dz])
@@ -103,7 +107,7 @@ end
     @named source = Sine(; frequency = 1 / 2)
     @named rl = SlewRateLimiter(; rising = 1, falling = -1, Td = 0.001, y_start = -1 / 3)
     @named iosys = ODESystem([
-            connect(source.output, rl.input),
+            connect(source.output, rl.input)
         ],
         t,
         systems = [source, rl])

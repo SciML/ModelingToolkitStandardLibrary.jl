@@ -1,7 +1,7 @@
 using ModelingToolkitStandardLibrary.Electrical, ModelingToolkit, OrdinaryDiffEq, Test
 using ModelingToolkitStandardLibrary.Blocks: Step,
-    Constant, Sine, Cosine, ExpSine, Ramp,
-    Square, Triangular
+                                             Constant, Sine, Cosine, ExpSine, Ramp,
+                                             Square, Triangular
 using ModelingToolkitStandardLibrary.Blocks: square, triangular
 using OrdinaryDiffEq: ReturnCode.Success
 using DynamicQuantities: @u_str
@@ -23,15 +23,15 @@ D = Differential(t)
     @named power_sensor = PowerSensor()
 
     connections = [connect(source.output, voltage.V)
-        connect(voltage.p, resistor.p)
-        connect(resistor.n, current_sensor.p)
-        connect(current_sensor.n, power_sensor.pc)
-        connect(power_sensor.nc, capacitor.p)
-        connect(capacitor.n, voltage.n, ground.g)
-        connect(capacitor.p, voltage_sensor.p)
-        connect(capacitor.n, voltage_sensor.n)
-        connect(capacitor.p, power_sensor.pv)
-        connect(capacitor.n, power_sensor.nv)]
+                   connect(voltage.p, resistor.p)
+                   connect(resistor.n, current_sensor.p)
+                   connect(current_sensor.n, power_sensor.pc)
+                   connect(power_sensor.nc, capacitor.p)
+                   connect(capacitor.n, voltage.n, ground.g)
+                   connect(capacitor.p, voltage_sensor.p)
+                   connect(capacitor.n, voltage_sensor.n)
+                   connect(capacitor.p, power_sensor.pv)
+                   connect(capacitor.n, power_sensor.nv)]
 
     @named model = ODESystem(connections, t;
         systems = [
@@ -42,7 +42,7 @@ D = Differential(t)
             ground,
             voltage_sensor,
             current_sensor,
-            power_sensor,
+            power_sensor
         ])
     sys = structural_simplify(model)
     prob = ODEProblem(sys, [], (0.0, 10.0))
@@ -68,10 +68,10 @@ end
     @named short = Short()
 
     connections = [connect(source.output, voltage.V)
-        connect(voltage.p, R1.p)
-        connect(R1.n, short.p, R0.p)
-        connect(short.n, R0.n, R2.p)
-        connect(R2.n, voltage.n, ground.g)]
+                   connect(voltage.p, R1.p)
+                   connect(R1.n, short.p, R0.p)
+                   connect(short.n, R0.n, R2.p)
+                   connect(R2.n, voltage.n, ground.g)]
 
     @named model = ODESystem(connections, t,
         systems = [R0, R1, R2, source, short, voltage, ground])
@@ -95,9 +95,9 @@ end
     @named ground = Ground()
 
     connections = [connect(source.output, voltage.V)
-        connect(voltage.p, resistor.p)
-        connect(resistor.n, capacitor.p)
-        connect(capacitor.n, voltage.n, ground.g)]
+                   connect(voltage.p, resistor.p)
+                   connect(resistor.n, capacitor.p)
+                   connect(capacitor.n, voltage.n, ground.g)]
 
     @named model = ODESystem(connections, t;
         systems = [resistor, capacitor, source, voltage, ground])
@@ -119,9 +119,9 @@ end
     @named ground = Ground()
 
     connections = [connect(source.output, voltage.V)
-        connect(voltage.p, resistor.p)
-        connect(resistor.n, inductor.p)
-        connect(inductor.n, voltage.n, ground.g)]
+                   connect(voltage.p, resistor.p)
+                   connect(resistor.n, inductor.p)
+                   connect(inductor.n, voltage.n, ground.g)]
 
     @named model = ODESystem(connections, t;
         systems = [resistor, inductor, source, voltage, ground])
@@ -154,9 +154,9 @@ end
 
     for source in sources
         connections = [connect(source.output, voltage.V)
-            connect(voltage.p, resistor.p)
-            connect(resistor.n, capacitor.p)
-            connect(capacitor.n, voltage.n, ground.g)]
+                       connect(voltage.p, resistor.p)
+                       connect(resistor.n, capacitor.p)
+                       connect(capacitor.n, voltage.n, ground.g)]
 
         @named model = ODESystem(connections, t;
             systems = [resistor, capacitor, source, ground, voltage])
@@ -181,9 +181,9 @@ end
     @named ground = Ground()
 
     connections = [connect(source.output, current.I)
-        connect(current.p, resistor.n)
-        connect(capacitor.n, resistor.p)
-        connect(capacitor.p, current.n, ground.g)]
+                   connect(current.p, resistor.n)
+                   connect(capacitor.n, resistor.p)
+                   connect(capacitor.p, current.n, ground.g)]
 
     @named model = ODESystem(connections, t;
         systems = [ground, resistor, current, capacitor, source])
@@ -209,12 +209,12 @@ end
     @named sensor = VoltageSensor()
 
     connections = [connect(square_source.output, voltage.V)
-        connect(voltage.p, R1.p)
-        connect(R1.n, C1.n, R2.p, opamp.n1)
-        connect(opamp.p2, C1.p, R2.n)
-        connect(opamp.p1, ground.g, opamp.n2, voltage.n)
-        connect(opamp.p2, sensor.p)
-        connect(sensor.n, ground.g)]
+                   connect(voltage.p, R1.p)
+                   connect(R1.n, C1.n, R2.p, opamp.n1)
+                   connect(opamp.p2, C1.p, R2.n)
+                   connect(opamp.p1, ground.g, opamp.n2, voltage.n)
+                   connect(opamp.p2, sensor.p)
+                   connect(sensor.n, ground.g)]
     @named model = ODESystem(connections, t,
         systems = [
             R1,
@@ -224,11 +224,11 @@ end
             voltage,
             C1,
             ground,
-            sensor,
+            sensor
         ])
     sys = structural_simplify(model)
     u0 = [C1.v => 0.0
-        R1.v => 0.0]
+          R1.v => 0.0]
     prob = ODEProblem(sys, u0, (0, 100.0))
     sol = solve(prob, Rodas4())
     @test sol.retcode == Success
@@ -270,13 +270,15 @@ _damped_sine_wave(x, f, A, st, ϕ, d) = exp((st - x) * d) * A * sin(2 * π * f *
 
     sources = [step, cosine, sine, damped_sine, ramp, tri, vsquare] #, vsawtooth]
     function waveforms(i, x)
-        getindex([o .+ _step.(x, h, st),
+        getindex(
+            [o .+ _step.(x, h, st),
                 o .+ (x .> st) .* _cos_wave.(x, f, A, st, ϕ),
                 o .+ (x .> st) .* _sine_wave.(x, f, A, st, ϕ),
                 o .+ (x .> st) .* _damped_sine_wave.(x, f, A, st, ϕ, d),
                 o .+ _ramp.(x, st, (et - st), h),
                 triangular.(x, f, A, o, st),
-                square.(x, f, A, o, st)], i)
+                square.(x, f, A, o, st)],
+            i)
     end
     # o .+ (x .> st). * _sawtooth_wave.(x, δ, f, A, st),
 
@@ -284,9 +286,9 @@ _damped_sine_wave(x, f, A, st, ϕ, d) = exp((st - x) * d) * A * sin(2 * π * f *
         source = sources[i]
         @info "Testing Voltage with $(source.name) source"
         eqs = [connect(source.output, voltage.V)
-            connect(voltage.p, voltage_sensor.p, res.p)
-            connect(res.n, cap.p)
-            connect(ground.g, voltage_sensor.n, voltage.n, cap.n)]
+               connect(voltage.p, voltage_sensor.p, res.p)
+               connect(res.n, cap.p)
+               connect(ground.g, voltage_sensor.n, voltage.n, cap.n)]
         @named vmodel = ODESystem(eqs, t,
             systems = [
                 voltage_sensor,
@@ -294,7 +296,7 @@ _damped_sine_wave(x, f, A, st, ϕ, d) = exp((st - x) * d) * A * sin(2 * π * f *
                 cap,
                 source,
                 voltage,
-                ground,
+                ground
             ])
         vsys = structural_simplify(vmodel)
 
@@ -337,13 +339,15 @@ end
 
     sources = [step, cosine, sine, damped_sine, ramp, tri, vsquare] #, idamped_sine]
     function waveforms(i, x)
-        getindex([o .+ _step.(x, h, st),
+        getindex(
+            [o .+ _step.(x, h, st),
                 o .+ (x .> st) .* _cos_wave.(x, f, A, st, ϕ),
                 o .+ (x .> st) .* _sine_wave.(x, f, A, st, ϕ),
                 o .+ (x .> st) .* _damped_sine_wave.(x, f, A, st, ϕ, d),
                 o .+ _ramp.(x, st, (et - st), h),
                 triangular.(x, f, A, o, st),
-                square.(x, f, A, o, st)], i)
+                square.(x, f, A, o, st)],
+            i)
     end
     # # o .+ (x .> st). * _sawtooth_wave.(x, δ, f, A, st)
 
@@ -351,10 +355,10 @@ end
         source = sources[i]
         @info "Testing Current with $(source.name) source"
         eqs = [connect(source.output, current.I)
-            connect(current.p, current_sensor.n)
-            connect(current_sensor.p, res.p)
-            connect(res.n, cap.p)
-            connect(current.n, ground.g, cap.n)]
+               connect(current.p, current_sensor.n)
+               connect(current_sensor.p, res.p)
+               connect(res.n, cap.p)
+               connect(current.n, ground.g, cap.n)]
         @named model = ODESystem(eqs, t,
             systems = [
                 current_sensor,
@@ -362,7 +366,7 @@ end
                 current,
                 res,
                 cap,
-                ground,
+                ground
             ])
         isys = structural_simplify(model)
 
