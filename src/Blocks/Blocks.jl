@@ -11,6 +11,7 @@ using ModelingToolkit: getdefault
 D = Differential(t)
 
 export RealInput, RealOutput, SISO
+using Symbolics: Struct, StructElement, getelements, symstruct
 include("utils.jl")
 
 export Gain, Sum, MatrixGain, Feedback, Add, Add3, Product, Division

@@ -1,4 +1,4 @@
-using ModelingToolkit, ModelingToolkitStandardLibrary, OrdinaryDiffEq
+using ModelingToolkit, ModelingToolkitStandardLibrary, OrdinaryDiffEq, Test
 using ModelingToolkitStandardLibrary.Blocks
 using ModelingToolkitStandardLibrary.Blocks: smooth_sin, smooth_cos, smooth_damped_sin,
     smooth_square, smooth_step, smooth_ramp,
@@ -479,7 +479,8 @@ using Symbolics
 using Symbolics: Struct, StructElement, getelements, symstruct
 using Test
 using ModelingToolkitStandardLibrary.Blocks
-using ModelingToolkitStandardLibrary.Blocks: structelem2connector
+using ModelingToolkitStandardLibrary.Blocks: BusSelect
+#using ModelingToolkitStandardLibrary.Blocks: structelem2connector
 
 # Test struct
 struct BarStruct
@@ -491,14 +492,16 @@ bar = BarStruct(1.0, 1)
 structdef = symstruct(BarStruct)
 selected_fields = [:speed]
 
+using Symbolics: Struct
+@parameters bar_param::Struct
 @mtkmodel BusSelectTest begin
     @components begin
         inputbus = Blocks.StructOutput(; structdef)
         output = BusSelect(; structdef, selected_fields)
     end
     @equations begin
-        inputbus.u ~ bar
-        connect(inputbus, output)
+        inputbus.u ~ bar_param
+        connect(inputbus, output.inputbus)
     end
 end
 

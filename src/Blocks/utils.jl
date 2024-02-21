@@ -110,15 +110,14 @@ end
 
 
 
+using Symbolics: Struct, symbolic_getproperty
 @connector function StructInput(; structdef, name)
-    n = Symbolics.juliatype(structdef)
-    @variables u(t)::n [input = true] # Dummy default value due to bug in Symbolics
+    @variables u(t)::Struct [input = true] # Dummy default value due to bug in Symbolics
     ODESystem(Equation[], t, [u], []; name)
 end
 
 @connector function StructOutput(; structdef, name)
-    n = Symbolics.juliatype(structdef)
-    @variables u(t)::n [output = true] # Dummy default value due to bug in Symbolics
+    @variables u(t)::Struct [output = true] # Dummy default value due to bug in Symbolics
     ODESystem(Equation[], t, [u], []; name)
 end
 
@@ -141,7 +140,7 @@ end
     output_connectors = map(_structelem2connector, output_elements)
 
     eqs = [
-        getproperty(inputbus.u, field) ~ con.u for (field, con) in zip(selected_fields, output_connectors)
+        symbolic_getproperty(inputbus.u, field) ~ con.u for (field, con) in zip(selected_fields, output_connectors)
     ]
     return ODESystem(eqs, t; name = name, systems = [inputbus; output_connectors])
 end
