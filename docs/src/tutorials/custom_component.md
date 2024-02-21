@@ -43,10 +43,10 @@ function NonlinearResistor(; name, Ga, Gb, Ve)
     pars = @parameters Ga=Ga Gb=Gb Ve=Ve
     eqs = [
         i ~ ifelse(v < -Ve,
-            Gb * (v + Ve) - Ga * Ve,
-            ifelse(v > Ve,
-                Gb * (v - Ve) + Ga * Ve,
-                Ga * v))
+        Gb * (v + Ve) - Ga * Ve,
+        ifelse(v > Ve,
+            Gb * (v - Ve) + Ga * Ve,
+            Ga * v))
     ]
     extend(ODESystem(eqs, t, [], pars; name = name), oneport)
 end

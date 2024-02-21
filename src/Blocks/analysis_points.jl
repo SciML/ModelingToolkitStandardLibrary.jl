@@ -10,6 +10,12 @@ if Base.isdefined(ModelingToolkit, :isconnection)
 end
 
 Base.nameof(ap::AnalysisPoint) = ap.name
+function Base.hash(ap::AnalysisPoint, seed::UInt)
+    h1 = hash(ap.in, seed)
+    h2 = hash(ap.out, h1)
+    h3 = hash(ap.name, h2)
+    h3 ⊻ (0xd29cdc51aa6562d4 % UInt)
+end
 
 function ap_var(sys)
     if hasproperty(sys, :u)
