@@ -2,12 +2,12 @@
     if nin == 1
         @variables u(t)=u_start [
             input = true,
-            description = "Inner variable in RealInput $name",
+            description = "Inner variable in RealInput $name"
         ]
     else
         @variables u(t)[1:nin]=u_start [
             input = true,
-            description = "Inner variable in RealInput $name",
+            description = "Inner variable in RealInput $name"
         ]
         u = collect(u)
     end
@@ -30,12 +30,12 @@ Connector with one input signal of type Real.
     if nout == 1
         @variables u(t)=u_start [
             output = true,
-            description = "Inner variable in RealOutput $name",
+            description = "Inner variable in RealOutput $name"
         ]
     else
         @variables u(t)[1:nout]=u_start [
             output = true,
-            description = "Inner variable in RealOutput $name",
+            description = "Inner variable in RealOutput $name"
         ]
         u = collect(u)
     end
@@ -103,7 +103,7 @@ Base class for a multiple input multiple output (MIMO) continuous system block.
         y(t)[1:nout]=y_start, [description = "Output of MIMO system $name"],)
     eqs = [
         [u[i] ~ input.u[i] for i in 1:nin]...,
-        [y[i] ~ output.u[i] for i in 1:nout]...,
+        [y[i] ~ output.u[i] for i in 1:nout]...
     ]
     return ODESystem(eqs, t, vcat(u..., y...), []; name = name, systems = [input, output])
 end

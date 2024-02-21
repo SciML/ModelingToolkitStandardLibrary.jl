@@ -147,7 +147,7 @@ Generate sine signal.
     end
 
     eqs = [
-        output.u ~ equation,
+        output.u ~ equation
     ]
 
     compose(ODESystem(eqs, t, [], pars; name = name), [output])
@@ -189,7 +189,7 @@ Cosine signal.
         smooth_cos(t, smooth, frequency, amplitude, phase, offset, start_time)
     end
     eqs = [
-        output.u ~ equation,
+        output.u ~ equation
     ]
 
     compose(ODESystem(eqs, t, [], pars; name = name), [output])
@@ -213,7 +213,7 @@ Generate current time signal.
     @named output = RealOutput()
     pars = @parameters offset=offset start_time=start_time
     eqs = [
-        output.u ~ offset + ifelse(t < start_time, zero(t), t - start_time),
+        output.u ~ offset + ifelse(t < start_time, zero(t), t - start_time)
     ]
 
     compose(ODESystem(eqs, t, [], pars; name = name), [output])
@@ -255,7 +255,7 @@ Generate ramp signal.
     end
 
     eqs = [
-        output.u ~ equation,
+        output.u ~ equation
     ]
 
     compose(ODESystem(eqs, t, [], pars; name = name), [output])
@@ -297,7 +297,7 @@ Generate smooth square signal.
     end
 
     eqs = [
-        output.u ~ equation,
+        output.u ~ equation
     ]
 
     compose(ODESystem(eqs, t, [], pars; name = name), [output])
@@ -339,7 +339,7 @@ Generate step signal.
     end
 
     eqs = [
-        output.u ~ equation,
+        output.u ~ equation
     ]
 
     compose(ODESystem(eqs, t, [], pars; name = name), [output])
@@ -387,7 +387,7 @@ Exponentially damped sine signal.
     end
 
     eqs = [
-        output.u ~ equation,
+        output.u ~ equation
     ]
 
     compose(ODESystem(eqs, t, [], pars; name = name), [output])
@@ -430,7 +430,7 @@ Generate smooth triangular signal for frequencies less than or equal to 25 Hz
     end
 
     eqs = [
-        output.u ~ equation,
+        output.u ~ equation
     ]
 
     compose(ODESystem(eqs, t, [], pars; name = name), [output])
@@ -665,11 +665,11 @@ data input component.
         output = RealOutput()
     end
     eqs = [
-        output.u ~ get_sampled_data(t, buffer, sample_time, circular_buffer),
+        output.u ~ get_sampled_data(t, buffer, sample_time, circular_buffer)
     ]
     return ODESystem(eqs, t, vars, pars; name, systems,
         defaults = [
-            output.u => get_sampled_data(0.0, buffer, sample_time, circular_buffer),
+            output.u => get_sampled_data(0.0, buffer, sample_time, circular_buffer)
         ])
 end
 
@@ -693,7 +693,7 @@ data input component.
         output = RealOutput()
     end
     eqs = [
-        output.u ~ get_sampled_data(t, buffer),
+        output.u ~ get_sampled_data(t, buffer)
     ]
     return ODESystem(eqs, t, vars, pars; name, systems,
         defaults = [output.u => get_sampled_data(0.0, buffer)])

@@ -1,6 +1,6 @@
 using ModelingToolkit: get_eqs, vars, @set!, get_iv
 
-Base.@kwdef mutable struct AnalysisPoint
+Base.@kwdef mutable struct AnalysisPoint <: Real
     in = nothing
     out = nothing
     name::Symbol = :nothing
@@ -420,7 +420,7 @@ function ModelingToolkit.linearization_function(sys::ModelingToolkit.AbstractSys
             push!(multiplicities_y, length(yi))
             append!(y, yi)
             [ap_var(ap.in) .~ yi;
-                ap_var(ap.out) .~ ap_var(ap.in)], yi
+             ap_var(ap.out) .~ ap_var(ap.in)], yi
         else # loop opening
             [ap_var(ap.out) .~ 0;], []
         end

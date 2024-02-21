@@ -4,7 +4,7 @@
     @variables begin
         phi(t),
         [
-            description = "Angle of flange with respect to support (= flange.phi - support.phi)",
+            description = "Angle of flange with respect to support (= flange.phi - support.phi)"
         ]
     end
     @equations begin
@@ -63,7 +63,7 @@ Constant torque source
     @parameters begin
         tau_constant,
         [
-            description = "Constant torque (if negative, torque is acting as load in positive direction of rotation)",
+            description = "Constant torque (if negative, torque is acting as load in positive direction of rotation)"
         ]
     end
     @extend flange, phi = partial_element = PartialTorque(; use_support = false)
@@ -105,7 +105,7 @@ Forced movement of a flange according to a reference angular velocity signal
     @named w_ref = RealInput()
     @variables phi(t)=0.0 w(t)=0.0 a(t)=0.0
     eqs = [phi ~ flange.phi - phi_support
-        D(phi) ~ w]
+           D(phi) ~ w]
     if exact
         pars = []
         push!(eqs, w ~ w_ref.u)

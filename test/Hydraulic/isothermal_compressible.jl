@@ -26,9 +26,9 @@ NEWTON = NLNewton(check_div = false, always_new = true, max_iter = 100, relax = 
         end
 
         eqs = [connect(stp.output, src.p)
-            connect(fluid, src.port)
-            connect(src.port, res.port_a)
-            connect(res.port_b, vol.port)]
+               connect(fluid, src.port)
+               connect(src.port, res.port_a)
+               connect(res.port_b, vol.port)]
 
         ODESystem(eqs, t, [], pars; name, systems)
     end
@@ -41,7 +41,7 @@ NEWTON = NLNewton(check_div = false, always_new = true, max_iter = 100, relax = 
     probs = [ODEProblem(sys, ModelingToolkit.missing_variable_defaults(sys), (0, 0.05))
              for sys in syss] #
     sols = [solve(prob, ImplicitEuler(nlsolve = NEWTON); initializealg = NoInit(),
-        dt = 1e-4, adaptive = false)
+                dt = 1e-4, adaptive = false)
             for prob in probs]
 
     s1_2 = complete(sys1_2)
@@ -79,9 +79,9 @@ end
         end
 
         eqs = [connect(fluid, sink.port)
-            connect(sink.port, valve.port_a)
-            connect(valve.port_b, vol.port)
-            connect(valve.area, ramp.output)]
+               connect(sink.port, valve.port_a)
+               connect(valve.port_b, vol.port)
+               connect(valve.area, ramp.output)]
 
         ODESystem(eqs, t, [], pars; name, systems)
     end
@@ -127,12 +127,12 @@ end
         end
 
         eqs = [connect(fluid, src1.port)
-            connect(fluid, src2.port)
-            connect(src1.port, vol1.port)
-            connect(src2.port, vol2.port)
-            connect(vol1.flange, mass.flange, vol2.flange)
-            connect(src1.p, sin1.output)
-            connect(src2.p, sin2.output)]
+               connect(fluid, src2.port)
+               connect(src1.port, vol1.port)
+               connect(src2.port, vol2.port)
+               connect(vol1.flange, mass.flange, vol2.flange)
+               connect(src1.p, sin1.output)
+               connect(src2.p, sin2.output)]
 
         ODESystem(eqs, t, [], pars; name, systems)
     end
@@ -261,17 +261,17 @@ end
         push!(systems, input)
 
         eqs = [connect(input.output, pos.s)
-            connect(valve.flange, pos.flange)
-            connect(valve.port_a, piston.port_a)
-            connect(piston.flange, body.flange)
-            connect(piston.port_b, m1.port_a)
-            connect(m1.port_b, pipe.port_b)
-            connect(pipe.port_a, m2.port_b)
-            connect(m2.port_a, valve.port_b)
-            connect(src.port, valve.port_s)
-            connect(snk.port, valve.port_r)
-            connect(fluid, src.port, snk.port)
-            D(body.v) ~ ddx]
+               connect(valve.flange, pos.flange)
+               connect(valve.port_a, piston.port_a)
+               connect(piston.flange, body.flange)
+               connect(piston.port_b, m1.port_a)
+               connect(m1.port_b, pipe.port_b)
+               connect(pipe.port_a, m2.port_b)
+               connect(m2.port_a, valve.port_b)
+               connect(src.port, valve.port_s)
+               connect(snk.port, valve.port_r)
+               connect(fluid, src.port, snk.port)
+               D(body.v) ~ ddx]
 
         ODESystem(eqs, t, vars, pars; name, systems)
     end
@@ -322,7 +322,7 @@ end
         end
 
         eqs = [connect(fluid, cap.port, vol.port)
-            connect(vol.flange, mass.flange)]
+               connect(vol.flange, mass.flange)]
 
         ODESystem(eqs, t, [], pars; name, systems)
     end

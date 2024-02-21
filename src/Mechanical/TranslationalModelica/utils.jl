@@ -101,7 +101,7 @@ function PartialElementaryOneFlangeAndSupport2(; name, use_support = false)
     @named flange = Flange()
     @variables s_support(t) [description = "Absolute position of support flange"]
     @variables s(t) [
-        description = "Distance between flange and support (= flange.s - support.s)",
+        description = "Distance between flange and support (= flange.s - support.s)"
     ]
     eqs = [s ~ flange.s - s_support]
     if use_support
@@ -135,7 +135,7 @@ function PartialElementaryTwoFlangesAndSupport2(; name, use_support = false)
     @variables s_support(t) [description = "Absolute position of support flange"]
 
     eqs = [s_a ~ flange_a.s - s_support
-        s_b ~ flange_b.s - s_support]
+           s_b ~ flange_b.s - s_support]
     if use_support
         @named support = Support()
         push!(eqs, support.f ~ -flange_a.f - flange_b.f)
