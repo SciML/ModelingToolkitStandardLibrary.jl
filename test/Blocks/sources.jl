@@ -488,13 +488,12 @@ struct BarStruct
     isSpeedValid::Int
 end
 
-bar = BarStruct(1.0, 1)
+bar = BarStruct(2.0, 1)
 structdef = symstruct(BarStruct)
 selected_fields = [:speed]
 
-using Symbolics: Struct
-@parameters bar_param::Struct
 @mtkmodel BusSelectTest begin
+    @parameters bar_param::Struct
     @components begin
         inputbus = Blocks.StructOutput(; structdef)
         output = BusSelect(; structdef, selected_fields)
@@ -506,3 +505,11 @@ using Symbolics: Struct
 end
 
 @named sys = BusSelectTest()
+sys = complete(sys)
+ssys = structural_simplify(sys)
+prob = ODEProblem(ssys, [
+    sys.bar_param => bar
+    ], (0.0, 1.0))
+sol = solve(prob, Rodas4())
+@test sol.retcode == ReturnCode.Success
+@test sol[sys.output.speed.u] == 2.0
