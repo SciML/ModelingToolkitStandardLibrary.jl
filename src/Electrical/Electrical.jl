@@ -6,6 +6,7 @@ module Electrical
 
 using ModelingToolkit, Symbolics, IfElse
 using ModelingToolkit: t, D
+using DynamicQuantities
 using ..Thermal: HeatPort
 using ..Mechanical.Rotational: Flange, Support
 using ..Blocks: RealInput, RealOutput

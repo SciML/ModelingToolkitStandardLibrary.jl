@@ -5,6 +5,7 @@ module Translational
 
 using ModelingToolkit, Symbolics
 using ModelingToolkit: getdefault, t, D
+using DynamicQuantities
 
 using ModelingToolkitStandardLibrary.Blocks: RealInput, RealOutput
 using IfElse: ifelse

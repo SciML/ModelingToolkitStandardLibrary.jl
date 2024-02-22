@@ -6,6 +6,7 @@ version = "2.3.5"
 [deps]
 ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
 DiffEqBase = "2b5f629d-d688-5b77-993f-72d75c75574e"
+DynamicQuantities = "06fc5a27-2a28-4c7c-a15d-362465fb6821"
 IfElse = "615f187c-cbe4-4ef1-ba3b-2fcf58d6d173"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 ModelingToolkit = "961ee093-0014-501f-94e3-6117800e7a78"

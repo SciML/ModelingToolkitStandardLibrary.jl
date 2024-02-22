@@ -5,6 +5,7 @@ module TranslationalPosition
 
 using ModelingToolkit, Symbolics, IfElse
 using ModelingToolkit: t, D
+using DynamicQuantities
 
 using ...Blocks: RealInput, RealOutput
 

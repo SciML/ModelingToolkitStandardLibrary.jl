@@ -5,6 +5,7 @@ module Blocks
 using ModelingToolkit, Symbolics
 import IfElse: ifelse
 import ..@symcheck
+using DynamicQuantities
 using ModelingToolkit: getdefault, t, D
 
 export RealInput, RealOutput, SISO
