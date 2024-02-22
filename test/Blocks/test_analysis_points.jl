@@ -2,12 +2,11 @@ using Test, LinearAlgebra
 using ModelingToolkit
 using ModelingToolkitStandardLibrary.Blocks
 using OrdinaryDiffEq
-using ModelingToolkit: get_eqs, vars, @set!, get_iv
+using ModelingToolkit: get_eqs, vars, @set!, t_nounits as t
 using ControlSystemsBase
 
 @named P = FirstOrder(k = 1, T = 1)
 @named C = Gain(; k = -1)
-t = ModelingToolkit.get_iv(P)
 
 @test_logs (:warn,) (:warn,) connect(P.input, :bad_connection, C.output)
 

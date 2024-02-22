@@ -1,11 +1,10 @@
 using ModelingToolkit
+using ModelingToolkit: t_nounits as t
 using ModelingToolkitStandardLibrary.Mechanical.MultiBody2D
 using ModelingToolkitStandardLibrary.Mechanical.TranslationalPosition
 using OrdinaryDiffEq
 # using Setfield
 using Test
-
-@parameters t
 
 @named link1 = Link(; m = 1, l = 10, I = 84, g = -9.807)
 @named link2 = Link(; m = 1, l = 10, I = 84, g = -9.807, x1_0 = 10)

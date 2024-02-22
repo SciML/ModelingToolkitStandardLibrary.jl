@@ -8,6 +8,7 @@ First, we need to make some imports.
 
 ```@example components
 using ModelingToolkit
+using ModelingToolkit: t_nounits as t
 using ModelingToolkitStandardLibrary.Electrical
 using ModelingToolkitStandardLibrary.Electrical: OnePort
 using OrdinaryDiffEq
@@ -35,8 +36,6 @@ end NonlinearResistor;
 this can almost be directly translated to the syntax of `ModelingToolkit`.
 
 ```@example components
-@parameters t
-
 function NonlinearResistor(; name, Ga, Gb, Ve)
     @named oneport = OnePort()
     @unpack v, i = oneport

@@ -1,4 +1,5 @@
 using ModelingToolkit
+using ModelingToolkit: t_nounits as t
 using ModelingToolkitStandardLibrary.Electrical
 using ModelingToolkitStandardLibrary.Electrical: OnePort
 using OrdinaryDiffEq
@@ -6,8 +7,6 @@ using OrdinaryDiffEq: ReturnCode.Success
 using IfElse: ifelse
 
 @testset "Chua Circuit" begin
-    @parameters t
-
     @component function NonlinearResistor(; name, Ga, Gb, Ve)
         @named oneport = OnePort()
         @unpack v, i = oneport

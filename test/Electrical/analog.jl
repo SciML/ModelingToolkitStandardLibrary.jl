@@ -1,4 +1,5 @@
 using ModelingToolkitStandardLibrary.Electrical, ModelingToolkit, OrdinaryDiffEq, Test
+using ModelingToolkit: t_nounits as t
 using ModelingToolkitStandardLibrary.Blocks: Step,
                                              Constant, Sine, Cosine, ExpSine, Ramp,
                                              Square, Triangular
@@ -6,8 +7,6 @@ using ModelingToolkitStandardLibrary.Blocks: square, triangular
 using OrdinaryDiffEq: ReturnCode.Success
 
 # using Plots
-
-@parameters t
 
 @testset "sensors" begin
     @named source = Sine(offset = 1, amplitude = 10, frequency = 5)

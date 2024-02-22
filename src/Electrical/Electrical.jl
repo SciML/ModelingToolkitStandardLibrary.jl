@@ -5,12 +5,10 @@ This library contains electrical components to build up analog circuits.
 module Electrical
 
 using ModelingToolkit, Symbolics, IfElse
+using ModelingToolkit: t_nounits as t, D_nounits as D
 using ..Thermal: HeatPort
 using ..Mechanical.Rotational: Flange, Support
 using ..Blocks: RealInput, RealOutput
-
-@parameters t
-D = Differential(t)
 
 export Pin, OnePort
 include("utils.jl")

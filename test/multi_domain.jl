@@ -5,11 +5,9 @@ using ModelingToolkitStandardLibrary.Blocks
 using ModelingToolkitStandardLibrary.Thermal
 import ModelingToolkitStandardLibrary
 using ModelingToolkit, OrdinaryDiffEq, Test
+using ModelingToolkit: t_nounits as t, D_nounits as D
 using OrdinaryDiffEq: ReturnCode.Success
 # using Plots
-
-@parameters t
-D = Differential(t)
 
 @testset "DC motor" begin
     R = 0.5

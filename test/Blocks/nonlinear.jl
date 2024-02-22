@@ -1,9 +1,8 @@
 using ModelingToolkit, OrdinaryDiffEq
 using ModelingToolkitStandardLibrary.Blocks
+using ModelingToolkit: t_nounits as t
 using ModelingToolkitStandardLibrary.Blocks: _clamp, _dead_zone
 using OrdinaryDiffEq: ReturnCode.Success
-
-@parameters t
 
 @testset "Limiter" begin
     @testset "Constant" begin

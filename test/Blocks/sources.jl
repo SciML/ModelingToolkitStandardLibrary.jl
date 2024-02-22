@@ -1,12 +1,10 @@
 using ModelingToolkit, ModelingToolkitStandardLibrary, OrdinaryDiffEq
 using ModelingToolkitStandardLibrary.Blocks
+using ModelingToolkit: t_nounits as t, D_nounits as D
 using ModelingToolkitStandardLibrary.Blocks: smooth_sin, smooth_cos, smooth_damped_sin,
                                              smooth_square, smooth_step, smooth_ramp,
                                              smooth_triangular, triangular, square
 using OrdinaryDiffEq: ReturnCode.Success
-
-@parameters t
-D = Differential(t)
 
 @testset "Constant" begin
     @named src = Constant(k = 2)

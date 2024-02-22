@@ -1,10 +1,8 @@
 module MultiBody2D
 
 using ModelingToolkit, Symbolics, IfElse
+using ModelingToolkit: t_nounits as t, D_nounits as D
 using ..TranslationalPosition
-
-@parameters t
-D = Differential(t)
 
 export Link
 include("components.jl")

@@ -1,9 +1,8 @@
 using ModelingToolkit, ModelingToolkitStandardLibrary, OrdinaryDiffEq
 using ModelingToolkitStandardLibrary.Blocks
+using ModelingToolkit: t_nounits as t
 using OrdinaryDiffEq: ReturnCode.Success
 using Test
-
-@parameters t
 
 #=
 Testing strategy:

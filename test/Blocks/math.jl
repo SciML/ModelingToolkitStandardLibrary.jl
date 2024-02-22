@@ -1,10 +1,8 @@
 using ModelingToolkitStandardLibrary.Blocks
 using ModelingToolkit, OrdinaryDiffEq, Test
 using ModelingToolkitStandardLibrary.Blocks: _clamp, _dead_zone
-using ModelingToolkit: inputs, unbound_inputs, bound_inputs
+using ModelingToolkit: inputs, unbound_inputs, bound_inputs, t_nounits as t
 using OrdinaryDiffEq: ReturnCode.Success
-
-@parameters t
 
 @testset "Gain" begin
     @named c = Constant(; k = 1)

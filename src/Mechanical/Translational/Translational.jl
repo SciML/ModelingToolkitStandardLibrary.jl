@@ -4,13 +4,10 @@ Library to model 1-dimensional, translational mechanical systems
 module Translational
 
 using ModelingToolkit, Symbolics
-using ModelingToolkit: getdefault
+using ModelingToolkit: getdefault, t_nounits as t, D_nounits as D
 
 using ModelingToolkitStandardLibrary.Blocks: RealInput, RealOutput
 using IfElse: ifelse
-
-@parameters t
-D = Differential(t)
 
 export MechanicalPort
 include("utils.jl")

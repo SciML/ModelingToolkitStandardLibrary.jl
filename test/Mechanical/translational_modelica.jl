@@ -1,10 +1,8 @@
 using ModelingToolkit, OrdinaryDiffEq, Test
+using ModelingToolkit: t_nounits as t, D_nounits as D
 
 using ModelingToolkitStandardLibrary.Blocks
 import ModelingToolkitStandardLibrary.Mechanical.TranslationalModelica as TP
-
-@parameters t
-D = Differential(t)
 
 @testset "spring damper mass fixed" begin
     @named damper = TP.Damper(; d = 1)

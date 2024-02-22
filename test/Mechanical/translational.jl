@@ -1,11 +1,9 @@
 using ModelingToolkit, OrdinaryDiffEq, Test
+using ModelingToolkit: t_nounits as t, D_nounits as D
 
 using ModelingToolkitStandardLibrary.Blocks
 import ModelingToolkitStandardLibrary.Mechanical.Translational as TV
 import ModelingToolkitStandardLibrary.Mechanical.TranslationalPosition as TP
-
-@parameters t
-D = Differential(t)
 
 @testset "Free" begin
     function System(; name)
