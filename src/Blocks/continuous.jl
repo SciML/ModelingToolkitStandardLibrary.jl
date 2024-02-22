@@ -245,7 +245,7 @@ Text-book version of a PID-controller without actuator saturation and anti-windu
 See also [`LimPID`](@ref)
 """
 @component function PID(; name, k = 1, Ti = false, Td = false, Nd = 10, int__x = 0,
-    der__x = 0)
+        der__x = 0)
     with_I = !isequal(Ti, false)
     with_D = !isequal(Td, false)
     @named err_input = RealInput() # control error
@@ -282,7 +282,7 @@ See also [`LimPID`](@ref)
     eqs = [
         connect(err_input, addPID.input1),
         connect(addPID.output, gainPID.input),
-        connect(gainPID.output, ctr_output),
+        connect(gainPID.output, ctr_output)
     ]
     if with_I
         push!(eqs, connect(err_input, int.input))
@@ -347,7 +347,7 @@ The simplified expression above is given without the anti-windup protection.
         connect(err_input, addTrack.input1),
         connect(gainTrack.output, addTrack.input2),
         connect(addTrack.output, int.input),
-        connect(int.output, addPI.input2),
+        connect(int.output, addPI.input2)
     ]
     ODESystem(eqs, t, [], []; name = name, systems = sys)
 end
@@ -386,13 +386,13 @@ where the transfer function for the derivative includes additional filtering, se
   - `ctr_output`
 """
 @component function LimPID(; name, k = 1, Ti = false, Td = false, wp = 1, wd = 1,
-    Ni = Ti == 0 ? Inf : √(max(Td / Ti, 1e-6)),
-    Nd = 10,
-    u_max = Inf,
-    u_min = u_max > 0 ? -u_max : -Inf,
-    gains = false,
-    int__x = 0.0,
-    der__x = 0.0)
+        Ni = Ti == 0 ? Inf : √(max(Td / Ti, 1e-6)),
+        Nd = 10,
+        u_max = Inf,
+        u_min = u_max > 0 ? -u_max : -Inf,
+        gains = false,
+        int__x = 0.0,
+        der__x = 0.0)
     with_I = !isequal(Ti, false)
     with_D = !isequal(Td, false)
     with_AWM = Ni != Inf
@@ -459,7 +459,7 @@ where the transfer function for the derivative includes additional filtering, se
         connect(addP.output, addPID.input1),
         connect(addPID.output, gainPID.input),
         connect(gainPID.output, limiter.input),
-        connect(limiter.output, ctr_output),
+        connect(limiter.output, ctr_output)
     ]
     if with_I
         push!(eqs, connect(reference, addI.input1))
@@ -522,7 +522,7 @@ y &= h(x, u)
 linearized around the operating point `x₀, u₀`, we have `y0, u0 = h(x₀, u₀), u₀`.
 """
 @component function StateSpace(; A, B, C, D = nothing, x = zeros(size(A, 1)), name,
-    u0 = zeros(size(B, 2)), y0 = zeros(size(C, 1)))
+        u0 = zeros(size(B, 2)), y0 = zeros(size(C, 1)))
     nx, nu, ny = size(A, 1), size(B, 2), size(C, 1)
     size(A, 2) == nx || error("`A` has to be a square matrix.")
     size(B, 1) == nx || error("`B` has to be of dimension ($nx x $nu).")
@@ -538,7 +538,7 @@ linearized around the operating point `x₀, u₀`, we have `y0, u0 = h(x₀, u�
     @named input = RealInput(nin = nu)
     @named output = RealOutput(nout = ny)
     @variables x(t)[1:nx]=x [
-        description = "State variables of StateSpace system $name",
+        description = "State variables of StateSpace system $name"
     ]
     # pars = @parameters A=A B=B C=C D=D # This is buggy
     eqs = [ # FIXME: if array equations work
@@ -547,7 +547,7 @@ linearized around the operating point `x₀, u₀`, we have `y0, u0 = h(x₀, u�
          for i in 1:nx]..., # cannot use D here
         [output.u[j] ~ sum(C[j, i] * x[i] for i in 1:nx) +
                        sum(D[j, k] * (input.u[k] - u0[k]) for k in 1:nu) + y0[j]
-         for j in 1:ny]...,
+         for j in 1:ny]...
     ]
     compose(ODESystem(eqs, t, vcat(x...), [], name = name), [input, output])
 end
@@ -596,11 +596,11 @@ See also [`StateSpace`](@ref) which handles MIMO systems, as well as [ControlSys
     @parameters begin
         b[1:nb] = b,
         [
-            description = "Numerator coefficients of transfer function (e.g., 2s + 3 is specified as [2,3])",
+            description = "Numerator coefficients of transfer function (e.g., 2s + 3 is specified as [2,3])"
         ]
         a[1:na] = a,
         [
-            description = "Denominator coefficients of transfer function (e.g., `s² + 2ωs + ω^2` is specified as [1, 2ω, ω^2])",
+            description = "Denominator coefficients of transfer function (e.g., `s² + 2ωs + ω^2` is specified as [1, 2ω, ω^2])"
         ]
         bb[1:(nbb + nb)] = [zeros(nbb); b]
         d = bb[1] / a[1], [description = "Direct feedthrough gain"]
@@ -627,9 +627,9 @@ See also [`StateSpace`](@ref) which handles MIMO systems, as well as [ControlSys
         eqs = [y ~ d * u]
     else
         eqs = [D(x_scaled[1]) ~ (-a[2:na]'x_scaled + a_end * u) / a[1]
-            D.(x_scaled[2:nx]) .~ x_scaled[1:(nx - 1)]
-            y ~ ((bb[2:na] - d * a[2:na])'x_scaled) / a_end + d * u
-            x .~ x_scaled ./ a_end]
+               D.(x_scaled[2:nx]) .~ x_scaled[1:(nx - 1)]
+               y ~ ((bb[2:na] - d * a[2:na])'x_scaled) / a_end + d * u
+               x .~ x_scaled ./ a_end]
     end
     push!(eqs, input.u ~ u)
     push!(eqs, output.u ~ y)

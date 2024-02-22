@@ -17,7 +17,7 @@ D = Differential(t)
         end
 
         eqs = [connect(a.output, acc.a)
-            connect(mass.flange, acc.flange, free.flange)]
+               connect(mass.flange, acc.flange, free.flange)]
 
         ODESystem(eqs, t, [], []; name, systems)
     end
@@ -47,7 +47,7 @@ end
 
     function simplify_and_solve(damping, spring, body, ground)
         eqs = [connect(spring.flange_a, body.flange, damping.flange_a)
-            connect(spring.flange_b, damping.flange_b, ground.flange)]
+               connect(spring.flange_b, damping.flange_b, ground.flange)]
 
         @named model = ODESystem(eqs, t; systems = [ground, body, spring, damping])
 
@@ -89,9 +89,9 @@ end
 
     function System(damping, spring, body, ground, f, source)
         eqs = [connect(f.f, source.output)
-            connect(f.flange, body.flange)
-            connect(spring.flange_a, body.flange, damping.flange_a)
-            connect(spring.flange_b, damping.flange_b, ground.flange)]
+               connect(f.flange, body.flange)
+               connect(spring.flange_a, body.flange, damping.flange_a)
+               connect(spring.flange_b, damping.flange_b, ground.flange)]
 
         @named model = ODESystem(eqs, t;
             systems = [ground, body, spring, damping, f, source])
@@ -134,11 +134,11 @@ end
         end
 
         eqs = [connect(pos.s, src1.output)
-            connect(force.f, src2.output)
-            connect(spring.flange_a, pos.flange, force_sensor.flange)
-            connect(spring.flange_b, force.flange, pos_sensor.flange)
-            connect(pos_value, pos_sensor.output)
-            connect(force_output, force_sensor.output)]
+               connect(force.f, src2.output)
+               connect(spring.flange_a, pos.flange, force_sensor.flange)
+               connect(spring.flange_b, force.flange, pos_sensor.flange)
+               connect(pos_value, pos_sensor.output)
+               connect(force_output, force_sensor.output)]
 
         ODESystem(eqs, t, [], []; name, systems)
     end

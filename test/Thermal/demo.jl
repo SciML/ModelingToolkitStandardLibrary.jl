@@ -16,7 +16,7 @@ D = Differential(t)
         connect(mass1.port, conduction.port_a),
         connect(conduction.port_b, mass2.port),
         connect(mass1.port, Tsensor1.port),
-        connect(mass2.port, Tsensor2.port),
+        connect(mass2.port, Tsensor2.port)
     ]
 
     @named model = ODESystem(connections, t,

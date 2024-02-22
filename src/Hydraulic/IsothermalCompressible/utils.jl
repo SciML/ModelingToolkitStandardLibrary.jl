@@ -51,8 +51,8 @@ Fluid parameter setter for isothermal compressible fluid domain.  Defaults given
 - `p_gas`: [Pa] reference pressure (set by `gas_pressure` argument)
 """
 @connector function HydraulicFluid(; density = 997, bulk_modulus = 2.09e9,
-    viscosity = 0.0010016, gas_density = 0.0073955,
-    gas_pressure = -1000, n = 1, let_gas = 1, name)
+        viscosity = 0.0010016, gas_density = 0.0073955,
+        gas_pressure = -1000, n = 1, let_gas = 1, name)
     pars = @parameters begin
         ρ = density
         β = bulk_modulus
@@ -68,7 +68,7 @@ Fluid parameter setter for isothermal compressible fluid domain.  Defaults given
     end
 
     eqs = [
-        dm ~ 0,
+        dm ~ 0
     ]
 
     ODESystem(eqs, t, vars, pars; name, defaults = [dm => 0])

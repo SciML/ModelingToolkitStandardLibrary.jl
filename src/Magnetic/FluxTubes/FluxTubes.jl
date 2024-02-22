@@ -9,7 +9,7 @@ export PositiveMagneticPort, NegativeMagneticPort, TwoPort
 include("utils.jl")
 
 export Ground, Idle, Short, Crossing, ConstantPermeance, ConstantReluctance, EddyCurrent,
-    ElectroMagneticConverter
+       ElectroMagneticConverter
 include("basic.jl")
 
 export ConstantMagneticPotentialDifference, ConstantMagneticFlux
