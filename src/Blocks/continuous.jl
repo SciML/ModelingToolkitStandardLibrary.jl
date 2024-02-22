@@ -620,6 +620,7 @@ See also [`StateSpace`](@ref) which handles MIMO systems, as well as [ControlSys
 
     x = collect(x)
     x_scaled = collect(x_scaled)
+    bb = collect(bb)
 
     sts = [x; x_scaled; y; u]
 
