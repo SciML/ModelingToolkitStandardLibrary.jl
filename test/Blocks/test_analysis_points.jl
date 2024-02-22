@@ -19,8 +19,8 @@ sys = ODESystem(eqs, t, systems = [P, C], name = :hej)
 ssys = structural_simplify(sys)
 prob = ODEProblem(ssys, [P.x => 1], (0, 10))
 sol = solve(prob, Rodas5())
-@test norm(sol[1]) >= 1
-@test norm(sol[end]) < 1e-6 # This fails without the feedback through C
+@test norm(sol.u[1]) >= 1
+@test norm(sol.u[end]) < 1e-6 # This fails without the feedback through C
 # plot(sol)
 
 matrices, _ = get_sensitivity(sys, ap)
@@ -107,7 +107,6 @@ matrices2, _ = linearize(sys, :plant_input, [P.output.u])
 @named P = FirstOrder(k = 1, T = 1)
 @named C = Gain(; k = 1)
 @named add = Blocks.Add(k2 = -1)
-t = ModelingToolkit.get_iv(P)
 
 eqs = [connect(P.output, :plant_output, add.input2)
        connect(add.output, C.input)
@@ -230,7 +229,6 @@ Si = ss(matrices...)
 @test tf(So) ≈ tf(Si)
 
 ## A simple multi-level system with loop openings
-@parameters t
 @named P_inner = FirstOrder(k = 1, T = 1)
 @named feedback = Feedback()
 @named ref = Step()
@@ -310,7 +308,6 @@ G = CS.feedback(Pss, Kss, pos_feedback = true)
 @named P = FirstOrder(k = 1, T = 1)
 @named C = Gain(; k = 1)
 @named add = Blocks.Add(k2 = -1)
-t = ModelingToolkit.get_iv(P)
 
 eqs = [connect(P.output, :plant_output, add.input2)
        connect(add.output, C.input)

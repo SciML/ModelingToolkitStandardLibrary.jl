@@ -26,11 +26,11 @@ using OrdinaryDiffEq: ReturnCode.Success
     sol1 = solve(prob, Rodas4())
     @test SciMLBase.successful_retcode(sol1)
 
-    prob = ODAEProblem(sys, Pair[], (0, 10.0))
+    prob = ODEProblem(sys, Pair[], (0, 10.0))
     sol = solve(prob, Rodas4())
     @test SciMLBase.successful_retcode(sol)
 
-    prob = DAEProblem(sys, D.(states(sys)) .=> 0.0, Pair[], (0, 10.0))
+    prob = DAEProblem(sys, D.(unknowns(sys)) .=> 0.0, Pair[], (0, 10.0))
     sol = solve(prob, DFBDF())
     @test SciMLBase.successful_retcode(sol)
     @test all(sol[inertia1.w] .== 0)
@@ -84,12 +84,12 @@ end
             sine
         ])
     sys = structural_simplify(model)
-    prob = DAEProblem(sys, D.(states(sys)) .=> 0.0,
-        [D(D(inertia2.phi)) => 1.0; D.(states(model)) .=> 0.0], (0, 10.0))
+    prob = DAEProblem(sys, D.(unknowns(sys)) .=> 0.0,
+        [D(D(inertia2.phi)) => 1.0; D.(unknowns(model)) .=> 0.0], (0, 10.0))
     sol = solve(prob, DFBDF())
     @test SciMLBase.successful_retcode(sol)
 
-    prob = ODAEProblem(sys, Pair[], (0, 1.0))
+    prob = ODEProblem(sys, Pair[], (0, 1.0))
     sol = solve(prob, Rodas4())
     @test SciMLBase.successful_retcode(sol)
 
@@ -164,7 +164,7 @@ end
         ])
     @test_skip begin
         sys = structural_simplify(model) #key 7 not found
-        prob = ODAEProblem(sys, Pair[], (0, 1.0))
+        prob = ODEProblem(sys, Pair[], (0, 1.0))
         sol = solve(prob, Rodas4())
         @test SciMLBase.successful_retcode(sol)
     end
@@ -212,7 +212,7 @@ end
             angle_sensor
         ])
     sys = structural_simplify(model)
-    prob = DAEProblem(sys, D.(states(sys)) .=> 0.0, Pair[], (0, 10.0))
+    prob = DAEProblem(sys, D.(unknowns(sys)) .=> 0.0, Pair[], (0, 10.0))
 
     sol = solve(prob, DFBDF())
     @test SciMLBase.successful_retcode(sol)
@@ -259,7 +259,7 @@ end
     @test all(sol[rel_speed_sensor.w_rel.u] .== sol[speed_sensor.w.u])
     @test all(sol[torque_sensor.tau.u] .== -sol[inertia1.flange_b.tau])
 
-    prob = DAEProblem(sys, D.(states(sys)) .=> 0.0, Pair[], (0, 10.0))
+    prob = DAEProblem(sys, D.(unknowns(sys)) .=> 0.0, Pair[], (0, 10.0))
     sol = solve(prob, DFBDF())
     @test SciMLBase.successful_retcode(sol)
     @test all(sol[inertia1.w] .== 0)
