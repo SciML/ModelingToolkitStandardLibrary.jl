@@ -626,10 +626,10 @@ See also [`StateSpace`](@ref) which handles MIMO systems, as well as [ControlSys
     if nx == 0
         eqs = [y ~ d * u]
     else
-        eqs = [D(x_scaled[1]) ~ (-a[2:na]'x_scaled + a_end * u) / a[1]
-               D.(x_scaled[2:nx]) .~ x_scaled[1:(nx - 1)]
-               y ~ ((bb[2:na] - d * a[2:na])'x_scaled) / a_end + d * u
-               x .~ x_scaled ./ a_end]
+        eqs = Equation[D(x_scaled[1]) ~ (-a[2:na]'x_scaled + a_end * u) / a[1]
+                       D.(x_scaled[2:nx]) .~ x_scaled[1:(nx - 1)]
+                       y ~ ((bb[2:na] - d * a[2:na])'x_scaled) / a_end + d * u
+                       x .~ x_scaled ./ a_end]
     end
     push!(eqs, input.u ~ u)
     push!(eqs, output.u ~ y)

@@ -205,7 +205,7 @@ closed_loop = ODESystem(connections, t, systems = [model, pid, filt, sensor, r, 
     name = :closed_loop)
 
 prob = ODEProblem(structural_simplify(closed_loop), Pair[], (0.0, 4.0))
-sol = solve(prob, Rodas4())
+sol = solve(prob, Rodas5P(), reltol = 1e-6, abstol = 1e-9)
 # plot(
 #     plot(sol, vars = [filt.y, model.inertia1.phi, model.inertia2.phi]),
 #     plot(sol, vars = [pid.ctr_output.u], title = "Control signal"),
@@ -217,7 +217,7 @@ lsys = ss(matrices...) |> sminreal
 @test lsys.nx == 8
 
 stepres = ControlSystemsBase.step(c2d(lsys, 0.001), 4)
-@test stepres.y[:]≈sol(0:0.001:4, idxs = model.inertia2.phi) rtol=1e-4
+@test Array(stepres.y[:])≈Array(sol(0:0.001:4, idxs = model.inertia2.phi)) rtol=1e-4
 
 # plot(stepres, plotx=true, ploty=true, size=(800, 1200), leftmargin=5Plots.mm)
 # plot!(sol, vars = [model.inertia2.phi], sp=1, l=:dash)
