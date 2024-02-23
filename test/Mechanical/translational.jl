@@ -165,7 +165,8 @@ end
             connect(acc.flange, mass.flange),
             connect(acc_output, acc.output)
         ]
-        @named sys = ODESystem(eqs, t, [], []; systems = [force, source, mass, acc, acc_output])
+        @named sys = ODESystem(
+            eqs, t, [], []; systems = [force, source, mass, acc, acc_output])
         s = complete(structural_simplify(sys))
         prob = ODEProblem(s, [], (0.0, pi))
         sol = solve(prob, Tsit5())
