@@ -90,9 +90,8 @@ As can be seen, this will give a 1 equation model matching our energy dissipatio
 
 ```@example connections
 using ModelingToolkitStandardLibrary.Electrical, ModelingToolkit, DifferentialEquations
+using ModelingToolkit: t_nounits as t
 using Plots
-
-@parameters t
 
 @named resistor = Resistor(R = 1)
 @named capacitor = Capacitor(C = 1)

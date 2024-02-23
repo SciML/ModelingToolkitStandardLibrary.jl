@@ -14,12 +14,10 @@ The `ModelingToolkitStandardLibrary.Blocks.TimeVaryingFunction` component is eas
 
 ```julia
 using ModelingToolkit
+using ModelingToolkit: t_nounits as t, D_nounits as D
 using ModelingToolkitStandardLibrary.Blocks
 using DataInterpolations
 using OrdinaryDiffEq
-
-@parameters t
-D = Differential(t)
 
 function System(f; name)
     src = TimeVaryingFunction(f)

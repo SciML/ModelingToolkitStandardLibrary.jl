@@ -1,9 +1,7 @@
 module FluxTubes
 using ModelingToolkit
+using ModelingToolkit: t_nounits as t, D_nounits as D
 using ...Electrical: Pin
-
-@parameters t
-D = Differential(t)
 
 export PositiveMagneticPort, NegativeMagneticPort, TwoPort
 include("utils.jl")

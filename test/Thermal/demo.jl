@@ -1,8 +1,6 @@
 using ModelingToolkitStandardLibrary.Thermal, ModelingToolkit, OrdinaryDiffEq, Test
+using ModelingToolkit: t_nounits as t, D_nounits as D
 using OrdinaryDiffEq: ReturnCode.Success
-
-@parameters t
-D = Differential(t)
 
 # Modelica example
 @testset "demo" begin

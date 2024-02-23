@@ -1,11 +1,9 @@
 using ModelingToolkit, OrdinaryDiffEq, Test
+using ModelingToolkit: t_nounits as t, D_nounits as D
 
 using ModelingToolkitStandardLibrary.Blocks
 import ModelingToolkitStandardLibrary.Mechanical.Translational as TV
 import ModelingToolkitStandardLibrary.Mechanical.TranslationalPosition as TP
-
-@parameters t
-D = Differential(t)
 
 @testset "Free" begin
     function System(; name)
@@ -167,7 +165,8 @@ end
             connect(acc.flange, mass.flange),
             connect(acc_output, acc.output)
         ]
-        @named sys = ODESystem(eqs, t, [], []; systems = [force, source, mass, acc, acc_output])
+        @named sys = ODESystem(
+            eqs, t, [], []; systems = [force, source, mass, acc, acc_output])
         s = complete(structural_simplify(sys))
         prob = ODEProblem(s, [], (0.0, pi))
         sol = solve(prob, Tsit5())

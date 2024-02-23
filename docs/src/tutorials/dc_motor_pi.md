@@ -14,13 +14,12 @@ First, the needed packages are imported and the parameters of the model defined.
 
 ```@example dc_motor_pi
 using ModelingToolkit
+using ModelingToolkit: t_nounits as t
 using ModelingToolkitStandardLibrary.Electrical
 using ModelingToolkitStandardLibrary.Mechanical.Rotational
 using ModelingToolkitStandardLibrary.Blocks
 using OrdinaryDiffEq
 using Plots
-
-@parameters t
 
 R = 0.5 # [Ohm] armature resistance
 L = 4.5e-3 # [H] armature inductance

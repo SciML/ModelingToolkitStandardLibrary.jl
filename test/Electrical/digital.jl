@@ -96,8 +96,6 @@ end
 
 #=
 
-@parameters t
-
 @named set1 = Set()
 @named reset1 = Reset()
 @named set2 = Set()

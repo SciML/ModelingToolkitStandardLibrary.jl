@@ -5,10 +5,7 @@ module Blocks
 using ModelingToolkit, Symbolics
 import IfElse: ifelse
 import ..@symcheck
-using ModelingToolkit: getdefault
-
-@parameters t
-D = Differential(t)
+using ModelingToolkit: getdefault, t_nounits as t, D_nounits as D
 
 export RealInput, RealOutput, SISO
 include("utils.jl")

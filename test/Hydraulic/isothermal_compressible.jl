@@ -1,12 +1,10 @@
 using ModelingToolkit, OrdinaryDiffEq, Test
+using ModelingToolkit: t_nounits as t, D_nounits as D
 import ModelingToolkitStandardLibrary.Hydraulic.IsothermalCompressible as IC
 import ModelingToolkitStandardLibrary.Blocks as B
 import ModelingToolkitStandardLibrary.Mechanical.Translational as T
 
 using ModelingToolkitStandardLibrary.Blocks: Parameter
-
-@parameters t
-D = Differential(t)
 
 NEWTON = NLNewton(check_div = false, always_new = true, max_iter = 100, relax = 9 // 10)
 
@@ -195,8 +193,6 @@ end
 
 @testset "Actuator System" begin
     function System(use_input, f; name)
-        @parameters t
-
         pars = @parameters begin
             p_s = 200e5
             p_r = 5e5

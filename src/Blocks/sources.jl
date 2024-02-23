@@ -521,7 +521,7 @@ function Base.show(io::IO, m::MIME"text/plain", p::Parameter)
 end
 
 get_sample_time(memory::Parameter) = memory.ref
-Symbolics.@register_symbolic get_sample_time(memory)
+Symbolics.@register_symbolic get_sample_time(memory::Parameter)
 
 Base.convert(::Type{T}, x::Parameter{T}) where {T <: Real} = x.ref
 function Base.convert(::Type{<:Parameter{T}}, x::Number) where {T <: Real}
@@ -603,8 +603,9 @@ end
 function get_sampled_data(t, buffer)
     get_sampled_data(t, buffer.data, buffer.ref, buffer.circular_buffer)
 end
-Symbolics.@register_symbolic get_sampled_data(t, buffer)
-Symbolics.@register_symbolic get_sampled_data(t, buffer, dt, circular_buffer) false
+Symbolics.@register_symbolic Parameter(data::Vector, ref, circular_buffer::Bool)
+Symbolics.@register_symbolic get_sampled_data(t, buffer::Parameter)
+Symbolics.@register_symbolic get_sampled_data(t, buffer::Vector, dt, circular_buffer) false
 
 function Symbolics.derivative(::typeof(get_sampled_data), args::NTuple{2, Any}, ::Val{1})
     t = @inbounds args[1]
@@ -655,21 +656,23 @@ data input component.
         buffer,
         sample_time,
         circular_buffer = true)
+    T = eltype(buffer)
     pars = @parameters begin
-        buffer = buffer #::Vector{Real}
-        sample_time = sample_time #::Real
-        circular_buffer = circular_buffer #::Bool
+        buffer::Vector{T} = buffer #::Vector{Real}
+        sample_time::T = sample_time #::Real
+        circular_buffer::Bool = circular_buffer #::Bool
     end
+    @parameters p::Parameter{T} = Parameter(buffer, sample_time, circular_buffer)
     vars = []
     systems = @named begin
         output = RealOutput()
     end
     eqs = [
-        output.u ~ get_sampled_data(t, buffer, sample_time, circular_buffer)
+        output.u ~ get_sampled_data(t, p)
     ]
-    return ODESystem(eqs, t, vars, pars; name, systems,
+    return ODESystem(eqs, t, vars, [pars; p]; name, systems,
         defaults = [
-            output.u => get_sampled_data(0.0, buffer, sample_time, circular_buffer)
+            output.u => get_sampled_data(0.0, p)
         ])
 end
 
@@ -684,9 +687,10 @@ data input component.
 # Connectors:
   - `output`
 """
-@component function SampledData(::Val{SampledDataType.struct_based}; name, buffer)
+@component function SampledData(
+        ::Val{SampledDataType.struct_based}; name, buffer::Parameter)
     pars = @parameters begin
-        buffer = buffer #::Parameter
+        buffer::typeof(buffer) = buffer #::Parameter
     end
     vars = []
     systems = @named begin
