@@ -10,11 +10,11 @@ connect pre-made components and simulate the model.
 using ModelingToolkit, OrdinaryDiffEq, Plots
 using ModelingToolkitStandardLibrary.Electrical
 using ModelingToolkitStandardLibrary.Blocks: Constant
+using ModelingToolkit: t_nounits as t
 
 R = 1.0
 C = 1.0
 V = 1.0
-@variables t
 @named resistor = Resistor(R = R)
 @named capacitor = Capacitor(C = C, v = 0.0)
 @named source = Voltage()
