@@ -2,11 +2,11 @@
 <html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>ModelingToolkitStandardLibrary.jl: A Standard Library for ModelingToolkit · ModelingToolkitStandardLibrary.jl</title><meta name="title" content="ModelingToolkitStandardLibrary.jl: A Standard Library for ModelingToolkit · ModelingToolkitStandardLibrary.jl"/><meta property="og:title" content="ModelingToolkitStandardLibrary.jl: A Standard Library for ModelingToolkit · ModelingToolkitStandardLibrary.jl"/><meta property="twitter:title" content="ModelingToolkitStandardLibrary.jl: A Standard Library for ModelingToolkit · ModelingToolkitStandardLibrary.jl"/><meta name="description" content="Documentation for ModelingToolkitStandardLibrary.jl."/><meta property="og:description" content="Documentation for ModelingToolkitStandardLibrary.jl."/><meta property="twitter:description" content="Documentation for ModelingToolkitStandardLibrary.jl."/><meta property="og:url" content="https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/"/><meta property="twitter:url" content="https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/"/><link rel="canonical" href="https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/"/><script data-outdated-warner src="assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="assets/documenter.js"></script><script src="search_index.js"></script><script src="siteinfo.js"></script><script src="../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="assets/themeswap.js"></script><link href="assets/favicon.ico" rel="icon" type="image/x-icon"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href><img src="assets/logo.png" alt="ModelingToolkitStandardLibrary.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href>ModelingToolkitStandardLibrary.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li class="is-active"><a class="tocitem" href>ModelingToolkitStandardLibrary.jl: A Standard Library for ModelingToolkit</a><ul class="internal"><li><a class="tocitem" href="#Installation"><span>Installation</span></a></li><li><a class="tocitem" href="#Tutorials"><span>Tutorials</span></a></li><li><a class="tocitem" href="#Libraries"><span>Libraries</span></a></li><li><a class="tocitem" href="#Contributing"><span>Contributing</span></a></li><li><a class="tocitem" href="#Reproducibility"><span>Reproducibility</span></a></li></ul></li><li><span class="tocitem">Tutorials</span><ul><li><a class="tocitem" href="tutorials/rc_circuit/">RC Circuit</a></li><li><a class="tocitem" href="tutorials/custom_component/">Custom Components</a></li><li><a class="tocitem" href="tutorials/thermal_model/">Thermal Conduction Model</a></li><li><a class="tocitem" href="tutorials/dc_motor_pi/">DC Motor with Speed Controller</a></li><li><a class="tocitem" href="tutorials/input_component/">SampledData Component</a></li></ul></li><li><a class="tocitem" href="connectors/connections/">About Acausal Connections</a></li><li><span class="tocitem">API</span><ul><li><a class="tocitem" href="API/blocks/">Basic Blocks</a></li><li><a class="tocitem" href="API/electrical/">Electrical Components</a></li><li><a class="tocitem" href="API/magnetic/">Magnetic Components</a></li><li><a class="tocitem" href="API/mechanical/">Mechanical Components</a></li><li><a class="tocitem" href="API/thermal/">Thermal Components</a></li><li><a class="tocitem" href="API/hydraulic/">Hydraulic Components</a></li><li><a class="tocitem" href="API/linear_analysis/">Linear Analysis</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>ModelingToolkitStandardLibrary.jl: A Standard Library for ModelingToolkit</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>ModelingToolkitStandardLibrary.jl: A Standard Library for ModelingToolkit</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/SciML/ModelingToolkitStandardLibrary.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/SciML/ModelingToolkitStandardLibrary.jl/blob/main/docs/src/index.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="ModelingToolkitStandardLibrary.jl"><a class="docs-heading-anchor" href="#ModelingToolkitStandardLibrary.jl">ModelingToolkitStandardLibrary.jl</a><a id="ModelingToolkitStandardLibrary.jl-1"></a><a class="docs-heading-anchor-permalink" href="#ModelingToolkitStandardLibrary.jl" title="Permalink"></a></h1><p>ModelingToolkitStandardLibrary.jl is a standard library for the <a href="https://docs.sciml.ai/ModelingToolkit/stable/">ModelingToolkit</a> acausal modeling system.</p><h2 id="Installation"><a class="docs-heading-anchor" href="#Installation">Installation</a><a id="Installation-1"></a><a class="docs-heading-anchor-permalink" href="#Installation" title="Permalink"></a></h2><p>To install ModelingToolkitStandardLibrary.jl, use the Julia package manager:</p><pre><code class="language-julia hljs">using Pkg
 Pkg.add(&quot;ModelingToolkitStandardLibrary&quot;)</code></pre><h2 id="Tutorials"><a class="docs-heading-anchor" href="#Tutorials">Tutorials</a><a id="Tutorials-1"></a><a class="docs-heading-anchor-permalink" href="#Tutorials" title="Permalink"></a></h2><ul><li><a href="https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/tutorials/rc_circuit/">RC Circuit</a></li><li><a href="https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/tutorials/custom_component/">Custom Component</a></li><li><a href="https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/tutorials/thermal_model/">Thermal Model</a></li><li><a href="https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/tutorials/dc_motor_pi/">DC Motor with PI-controller</a></li></ul><h2 id="Libraries"><a class="docs-heading-anchor" href="#Libraries">Libraries</a><a id="Libraries-1"></a><a class="docs-heading-anchor-permalink" href="#Libraries" title="Permalink"></a></h2><p>The following are the constituent libraries of the ModelingToolkit Standard Library.</p><ul><li><a href="https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/API/blocks/">Basic Blocks</a></li><li><a href="https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/API/mechanical/">Mechanical Components</a></li><li><a href="https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/API/electrical/">Electrical Components</a></li><li><a href="https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/API/magnetic/">Magnetic Components</a></li><li><a href="https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/API/thermal/">Thermal Components</a></li><li><a href="API/hydraulic/#hydraulic">Hydraulic Components</a></li></ul><h2 id="Contributing"><a class="docs-heading-anchor" href="#Contributing">Contributing</a><a id="Contributing-1"></a><a class="docs-heading-anchor-permalink" href="#Contributing" title="Permalink"></a></h2><ul><li><p>Please refer to the <a href="https://github.com/SciML/ColPrac/blob/master/README.md">SciML ColPrac: Contributor&#39;s Guide on Collaborative Practices for Community Packages</a> for guidance on PRs, issues, and other matters relating to contributing to SciML.</p></li><li><p>See the <a href="https://github.com/SciML/SciMLStyle">SciML Style Guide</a> for common coding practices and other style decisions.</p></li><li><p>There are a few community forums:</p><ul><li>The #diffeq-bridged and #sciml-bridged channels in the <a href="https://julialang.org/slack/">Julia Slack</a></li><li>The #diffeq-bridged and #sciml-bridged channels in the <a href="https://julialang.zulipchat.com/#narrow/stream/279055-sciml-bridged">Julia Zulip</a></li><li>On the <a href="https://discourse.julialang.org">Julia Discourse forums</a></li><li>See also <a href="https://sciml.ai/community/">SciML Community page</a></li></ul></li></ul><h2 id="Reproducibility"><a class="docs-heading-anchor" href="#Reproducibility">Reproducibility</a><a id="Reproducibility-1"></a><a class="docs-heading-anchor-permalink" href="#Reproducibility" title="Permalink"></a></h2><details><summary>The documentation of this SciML package was built using these direct dependencies,</summary><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Status `~/work/ModelingToolkitStandardLibrary.jl/ModelingToolkitStandardLibrary.jl/docs/Project.toml`
   [aaaaaaaa] ControlSystemsBase v1.10.2
-  [0c46a032] DifferentialEquations v7.12.0
+  [0c46a032] DifferentialEquations v7.13.0
   [e30172f5] Documenter v1.3.0
   [615f187c] IfElse v0.1.1
   [961ee093] ModelingToolkit v9.3.0
-  [16a59e39] ModelingToolkitStandardLibrary v2.5.0 `~/work/ModelingToolkitStandardLibrary.jl/ModelingToolkitStandardLibrary.jl`
+  [16a59e39] ModelingToolkitStandardLibrary v2.6.0 `~/work/ModelingToolkitStandardLibrary.jl/ModelingToolkitStandardLibrary.jl`
   [1dea7af3] OrdinaryDiffEq v6.74.0
   [91a5bcdd] Plots v1.40.1</code></pre></details><details><summary>and using this machine and Julia version.</summary><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Julia Version 1.10.2
 Commit bd47eca2c8a (2024-03-01 10:14 UTC)
@@ -25,7 +25,7 @@ Threads: 1 default, 0 interactive, 1 GC (on 4 virtual cores)</code></pre></detai
   [1520ce14] AbstractTrees v0.4.5
   [79e6a3ab] Adapt v4.0.1
 ⌅ [ec485272] ArnoldiMethod v0.2.0
-  [4fba245c] ArrayInterface v7.7.1
+  [4fba245c] ArrayInterface v7.8.0
   [4c555306] ArrayLayouts v1.6.0
   [aae01518] BandedMatrices v1.5.0
   [6e4b80f9] BenchmarkTools v1.5.0
@@ -64,17 +64,17 @@ Threads: 1 default, 0 interactive, 1 GC (on 4 virtual cores)</code></pre></detai
   [e2d170a0] DataValueInterfaces v1.0.0
   [bcd4f6db] DelayDiffEq v5.47.0
   [8bb1440f] DelimitedFiles v1.9.1
-  [2b5f629d] DiffEqBase v6.147.3
-⌅ [459566f4] DiffEqCallbacks v2.37.0
-  [77a26b50] DiffEqNoiseProcess v5.20.1
+  [2b5f629d] DiffEqBase v6.148.0
+  [459566f4] DiffEqCallbacks v3.3.0
+  [77a26b50] DiffEqNoiseProcess v5.21.0
   [163ba53b] DiffResults v1.1.0
   [b552c78f] DiffRules v1.15.1
-  [0c46a032] DifferentialEquations v7.12.0
+  [0c46a032] DifferentialEquations v7.13.0
   [b4f34e82] Distances v0.10.11
   [31c24e10] Distributions v0.25.107
   [ffbed154] DocStringExtensions v0.9.3
   [e30172f5] Documenter v1.3.0
-  [5b8099bc] DomainSets v0.7.7
+  [5b8099bc] DomainSets v0.7.8
   [fa6b7ba4] DualNumbers v0.6.8
   [7c1d4256] DynamicPolynomials v0.5.5
 ⌅ [06fc5a27] DynamicQuantities v0.11.3
@@ -105,7 +105,7 @@ Threads: 1 default, 0 interactive, 1 GC (on 4 virtual cores)</code></pre></detai
   [c27321d9] Glob v1.3.1
   [86223c79] Graphs v1.9.0
   [42e2da0e] Grisu v1.0.2
-  [cd3eb016] HTTP v1.10.2
+  [cd3eb016] HTTP v1.10.3
   [3e5b6fbb] HostCPUFeatures v0.1.16
   [34004b35] HypergeometricFunctions v0.3.23
   [b5f81e59] IOCapture v0.2.4
@@ -149,7 +149,7 @@ Threads: 1 default, 0 interactive, 1 GC (on 4 virtual cores)</code></pre></detai
   [442fdcdd] Measures v0.3.2
   [e1d29d7a] Missings v1.1.0
   [961ee093] ModelingToolkit v9.3.0
-  [16a59e39] ModelingToolkitStandardLibrary v2.5.0 `~/work/ModelingToolkitStandardLibrary.jl/ModelingToolkitStandardLibrary.jl`
+  [16a59e39] ModelingToolkitStandardLibrary v2.6.0 `~/work/ModelingToolkitStandardLibrary.jl/ModelingToolkitStandardLibrary.jl`
   [46d2c3a1] MuladdMacro v0.2.4
   [102ac46a] MultivariatePolynomials v0.5.4
   [d8a4904e] MutableArithmetics v1.4.1
@@ -158,7 +158,7 @@ Threads: 1 default, 0 interactive, 1 GC (on 4 virtual cores)</code></pre></detai
   [77ba4419] NaNMath v1.0.2
   [8913a72c] NonlinearSolve v3.7.3
   [6fe1bfb0] OffsetArrays v1.13.0
-  [4d8831e6] OpenSSL v1.4.1
+  [4d8831e6] OpenSSL v1.4.2
   [429524aa] Optim v1.9.2
   [bac558e1] OrderedCollections v1.6.3
   [1dea7af3] OrdinaryDiffEq v6.74.0
@@ -177,7 +177,7 @@ Threads: 1 default, 0 interactive, 1 GC (on 4 virtual cores)</code></pre></detai
   [85a6dd25] PositiveFactorizations v0.2.4
   [d236fae5] PreallocationTools v0.4.20
   [aea7be01] PrecompileTools v1.2.0
-  [21216c6a] Preferences v1.4.2
+  [21216c6a] Preferences v1.4.3
   [1fd47b50] QuadGK v2.9.4
   [74087812] Random123 v1.7.0
   [e6cf234a] RandomNumbers v1.5.3
@@ -215,7 +215,7 @@ Threads: 1 default, 0 interactive, 1 GC (on 4 virtual cores)</code></pre></detai
   [82ae8749] StatsAPI v1.7.0
   [2913bbd2] StatsBase v0.34.2
   [4c63d2b9] StatsFuns v1.3.1
-  [9672c7b4] SteadyStateDiffEq v2.0.1
+  [9672c7b4] SteadyStateDiffEq v2.1.0
   [789caeaf] StochasticDiffEq v6.65.1
   [7792a7ef] StrideArraysCore v0.5.2
   [c3572dad] Sundials v4.24.0
@@ -374,4 +374,4 @@ Threads: 1 default, 0 interactive, 1 GC (on 4 virtual cores)</code></pre></detai
   [8e850b90] libblastrampoline_jll v5.8.0+1
   [8e850ede] nghttp2_jll v1.52.0+1
   [3f19e933] p7zip_jll v17.4.0+2
-Info Packages marked with ⌃ and ⌅ have new versions available. Those with ⌃ may be upgradable, but those with ⌅ are restricted by compatibility constraints from upgrading. To see why use `status --outdated -m`</code></pre></details><p>You can also download the <a href="https://github.com/SciML/ModelingToolkitStandardLibrary.jl/tree/gh-pages/v2.5.0/assets/Manifest.toml">manifest</a> file and the <a href="https://github.com/SciML/ModelingToolkitStandardLibrary.jl/tree/gh-pages/v2.5.0/assets/Project.toml">project</a> file.</p></article><nav class="docs-footer"><a class="docs-footer-nextpage" href="tutorials/rc_circuit/">RC Circuit »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.3.0 on <span class="colophon-date" title="Sunday 3 March 2024 13:13">Sunday 3 March 2024</span>. Using Julia version 1.10.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+Info Packages marked with ⌃ and ⌅ have new versions available. Those with ⌃ may be upgradable, but those with ⌅ are restricted by compatibility constraints from upgrading. To see why use `status --outdated -m`</code></pre></details><p>You can also download the <a href="https://github.com/SciML/ModelingToolkitStandardLibrary.jl/tree/gh-pages/v2.6.0/assets/Manifest.toml">manifest</a> file and the <a href="https://github.com/SciML/ModelingToolkitStandardLibrary.jl/tree/gh-pages/v2.6.0/assets/Project.toml">project</a> file.</p></article><nav class="docs-footer"><a class="docs-footer-nextpage" href="tutorials/rc_circuit/">RC Circuit »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.3.0 on <span class="colophon-date" title="Monday 4 March 2024 16:39">Monday 4 March 2024</span>. Using Julia version 1.10.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
