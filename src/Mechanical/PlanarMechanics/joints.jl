@@ -24,14 +24,10 @@ https://github.com/dzimmer/PlanarMechanics/blob/743462f58858a808202be93b70839146
 """
 @component function Revolute(;
         name,
-        constant_phi = nothing,
-        constant_ω = nothing,
-        constat_tau = nothing,
         use_flange = false)
     @named partial_frames = PartialTwoFrames()
     @unpack frame_a, frame_b = partial_frames
-    @named fixed = Rotational.Fixed()
-    systems = [frame_a, frame_b, fixed]
+    systems = [frame_a, frame_b]
 
     vars = @variables begin
         phi(t) = 0.0
@@ -41,9 +37,8 @@ https://github.com/dzimmer/PlanarMechanics/blob/743462f58858a808202be93b70839146
     end
 
     eqs = [
-        phi ~ ifelse(constant_phi === nothing, phi, constant_phi),
-        ω ~ ifelse(constant_ω === nothing, D(phi), constant_ω),
-        α ~ ifelse(constant_ω === nothing, D(ω), 0.0),
+        ω ~ D(phi),
+        α ~ D(ω),
         # rigidly connect positions
         frame_a.x ~ frame_b.x,
         frame_a.y ~ frame_b.y,
@@ -53,11 +48,12 @@ https://github.com/dzimmer/PlanarMechanics/blob/743462f58858a808202be93b70839146
         frame_a.fy + frame_b.fy ~ 0,
         # balance torques
         frame_a.j + frame_b.j ~ 0,
-        j ~ ifelse(constat_tau === nothing, j, constat_tau),
-        frame_a.j ~ j,
+        frame_a.j ~ j
     ]
 
     if use_flange
+        @named fixed = Rotational.Fixed()
+        push!(systems, fixed)
         @named flange_a = Rotational.Flange(; phi, tau)
         push!(systems, flange_a)
         @named support = Rotational.Support()
@@ -127,7 +123,7 @@ https://github.com/dzimmer/PlanarMechanics/blob/743462f58858a808202be93b70839146
     end
 
     R = [cos(frame_a.phi) -sin(frame_a.phi);
-        sin(frame_a.phi) cos(frame_a.phi)]
+         sin(frame_a.phi) cos(frame_a.phi)]
     e0 = R * [x, y]
     r0 = e0 * s
 
@@ -143,7 +139,7 @@ https://github.com/dzimmer/PlanarMechanics/blob/743462f58858a808202be93b70839146
         frame_a.fx + frame_b.fx ~ 0,
         frame_a.fy + frame_b.fy ~ 0,
         frame_a.j + frame_b.j + r0[1] * frame_b.fy - r0[2] * frame_b.fx ~ 0,
-        e0[1] * frame_a.fx + e0[2] * frame_a.fy ~ f,
+        e0[1] * frame_a.fx + e0[2] * frame_a.fy ~ f
     ]
 
     if use_flange
