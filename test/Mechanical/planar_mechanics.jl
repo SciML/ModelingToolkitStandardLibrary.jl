@@ -110,12 +110,12 @@ end
 #     test_points = [i / ω for i in 0:0.1:10]
 
 #     # instantaneous linear velocity
-#     v_singal(t) = -ω^2 * sin.(ω .* t)
-#     @test all(v_singal.(test_points) .≈ sol.(test_points; idxs = abs_v_sensor.v_x.u))
+#     v_signal(t) = -ω^2 * sin.(ω .* t)
+#     @test all(v_signal.(test_points) .≈ sol.(test_points; idxs = abs_v_sensor.v_x.u))
 
 #     # instantaneous linear acceleration
-#     a_singal(t) = -ω^3 * cos.(ω .* t)
-#     @test all(a_singal.(test_points) .≈ sol.(test_points; idxs = body.ax))
+#     a_signal(t) = -ω^3 * cos.(ω .* t)
+#     @test all(a_signal.(test_points) .≈ sol.(test_points; idxs = body.ax))
 # end
 
 # @testset "Sensors (two free falling bodies)" begin
@@ -205,11 +205,11 @@ end
 #     # the body is under constant acclertation = g
 #     @test all(sol[abs_a_sensor.a_y.u] .≈ g)
 
-#     # the relative y-accleration between body1 and the base is
-#     # equal to the absolute y-accleration of body1
+#     # the relative y-acceleration between body1 and the base is
+#     # equal to the absolute y-acceleration of body1
 #     @test sol[abs_a_sensor.a_y.u][end] ≈ -sol[rel_a_sensor1.rel_a_y.u][end]
 
-#     # the relative y-accleration between body1 and body2 is zero
+#     # the relative y-acceleration between body1 and body2 is zero
 #     @test sol[rel_a_sensor2.rel_a_y.u][end] == 0
 # end
 

@@ -227,7 +227,7 @@ https://github.com/dzimmer/PlanarMechanics/blob/743462f58858a808202be93b70839146
 end
 
 """
-    Damper(; name, d = 1, s_smal = 1.e-10)
+    Damper(; name, d = 1, s_small = 1.e-10)
 
 Linear (velocity dependent) damper
 

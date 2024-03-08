@@ -4,8 +4,8 @@ A revolute joint
 
 # parameters
   - `use_flange=false`: If `true`, a force flange is enabled, otherwise implicitly grounded"
-  - `phi`: [rad] Intial angular position for the flange
-  - `tau`: [N.m] Inital Cut torque in the flange
+  - `phi`: [rad] Initial angular position for the flange
+  - `tau`: [N.m] Initial Cut torque in the flange
 
 # states
   - `phi(t)`: [rad] angular position
