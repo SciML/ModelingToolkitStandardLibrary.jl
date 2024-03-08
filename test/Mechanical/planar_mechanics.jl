@@ -1,10 +1,9 @@
 # using Revise
 # using Plots
 using ModelingToolkit, OrdinaryDiffEq, Test
+using ModelingToolkit: t_nounits as t, D_nounits as D
 using ModelingToolkitStandardLibrary.Mechanical.PlanarMechanics
 
-@parameters t
-D = Differential(t)
 tspan = (0.0, 3.0)
 g = -9.807
 
@@ -19,7 +18,7 @@ g = -9.807
         [],
         systems = [body])
     sys = structural_simplify(model)
-    unset_vars = setdiff(states(sys), keys(ModelingToolkit.defaults(sys)))
+    unset_vars = setdiff(unknowns(sys), keys(ModelingToolkit.defaults(sys)))
     prob = ODEProblem(sys, unset_vars .=> 0.0, tspan, []; jac = true)
 
     sol = solve(prob, Rodas5P())
@@ -52,8 +51,8 @@ end
         systems = [body, revolute, rod, ceiling])
     sys = structural_simplify(model)
 
-    @test_broken length(states(sys)) == 2
-    unset_vars = setdiff(states(sys), keys(ModelingToolkit.defaults(sys)))
+    @test_broken length(unknowns(sys)) == 2
+    unset_vars = setdiff(unknowns(sys), keys(ModelingToolkit.defaults(sys)))
     prob = ODEProblem(sys, unset_vars .=> 0.0, tspan, []; jac = true)
 
     sol = solve(prob, Rodas5P())
