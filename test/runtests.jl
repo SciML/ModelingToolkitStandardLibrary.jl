@@ -63,6 +63,9 @@ end
 @safetestset "Multi-Domain" begin
     include("multi_domain.jl")
 end
+@safetestset "Planar Mechanics" begin
+    include("Mechanical/planar_mechanics.jl")
+end
 
 # Hydraulic
 @safetestset "Hydraulic IsothermalCompressible" begin
