@@ -22,32 +22,15 @@ using OrdinaryDiffEq: ReturnCode.Success
         systems = [fixed, inertia1, inertia2, spring, damper])
     sys = structural_simplify(model)
 
-
-    @mtkmodel TwoInertia begin
-        @components begin
-            fixed = Fixed()
-            inertia1 = Inertia(J = 2) # this one is fixed
-            spring = Spring(c = 1e4)
-            damper = Damper(d = 10)
-            inertia2 = Inertia(J = 2, phi = pi / 2)
-        end
-        @equations begin
-            connect(fixed.flange, inertia1.flange_b)
-            connect(inertia1.flange_b, spring.flange_a, damper.flange_a)
-            connect(spring.flange_b, damper.flange_b, inertia2.flange_a)
-        end
-    end
-
-    @mtkbuild sys = TwoInertia()
-    prob = ODEProblem(sys, Pair[], (0, 10.0))
+    prob = ODEProblem(sys, [D(D(sys.inertia2.phi)) => 0.0], (0, 10.0))
     sol1 = solve(prob, Rodas4())
     @test SciMLBase.successful_retcode(sol1)
 
-    prob = ODEProblem(sys, Pair[], (0, 10.0))
+    prob = ODEProblem(sys, [D.(sys.inertia2.phi) => 0], (0, 10.0))
     sol = solve(prob, Rodas4())
     @test SciMLBase.successful_retcode(sol)
 
-    prob = DAEProblem(sys, D.(unknowns(sys)) .=> 0.0, Pair[], (0, 10.0))
+    prob = DAEProblem(sys, D.(unknowns(sys)) .=> 0.0, [D(D(sys.inertia2.phi)) => 0.0], (0, 10.0))
     sol = solve(prob, DFBDF())
     @test SciMLBase.successful_retcode(sol)
     @test all(sol[inertia1.w] .== 0)
@@ -102,11 +85,11 @@ end
         ])
     sys = structural_simplify(model)
     prob = DAEProblem(sys, D.(unknowns(sys)) .=> 0.0,
-        [D(D(inertia2.phi)) => 1.0; D.(unknowns(model)) .=> 0.0], (0, 10.0))
+        [D(D(sys.inertia2.phi)) => 1.0, sys.spring.flange_b.phi => 0.0], (0, 10.0))
     sol = solve(prob, DFBDF())
     @test SciMLBase.successful_retcode(sol)
 
-    prob = ODEProblem(sys, Pair[], (0, 1.0))
+    prob = ODEProblem(sys, [D(D(sys.inertia1.phi)) => 1.0, sys.spring.flange_b.phi => 0.0], (0, 1.0))
     sol = solve(prob, Rodas4())
     @test SciMLBase.successful_retcode(sol)
 
@@ -229,7 +212,7 @@ end
             angle_sensor
         ])
     sys = structural_simplify(model)
-    prob = DAEProblem(sys, D.(unknowns(sys)) .=> 0.0, Pair[], (0, 10.0))
+    prob = DAEProblem(sys, D.(unknowns(sys)) .=> 0.0, [inertia.flange_b.tau => 0.0; unknowns(sys) .=> 0.0...], (0, 10.0))
 
     sol = solve(prob, DFBDF())
     @test SciMLBase.successful_retcode(sol)
@@ -267,7 +250,7 @@ end
         ])
     sys = structural_simplify(model)
 
-    prob = ODEProblem(sys, Pair[], (0, 10.0))
+    prob = ODEProblem(sys, [D(D(inertia2.phi)) => 0.0], (0, 10.0))
     sol = solve(prob, Rodas4())
     @test SciMLBase.successful_retcode(sol)
     @test all(sol[inertia1.w] .== 0)
@@ -276,7 +259,7 @@ end
     @test all(sol[rel_speed_sensor.w_rel.u] .== sol[speed_sensor.w.u])
     @test all(sol[torque_sensor.tau.u] .== -sol[inertia1.flange_b.tau])
 
-    prob = DAEProblem(sys, D.(unknowns(sys)) .=> 0.0, Pair[], (0, 10.0))
+    prob = DAEProblem(sys, D.(unknowns(sys)) .=> 0.0, [D(D(inertia2.phi)) => 0.0], (0, 10.0))
     sol = solve(prob, DFBDF())
     @test SciMLBase.successful_retcode(sol)
     @test all(sol[inertia1.w] .== 0)
