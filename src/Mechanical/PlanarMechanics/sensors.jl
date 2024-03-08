@@ -120,14 +120,14 @@ Measure absolute position and orientation (same as Sensors.AbsolutePosition, but
             frame_a.phi]
     elseif resolve_in_frame == :frame_a
         rotation_matrix = [cos(frame_a.phi) -sin(frame_a.phi) 0;
-            sin(frame_a.phi) cos(frame_a.phi) 0;
-            0 0 1]
+                           sin(frame_a.phi) cos(frame_a.phi) 0;
+                           0 0 1]
         r = transpose(rotation_matrix) * [frame_a.x, frame_a.y, frame_a.phi] -
             [0, 0, frame_a.phi]
     elseif resolve_in_frame == :frame_resolve
         rotation_matrix = [cos(frame_resolve.phi) -sin(frame_resolve.phi) 0;
-            sin(frame_resolve.phi) cos(frame_resolve.phi) 0;
-            0 0 1]
+                           sin(frame_resolve.phi) cos(frame_resolve.phi) 0;
+                           0 0 1]
         r = transpose(rotation_matrix) * [frame_a.x, frame_a.y, frame_a.phi] -
             [0, 0, frame_resolve.phi]
     else
@@ -140,7 +140,7 @@ Measure absolute position and orientation (same as Sensors.AbsolutePosition, but
         phi.u ~ r[3],
         frame_a.fx ~ 0,
         frame_a.fy ~ 0,
-        frame_a.j ~ 0,
+        frame_a.j ~ 0
     ]
 
     return compose(ODESystem(eqs, t, [], []; name = name),
@@ -176,7 +176,7 @@ Measure absolute position and orientation of the origin of frame connector
         x.u ~ pos.x.u,
         y.u ~ pos.y.u,
         phi.u ~ pos.phi.u,
-        connect(pos.frame_a, frame_a),
+        connect(pos.frame_a, frame_a)
     ]
 
     if resolve_in_frame == :frame_resolve
@@ -221,22 +221,22 @@ Measure relative position and orientation between the origins of two frame conne
 
     if resolve_in_frame == :frame_a
         rotation_matrix = [cos(frame_a.phi) -sin(frame_a.phi) 0;
-            sin(frame_a.phi) cos(frame_a.phi) 0;
-            0 0 1]
+                           sin(frame_a.phi) cos(frame_a.phi) 0;
+                           0 0 1]
         r = transpose(rotation_matrix) *
             [frame_b.x - frame_a.x, frame_b.y - frame_a.y, frame_b.phi - frame_a.phi]
     elseif resolve_in_frame == :frame_b
         rotation_matrix = [cos(frame_b.phi) -sin(frame_b.phi) 0;
-            sin(frame_b.phi) cos(frame_b.phi) 0;
-            0 0 1]
+                           sin(frame_b.phi) cos(frame_b.phi) 0;
+                           0 0 1]
         r = transpose(rotation_matrix) *
             [frame_b.x - frame_a.x, frame_b.y - frame_a.y, frame_b.phi - frame_a.phi]
     elseif resolve_in_frame == :world
         r = [frame_b.x - frame_a.x, frame_b.y - frame_a.y, frame_b.phi - frame_a.phi]
     elseif resolve_in_frame == :frame_resolve
         rotation_matrix = [cos(frame_resolve.phi) -sin(frame_resolve.phi) 0;
-            sin(frame_resolve.phi) cos(frame_resolve.phi) 0;
-            0 0 1]
+                           sin(frame_resolve.phi) cos(frame_resolve.phi) 0;
+                           0 0 1]
         r = transpose(rotation_matrix) *
             [frame_b.x - frame_a.x, frame_b.y - frame_a.y, frame_b.phi - frame_a.phi]
     else
@@ -252,7 +252,7 @@ Measure relative position and orientation between the origins of two frame conne
         frame_a.j ~ 0,
         frame_b.fx ~ 0,
         frame_b.fy ~ 0,
-        frame_b.j ~ 0,
+        frame_b.j ~ 0
     ]
 
     return compose(ODESystem(eqs, t, [], []; name = name),
@@ -289,7 +289,7 @@ Measure relative position and orientation between the origins of two frame conne
         pos.rel_y.u ~ rel_y.u,
         pos.rel_phi.u ~ rel_phi.u,
         connect(pos.frame_a, frame_a),
-        connect(pos.frame_b, frame_b),
+        connect(pos.frame_b, frame_b)
     ]
 
     if resolve_in_frame == :frame_resolve
@@ -309,9 +309,9 @@ Measure relative position and orientation between the origins of two frame conne
 end
 
 @component function BasicTransformAbsoluteVector(;
-    name,
-    frame_in = :frame_a,
-    frame_out = frame_in)
+        name,
+        frame_in = :frame_a,
+        frame_out = frame_in)
     @named x_in = RealInput()
     @named y_in = RealInput()
     @named phi_in = RealInput()
@@ -333,7 +333,7 @@ end
         frame_a.j ~ 0,
         frame_resolve.fx ~ 0,
         frame_resolve.fy ~ 0,
-        frame_resolve.j ~ 0,
+        frame_resolve.j ~ 0
     ]
 
     r_temp = Vector{Float64}(undef, 3)
@@ -343,21 +343,21 @@ end
         append!(eqs, [
             x_out.u ~ x_in.u,
             y_out.u ~ y_in.u,
-            phi_out.u ~ phi_in.u,
+            phi_out.u ~ phi_in.u
         ])
     else
         if frame_in == :world
             R1 = [1.0 0.0 0.0 0.0;
-                0.0 1.0 0.0 0.0;
-                0.0 0.0 1.0 0.0]
+                  0.0 1.0 0.0 0.0;
+                  0.0 0.0 1.0 0.0]
         elseif frame_in == :frame_a
             R1 = [cos(frame_a.phi) -sin(frame_a.phi) 0.0 0.0;
-                sin(frame_a.phi) cos(frame_a.phi) 0.0 0.0;
-                0.0 0.0 1.0 frame_a.phi]
+                  sin(frame_a.phi) cos(frame_a.phi) 0.0 0.0;
+                  0.0 0.0 1.0 frame_a.phi]
         elseif frame_in == :frame_resolve
             R1 = [cos(frame_resolve.phi) -sin(frame_resolve.phi) 0.0 0.0;
-                sin(frame_resolve.phi) cos(frame_resolve.phi) 0.0 0.0;
-                0.0 0.0 1.0 frame_resolve.phi]
+                  sin(frame_resolve.phi) cos(frame_resolve.phi) 0.0 0.0;
+                  0.0 0.0 1.0 frame_resolve.phi]
         else
             error("Wrong value for parameter frame_in")
         end
@@ -368,27 +368,27 @@ end
             append!(eqs, [
                 x_out.u ~ r_temp[1],
                 y_out.u ~ r_temp[2],
-                phi_out.u ~ r_temp[3],
+                phi_out.u ~ r_temp[3]
             ])
         elseif frame_out == :frame_a
             rotation_matrix = [cos(frame_a.phi) sin(frame_a.phi) 0.0;
-                -sin(frame_a.phi) cos(frame_a.phi) 0.0;
-                0.0 0.0 1.0]
+                               -sin(frame_a.phi) cos(frame_a.phi) 0.0;
+                               0.0 0.0 1.0]
             r = rotation_matrix * r_temp
             append!(eqs, [
                 x_out.u ~ r[1],
                 y_out.u ~ r[2],
-                phi_out.u ~ r[3],
+                phi_out.u ~ r[3]
             ])
         elseif frame_out == :frame_resolve
             rotation_matrix = [cos(frame_resolve.phi) sin(frame_resolve.phi) 0.0;
-                -sin(frame_resolve.phi) cos(frame_resolve.phi) 0.0;
-                0.0 0.0 1.0]
+                               -sin(frame_resolve.phi) cos(frame_resolve.phi) 0.0;
+                               0.0 0.0 1.0]
             r = rotation_matrix * r_temp
             append!(eqs, [
                 x_out.u ~ r[1],
                 y_out.u ~ r[2],
-                phi_out.u ~ r[3],
+                phi_out.u ~ r[3]
             ])
         else
             error("Wrong value for parameter frame_out")
@@ -399,9 +399,9 @@ end
 end
 
 @component function TransformAbsoluteVector(;
-    name,
-    frame_in = :frame_a,
-    frame_out = frame_in)
+        name,
+        frame_in = :frame_a,
+        frame_out = frame_in)
     @named frame_a = Frame()
 
     @named x_in = RealInput()
@@ -424,7 +424,7 @@ end
         # in
         connect(basic_transform_vector.x_in, x_in),
         connect(basic_transform_vector.y_in, y_in),
-        connect(basic_transform_vector.phi_in, phi_in),
+        connect(basic_transform_vector.phi_in, phi_in)
     ]
 
     if frame_in == :frame_resolve || frame_out == :frame_resolve
@@ -472,7 +472,7 @@ end
         transform_absolute_vector.phi_out.u ~ ω.u,
         connect(pos.frame_a, frame_a),
         connect(zero_pos.frame_resolve, pos.frame_resolve),
-        connect(transform_absolute_vector.frame_a, frame_a),
+        connect(transform_absolute_vector.frame_a, frame_a)
     ]
 
     if resolve_in_frame == :frame_resolve
@@ -493,9 +493,9 @@ end
 end
 
 @component function BasicTransformRelativeVector(;
-    name,
-    frame_in = :frame_a,
-    frame_out = frame_in)
+        name,
+        frame_in = :frame_a,
+        frame_out = frame_in)
     @named x_in = RealInput()
     @named y_in = RealInput()
     @named phi_in = RealInput()
@@ -516,7 +516,7 @@ end
         phi_out,
         frame_a,
         frame_b,
-        frame_resolve,
+        frame_resolve
     ]
 
     eqs = Equation[]
@@ -527,25 +527,25 @@ end
         append!(eqs, [
             x_out.u ~ x_in.u,
             y_out.u ~ y_in.u,
-            phi_out.u ~ phi_in.u,
+            phi_out.u ~ phi_in.u
         ])
     else
         if frame_in == :world
             R1 = [1.0 0.0 0.0;
-                0.0 1.0 0.0;
-                0.0 0.0 1.0]
+                  0.0 1.0 0.0;
+                  0.0 0.0 1.0]
         elseif frame_in == :frame_a
             R1 = [cos(frame_a.phi) -sin(frame_a.phi) 0.0;
-                sin(frame_a.phi) cos(frame_a.phi) 0.0;
-                0.0 0.0 1.0]
+                  sin(frame_a.phi) cos(frame_a.phi) 0.0;
+                  0.0 0.0 1.0]
         elseif frame_in == :frame_b
             R1 = [cos(frame_b.phi) -sin(frame_b.phi) 0.0;
-                sin(frame_b.phi) cos(frame_b.phi) 0.0;
-                0.0 0.0 1.0]
+                  sin(frame_b.phi) cos(frame_b.phi) 0.0;
+                  0.0 0.0 1.0]
         else
             R1 = [cos(frame_resolve.phi) -sin(frame_resolve.phi) 0.0;
-                sin(frame_resolve.phi) cos(frame_resolve.phi) 0.0;
-                0.0 0.0 1.0]
+                  sin(frame_resolve.phi) cos(frame_resolve.phi) 0.0;
+                  0.0 0.0 1.0]
         end
 
         r_in = [x_in.u, y_in.u, phi_in.u]
@@ -553,24 +553,24 @@ end
             r_out = R1 * r_in
         elseif frame_out == :frame_a
             rotation_matrix = [cos(frame_a.phi) -sin(frame_a.phi) 0.0;
-                sin(frame_a.phi) cos(frame_a.phi) 0.0;
-                0.0 0.0 1.0]
+                               sin(frame_a.phi) cos(frame_a.phi) 0.0;
+                               0.0 0.0 1.0]
             r_out = transpose(rotation_matrix) * (R1 * r_in)
         elseif frame_out == :frame_b
             rotation_matrix = [cos(frame_b.phi) -sin(frame_b.phi) 0.0;
-                sin(frame_b.phi) cos(frame_b.phi) 0.0;
-                0.0 0.0 1.0]
+                               sin(frame_b.phi) cos(frame_b.phi) 0.0;
+                               0.0 0.0 1.0]
             r_out = transpose(rotation_matrix) * (R1 * r_in)
         else
             rotation_matrix = [cos(frame_resolve.phi) -sin(frame_resolve.phi) 0.0;
-                sin(frame_resolve.phi) cos(frame_resolve.phi) 0.0;
-                0.0 0.0 1.0]
+                               sin(frame_resolve.phi) cos(frame_resolve.phi) 0.0;
+                               0.0 0.0 1.0]
             r_out = transpose(rotation_matrix) * (R1 * r_in)
         end
         append!(eqs, [
             x_out.u ~ r_out[1],
             y_out.u ~ r_out[2],
-            phi_out.u ~ r_out[3],
+            phi_out.u ~ r_out[3]
         ])
     end
 
@@ -578,9 +578,9 @@ end
 end
 
 @component function TransformRelativeVector(;
-    name,
-    frame_in = :frame_a,
-    frame_out = frame_in)
+        name,
+        frame_in = :frame_a,
+        frame_out = frame_in)
     @named x_in = RealInput()
     @named y_in = RealInput()
     @named phi_in = RealInput()
@@ -602,7 +602,7 @@ end
         phi_out,
         basic_transformb_vector,
         frame_a,
-        frame_b,
+        frame_b
     ]
 
     eqs = [
@@ -615,7 +615,7 @@ end
         # in
         connect(basic_transformb_vector.x_in, x_in),
         connect(basic_transformb_vector.y_in, y_in),
-        connect(basic_transformb_vector.phi_in, phi_in),
+        connect(basic_transformb_vector.phi_in, phi_in)
     ]
 
     if frame_in == :frame_resolve || frame_out == :frame_resolve
@@ -652,7 +652,7 @@ end
         rel_v_y,
         rel_ω,
         rel_pos,
-        transform_relative_vector,
+        transform_relative_vector
     ]
     eqs = [
         # connect(relativePosition.r_rel, der_r_rel.u) 
@@ -667,7 +667,7 @@ end
         connect(rel_pos.frame_a, frame_a),
         connect(rel_pos.frame_b, frame_b),
         connect(transform_relative_vector.frame_a, frame_a),
-        connect(transform_relative_vector.frame_b, frame_b),
+        connect(transform_relative_vector.frame_b, frame_b)
     ]
 
     if resolve_in_frame == :frame_resolve
@@ -717,7 +717,7 @@ end
         transform_absolute_vector.phi_out.u ~ α.u,
         connect(pos.frame_a, frame_a),
         connect(zero_pos.frame_resolve, pos.frame_resolve),
-        connect(transform_absolute_vector.frame_a, frame_a),
+        connect(transform_absolute_vector.frame_a, frame_a)
     ]
 
     if resolve_in_frame == :frame_resolve
@@ -757,7 +757,7 @@ end
         rel_a_y,
         rel_α,
         rel_pos,
-        transform_relative_vector,
+        transform_relative_vector
     ]
 
     eqs = [
@@ -774,7 +774,7 @@ end
         connect(rel_pos.frame_a, frame_a),
         connect(rel_pos.frame_b, frame_b),
         connect(transform_relative_vector.frame_a, frame_a),
-        connect(transform_relative_vector.frame_b, frame_b),
+        connect(transform_relative_vector.frame_b, frame_b)
     ]
 
     if resolve_in_frame == :frame_resolve
@@ -799,6 +799,6 @@ function connect_sensor(component_frame, sensor_frame)
     return [
         component_frame.x ~ sensor_frame.x,
         component_frame.y ~ sensor_frame.y,
-        component_frame.phi ~ sensor_frame.phi,
+        component_frame.phi ~ sensor_frame.phi
     ]
 end

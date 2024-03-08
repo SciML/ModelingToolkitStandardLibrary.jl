@@ -102,7 +102,7 @@ https://github.com/dzimmer/PlanarMechanics/blob/743462f58858a808202be93b70839146
         fy ~ frame.fy,
         ax ~ fx / m,
         ay ~ ifelse(gy !== nothing, fy / m + gy, fy / m),
-        I * α ~ frame.j,
+        I * α ~ frame.j
     ]
 
     return compose(ODESystem(eqs, t, vars, pars; name = name),
@@ -132,17 +132,17 @@ https://github.com/dzimmer/PlanarMechanics/blob/743462f58858a808202be93b70839146
     @parameters begin
         rx = 0,
         [
-            description = "Fixed x-length of the rod resolved w.r.t to body frame_a at phi = 0",
+            description = "Fixed x-length of the rod resolved w.r.t to body frame_a at phi = 0"
         ]
         ry = 0,
         [
-            description = "Fixed y-length of the rod resolved w.r.t to body frame_a at phi = 0",
+            description = "Fixed y-length of the rod resolved w.r.t to body frame_a at phi = 0"
         ]
     end
 
     begin
         R = [cos(frame_a.phi) -sin(frame_a.phi);
-            sin(frame_a.phi) cos(frame_a.phi)]
+             sin(frame_a.phi) cos(frame_a.phi)]
         r0 = R * [rx, ry]
     end
 
@@ -193,7 +193,7 @@ https://github.com/dzimmer/PlanarMechanics/blob/743462f58858a808202be93b70839146
         phi_rel0 = 0, [description = "Unstretched spring angle"]
         s_small = 1.e-10,
         [
-            description = "Prevent zero-division if distance between frame_a and frame_b is zero",
+            description = "Prevent zero-division if distance between frame_a and frame_b is zero"
         ]
     end
 
@@ -252,7 +252,7 @@ https://github.com/dzimmer/PlanarMechanics/blob/743462f58858a808202be93b70839146
         d = 1, [description = "damping constant"]
         s_small = 1.e-10,
         [
-            description = "Prevent zero-division if distance between frame_a and frame_b is zero",
+            description = "Prevent zero-division if distance between frame_a and frame_b is zero"
         ]
     end
 
@@ -333,7 +333,7 @@ https://github.com/dzimmer/PlanarMechanics/blob/743462f58858a808202be93b70839146
         phi_rel0 = 0, [description = "Unstretched spring angle"]
         s_small = 1.e-10,
         [
-            description = "Prevent zero-division if distance between frame_a and frame_b is zero",
+            description = "Prevent zero-division if distance between frame_a and frame_b is zero"
         ]
     end
 
