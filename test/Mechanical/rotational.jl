@@ -22,6 +22,23 @@ using OrdinaryDiffEq: ReturnCode.Success
         systems = [fixed, inertia1, inertia2, spring, damper])
     sys = structural_simplify(model)
 
+
+    @mtkmodel TwoInertia begin
+        @components begin
+            fixed = Fixed()
+            inertia1 = Inertia(J = 2) # this one is fixed
+            spring = Spring(c = 1e4)
+            damper = Damper(d = 10)
+            inertia2 = Inertia(J = 2, phi = pi / 2)
+        end
+        @equations begin
+            connect(fixed.flange, inertia1.flange_b)
+            connect(inertia1.flange_b, spring.flange_a, damper.flange_a)
+            connect(spring.flange_b, damper.flange_b, inertia2.flange_a)
+        end
+    end
+
+    @mtkbuild sys = TwoInertia()
     prob = ODEProblem(sys, Pair[], (0, 10.0))
     sol1 = solve(prob, Rodas4())
     @test SciMLBase.successful_retcode(sol1)

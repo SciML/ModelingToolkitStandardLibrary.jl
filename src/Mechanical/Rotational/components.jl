@@ -16,7 +16,7 @@ Flange fixed in housing at a given angle.
         flange = Flange()
     end
     @parameters begin
-        phi0 = 0.0, [description = "Fixed offset angle of flange"]
+        phi0, [description = "Fixed offset angle of flange", guess = 0.0]
     end
     @equations begin
         flange.phi ~ phi0
@@ -55,9 +55,9 @@ end
         @symcheck J > 0 || throw(ArgumentError("Expected `J` to be positive"))
     end
     @variables begin
-        phi(t) = 0.0, [description = "Absolute rotation angle"]
-        w(t) = 0.0, [description = "Absolute angular velocity"]
-        a(t) = 0.0, [description = "Absolute angular acceleration"]
+        phi(t), [description = "Absolute rotation angle", guess = 0.0]
+        w(t), [description = "Absolute angular velocity", guess = 0.0]
+        a(t), [description = "Absolute angular acceleration", guess = 0.0]
     end
     @equations begin
         phi ~ flange_a.phi
@@ -95,7 +95,7 @@ Linear 1D rotational spring
     end
     @parameters begin
         c, [description = "Spring constant"]
-        phi_rel0 = 0.0, [description = "Unstretched spring angle"]
+        phi_rel0, [description = "Unstretched spring angle", guess = 0.0]
     end
     @equations begin
         tau ~ c * (phi_rel - phi_rel0)
@@ -167,7 +167,7 @@ Linear 1D rotational spring and damper
     @parameters begin
         d, [description = "Damping constant"]
         c, [description = "Spring constant"]
-        phi_rel0 = 0.0, [description = "Unstretched spring angle"]
+        phi_rel0, [description = "Unstretched spring angle", guess = 0.0]
     end
     @equations begin
         tau_c ~ c * (phi_rel - phi_rel0)
@@ -206,8 +206,10 @@ This element characterizes any type of gear box which is fixed in the ground and
         ratio, [description = "Transmission ratio"]
     end
     @variables begin
-        phi_a(t) = 0.0, [description = "Relative angle between shaft a and the support"]
-        phi_b(t) = 0.0, [description = "Relative angle between shaft b and the support"]
+        phi_a(t),
+        [description = "Relative angle between shaft a and the support", guess = 0.0]
+        phi_b(t),
+        [description = "Relative angle between shaft b and the support", guess = 0.0]
     end
     @equations begin
         phi_a ~ flange_a.phi - phi_support

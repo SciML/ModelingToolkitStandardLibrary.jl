@@ -103,7 +103,7 @@ Forced movement of a flange according to a reference angular velocity signal
     @named partial_element = PartialElementaryOneFlangeAndSupport2(use_support = use_support)
     @unpack flange, phi_support = partial_element
     @named w_ref = RealInput()
-    @variables phi(t)=0.0 w(t)=0.0 a(t)=0.0
+    @variables phi(t) [guess = 0.0] w(t) [guess = 0.0] a(t) [guess = 0.0]
     eqs = [phi ~ flange.phi - phi_support
            D(phi) ~ w]
     if exact
