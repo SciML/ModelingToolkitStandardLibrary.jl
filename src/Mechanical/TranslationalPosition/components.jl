@@ -65,7 +65,7 @@ end
 
 const REL = Val(:relative)
 @component function Spring(::Val{:relative}; name, k, va = 0.0, vb = 0.0,
-    delta_s = 0, flange_a__s = 0, flange_b__s = 0)
+        delta_s = 0, flange_a__s = 0, flange_b__s = 0)
     pars = @parameters begin
         k = k
     end
@@ -80,19 +80,22 @@ const REL = Val(:relative)
     @named flange_b = Flange()
 
     eqs = [D(flange_a.s) ~ va
-        D(flange_b.s) ~ vb
-        D(delta_s) ~ va - vb
-        f ~ k * delta_s
-        flange_a.f ~ +f
-        flange_b.f ~ -f]
+           D(flange_b.s) ~ vb
+           D(delta_s) ~ va - vb
+           f ~ k * delta_s
+           flange_a.f ~ +f
+           flange_b.f ~ -f]
 
-    return compose(ODESystem(eqs, t, vars, pars; name = name,
+    return compose(
+        ODESystem(eqs, t, vars, pars; name = name,
             defaults = [
                 flange_a.s => flange_a__s,
                 flange_b.s => flange_b__s,
                 flange_a.f => +delta_s * k,
-                flange_b.f => -delta_s * k,
-            ]), flange_a, flange_b)
+                flange_b.f => -delta_s * k
+            ]),
+        flange_a,
+        flange_b)
 end
 
 const ABS = Val(:absolute)
@@ -119,8 +122,8 @@ function Spring(; name, k, flange_a__s = 0, flange_b__s = 0, l = 0)
 end #default function
 
 @component function Spring(::Val{:absolute};
-    name, k, flange_a__s = 0,
-    flange_b__s = 0, l = 0)
+        name, k, flange_a__s = 0,
+        flange_b__s = 0, l = 0)
     pars = @parameters begin
         k = k
         l = l
@@ -133,10 +136,10 @@ end #default function
     @named flange_b = Flange(; s = flange_a__s, f = -k * (flange_a__s - flange_b__s - l))
 
     eqs = [
-    #    delta_s ~ flange_a.s - flange_b.s
-        f ~ k * (flange_a.s - flange_b.s - l) #delta_s
-        flange_a.f ~ +f
-        flange_b.f ~ -f]
+           #    delta_s ~ flange_a.s - flange_b.s
+           f ~ k * (flange_a.s - flange_b.s - l) #delta_s
+           flange_a.f ~ +f
+           flange_b.f ~ -f]
     return compose(ODESystem(eqs, t, vars, pars; name = name), flange_a, flange_b)
 end
 

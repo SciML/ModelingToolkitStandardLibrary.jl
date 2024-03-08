@@ -14,12 +14,10 @@ The `ModelingToolkitStandardLibrary.Blocks.TimeVaryingFunction` component is eas
 
 ```julia
 using ModelingToolkit
+using ModelingToolkit: t_nounits as t, D_nounits as D
 using ModelingToolkitStandardLibrary.Blocks
 using DataInterpolations
 using OrdinaryDiffEq
-
-@parameters t
-D = Differential(t)
 
 function System(f; name)
     src = TimeVaryingFunction(f)
@@ -28,9 +26,9 @@ function System(f; name)
     pars = @parameters m=10 k=1000 d=1
 
     eqs = [f ~ src.output.u
-        ddx * 10 ~ k * x + d * dx + f
-        D(x) ~ dx
-        D(dx) ~ ddx]
+           ddx * 10 ~ k * x + d * dx + f
+           D(x) ~ dx
+           D(dx) ~ ddx]
 
     ODESystem(eqs, t, vars, pars; systems = [src], name)
 end
@@ -74,9 +72,9 @@ function System(; name)
     pars = @parameters m=10 k=1000 d=1
 
     eqs = [f ~ get_sampled_data(t)
-        ddx * 10 ~ k * x + d * dx + f
-        D(x) ~ dx
-        D(dx) ~ ddx]
+           ddx * 10 ~ k * x + d * dx + f
+           D(x) ~ dx
+           D(dx) ~ ddx]
 
     ODESystem(eqs, t, vars, pars; name)
 end
@@ -115,9 +113,9 @@ function System(; name)
     pars = @parameters m=10 k=1000 d=1
 
     eqs = [f ~ src.output.u
-        ddx * 10 ~ k * x + d * dx + f
-        D(x) ~ dx
-        D(dx) ~ ddx]
+           ddx * 10 ~ k * x + d * dx + f
+           D(x) ~ dx
+           D(dx) ~ ddx]
 
     ODESystem(eqs, t, vars, pars; systems = [src], name)
 end

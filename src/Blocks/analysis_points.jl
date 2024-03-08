@@ -5,8 +5,18 @@ Base.@kwdef mutable struct AnalysisPoint
     out = nothing
     name::Symbol = :nothing
 end
+Base.broadcastable(x::AnalysisPoint) = Ref(x)
+if Base.isdefined(ModelingToolkit, :isconnection)
+    ModelingToolkit.isconnection(::AnalysisPoint) = true
+end
 
 Base.nameof(ap::AnalysisPoint) = ap.name
+function Base.hash(ap::AnalysisPoint, seed::UInt)
+    h1 = hash(ap.in, seed)
+    h2 = hash(ap.out, h1)
+    h3 = hash(ap.name, h2)
+    h3 ⊻ (0xd29cdc51aa6562d4 % UInt)
+end
 
 function ap_var(sys)
     if hasproperty(sys, :u)
@@ -255,7 +265,7 @@ end
 const SymOrVec = Union{Symbol, Vector{Symbol}}
 
 function get_sensitivity_function(sys, ap_name::SymOrVec; loop_openings = nothing,
-    kwargs...)
+        kwargs...)
     find = namespaced_ap_match(ap_name, loop_openings)
     t = get_iv(sys)
     aps = []
@@ -284,7 +294,7 @@ function get_sensitivity_function(sys, ap_name::SymOrVec; loop_openings = nothin
 end
 
 function get_comp_sensitivity_function(sys, ap_name::SymOrVec; loop_openings = nothing,
-    kwargs...)
+        kwargs...)
     find = namespaced_ap_match(ap_name, loop_openings)
     t = get_iv(sys)
     aps = []
@@ -313,7 +323,7 @@ function get_comp_sensitivity_function(sys, ap_name::SymOrVec; loop_openings = n
 end
 
 function get_looptransfer_function(sys, ap_name::SymOrVec; loop_openings = nothing,
-    kwargs...)
+        kwargs...)
     find = namespaced_ap_match(ap_name, loop_openings)
     t = get_iv(sys)
     aps = []
@@ -380,9 +390,9 @@ function open_loop(sys, ap_name::Symbol; ground_input = false, kwargs...)
 end
 
 function ModelingToolkit.linearization_function(sys::ModelingToolkit.AbstractSystem,
-    input_name::SymOrVec, output_name;
-    loop_openings = nothing,
-    kwargs...)
+        input_name::SymOrVec, output_name;
+        loop_openings = nothing,
+        kwargs...)
     t = get_iv(sys)
     @variables u(t)=0 [input = true]
     names = [input_name;]
@@ -417,7 +427,7 @@ function ModelingToolkit.linearization_function(sys::ModelingToolkit.AbstractSys
             push!(multiplicities_y, length(yi))
             append!(y, yi)
             [ap_var(ap.in) .~ yi;
-                ap_var(ap.out) .~ ap_var(ap.in)], yi
+             ap_var(ap.out) .~ ap_var(ap.in)], yi
         else # loop opening
             [ap_var(ap.out) .~ 0;], []
         end
@@ -444,19 +454,19 @@ for f in [:get_sensitivity, :get_comp_sensitivity, :get_looptransfer, :open_loop
 end
 
 function ModelingToolkit.linearize(sys, input::AnalysisPoint, output::AnalysisPoint;
-    kwargs...)
+        kwargs...)
     ModelingToolkit.linearize(sys, nameof(input), nameof(output); kwargs...)
 end
 
 # Methods above are implemented in terms of linearization_function, the method below creates wrappers for linearize
 for f in [:get_sensitivity, :get_comp_sensitivity, :get_looptransfer]
     @eval function $f(sys,
-        ap,
-        args...;
-        loop_openings = nothing,
-        op = Dict(),
-        p = DiffEqBase.NullParameters(),
-        kwargs...)
+            ap,
+            args...;
+            loop_openings = nothing,
+            op = Dict(),
+            p = DiffEqBase.NullParameters(),
+            kwargs...)
         lin_fun, ssys = $(Symbol(string(f) * "_function"))(sys, ap, args...; op, p,
             loop_openings,
             kwargs...)
@@ -472,7 +482,7 @@ Linearize a system between two analysis points. To get a loop-transfer function,
 The output is allowed to be either an analysis-point name, or a vector of symbolic variables like the standard interface to `linearize`. The input must be an analysis-point name.
 """
 function ModelingToolkit.linearize(sys, input_name::SymOrVec, output_name;
-    loop_openings = nothing, kwargs...)
+        loop_openings = nothing, kwargs...)
     lin_fun, ssys = linearization_function(sys, input_name, output_name; loop_openings,
         kwargs...)
     ModelingToolkit.linearize(ssys, lin_fun; kwargs...), ssys

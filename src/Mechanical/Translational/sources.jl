@@ -38,7 +38,7 @@ Linear 1D position input source.  Set `solves_force=false` to force input force 
     end
 
     eqs = [
-        D(s.u) ~ flange.v,
+        D(s.u) ~ flange.v
     ]
 
     !solves_force && push!(eqs, 0 ~ flange.f)
@@ -64,7 +64,7 @@ Linear 1D position input source.  Set `solves_force=false` to force input force 
     end
 
     eqs = [
-        v.u ~ flange.v,
+        v.u ~ flange.v
     ]
 
     !solves_force && push!(eqs, 0 ~ flange.f)
@@ -91,7 +91,7 @@ Linear 1D position input source.  Set `solves_force=false` to force input force 
     vars = @variables v(t) = 0
 
     eqs = [v ~ flange.v
-        D(v) ~ a.u]
+           D(v) ~ a.u]
 
     !solves_force && push!(eqs, 0 ~ flange.f)
 

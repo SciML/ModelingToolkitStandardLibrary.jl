@@ -4,10 +4,8 @@ Library to model 1-dimensional, translational mechanical components.
 module TranslationalModelica
 
 using ModelingToolkit, Symbolics, IfElse
+using ModelingToolkit: t_nounits as t, D_nounits as D
 using ...Blocks: RealInput, RealOutput
-
-@parameters t
-D = Differential(t)
 
 export Flange, Support
 include("utils.jl")

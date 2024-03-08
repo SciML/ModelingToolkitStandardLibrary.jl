@@ -2,26 +2,25 @@ using Test, LinearAlgebra
 using ModelingToolkit
 using ModelingToolkitStandardLibrary.Blocks
 using OrdinaryDiffEq
-using ModelingToolkit: get_eqs, vars, @set!, get_iv
+using ModelingToolkit: get_eqs, vars, @set!, t_nounits as t
 using ControlSystemsBase
 
 @named P = FirstOrder(k = 1, T = 1)
 @named C = Gain(; k = -1)
-t = ModelingToolkit.get_iv(P)
 
 @test_logs (:warn,) (:warn,) connect(P.input, :bad_connection, C.output)
 
 # Test with explicitly created AnalysisPoint
 ap = AnalysisPoint(:plant_input)
 eqs = [connect(P.output, C.input)
-    connect(C.output, ap, P.input)]
+       connect(C.output, ap, P.input)]
 sys = ODESystem(eqs, t, systems = [P, C], name = :hej)
 
 ssys = structural_simplify(sys)
 prob = ODEProblem(ssys, [P.x => 1], (0, 10))
 sol = solve(prob, Rodas5())
-@test norm(sol[1]) >= 1
-@test norm(sol[end]) < 1e-6 # This fails without the feedback through C
+@test norm(sol.u[1]) >= 1
+@test norm(sol.u[end]) < 1e-6 # This fails without the feedback through C
 # plot(sol)
 
 matrices, _ = get_sensitivity(sys, ap)
@@ -45,7 +44,7 @@ T = comp_sensitivity(P, C) # or feedback(P*C)
 
 # Test with automatically created analysis point
 eqs = [connect(P.output, C.input)
-    connect(C.output, :plant_input, P.input)]
+       connect(C.output, :plant_input, P.input)]
 sys = ODESystem(eqs, t, systems = [P, C], name = :hej)
 
 matrices, _ = get_sensitivity(sys, :plant_input)
@@ -84,7 +83,7 @@ matrices, _ = linearize(open_sys, [u], [y])
 
 # Test with more than one AnalysisPoint
 eqs = [connect(P.output, :plant_output, C.input)
-    connect(C.output, :plant_input, P.input)]
+       connect(C.output, :plant_input, P.input)]
 sys = ODESystem(eqs, t, systems = [P, C], name = :hej)
 
 matrices, _ = get_sensitivity(sys, :plant_input)
@@ -108,11 +107,10 @@ matrices2, _ = linearize(sys, :plant_input, [P.output.u])
 @named P = FirstOrder(k = 1, T = 1)
 @named C = Gain(; k = 1)
 @named add = Blocks.Add(k2 = -1)
-t = ModelingToolkit.get_iv(P)
 
 eqs = [connect(P.output, :plant_output, add.input2)
-    connect(add.output, C.input)
-    connect(C.output, :plant_input, P.input)]
+       connect(add.output, C.input)
+       connect(C.output, :plant_input, P.input)]
 
 # eqs = [connect(P.output, add.input2)
 #        connect(add.output, C.input)
@@ -124,7 +122,7 @@ sys_inner = ODESystem(eqs, t, systems = [P, C, add], name = :inner)
 @named F = FirstOrder(k = 1, T = 3)
 
 eqs = [connect(r.output, F.input)
-    connect(F.output, sys_inner.add.input1)]
+       connect(F.output, sys_inner.add.input1)]
 sys_outer = ODESystem(eqs, t, systems = [F, sys_inner, r], name = :outer)
 
 # test first that the structural_simplify works correctly
@@ -163,8 +161,8 @@ c = 10   # Damping coefficient
 
 function SystemModel(u = nothing; name = :model)
     eqs = [connect(torque.flange, inertia1.flange_a)
-        connect(inertia1.flange_b, spring.flange_a, damper.flange_a)
-        connect(inertia2.flange_a, spring.flange_b, damper.flange_b)]
+           connect(inertia1.flange_b, spring.flange_a, damper.flange_a)
+           connect(inertia2.flange_a, spring.flange_b, damper.flange_b)]
     if u !== nothing
         push!(eqs, connect(torque.tau, u.output))
         return @named model = ODESystem(eqs, t;
@@ -174,7 +172,7 @@ function SystemModel(u = nothing; name = :model)
                 inertia2,
                 spring,
                 damper,
-                u,
+                u
             ])
     end
     ODESystem(eqs, t; systems = [torque, inertia1, inertia2, spring, damper], name)
@@ -183,7 +181,7 @@ function AngleSensor(; name)
     @named flange = Flange()
     @named phi = RealOutput()
     eqs = [phi.u ~ flange.phi
-        flange.tau ~ 0]
+           flange.tau ~ 0]
     return ODESystem(eqs, t, [], []; name = name, systems = [flange, phi])
 end
 
@@ -195,17 +193,17 @@ model = SystemModel()
 @named er = Add(k2 = -1)
 
 connections = [connect(r.output, :r, filt.input)
-    connect(filt.output, er.input1)
-    connect(pid.ctr_output, :u, model.torque.tau)
-    connect(model.inertia2.flange_b, sensor.flange)
-    connect(sensor.phi, :y, er.input2)
-    connect(er.output, :e, pid.err_input)]
+               connect(filt.output, er.input1)
+               connect(pid.ctr_output, :u, model.torque.tau)
+               connect(model.inertia2.flange_b, sensor.flange)
+               connect(sensor.phi, :y, er.input2)
+               connect(er.output, :e, pid.err_input)]
 
 closed_loop = ODESystem(connections, t, systems = [model, pid, filt, sensor, r, er],
     name = :closed_loop)
 
 prob = ODEProblem(structural_simplify(closed_loop), Pair[], (0.0, 4.0))
-sol = solve(prob, Rodas4())
+sol = solve(prob, Rodas5P(), reltol = 1e-6, abstol = 1e-9)
 # plot(
 #     plot(sol, vars = [filt.y, model.inertia1.phi, model.inertia2.phi]),
 #     plot(sol, vars = [pid.ctr_output.u], title = "Control signal"),
@@ -217,7 +215,7 @@ lsys = ss(matrices...) |> sminreal
 @test lsys.nx == 8
 
 stepres = ControlSystemsBase.step(c2d(lsys, 0.001), 4)
-@test stepres.y[:]≈sol(0:0.001:4, idxs = model.inertia2.phi) rtol=1e-4
+@test Array(stepres.y[:])≈Array(sol(0:0.001:4, idxs = model.inertia2.phi)) rtol=1e-4
 
 # plot(stepres, plotx=true, ploty=true, size=(800, 1200), leftmargin=5Plots.mm)
 # plot!(sol, vars = [model.inertia2.phi], sp=1, l=:dash)
@@ -231,25 +229,30 @@ Si = ss(matrices...)
 @test tf(So) ≈ tf(Si)
 
 ## A simple multi-level system with loop openings
-@parameters t
 @named P_inner = FirstOrder(k = 1, T = 1)
 @named feedback = Feedback()
 @named ref = Step()
-@named sys_inner = ODESystem([connect(P_inner.output, :y, feedback.input2)
-        connect(feedback.output, :u, P_inner.input)
-        connect(ref.output, :r, feedback.input1)], t,
+@named sys_inner = ODESystem(
+    [connect(P_inner.output, :y, feedback.input2)
+     connect(feedback.output, :u, P_inner.input)
+     connect(ref.output, :r, feedback.input1)],
+    t,
     systems = [P_inner, feedback, ref])
 
 Sinner = sminreal(ss(get_sensitivity(sys_inner, :u)[1]...))
 
-@named sys_inner = ODESystem([connect(P_inner.output, :y, feedback.input2)
-        connect(feedback.output, :u, P_inner.input)], t,
+@named sys_inner = ODESystem(
+    [connect(P_inner.output, :y, feedback.input2)
+     connect(feedback.output, :u, P_inner.input)],
+    t,
     systems = [P_inner, feedback])
 
 @named P_outer = FirstOrder(k = rand(), T = rand())
 
-@named sys_outer = ODESystem([connect(sys_inner.P_inner.output, :y2, P_outer.input)
-        connect(P_outer.output, :u2, sys_inner.feedback.input1)], t,
+@named sys_outer = ODESystem(
+    [connect(sys_inner.P_inner.output, :y2, P_outer.input)
+     connect(P_outer.output, :u2, sys_inner.feedback.input1)],
+    t,
     systems = [P_outer, sys_inner])
 
 Souter = sminreal(ss(get_sensitivity(sys_outer, :sys_inner_u)[1]...))
@@ -278,7 +281,7 @@ D = [0.0 0.0; 0.0 0.0]
 Kss = CS.ss(A, B, C, D)
 
 eqs = [connect(P.output, :plant_output, K.input)
-    connect(K.output, :plant_input, P.input)]
+       connect(K.output, :plant_input, P.input)]
 sys = ODESystem(eqs, t, systems = [P, K], name = :hej)
 
 matrices, _ = Blocks.get_sensitivity(sys, :plant_input)
@@ -305,11 +308,10 @@ G = CS.feedback(Pss, Kss, pos_feedback = true)
 @named P = FirstOrder(k = 1, T = 1)
 @named C = Gain(; k = 1)
 @named add = Blocks.Add(k2 = -1)
-t = ModelingToolkit.get_iv(P)
 
 eqs = [connect(P.output, :plant_output, add.input2)
-    connect(add.output, C.input)
-    connect(C.output, :plant_input, P.input)]
+       connect(add.output, C.input)
+       connect(C.output, :plant_input, P.input)]
 
 sys_inner = ODESystem(eqs, t, systems = [P, C, add], name = :inner)
 
@@ -317,7 +319,7 @@ sys_inner = ODESystem(eqs, t, systems = [P, C, add], name = :inner)
 @named F = FirstOrder(k = 1, T = 3)
 
 eqs = [connect(r.output, F.input)
-    connect(F.output, sys_inner.add.input1)]
+       connect(F.output, sys_inner.add.input1)]
 sys_outer = ODESystem(eqs, t, systems = [F, sys_inner, r], name = :outer)
 
 matrices, _ = get_sensitivity(sys_outer, [:inner_plant_input, :inner_plant_output])

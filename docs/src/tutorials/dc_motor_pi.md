@@ -14,13 +14,12 @@ First, the needed packages are imported and the parameters of the model defined.
 
 ```@example dc_motor_pi
 using ModelingToolkit
+using ModelingToolkit: t_nounits as t
 using ModelingToolkitStandardLibrary.Electrical
 using ModelingToolkitStandardLibrary.Mechanical.Rotational
 using ModelingToolkitStandardLibrary.Blocks
 using OrdinaryDiffEq
 using Plots
-
-@parameters t
 
 R = 0.5 # [Ohm] armature resistance
 L = 4.5e-3 # [H] armature inductance
@@ -50,18 +49,18 @@ The actual model can now be composed.
 @named speed_sensor = SpeedSensor()
 
 connections = [connect(fixed.flange, emf.support, friction.flange_b)
-    connect(emf.flange, friction.flange_a, inertia.flange_a)
-    connect(inertia.flange_b, load.flange)
-    connect(inertia.flange_b, speed_sensor.flange)
-    connect(load_step.output, load.tau)
-    connect(ref.output, feedback.input1)
-    connect(speed_sensor.w, :y, feedback.input2)
-    connect(feedback.output, pi_controller.err_input)
-    connect(pi_controller.ctr_output, :u, source.V)
-    connect(source.p, R1.p)
-    connect(R1.n, L1.p)
-    connect(L1.n, emf.p)
-    connect(emf.n, source.n, ground.g)]
+               connect(emf.flange, friction.flange_a, inertia.flange_a)
+               connect(inertia.flange_b, load.flange)
+               connect(inertia.flange_b, speed_sensor.flange)
+               connect(load_step.output, load.tau)
+               connect(ref.output, feedback.input1)
+               connect(speed_sensor.w, :y, feedback.input2)
+               connect(feedback.output, pi_controller.err_input)
+               connect(pi_controller.ctr_output, :u, source.V)
+               connect(source.p, R1.p)
+               connect(R1.n, L1.p)
+               connect(L1.n, emf.p)
+               connect(emf.n, source.n, ground.g)]
 
 @named model = ODESystem(connections, t,
     systems = [
@@ -78,7 +77,7 @@ connections = [connect(fixed.flange, emf.support, friction.flange_b)
         load_step,
         inertia,
         friction,
-        speed_sensor,
+        speed_sensor
     ])
 nothing # hide
 ```

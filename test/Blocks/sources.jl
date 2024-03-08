@@ -1,18 +1,16 @@
 using ModelingToolkit, ModelingToolkitStandardLibrary, OrdinaryDiffEq
 using ModelingToolkitStandardLibrary.Blocks
+using ModelingToolkit: t_nounits as t, D_nounits as D
 using ModelingToolkitStandardLibrary.Blocks: smooth_sin, smooth_cos, smooth_damped_sin,
-    smooth_square, smooth_step, smooth_ramp,
-    smooth_triangular, triangular, square
+                                             smooth_square, smooth_step, smooth_ramp,
+                                             smooth_triangular, triangular, square
 using OrdinaryDiffEq: ReturnCode.Success
-
-@parameters t
-D = Differential(t)
 
 @testset "Constant" begin
     @named src = Constant(k = 2)
     @named int = Integrator()
     @named iosys = ODESystem([
-            connect(src.output, int.input),
+            connect(src.output, int.input)
         ],
         t,
         systems = [int, src])
@@ -30,10 +28,11 @@ end
     vars = @variables y(t)=1 dy(t)=0 ddy(t)=0
     @named src = TimeVaryingFunction(f)
     @named int = Integrator()
-    @named iosys = ODESystem([y ~ src.output.u
-            D(y) ~ dy
-            D(dy) ~ ddy
-            connect(src.output, int.input)],
+    @named iosys = ODESystem(
+        [y ~ src.output.u
+         D(y) ~ dy
+         D(dy) ~ ddy
+         connect(src.output, int.input)],
         t,
         systems = [int, src])
     sys = structural_simplify(iosys)
@@ -63,7 +62,7 @@ end
     @named src = Sine(frequency = frequency, amplitude = amplitude, phase = phase,
         offset = offset, start_time = start_time)
     @named iosys = ODESystem([
-            connect(src.output, int.input),
+            connect(src.output, int.input)
         ],
         t,
         systems = [int, src])
@@ -82,7 +81,7 @@ end
         start_time = start_time,
         smooth = true)
     @named smooth_iosys = ODESystem([
-            connect(smooth_src.output, int.input),
+            connect(smooth_src.output, int.input)
         ],
         t,
         systems = [int, smooth_src])
@@ -92,7 +91,8 @@ end
     smooth_sol = solve(smooth_prob, Rodas4())
 
     @test sol.retcode == Success
-    @test smooth_sol[smooth_src.output.u]≈smooth_sin.(smooth_sol.t, δ, frequency, amplitude,
+    @test smooth_sol[smooth_src.output.u]≈smooth_sin.(
+        smooth_sol.t, δ, frequency, amplitude,
         phase, offset, start_time) atol=1e-3
 end
 
@@ -117,7 +117,7 @@ end
         start_time = start_time,
         smooth = false)
     @named iosys = ODESystem([
-            connect(src.output, int.input),
+            connect(src.output, int.input)
         ],
         t,
         systems = [int, src])
@@ -135,7 +135,7 @@ end
         start_time = start_time,
         smooth = true)
     @named smooth_iosys = ODESystem([
-            connect(smooth_src.output, int.input),
+            connect(smooth_src.output, int.input)
         ],
         t,
         systems = [int, smooth_src])
@@ -145,7 +145,8 @@ end
     smooth_sol = solve(smooth_prob, Rodas4())
 
     @test smooth_sol.retcode == Success
-    @test smooth_sol[smooth_src.output.u]≈smooth_cos.(smooth_sol.t, δ, frequency, amplitude,
+    @test smooth_sol[smooth_src.output.u]≈smooth_cos.(
+        smooth_sol.t, δ, frequency, amplitude,
         phase, offset, start_time) atol=1e-3
 end
 
@@ -157,7 +158,7 @@ end
     @named src = ContinuousClock(offset = offset, start_time = start_time)
     @named int = Integrator()
     @named iosys = ODESystem([
-            connect(src.output, int.input),
+            connect(src.output, int.input)
         ],
         t,
         systems = [int, src])
@@ -183,7 +184,7 @@ end
     @named src = Ramp(offset = offset, height = height, duration = duration,
         start_time = start_time)
     @named iosys = ODESystem([
-            connect(src.output, int.input),
+            connect(src.output, int.input)
         ],
         t,
         systems = [int, src])
@@ -198,7 +199,7 @@ end
     @named smooth_src = Ramp(offset = offset, height = height, duration = duration,
         start_time = start_time, smooth = true)
     @named smooth_iosys = ODESystem([
-            connect(smooth_src.output, int.input),
+            connect(smooth_src.output, int.input)
         ],
         t,
         systems = [int, smooth_src])
@@ -221,7 +222,7 @@ end
     @named src = Step(offset = offset, height = height, start_time = start_time,
         smooth = false)
     @named iosys = ODESystem([
-            connect(src.output, int.input),
+            connect(src.output, int.input)
         ],
         t,
         systems = [int, src])
@@ -238,7 +239,7 @@ end
     @named src = Step(offset = offset, height = height, start_time = start_time,
         duration = duration, smooth = false)
     @named iosys = ODESystem([
-            connect(src.output, int.input),
+            connect(src.output, int.input)
         ],
         t,
         systems = [int, src])
@@ -254,7 +255,7 @@ end
     @named smooth_src = Step(offset = offset, height = height, start_time = start_time,
         smooth = true)
     @named smooth_iosys = ODESystem([
-            connect(smooth_src.output, int.input),
+            connect(smooth_src.output, int.input)
         ],
         t,
         systems = [int, smooth_src])
@@ -271,7 +272,7 @@ end
     @named smooth_src = Step(offset = offset, height = height, start_time = start_time,
         smooth = true, duration = duration)
     @named smooth_iosys = ODESystem([
-            connect(smooth_src.output, int.input),
+            connect(smooth_src.output, int.input)
         ],
         t,
         systems = [int, smooth_src])
@@ -297,7 +298,7 @@ end
     @named src = Square(frequency = frequency, amplitude = amplitude,
         offset = offset, start_time = start_time)
     @named iosys = ODESystem([
-            connect(src.output, int.input),
+            connect(src.output, int.input)
         ],
         t,
         systems = [int, src])
@@ -312,7 +313,7 @@ end
     @named smooth_src = Square(frequency = frequency, amplitude = amplitude,
         offset = offset, start_time = start_time, smooth = true)
     @named smooth_iosys = ODESystem([
-            connect(smooth_src.output, int.input),
+            connect(smooth_src.output, int.input)
         ],
         t,
         systems = [int, smooth_src])
@@ -337,7 +338,7 @@ end
     @named src = Triangular(frequency = frequency, amplitude = amplitude,
         offset = offset, start_time = start_time)
     @named iosys = ODESystem([
-            connect(src.output, int.input),
+            connect(src.output, int.input)
         ],
         t,
         systems = [int, src])
@@ -352,7 +353,7 @@ end
     @named smooth_src = Triangular(frequency = frequency, amplitude = amplitude,
         offset = offset, start_time = start_time, smooth = true)
     @named smooth_iosys = ODESystem([
-            connect(smooth_src.output, int.input),
+            connect(smooth_src.output, int.input)
         ],
         t,
         systems = [int, smooth_src])
@@ -379,7 +380,7 @@ end
         phase = phase, offset = offset, start_time = start_time)
     @named int = Integrator()
     @named iosys = ODESystem([
-            connect(src.output, int.input),
+            connect(src.output, int.input)
         ],
         t,
         systems = [int, src])
@@ -395,7 +396,7 @@ end
         damping = damping, phase = phase, offset = offset,
         start_time = start_time, smooth = true)
     @named smooth_iosys = ODESystem([
-            connect(smooth_src.output, int.input),
+            connect(smooth_src.output, int.input)
         ],
         t,
         systems = [int, smooth_src])
@@ -421,10 +422,11 @@ end
         vars = @variables y(t)=1 dy(t)=0 ddy(t)=0
         @named src = SampledData(Float64)
         @named int = Integrator()
-        @named iosys = ODESystem([y ~ src.output.u
-                D(y) ~ dy
-                D(dy) ~ ddy
-                connect(src.output, int.input)],
+        @named iosys = ODESystem(
+            [y ~ src.output.u
+             D(y) ~ dy
+             D(dy) ~ ddy
+             connect(src.output, int.input)],
             t,
             systems = [int, src])
         sys = structural_simplify(iosys)
@@ -450,10 +452,11 @@ end
         vars = @variables y(t)=1 dy(t)=0 ddy(t)=0
         @named src = SampledData(dt)
         @named int = Integrator()
-        @named iosys = ODESystem([y ~ src.output.u
-                D(y) ~ dy
-                D(dy) ~ ddy
-                connect(src.output, int.input)],
+        @named iosys = ODESystem(
+            [y ~ src.output.u
+             D(y) ~ dy
+             D(dy) ~ ddy
+             connect(src.output, int.input)],
             t,
             systems = [int, src])
         sys = structural_simplify(iosys)

@@ -21,7 +21,7 @@ using OrdinaryDiffEq: ReturnCode.Success
     @test zero(Logic) == zero(U) == F0
     @test one(Logic) == one(U) == F1
     @test ones(Logic, 2, 2) == [F1 F1
-        F1 F1]
+                                F1 F1]
 
     # Logic vectors
     u_logic = StdULogicVector([U, W, X, 1])
@@ -41,7 +41,7 @@ using OrdinaryDiffEq: ReturnCode.Success
 
     # Logic vector helpers
     test_logic_matrix = StdULogicVector([U F0
-        F1 X])
+                                         F1 X])
     test_logic_vector = StdLogicVector([U, F0, F1, X])
 
     size(test_logic_matrix) == (2, 2)
@@ -95,8 +95,6 @@ end
 end
 
 #=
-
-@parameters t
 
 @named set1 = Set()
 @named reset1 = Reset()

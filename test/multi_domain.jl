@@ -5,11 +5,9 @@ using ModelingToolkitStandardLibrary.Blocks
 using ModelingToolkitStandardLibrary.Thermal
 import ModelingToolkitStandardLibrary
 using ModelingToolkit, OrdinaryDiffEq, Test
+using ModelingToolkit: t_nounits as t, D_nounits as D
 using OrdinaryDiffEq: ReturnCode.Success
 # using Plots
-
-@parameters t
-D = Differential(t)
 
 @testset "DC motor" begin
     R = 0.5
@@ -32,14 +30,14 @@ D = Differential(t)
     @named friction = Damper(d = f)
 
     connections = [connect(fixed.flange, emf.support, friction.flange_b)
-        connect(emf.flange, friction.flange_a, inertia.flange_a)
-        connect(inertia.flange_b, load.flange)
-        connect(load_step.output, load.tau)
-        connect(voltage_step.output, source.V)
-        connect(source.p, R1.p)
-        connect(R1.n, L1.p)
-        connect(L1.n, emf.p)
-        connect(emf.n, source.n, ground.g)]
+                   connect(emf.flange, friction.flange_a, inertia.flange_a)
+                   connect(inertia.flange_b, load.flange)
+                   connect(load_step.output, load.tau)
+                   connect(voltage_step.output, source.V)
+                   connect(source.p, R1.p)
+                   connect(R1.n, L1.p)
+                   connect(L1.n, emf.p)
+                   connect(emf.n, source.n, ground.g)]
 
     @named model = ODESystem(connections, t,
         systems = [
@@ -53,7 +51,7 @@ D = Differential(t)
             load,
             load_step,
             inertia,
-            friction,
+            friction
         ])
     sys = structural_simplify(model)
 
@@ -72,7 +70,7 @@ D = Differential(t)
     @test sol[inertia.w][idx_t]≈(dc_gain * [V_step; -tau_L_step])[2] rtol=1e-3
     @test sol[emf.i][idx_t]≈(dc_gain * [V_step; -tau_L_step])[1] rtol=1e-3
 
-    prob = DAEProblem(sys, D.(states(sys)) .=> 0.0, Pair[], (0, 6.0))
+    prob = DAEProblem(sys, D.(unknowns(sys)) .=> 0.0, Pair[], (0, 6.0))
     sol = solve(prob, DFBDF())
     @test sol.retcode == Success
     # EMF equations
@@ -115,15 +113,15 @@ end
     @named speed_sensor = SpeedSensor()
 
     connections = [connect(fixed.flange, emf.support, friction.flange_b)
-        connect(emf.flange, friction.flange_a, inertia.flange_a)
-        connect(inertia.flange_b, load.flange)
-        connect(inertia.flange_b, speed_sensor.flange)
-        connect(load_step.output, load.tau)
-        connect(voltage_step.output, source.V)
-        connect(source.p, R1.p)
-        connect(R1.n, L1.p)
-        connect(L1.n, emf.p)
-        connect(emf.n, source.n, ground.g)]
+                   connect(emf.flange, friction.flange_a, inertia.flange_a)
+                   connect(inertia.flange_b, load.flange)
+                   connect(inertia.flange_b, speed_sensor.flange)
+                   connect(load_step.output, load.tau)
+                   connect(voltage_step.output, source.V)
+                   connect(source.p, R1.p)
+                   connect(R1.n, L1.p)
+                   connect(L1.n, emf.p)
+                   connect(emf.n, source.n, ground.g)]
 
     @named model = ODESystem(connections, t,
         systems = [
@@ -138,7 +136,7 @@ end
             load_step,
             inertia,
             friction,
-            speed_sensor,
+            speed_sensor
         ])
     sys = structural_simplify(model)
 
@@ -161,7 +159,7 @@ end
 
     @test all(sol[inertia.w] .== sol[speed_sensor.w.u])
 
-    prob = DAEProblem(sys, D.(states(sys)) .=> 0.0, Pair[], (0, 6.0))
+    prob = DAEProblem(sys, D.(unknowns(sys)) .=> 0.0, Pair[], (0, 6.0))
     sol = solve(prob, DFBDF())
 
     @test sol.retcode == Success
@@ -188,10 +186,10 @@ end
     @named thermal_conductor = ThermalConductor(G = 50)
     @named env = FixedTemperature(T = 273.15 + 20)
     connections = [connect(source.n, ground.g, heating_resistor.n)
-        connect(source.p, heating_resistor.p)
-        connect(voltage_sine.output, source.V)
-        connect(heating_resistor.heat_port, thermal_conductor.port_a)
-        connect(thermal_conductor.port_b, env.port)]
+                   connect(source.p, heating_resistor.p)
+                   connect(voltage_sine.output, source.V)
+                   connect(heating_resistor.heat_port, thermal_conductor.port_a)
+                   connect(thermal_conductor.port_b, env.port)]
 
     @named model = ODESystem(connections, t,
         systems = [
@@ -200,7 +198,7 @@ end
             source,
             heating_resistor,
             thermal_conductor,
-            env,
+            env
         ])
     sys = structural_simplify(model)
 
