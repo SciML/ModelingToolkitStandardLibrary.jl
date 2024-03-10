@@ -25,29 +25,23 @@ using OrdinaryDiffEq: ReturnCode.Success
 
     @mtkbuild sys = TwoInertia()
 
-    @named model = ODESystem(connections, t,
-        systems = [fixed, inertia1, inertia2, spring, damper])
-    sys = structural_simplify(model)
-
-    prob = ODEProblem(sys, [D(D(sys.inertia2.phi)) => 0.0], (0, 10.0))
+    prob = ODEProblem(sys, [D(D(sys.inertia2.phi)) => 0], (0, 10.0))
     sol1 = solve(prob, Rodas4())
     @test SciMLBase.successful_retcode(sol1)
 
-    prob = ODEProblem(sys, [D.(sys.inertia2.phi) => 0], (0, 10.0))
-    sol = solve(prob, Rodas4())
-    @test SciMLBase.successful_retcode(sol)
-
     prob = DAEProblem(
         sys, D.(unknowns(sys)) .=> 0.0, [D(D(sys.inertia2.phi)) => 0.0], (0, 10.0))
-    sol = solve(prob, DFBDF())
-    @test SciMLBase.successful_retcode(sol)
-    @test all(sol[sys.inertia1.w] .== 0)
-    @test sol[sys.inertia2.w][end]≈0 atol=1e-3 # all energy has dissipated
+    dae_sol = solve(prob, DFBDF())
+    @test SciMLBase.successful_retcode(dae_sol)
+    @test all(dae_sol[sys.inertia1.w] .== 0)
+    @test dae_sol[sys.inertia2.w][end]≈0 atol=1e-3 # all energy has dissipated
 
     @mtkmodel WithSpringDamper begin
-        @extend TwoInertia()
         @components begin
+            fixed = Fixed()
+            inertia1 = Inertia(J = 2) # this one is fixed
             springdamper = SpringDamper(; c = 1e4, d = 10)
+            inertia2 = Inertia(J = 2, phi = pi / 2)
         end
         @equations begin
             connect(fixed.flange, inertia1.flange_b)
@@ -58,11 +52,10 @@ using OrdinaryDiffEq: ReturnCode.Success
 
     @mtkbuild sys = WithSpringDamper()
 
-    prob = ODEProblem(sys, Pair[], (0, 10.0))
+    prob = ODEProblem(sys, [D(D(sys.inertia2.phi)) => 0], (0, 10.0))
     sol2 = solve(prob, Rodas4())
     @test SciMLBase.successful_retcode(sol2)
-
-    @test_broken sol2(0:1:10, idxs = sys.inertia2.w).u≈sol(0:1:10, idxs = sys.inertia2.w).u atol=1e-3
+    @test sol2(0:1:10, idxs = sys.inertia2.w).u≈sol1(0:1:10, idxs = sys.inertia2.w).u atol=1e-3
 
     # Plots.plot(sol; vars=[inertia1.w, inertia2.w])
 end
@@ -101,11 +94,13 @@ end
     @test SciMLBase.successful_retcode(sol)
 
     prob = ODEProblem(
-        sys, [D(D(sys.inertia1.phi)) => 1.0, sys.spring.flange_b.phi => 0.0], (0, 1.0))
+        sys, [D(D(sys.inertia2.phi)) => 0.0, sys.spring.flange_b.phi => 0.0], (0, 1.0))
     sol = solve(prob, Rodas4())
     @test SciMLBase.successful_retcode(sol)
 
-    @test all(isapprox.(sol[sys.inertia1.w], -sol[sys.inertia2.w] * 2, atol = 1)) # exact opposite oscillation with smaller amplitude J2 = 2*J1
+    # exact opposite oscillation with smaller amplitude J2 = 2*J1 and with an offset.
+    @test all(isapprox.(
+        sol[sys.inertia1.w], -sol[sys.inertia2.w] * 2 .+ sol[sys.inertia1.w][1], atol = 1))
     @test all(sol[sys.torque.flange.tau] .== -sol[sys.sine.output.u]) # torque source is equal to negative sine
 
     ## Test with constant torque source
@@ -173,8 +168,9 @@ end
         end
     end
 
-    sys = structural_simplify(model) #key 7 not found
-    prob = ODEProblem(sys, [inertia3.w => 0.0, spring.flange_a.phi => 0.0], (0, 1.0))
+    @mtkbuild sys = FirstExample()
+    prob = ODEProblem(
+        sys, [sys.inertia3.w => 0.0, sys.spring.flange_a.phi => 0.0], (0, 1.0))
     sol = solve(prob, Rodas4())
     @test SciMLBase.successful_retcode(sol)
     # Plots.plot(sol; vars=[inertia2.w, inertia3.w])
