@@ -107,27 +107,29 @@ end
     @test all(sol[sys.torque.flange.tau] .== -sol[sys.sine.output.u]) # torque source is equal to negative sine
 
     ## Test with constant torque source
-    @named torque = ConstantTorque(use_support = true, tau_constant = 1)
-    connections = [connect(torque.support, fixed.flange)
-                   connect(torque.flange, inertia1.flange_a)
-                   connect(inertia1.flange_b, spring.flange_a, damper.flange_a)
-                   connect(spring.flange_b, damper.flange_b, inertia2.flange_a)]
+    @mtkmodel TwoInertiasWitConstantTorque begin
+        @components begin
+            fixed = Fixed()
+            torque = ConstantTorque(use_support = true, tau_constant = 1)
+            inertia1 = Inertia(J = 2, phi = pi / 2)
+            spring = Rotational.Spring(c = 1e4)
+            damper = Damper(d = 10)
+            inertia2 = Inertia(J = 4)
+        end
+        @equations begin
+            connect(torque.support, fixed.flange)
+            connect(torque.flange, inertia1.flange_a)
+            connect(inertia1.flange_b, spring.flange_a, damper.flange_a)
+            connect(spring.flange_b, damper.flange_b, inertia2.flange_a)
+        end
+    end
 
-    @named model = ODESystem(connections, t,
-        systems = [
-            fixed,
-            torque,
-            inertia1,
-            inertia2,
-            spring,
-            damper
-        ])
-    sys = structural_simplify(model)
+    @mtkbuild sys = TwoInertiasWitConstantTorque()
 
-    prob = ODEProblem(sys, Pair[], (0, 10.0))
+    prob = ODEProblem(sys, [D(D(sys.inertia2.phi)) => 1.0, sys.spring.flange_b.phi => 0.0], (0, 10.0))
     sol = solve(prob, Rodas4())
     @test SciMLBase.successful_retcode(sol)
-    @test sol(sol.t[end], idxs = inertia1.w)≈sol(sol.t[end], idxs = inertia2.w) rtol=0.1 # both inertias have same angular velocity after initial transient
+    @test sol(sol.t[end], idxs = sys.inertia1.w)≈sol(sol.t[end], idxs = sys.inertia2.w) rtol=0.1 # both inertias have same angular velocity after initial transient
 end
 
 # see: https://doc.modelica.org/Modelica%204.0.0/Resources/helpWSM/Modelica/Modelica.Mechanics.Rotational.Examples.First.html
