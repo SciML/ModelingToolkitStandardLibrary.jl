@@ -148,6 +148,8 @@ using ModelingToolkit, OrdinaryDiffEq, LinearAlgebra
 using ModelingToolkitStandardLibrary.Mechanical.Rotational
 using ModelingToolkitStandardLibrary.Blocks: Sine, PID, SecondOrder, Step, RealOutput
 using ModelingToolkit: connect
+using ModelingToolkit: t_nounits as t, D_nounits as D
+
 # Parameters
 m1 = 1
 m2 = 1
@@ -165,7 +167,7 @@ function SystemModel(u = nothing; name = :model)
            connect(inertia2.flange_a, spring.flange_b, damper.flange_b)]
     if u !== nothing
         push!(eqs, connect(torque.tau, u.output))
-        return @named model = ODESystem(eqs, t;
+        return ODESystem(eqs, t;
             systems = [
                 torque,
                 inertia1,
@@ -177,32 +179,29 @@ function SystemModel(u = nothing; name = :model)
     end
     ODESystem(eqs, t; systems = [torque, inertia1, inertia2, spring, damper], name)
 end
-function AngleSensor(; name)
-    @named flange = Flange()
-    @named phi = RealOutput()
-    eqs = [phi.u ~ flange.phi
-           flange.tau ~ 0]
-    return ODESystem(eqs, t, [], []; name = name, systems = [flange, phi])
+
+@mtkmodel ClosedLoop begin
+	@components begin
+		r = Step(start_time = 0)
+		model = SystemModel()
+		pid = PID(k = 100, Ti = 0.5, Td = 1)
+		filt = SecondOrder(d = 0.9, w = 10)
+		sensor = AngleSensor()
+		er = Add(k2 = -1)
+	end
+
+	@equations begin
+		connect(r.output, :r, filt.input)
+		connect(filt.output, er.input1)
+		connect(pid.ctr_output, :u, model.torque.tau)
+		connect(model.inertia2.flange_b, sensor.flange)
+		connect(sensor.phi, :y, er.input2)
+		connect(er.output, :e, pid.err_input)
+	end
 end
 
-@named r = Step(start_time = 0)
-model = SystemModel()
-@named pid = PID(k = 100, Ti = 0.5, Td = 1)
-@named filt = SecondOrder(d = 0.9, w = 10)
-@named sensor = AngleSensor()
-@named er = Add(k2 = -1)
-
-connections = [connect(r.output, :r, filt.input)
-               connect(filt.output, er.input1)
-               connect(pid.ctr_output, :u, model.torque.tau)
-               connect(model.inertia2.flange_b, sensor.flange)
-               connect(sensor.phi, :y, er.input2)
-               connect(er.output, :e, pid.err_input)]
-
-closed_loop = ODESystem(connections, t, systems = [model, pid, filt, sensor, r, er],
-    name = :closed_loop)
-
-prob = ODEProblem(structural_simplify(closed_loop), Pair[], (0.0, 4.0))
+@mtkbuild closed_loop = ClosedLoop()
+prob = ODEProblem(closed_loop, unknowns(closed_loop) .=> 0.0, (0.0, 4.0))
 sol = solve(prob, Rodas5P(), reltol = 1e-6, abstol = 1e-9)
 # plot(
 #     plot(sol, vars = [filt.y, model.inertia1.phi, model.inertia2.phi]),
