@@ -99,7 +99,7 @@ Output difference between reference input (input1) and feedback input (input2).
 end
 
 """
-    Add(; name, k1 = 1, k2 = 1)
+    Add(; name, k1 = 1.0, k2 = 1.0)
 
 Output the sum of the two scalar inputs.
 
@@ -121,8 +121,8 @@ Output the sum of the two scalar inputs.
         output = RealOutput()
     end
     @parameters begin
-        k1 = 1, [description = "Gain of Add input1"]
-        k2 = 1, [description = "Gain of Add input2"]
+        k1 = 1.0, [description = "Gain of Add input1"]
+        k2 = 1.0, [description = "Gain of Add input2"]
     end
     @equations begin
         output.u ~ k1 * input1.u + k2 * input2.u
@@ -130,7 +130,7 @@ Output the sum of the two scalar inputs.
 end
 
 """
-    Add(; name, k1 = 1, k2 = 1, k3 = 1)
+    Add(; name, k1 = 1.0, k2 = 1.0, k3 = 1.0)
 
 Output the sum of the three scalar inputs.
 
@@ -155,9 +155,9 @@ Output the sum of the three scalar inputs.
         output = RealOutput()
     end
     @parameters begin
-        k1 = 1, [description = "Gain of Add input1"]
-        k2 = 1, [description = "Gain of Add input2"]
-        k3 = 1, [description = "Gain of Add input3"]
+        k1 = 1.0, [description = "Gain of Add input1"]
+        k2 = 1.0, [description = "Gain of Add input2"]
+        k3 = 1.0, [description = "Gain of Add input3"]
     end
     @equations begin
         output.u ~ k1 * input1.u + k2 * input2.u + k3 * input3.u
