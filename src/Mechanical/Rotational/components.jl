@@ -16,7 +16,7 @@ Flange fixed in housing at a given angle.
         flange = Flange()
     end
     @parameters begin
-        phi0, [description = "Fixed offset angle of flange", guess = 0.0]
+        phi0 = 0.0, [description = "Fixed offset angle of flange"]
     end
     @equations begin
         flange.phi ~ phi0
@@ -95,7 +95,7 @@ Linear 1D rotational spring
     end
     @parameters begin
         c, [description = "Spring constant"]
-        phi_rel0, [description = "Unstretched spring angle", guess = 0.0]
+        phi_rel0 = 0.0, [description = "Unstretched spring angle"]
     end
     @equations begin
         tau ~ c * (phi_rel - phi_rel0)
