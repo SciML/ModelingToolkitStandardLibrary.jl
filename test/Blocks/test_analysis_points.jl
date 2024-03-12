@@ -180,28 +180,32 @@ function SystemModel(u = nothing; name = :model)
     ODESystem(eqs, t; systems = [torque, inertia1, inertia2, spring, damper], name)
 end
 
-@mtkmodel ClosedLoop begin
-    @components begin
-        r = Step(start_time = 0)
-        model = SystemModel()
-        pid = PID(k = 100, Ti = 0.5, Td = 1)
-        filt = SecondOrder(d = 0.9, w = 10)
-        sensor = AngleSensor()
-        er = Add(k2 = -1)
-    end
+@named r = Step(start_time = 0)
+model = SystemModel()
+@named pid = PID(k = 100, Ti = 0.5, Td = 1)
+@named filt = SecondOrder(d = 0.9, w = 10)
+@named sensor = AngleSensor()
+@named er = Add(k2 = -1)
 
-    @equations begin
-        connect(r.output, :r, filt.input)
-        connect(filt.output, er.input1)
-        connect(pid.ctr_output, :u, model.torque.tau)
-        connect(model.inertia2.flange_b, sensor.flange)
-        connect(sensor.phi, :y, er.input2)
-        connect(er.output, :e, pid.err_input)
-    end
-end
+connections = [connect(r.output, :r, filt.input)
+               connect(filt.output, er.input1)
+               connect(pid.ctr_output, :u, model.torque.tau)
+               connect(model.inertia2.flange_b, sensor.flange)
+               connect(sensor.phi, :y, er.input2)
+               connect(er.output, :e, pid.err_input)]
 
-@mtkbuild closed_loop = ClosedLoop()
-prob = ODEProblem(closed_loop, unknowns(closed_loop) .=> 0.0, (0.0, 4.0))
+closed_loop = ODESystem(connections, t, systems = [model, pid, filt, sensor, r, er],
+    name = :closed_loop, defaults = [
+        model.inertia1.phi => 0.0,
+        model.inertia2.phi => 0.0,
+        model.inertia1.w => 0.0,
+        model.inertia2.w => 0.0,
+        filt.x => 0.0,
+        filt.xd => 0.0
+    ])
+
+sys = structural_simplify(closed_loop)
+prob = ODEProblem(sys, unknowns(sys) .=> 0.0, (0.0, 4.0))
 sol = solve(prob, Rodas5P(), reltol = 1e-6, abstol = 1e-9)
 # plot(
 #     plot(sol, vars = [filt.y, model.inertia1.phi, model.inertia2.phi]),
