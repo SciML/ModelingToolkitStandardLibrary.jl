@@ -181,23 +181,23 @@ function SystemModel(u = nothing; name = :model)
 end
 
 @mtkmodel ClosedLoop begin
-	@components begin
-		r = Step(start_time = 0)
-		model = SystemModel()
-		pid = PID(k = 100, Ti = 0.5, Td = 1)
-		filt = SecondOrder(d = 0.9, w = 10)
-		sensor = AngleSensor()
-		er = Add(k2 = -1)
-	end
+    @components begin
+        r = Step(start_time = 0)
+        model = SystemModel()
+        pid = PID(k = 100, Ti = 0.5, Td = 1)
+        filt = SecondOrder(d = 0.9, w = 10)
+        sensor = AngleSensor()
+        er = Add(k2 = -1)
+    end
 
-	@equations begin
-		connect(r.output, :r, filt.input)
-		connect(filt.output, er.input1)
-		connect(pid.ctr_output, :u, model.torque.tau)
-		connect(model.inertia2.flange_b, sensor.flange)
-		connect(sensor.phi, :y, er.input2)
-		connect(er.output, :e, pid.err_input)
-	end
+    @equations begin
+        connect(r.output, :r, filt.input)
+        connect(filt.output, er.input1)
+        connect(pid.ctr_output, :u, model.torque.tau)
+        connect(model.inertia2.flange_b, sensor.flange)
+        connect(sensor.phi, :y, er.input2)
+        connect(er.output, :e, pid.err_input)
+    end
 end
 
 @mtkbuild closed_loop = ClosedLoop()

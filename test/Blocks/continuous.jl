@@ -82,7 +82,7 @@ end
     @named pt2 = SecondOrder(; k = k, w = w, d = d)
     @named iosys = ODESystem(connect(c.output, pt2.input), t, systems = [pt2, c])
     sys = structural_simplify(iosys)
-    prob = ODEProblem(sys, Pair[], (0.0, 100.0))
+    prob = ODEProblem(sys, [unknowns(sys) .=> 0.0...; pt2.xd => 0.0], (0.0, 100.0))
     sol = solve(prob, Rodas4())
     @test sol.retcode == Success
     @test sol[pt2.output.u]≈pt2_func.(sol.t, k, w, d) atol=1e-3
