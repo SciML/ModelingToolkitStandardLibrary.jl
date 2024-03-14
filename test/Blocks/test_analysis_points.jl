@@ -148,7 +148,6 @@ using ModelingToolkit, OrdinaryDiffEq, LinearAlgebra
 using ModelingToolkitStandardLibrary.Mechanical.Rotational
 using ModelingToolkitStandardLibrary.Blocks: Sine, PID, SecondOrder, Step, RealOutput
 using ModelingToolkit: connect
-using ModelingToolkit: t_nounits as t, D_nounits as D
 
 # Parameters
 m1 = 1
