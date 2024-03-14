@@ -15,7 +15,7 @@ Initial value of integrator state ``x`` can be set with `x`
 
 # Unknowns:
 
-  - `x`: Unknown of Integrator (with inital guess of 0.0)
+  - `x`: Unknown of Integrator (with initial guess of 0.0)
 """
 @mtkmodel Integrator begin
     @extend u, y = siso = SISO()
@@ -55,7 +55,7 @@ A smaller `T` leads to a more ideal approximation of the derivative.
 
 # Unknowns:
 
-  - `x`: Unknown of Derivative (with inital guess of 0.0)
+  - `x`: Unknown of Derivative (with initial guess of 0.0)
 
 # Connectors:
 
