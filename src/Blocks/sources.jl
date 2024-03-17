@@ -157,7 +157,7 @@ end
     Cosine(; name, frequency, amplitude = 1, phase = 0, offset = 0, start_time = 0,
     smooth = false)
 
-Cosine signal.
+Generate cosine signal.
 
 # Parameters:
 - `frequency`: [Hz] Frequency of sine wave
@@ -171,7 +171,6 @@ Cosine signal.
 # Connectors:
 - `output`
 """
-
 @component function Cosine(; name,
         frequency,
         amplitude = 1,

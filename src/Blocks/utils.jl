@@ -47,7 +47,7 @@ end
 Connector with one output signal of type Real.
 
 # Parameters:
-- `nout=1`: Number of inputs
+- `nout=1`: Number of outputs
 - `u_start=0`: Initial value for `u`
 
 # States:
@@ -61,8 +61,8 @@ Single input single output (SISO) continuous system block.
 
 # Parameters:
 
-  - `u`: Initial value for the input
-  - `y`: Initial value for the output
+  - `u_start`: Initial value for the input
+  - `y_start`: Initial value for the output
 """
 @mtkmodel SISO begin
     @parameters begin
