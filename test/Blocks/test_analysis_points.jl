@@ -174,7 +174,8 @@ function SystemModel(u = nothing; name = :model)
                 spring,
                 damper,
                 u
-            ])
+            ],
+            name)
     end
     ODESystem(eqs, t; systems = [torque, inertia1, inertia2, spring, damper], name)
 end

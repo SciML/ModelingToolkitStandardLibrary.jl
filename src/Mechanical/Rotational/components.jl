@@ -86,7 +86,7 @@ Linear 1D rotational spring
 # Parameters:
 
   - `c`: [`N.m/rad`] Spring constant
-  - `phi_rel0`: [`rad`] Unstretched spring angle
+  - `phi_rel0`: [`rad`] Unstretched spring angle. Defaults to 0.0.
 """
 @mtkmodel Spring begin
     @extend phi_rel, tau = partial_comp = PartialCompliant()
@@ -156,7 +156,7 @@ Linear 1D rotational spring and damper
 
   - `d`: [`N.m.s/rad`] Damping constant
   - `c`: [`N.m/rad`] Spring constant
-  - `phi_rel0`: [`rad`] Unstretched spring angle
+  - `phi_rel0`: [`rad`] Unstretched spring angle. Defaults to 0.0
 """
 @mtkmodel SpringDamper begin
     @extend phi_rel, w_rel, tau = partial_comp = PartialCompliantWithRelativeStates()
@@ -167,7 +167,7 @@ Linear 1D rotational spring and damper
     @parameters begin
         d, [description = "Damping constant"]
         c, [description = "Spring constant"]
-        phi_rel0, [description = "Unstretched spring angle", guess = 0.0]
+        phi_rel0 = 0.0, [description = "Unstretched spring angle"]
     end
     @equations begin
         tau_c ~ c * (phi_rel - phi_rel0)

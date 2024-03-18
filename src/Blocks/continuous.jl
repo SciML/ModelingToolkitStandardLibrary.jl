@@ -15,12 +15,12 @@ Initial value of integrator state ``x`` can be set with `x`
 
 # Unknowns:
 
-  - `x`: Unknown of Integrator (with initial guess of 0.0)
+  - `x`: State of Integrator (with initial guess of 0.0)
 """
 @mtkmodel Integrator begin
     @extend u, y = siso = SISO()
     @variables begin
-        x(t), [description = "Unknown of Integrator", guess = 0.0]
+        x(t), [description = "State of Integrator", guess = 0.0]
     end
     @parameters begin
         k = 1, [description = "Gain"]
@@ -30,6 +30,7 @@ Initial value of integrator state ``x`` can be set with `x`
         y ~ x
     end
 end
+
 """
     Derivative(; name, k = 1, T, x = 0.0)
 
