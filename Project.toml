@@ -14,7 +14,7 @@ Symbolics = "0c5d862f-8b57-4792-8d23-62f2024744c7"
 [compat]
 Aqua = "0.8"
 ChainRulesCore = "1.18"
-ControlSystemsBase = "1"
+ControlSystemsBase = "1.4"
 DataInterpolations = "4"
 DiffEqBase = "6.143"
 IfElse = "0.1"
