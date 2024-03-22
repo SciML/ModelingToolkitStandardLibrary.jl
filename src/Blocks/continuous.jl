@@ -35,24 +35,23 @@ end
     Derivative(; name, k = 1, T, x = 0.0)
 
 Outputs an approximate derivative of the input. The transfer function of this block is
-Initial value of the state ``x`` can be set with `x`
 
 ```
-k       k
-─ - ──────────
-T    2 ⎛    1⎞
-    T ⋅⎜s + ─⎟
-       ⎝    T⎠
+k      k        ks  
+─ - ─────── = ────── 
+T   sT² + T   sT + 1
 ```
 
 and a state-space realization is given by `ss(-1/T, 1/T, -k/T, k/T)`
 where `T` is the time constant of the filter.
 A smaller `T` leads to a more ideal approximation of the derivative.
 
+Initial value of the state ``x`` can be set with `x`.
+
 # Parameters:
 
   - `k`: Gain
-  - `T`: [s] Time constants (T>0 required; T=0 is ideal derivative block)
+  - `T`: [s] Time constant (T>0 required; T=0 is ideal derivative block)
 
 # Unknowns:
 
