@@ -41,6 +41,25 @@ Ideal sensor to measure the absolute flange angular velocity
 end
 
 """
+    AccSensor(;name)
+
+Ideal sensor to measure the absolute flange angular acceleration
+
+# Connectors:
+
+  - `flange`: [Flange](@ref) Flange of shaft from which sensor information shall be measured
+  - `a`: [RealOutput](@ref) Absolute angular acceleration of flange
+"""
+@component function AccSensor(; name)
+    @named flange = Flange()
+    @variables w(t) [description = "Absolute angular velocity of flange"]
+    @named a = RealOutput() #[description = "Absolute angular acceleration of flange"]
+    eqs = [D(flange.phi) ~ w
+           a.u ~ D(w)]
+    return ODESystem(eqs, t, [], []; name = name, systems = [flange, a])
+end
+
+"""
     TorqueSensor(;name)
 
 Ideal sensor to measure the torque between two flanges (`= flange_a.tau`)
