@@ -71,8 +71,8 @@ Partial model for the compliant connection of two rotational 1-dim. shaft flange
         flange_b = Flange()
     end
     @variables begin
-        phi_rel(t) = 0.0, [description = "Relative rotation angle between flanges"]
-        tau(t) = 0.0, [description = "Torque between flanges"]
+        phi_rel(t), [description = "Relative rotation angle between flanges", guess = 0.0]
+        tau(t), [description = "Torque between flanges", guess = 0.0]
     end
     @equations begin
         phi_rel ~ flange_b.phi - flange_a.phi
@@ -104,10 +104,11 @@ Partial model for the compliant connection of two rotational 1-dim. shaft flange
         flange_b = Flange()
     end
     @variables begin
-        phi_rel(t) = 0.0, [description = "Relative rotation angle between flanges"]
-        w_rel(t) = 0.0, [description = "Relative angular velocity between flanges"]
-        a_rel(t) = 0.0, [description = "Relative angular acceleration between flanges"]
-        tau(t) = 0.0, [description = "Torque between flanges"]
+        phi_rel(t), [description = "Relative rotation angle between flanges", guess = 0.0]
+        w_rel(t), [description = "Relative angular velocity between flanges", guess = 0.0]
+        a_rel(t),
+        [description = "Relative angular acceleration between flanges", guess = 0.0]
+        tau(t), [description = "Torque between flanges", guess = 0.0]
     end
     @equations begin
         phi_rel ~ flange_b.phi - flange_a.phi
@@ -138,7 +139,8 @@ Partial model for a component with one rotational 1-dim. shaft flange and a supp
 @component function PartialElementaryOneFlangeAndSupport2(; name, use_support = false)
     @named flange = Flange()
     sys = [flange]
-    @variables phi_support(t)=0.0 [description = "Absolute angle of support flange"]
+    @variables phi_support(t) [
+        description = "Absolute angle of support flange", guess = 0.0]
     if use_support
         @named support = Support()
         eqs = [support.phi ~ phi_support
@@ -173,7 +175,8 @@ Partial model for a component with two rotational 1-dim. shaft flanges and a sup
     @named flange_a = Flange()
     @named flange_b = Flange()
     sys = [flange_a, flange_b]
-    @variables phi_support(t)=0.0 [description = "Absolute angle of support flange"]
+    @variables phi_support(t) [
+        description = "Absolute angle of support flange", guess = 0.0]
     if use_support
         @named support = Support()
         eqs = [support.phi ~ phi_support

@@ -148,6 +148,7 @@ using ModelingToolkit, OrdinaryDiffEq, LinearAlgebra
 using ModelingToolkitStandardLibrary.Mechanical.Rotational
 using ModelingToolkitStandardLibrary.Blocks: Sine, PID, SecondOrder, Step, RealOutput
 using ModelingToolkit: connect
+
 # Parameters
 m1 = 1
 m2 = 1
@@ -165,7 +166,7 @@ function SystemModel(u = nothing; name = :model)
            connect(inertia2.flange_a, spring.flange_b, damper.flange_b)]
     if u !== nothing
         push!(eqs, connect(torque.tau, u.output))
-        return @named model = ODESystem(eqs, t;
+        return ODESystem(eqs, t;
             systems = [
                 torque,
                 inertia1,
@@ -173,16 +174,10 @@ function SystemModel(u = nothing; name = :model)
                 spring,
                 damper,
                 u
-            ])
+            ],
+            name)
     end
     ODESystem(eqs, t; systems = [torque, inertia1, inertia2, spring, damper], name)
-end
-function AngleSensor(; name)
-    @named flange = Flange()
-    @named phi = RealOutput()
-    eqs = [phi.u ~ flange.phi
-           flange.tau ~ 0]
-    return ODESystem(eqs, t, [], []; name = name, systems = [flange, phi])
 end
 
 @named r = Step(start_time = 0)
@@ -200,9 +195,17 @@ connections = [connect(r.output, :r, filt.input)
                connect(er.output, :e, pid.err_input)]
 
 closed_loop = ODESystem(connections, t, systems = [model, pid, filt, sensor, r, er],
-    name = :closed_loop)
+    name = :closed_loop, defaults = [
+        model.inertia1.phi => 0.0,
+        model.inertia2.phi => 0.0,
+        model.inertia1.w => 0.0,
+        model.inertia2.w => 0.0,
+        filt.x => 0.0,
+        filt.xd => 0.0
+    ])
 
-prob = ODEProblem(structural_simplify(closed_loop), Pair[], (0.0, 4.0))
+sys = structural_simplify(closed_loop)
+prob = ODEProblem(sys, unknowns(sys) .=> 0.0, (0.0, 4.0))
 sol = solve(prob, Rodas5P(), reltol = 1e-6, abstol = 1e-9)
 # plot(
 #     plot(sol, vars = [filt.y, model.inertia1.phi, model.inertia2.phi]),

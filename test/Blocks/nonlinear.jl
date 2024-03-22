@@ -39,7 +39,7 @@ using OrdinaryDiffEq: ReturnCode.Success
             systems = [source, lim, int])
         sys = structural_simplify(iosys)
 
-        prob = ODEProblem(sys, Pair[], (0.0, 10.0))
+        prob = ODEProblem(sys, unknowns(sys) .=> 0.0, (0.0, 10.0))
 
         sol = solve(prob, Rodas4())
         @test sol.retcode == Success

@@ -12,6 +12,10 @@ Initial value of integrator state ``x`` can be set with `x`
 # Parameters:
 
   - `k`: Gain of integrator
+
+# Unknowns:
+
+  - `x`: State of Integrator. Defaults to 0.0.
 """
 @mtkmodel Integrator begin
     @extend u, y = siso = SISO()
@@ -26,6 +30,7 @@ Initial value of integrator state ``x`` can be set with `x`
         y ~ x
     end
 end
+
 """
     Derivative(; name, k = 1, T, x = 0.0)
 
@@ -48,6 +53,10 @@ A smaller `T` leads to a more ideal approximation of the derivative.
 
   - `k`: Gain
   - `T`: [s] Time constants (T>0 required; T=0 is ideal derivative block)
+
+# Unknowns:
+
+  - `x`: Unknown of Derivative. Defaults to 0.0.
 
 # Connectors:
 
@@ -160,8 +169,8 @@ Initial value of the state `x` can be set with `x`, and of derivative state `xd`
 @mtkmodel SecondOrder begin
     @extend u, y = siso = SISO()
     @variables begin
-        x(t) = 0.0, [description = "State of SecondOrder filter"]
-        xd(t) = 0.0, [description = "Derivative state of SecondOrder filter"]
+        x(t), [description = "State of SecondOrder filter", guess = 0.0]
+        xd(t), [description = "Derivative state of SecondOrder filter", guess = 0.0]
     end
     @parameters begin
         k = 1.0, [description = "Gain"]
