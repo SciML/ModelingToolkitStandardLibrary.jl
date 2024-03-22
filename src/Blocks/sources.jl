@@ -157,12 +157,12 @@ end
     Cosine(; name, frequency, amplitude = 1, phase = 0, offset = 0, start_time = 0,
     smooth = false)
 
-Cosine signal.
+Generate cosine signal.
 
 # Parameters:
-- `frequency`: [Hz] Frequency of sine wave
-- `amplitude`: Amplitude of sine wave
-- `phase`: [rad] Phase of sine wave
+- `frequency`: [Hz] Frequency of cosine wave
+- `amplitude`: Amplitude of cosine wave
+- `phase`: [rad] Phase of cosine wave
 - `offset`: Offset of output signal
 - `start_time`: [s] Output `y = offset` for `t < start_time`
 - `smooth`:  If `true`, returns a smooth wave. Defaults to `false`
@@ -171,7 +171,6 @@ Cosine signal.
 # Connectors:
 - `output`
 """
-
 @component function Cosine(; name,
         frequency,
         amplitude = 1,

@@ -76,7 +76,7 @@ end
 """
     FirstOrder(; name, k = 1.0, T, x = 0.0, lowpass = true)
 
-A first-order filter with a single real pole in `s = -T` and gain `k`. If `lowpass=true` (default), the transfer function
+A first-order filter with a single real pole at `s = -1/T` and gain `k`. If `lowpass=true` (default), the transfer function
 is given by ``Y(s)/U(s) = ``
 
 
