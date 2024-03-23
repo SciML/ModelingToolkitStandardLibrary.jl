@@ -1,4 +1,4 @@
-using ModelingToolkit, ModelingToolkitStandardLibrary, OrdinaryDiffEq
+using ModelingToolkit, ModelingToolkitStandardLibrary, OrdinaryDiffEq, Test
 using ModelingToolkitStandardLibrary.Blocks
 using ModelingToolkit: t_nounits as t, D_nounits as D
 using ModelingToolkitStandardLibrary.Blocks: smooth_sin, smooth_cos, smooth_damped_sin,
@@ -476,4 +476,59 @@ end
         @test sol[dy][end]≈2 * time[end] atol=1e-3
         @test sol[ddy][end]≈2 atol=1e-3
     end
+end
+
+using Symbolics
+using Symbolics: Struct, StructElement, getelements, symstruct
+using Test
+using ModelingToolkitStandardLibrary.Blocks
+using ModelingToolkitStandardLibrary.Blocks: BusSelect
+#using ModelingToolkitStandardLibrary.Blocks: structelem2connector
+
+# Test struct
+struct BarStruct
+    speed::Float64
+    isSpeedValid::Int
+end
+
+bar = BarStruct(2.0, 1)
+structdef = symstruct(BarStruct)
+selected_fields = [:speed]
+
+@parameters bar_param::Struct
+systems = @named begin
+    inputbus = Blocks.StructOutput(; structdef)
+    output = BusSelect(; structdef, selected_fields)
+end
+eqs = [inputbus.u ~ bar_param
+       connect(inputbus, output.inputbus)]
+@named sys = ODESystem(eqs, t; systems)
+sys = complete(sys)
+ssys = structural_simplify(sys)
+prob = ODEProblem(ssys, [], (0.0, 1.0), [sys.bar_param => bar], tofloat=false)
+sol = solve(prob, Rodas4())
+@test sol(1.0, idxs = sys.output.speed.u) == 2.0
+
+@mtkmodel BusSelectTest begin
+    @parameters bar_param::Struct
+    @components begin
+        inputbus = Blocks.StructOutput(; structdef)
+        output = BusSelect(; structdef, selected_fields)
+    end
+    @equations begin
+        inputbus.u ~ bar_param
+        connect(inputbus, output.inputbus)
+    end
+end
+
+@named sys = BusSelectTest()
+sys = complete(sys)
+ssys = structural_simplify(sys)
+@test_broken begin
+    prob = ODEProblem(ssys, [
+                             sys.bar_param => bar
+                            ], (0.0, 1.0))
+    sol = solve(prob, Rodas4())
+    @test sol.retcode == ReturnCode.Success
+    @test sol(1.0, idxs = sys.output.speed.u) == 2.0
 end
