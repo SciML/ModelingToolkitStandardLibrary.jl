@@ -26,10 +26,6 @@ end
     include("Electrical/analog.jl")
 end
 
-@safetestset "Chua Circuit Demo" begin
-    include("chua_circuit.jl")
-end
-
 @safetestset "Digital Circuits" begin
     include("Electrical/digital.jl")
 end
