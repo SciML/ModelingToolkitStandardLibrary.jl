@@ -24,8 +24,8 @@ Lumped thermal element storing heat
         C, [description = "Heat capacity of element"]
     end
     @variables begin
-        T(t) = 273.15 + 20
-        der_T(t)
+        T(t), [guess = 273.15 + 20]
+        der_T(t), [guess = 0.0]
     end
 
     @equations begin
