@@ -130,8 +130,8 @@ Single input single output (SISO) continuous system block.
         y_start = 0.0
     end
     @variables begin
-        u(t) = u_start, [description = "Input of SISO system"]
-        y(t) = y_start, [description = "Output of SISO system"]
+        u(t), [guess = u_start, description = "Input of SISO system"]
+        y(t), [guess = y_start, description = "Output of SISO system"]
     end
     @components begin
         input = RealInput(guess = u_start)
@@ -157,10 +157,12 @@ Base class for a multiple input multiple output (MIMO) continuous system block.
 """
 @component function MIMO(; name, nin = 1, nout = 1, u_start = zeros(nin),
         y_start = zeros(nout))
-    @named input = RealInput(nin = nin, guess = u_start)
-    @named output = RealOutput(nout = nout, guess = y_start)
-    @variables(u(t)[1:nin]=u_start, [description = "Input of MIMO system $name"],
-        y(t)[1:nout]=y_start, [description = "Output of MIMO system $name"],)
+    @named input = RealInput(nin = nin, u_start = u_start)
+    @named output = RealOutput(nout = nout, u_start = y_start)
+    @variables begin
+        u(t)[1:nin], [guess = u_start, description = "Input of MIMO system $name"]
+        y(t)[1:nout], [guess = y_start, description = "Output of MIMO system $name"]
+    end
     eqs = [
         [u[i] ~ input.u[i] for i in 1:nin]...,
         [y[i] ~ output.u[i] for i in 1:nout]...

@@ -20,7 +20,7 @@ Initial value of integrator state ``x`` can be set with `x`
 @mtkmodel Integrator begin
     @extend u, y = siso = SISO()
     @variables begin
-        x(t) = 0.0, [description = "State of Integrator"]
+        x(t), [guess = 0.0, description = "State of Integrator"]
     end
     @parameters begin
         k = 1, [description = "Gain"]
@@ -65,7 +65,7 @@ Initial value of the state ``x`` can be set with `x`.
 @mtkmodel Derivative begin
     @extend u, y = siso = SISO()
     @variables begin
-        x(t) = 0.0, [description = "Derivative-filter state"]
+        x(t), [guess = 0.0, description = "Derivative-filter state"]
     end
     @parameters begin
         T = T, [description = "Time constant"]
@@ -122,7 +122,7 @@ See also [`SecondOrder`](@ref)
         lowpass = true
     end
     @variables begin
-        x(t) = 0.0, [description = "State of FirstOrder filter"]
+        x(t), [guess = 0.0, description = "State of FirstOrder filter"]
     end
     @parameters begin
         T = T, [description = "Time constant"]
@@ -545,7 +545,7 @@ linearized around the operating point `x₀, u₀`, we have `y0, u0 = h(x₀, u�
     end
     @named input = RealInput(nin = nu)
     @named output = RealOutput(nout = ny)
-    @variables x(t)[1:nx]=x [
+    @variables x(t)[1:nx]=x [ # FIXME: should it be guess = x, not default? 
         description = "State variables of StateSpace system $name"
     ]
     # pars = @parameters A=A B=B C=C D=D # This is buggy
@@ -618,7 +618,7 @@ See also [`StateSpace`](@ref) which handles MIMO systems, as well as [ControlSys
     @parameters a_end = ifelse(a[end] > 100 * symbolic_eps(sqrt(a' * a)), a[end], 1.0)
 
     pars = [collect(b); a; collect(bb); d; a_end]
-    @variables begin
+    @variables begin # FIXME: should it be guesses, not default? 
         x(t)[1:nx] = zeros(nx),
         [description = "State of transfer function on controller canonical form"]
         x_scaled(t)[1:nx] = collect(x) * a_end, [description = "Scaled vector x"]
