@@ -1,5 +1,6 @@
-@connector function RealInput(; name, nin = 1, u_start = nin > 1 ? zeros(nin) : 0.0)
-    if nin == 1
+@connector function RealInput(;
+        name, nin = 1, isarray = false, u_start = isarray ? zeros(nin) : 0.0)
+    if nin == 1 && !isarray
         @variables u(t)=u_start [
             input = true,
             description = "Inner variable in RealInput $name"
@@ -21,13 +22,15 @@ Connector with one input signal of type Real.
 # Parameters:
 - `nin=1`: Number of inputs
 - `u_start=0`: Initial value for `u`
+- `isarray=false`: This is only applicable for `nin=1`. Boolean flag to use a scalar or a one element symbolic vector
 
 # States:
 - `u`: Value of the connector; if nin=1 this is a scalar
 """ RealInput
 
-@connector function RealOutput(; name, nout = 1, u_start = nout > 1 ? zeros(nout) : 0.0)
-    if nout == 1
+@connector function RealOutput(;
+        name, nout = 1, isarray = false, u_start = isarray ? zeros(nout) : 0.0)
+    if nout == 1 && !isarray
         @variables u(t)=u_start [
             output = true,
             description = "Inner variable in RealOutput $name"
@@ -49,6 +52,7 @@ Connector with one output signal of type Real.
 # Parameters:
 - `nout=1`: Number of outputs
 - `u_start=0`: Initial value for `u`
+- `isarray=false`: This is only applicable for `nout=1`. Boolean flag to use a scalar or a one element symbolic vector
 
 # States:
 - `u`: Value of the connector; if nout=1 this is a scalar
