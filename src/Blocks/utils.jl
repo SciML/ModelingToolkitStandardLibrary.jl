@@ -124,12 +124,12 @@ Single input single output (SISO) continuous system block.
   - `u_start`: Initial value for the input
   - `y_start`: Initial value for the output
 """
-@mtkmodel SISO begin
-    @parameters begin
-        u_start = 0.0
-        y_start = 0.0
+@component function SISO(; name, u_start = 0.0, y_start = 0.0)
+    pars = @parameters begin
+        u_start = u_start
+        y_start = y_start
     end
-    @variables begin
+    vars = @variables begin
         u(t), [guess = u_start, description = "Input of SISO system"]
         y(t), [guess = y_start, description = "Output of SISO system"]
     end
@@ -140,7 +140,7 @@ Single input single output (SISO) continuous system block.
     @equations begin
         u ~ input.u
         y ~ output.u
-    end
+    return ODESystem(eqs, t, vars, pars; name = name, systems = [input, output])
 end
 
 """
