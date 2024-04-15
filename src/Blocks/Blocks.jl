@@ -7,7 +7,7 @@ import IfElse: ifelse
 import ..@symcheck
 using ModelingToolkit: getdefault, t_nounits as t, D_nounits as D
 
-export RealInput, RealOutput, SISO
+export RealInput, RealInputArray, RealOutput, RealOutputArray, SISO
 include("utils.jl")
 
 export Gain, Sum, MatrixGain, Feedback, Add, Add3, Product, Division
