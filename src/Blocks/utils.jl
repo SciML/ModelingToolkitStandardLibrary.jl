@@ -26,7 +26,7 @@ Connector with one input signal of type Real.
 - `u`: Value of the connector which is a scalar.
 """ RealInput
 
-@connector function RealInputArray(; name, nin = 2, u_start = zeros(nin))
+@connector function RealInputArray(; name, nin, u_start = zeros(nin))
     @variables u(t)[1:nin] [
         input = true,
         description = "Inner variable in RealInputArray $name"
@@ -40,7 +40,7 @@ end
 Connector with an array of input signals of type Real.
 
 # Parameters:
-- `nin=2`: Number of inputs.
+- `nin`: Number of inputs.
 - `u_start=zeros(nin)`: Guess value for `u`.
 
 # States:
@@ -75,7 +75,7 @@ Connector with one output signal of type Real.
 - `u`: Value of the connector which is a scalar.
 """ RealOutput
 
-@connector function RealOutputArray(; name, nout = 2, u_start = zeros(nout))
+@connector function RealOutputArray(; name, nout, u_start = zeros(nout))
     @variables u(t)[1:nout] [
         output = true,
         description = "Inner variable in RealOutputArray $name"
@@ -89,7 +89,7 @@ end
 Connector with an array of output signals of type Real.
 
 # Parameters:
-- `nout=2`: Number of outputs.
+- `nout`: Number of outputs.
 - `u_start=zeros(nout)`: Guess value for `u`.
 
 # States:
