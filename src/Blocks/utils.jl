@@ -1,58 +1,100 @@
 @connector function RealInput(; name, nin = 1, u_start = nin > 1 ? zeros(nin) : 0.0)
+    nin > 1 && @warn "For inputs greater than one, use `RealInputArray`."
     if nin == 1
-        @variables u(t)=u_start [
+        @variables u(t) [
             input = true,
             description = "Inner variable in RealInput $name"
         ]
     else
-        @variables u(t)[1:nin]=u_start [
+        @variables u(t)[1:nin] [
             input = true,
             description = "Inner variable in RealInput $name"
         ]
         u = collect(u)
     end
-    ODESystem(Equation[], t, [u...], []; name = name)
+    ODESystem(Equation[], t, [u...], []; name = name, guesses = [u => u_start])
 end
 @doc """
-    RealInput(;name, nin, u_start)
+    RealInput(;name, u_start)
 
 Connector with one input signal of type Real.
 
 # Parameters:
-- `nin=1`: Number of inputs
-- `u_start=0`: Initial value for `u`
+- `u_start=0`: Guess value for `u`.
 
 # States:
-- `u`: Value of the connector; if nin=1 this is a scalar
+- `u`: Value of the connector which is a scalar.
 """ RealInput
 
+@connector function RealInputArray(; name, nin, u_start = zeros(nin))
+    @variables u(t)[1:nin] [
+        input = true,
+        description = "Inner variable in RealInputArray $name"
+    ]
+    u = collect(u)
+    ODESystem(Equation[], t, [u...], []; name = name, guesses = [u => u_start])
+end
+@doc """
+    RealInputArray(;name, nin, u_start)
+
+Connector with an array of input signals of type Real.
+
+# Parameters:
+- `nin`: Number of inputs.
+- `u_start=zeros(nin)`: Guess value for `u`.
+
+# States:
+- `u`: Value of the connector which is an array.
+""" RealInputArray
+
 @connector function RealOutput(; name, nout = 1, u_start = nout > 1 ? zeros(nout) : 0.0)
+    nout > 1 && @warn "For outputs greater than one, use `RealOutputArray`."
     if nout == 1
-        @variables u(t)=u_start [
+        @variables u(t) [
             output = true,
             description = "Inner variable in RealOutput $name"
         ]
     else
-        @variables u(t)[1:nout]=u_start [
+        @variables u(t)[1:nout] [
             output = true,
             description = "Inner variable in RealOutput $name"
         ]
         u = collect(u)
     end
-    ODESystem(Equation[], t, [u...], []; name = name)
+    ODESystem(Equation[], t, [u...], []; name = name, guesses = [u => u_start])
 end
 @doc """
-    RealOutput(;name, nout, u_start)
+    RealOutput(;name, u_start)
 
 Connector with one output signal of type Real.
 
 # Parameters:
-- `nout=1`: Number of outputs
-- `u_start=0`: Initial value for `u`
+- `u_start=0`: Guess value for `u`.
 
 # States:
-- `u`: Value of the connector; if nout=1 this is a scalar
+- `u`: Value of the connector which is a scalar.
 """ RealOutput
+
+@connector function RealOutputArray(; name, nout, u_start = zeros(nout))
+    @variables u(t)[1:nout] [
+        output = true,
+        description = "Inner variable in RealOutputArray $name"
+    ]
+    u = collect(u)
+    ODESystem(Equation[], t, [u...], []; name = name, guesses = [u => u_start])
+end
+@doc """
+    RealOutputArray(;name, nout, u_start)
+
+Connector with an array of output signals of type Real.
+
+# Parameters:
+- `nout`: Number of outputs.
+- `u_start=zeros(nout)`: Guess value for `u`.
+
+# States:
+- `u`: Value of the connector which is an array.
+""" RealOutputArray
 
 """
     SISO(;name, u_start = 0.0, y_start = 0.0)
