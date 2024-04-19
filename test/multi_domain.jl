@@ -1,7 +1,6 @@
 using ModelingToolkitStandardLibrary.Electrical
 using ModelingToolkitStandardLibrary.Mechanical.Rotational
 using ModelingToolkitStandardLibrary.Blocks
-using ModelingToolkitStandardLibrary.Blocks
 using ModelingToolkitStandardLibrary.Thermal
 import ModelingToolkitStandardLibrary
 using ModelingToolkit, OrdinaryDiffEq, Test
