@@ -237,15 +237,15 @@ Generate ramp signal.
   - `output`
 """
 @component function Ramp(; name,
-        height = 1,
-        duration = 1,
-        offset = 0,
-        start_time = 0,
+        height = 1.0,
+        duration = 1.0,
+        offset = 0.0,
+        start_time = 0.0,
         smooth = false)
     @named output = RealOutput()
     pars = @parameters offset=offset start_time=start_time height=height duration=duration
     equation = if smooth == false
-        offset + ifelse(t < start_time, 0,
+        offset + ifelse(t < start_time, zero(height),
             ifelse(t < (start_time + duration), (t - start_time) * height / duration,
                 height))
     else
@@ -320,20 +320,20 @@ Generate step signal.
 
   - `output`
 """
-@component function Step(; name, height = 1, offset = 0, start_time = 0, duration = Inf,
+@component function Step(; name, height = 1.0, offset = 0.0, start_time = 0.0, duration = Inf,
         smooth = 1e-5)
     @named output = RealOutput()
     duration_numeric = duration
     pars = @parameters offset=offset start_time=start_time height=height duration=duration
     equation = if smooth == false # use comparison in case smooth is a float
-        offset + ifelse((start_time < t) & (t < start_time + duration), height, 0)
+        offset + ifelse((start_time < t) & (t < start_time + duration), height, zero(height))
     else
         smooth === true && (smooth = 1e-5)
         if duration_numeric == Inf
             smooth_step(t, smooth, height, offset, start_time)
         else
             smooth_step(t, smooth, height, offset, start_time) -
-            smooth_step(t, smooth, height, 0, start_time + duration)
+            smooth_step(t, smooth, height, zero(start_time), start_time + duration)
         end
     end
 
@@ -366,17 +366,17 @@ Exponentially damped sine signal.
 """
 @component function ExpSine(; name,
         frequency,
-        amplitude = 1,
+        amplitude = 1.0,
         damping = 0.1,
-        phase = 0,
-        offset = 0,
-        start_time = 0,
+        phase = 0.0,
+        offset = 0.0,
+        start_time = 0.0,
         smooth = false)
     @named output = RealOutput()
     pars = @parameters offset=offset start_time=start_time amplitude=amplitude frequency=frequency phase=phase damping=damping
 
     equation = if smooth == false
-        offset + ifelse(t < start_time, 0,
+        offset + ifelse(t < start_time, zero(amplitude),
             amplitude * exp(-damping * (t - start_time)) *
             sin(2 * pi * frequency * (t - start_time) + phase))
     else
