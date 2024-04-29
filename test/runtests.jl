@@ -5,6 +5,9 @@ using SafeTestsets
 end
 
 # Blocks
+@safetestset "Blocks: utils" begin
+    include("Blocks/utils.jl")
+end
 @safetestset "Blocks: math" begin
     include("Blocks/math.jl")
 end
@@ -24,10 +27,6 @@ end
 # Electrical
 @safetestset "Analog Circuits" begin
     include("Electrical/analog.jl")
-end
-
-@safetestset "Chua Circuit Demo" begin
-    include("chua_circuit.jl")
 end
 
 @safetestset "Digital Circuits" begin

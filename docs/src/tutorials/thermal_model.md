@@ -8,8 +8,7 @@ from dividing the total initial energy in the system by the sum of the heat capa
 
 ```@example
 using ModelingToolkitStandardLibrary.Thermal, ModelingToolkit, OrdinaryDiffEq, Plots
-
-@parameters t
+using ModelingToolkit: t_nounits as t
 
 C1 = 15
 C2 = 15
@@ -23,7 +22,7 @@ connections = [
     connect(mass1.port, conduction.port_a),
     connect(conduction.port_b, mass2.port),
     connect(mass1.port, Tsensor1.port),
-    connect(mass2.port, Tsensor2.port),
+    connect(mass2.port, Tsensor2.port)
 ]
 
 @named model = ODESystem(connections, t,

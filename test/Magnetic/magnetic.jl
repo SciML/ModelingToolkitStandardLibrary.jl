@@ -4,10 +4,9 @@ import ModelingToolkitStandardLibrary.Electrical
 import ModelingToolkitStandardLibrary.Blocks
 import ModelingToolkitStandardLibrary.Magnetic
 using ModelingToolkit, OrdinaryDiffEq, Test
+using ModelingToolkit: t_nounits as t
 using OrdinaryDiffEq: ReturnCode.Success
 # using Plots
-
-@parameters t
 
 @testset "Inductor" begin
     mu_air = 1
@@ -26,16 +25,16 @@ using OrdinaryDiffEq: ReturnCode.Success
     @named r_mFe = Magnetic.FluxTubes.ConstantReluctance(R_m = a * b * l_Fe * mu_Fe)
     @named r_mLeak = Magnetic.FluxTubes.ConstantReluctance(R_m = 1.2e6)
     connections = [connect(source.output, voltage.V)
-        connect(voltage.p, r.p)
-        connect(r.n, coil.p)
-        connect(voltage.n, coil.n)
-        connect(coil.port_p, r_mLeak.port_p)
-        connect(r_mLeak.port_p, r_mAirPar.port_p)
-        connect(r_mAirPar.port_n, r_mFe.port_p)
-        connect(r_mFe.port_n, r_mLeak.port_n)
-        connect(r_mFe.port_n, coil.port_n)
-        connect(ground.g, voltage.n)
-        connect(ground_m.port, r_mFe.port_n)]
+                   connect(voltage.p, r.p)
+                   connect(r.n, coil.p)
+                   connect(voltage.n, coil.n)
+                   connect(coil.port_p, r_mLeak.port_p)
+                   connect(r_mLeak.port_p, r_mAirPar.port_p)
+                   connect(r_mAirPar.port_n, r_mFe.port_p)
+                   connect(r_mFe.port_n, r_mLeak.port_n)
+                   connect(r_mFe.port_n, coil.port_n)
+                   connect(ground.g, voltage.n)
+                   connect(ground_m.port, r_mFe.port_n)]
     @named model = ODESystem(connections, t,
         systems = [
             source,
@@ -46,7 +45,7 @@ using OrdinaryDiffEq: ReturnCode.Success
             r_mAirPar,
             r_mFe,
             r_mLeak,
-            voltage,
+            voltage
         ])
     sys = structural_simplify(model)
     prob = ODEProblem(sys, Pair[], (0, 0.1))

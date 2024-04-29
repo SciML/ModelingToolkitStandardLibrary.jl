@@ -46,13 +46,13 @@ Sliding mass with inertia
 
   - `m`: [kg] mass of sliding body
   - `v_0`: [m/s] Initial value of absolute linear velocity of sliding mass (default 0 m/s)
-  - `s`: [m] (optional) initial value of absolute position of sliding mass
-  - `g`: [m/s²] (optional) gravity field acting on the mass, positive value acts in the positive direction
+  - `s`: [m] initial value of absolute position of sliding mass (optional)
+  - `g`: [m/s²] gravity field acting on the mass, positive value acts in the positive direction (optional)
 
 # States:
 
   - `v`: [m/s] absolute linear velocity of sliding mass
-  - `s`: [m] (optional with parameter s) absolute position of sliding mass
+  - `s`: [m] absolute position of sliding mass (optional with parameter s)
 
 # Connectors:
 
@@ -70,7 +70,7 @@ Sliding mass with inertia
     end
 
     eqs = [flange.v ~ v
-        flange.f ~ f]
+           flange.f ~ f]
 
     # gravity option
     if g !== nothing
@@ -130,9 +130,9 @@ end # default
     @named flange_b = MechanicalPort(; v = flange_b__v)
 
     eqs = [D(delta_s) ~ flange_a.v - flange_b.v
-        f ~ k * delta_s
-        flange_a.f ~ +f
-        flange_b.f ~ -f]
+           f ~ k * delta_s
+           flange_a.f ~ +f
+           flange_b.f ~ -f]
     return compose(ODESystem(eqs, t, vars, pars; name = name),
         flange_a,
         flange_b) #flange_a.f => +k*delta_s, flange_b.f => -k*delta_s
@@ -155,10 +155,10 @@ const ABS = Val(:absolute)
     @named flange_b = MechanicalPort(; v = flange_b__v)
 
     eqs = [D(sa) ~ flange_a.v
-        D(sb) ~ flange_b.v
-        f ~ k * (sa - sb - l) #delta_s
-        flange_a.f ~ +f
-        flange_b.f ~ -f]
+           D(sb) ~ flange_b.v
+           f ~ k * (sa - sb - l) #delta_s
+           flange_a.f ~ +f
+           flange_b.f ~ -f]
     return compose(ODESystem(eqs, t, vars, pars; name = name),
         flange_a,
         flange_b) #, flange_a.f => k * (flange_a__s - flange_b__s - l)

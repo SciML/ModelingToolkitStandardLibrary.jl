@@ -4,11 +4,9 @@ Library to model 1-dimensional, rotational mechanical systems
 module Rotational
 
 using ModelingToolkit, Symbolics, IfElse
+using ModelingToolkit: t_nounits as t, D_nounits as D
 using ...Blocks: RealInput, RealOutput
 import ...@symcheck
-
-@parameters t
-D = Differential(t)
 
 export Flange, Support
 include("utils.jl")

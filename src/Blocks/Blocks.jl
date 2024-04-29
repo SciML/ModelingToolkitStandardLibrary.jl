@@ -5,12 +5,9 @@ module Blocks
 using ModelingToolkit, Symbolics
 import IfElse: ifelse
 import ..@symcheck
-using ModelingToolkit: getdefault
+using ModelingToolkit: getdefault, t_nounits as t, D_nounits as D
 
-@parameters t
-D = Differential(t)
-
-export RealInput, RealOutput, SISO
+export RealInput, RealInputArray, RealOutput, RealOutputArray, SISO
 include("utils.jl")
 
 export Gain, Sum, MatrixGain, Feedback, Add, Add3, Product, Division
@@ -19,7 +16,7 @@ export Log, Log10
 include("math.jl")
 
 export Constant, TimeVaryingFunction, Sine, Cosine, ContinuousClock, Ramp, Step, ExpSine,
-    Square, Triangular, Parameter, SampledData
+       Square, Triangular, Parameter, SampledData
 include("sources.jl")
 
 export Limiter, DeadZone, SlewRateLimiter
@@ -30,7 +27,7 @@ export PI, LimPI, PID, LimPID
 include("continuous.jl")
 
 export AnalysisPoint, get_sensitivity, get_comp_sensitivity,
-    get_looptransfer, open_loop
+       get_looptransfer, open_loop
 include("analysis_points.jl")
 
 end

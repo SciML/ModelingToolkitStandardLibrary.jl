@@ -111,7 +111,7 @@ Partial model for a component with one translational 1-dim. shaft flange and a s
     if use_support
         @named support = Support()
         eqs = [support.s ~ s_support
-            support.f ~ -flange.f]
+               support.f ~ -flange.f]
         push!(sys, support)
     else
         eqs = [s_support ~ 0]
@@ -140,7 +140,7 @@ Partial model for a component with two translational 1-dim. flanges and a suppor
     if use_support
         @named support = Support()
         eqs = [support.s ~ s_support
-            support.f ~ -flange_a.f - flange_b.f]
+               support.f ~ -flange_a.f - flange_b.f]
         push!(sys, support)
     else
         eqs = [s_support ~ 0]

@@ -1,4 +1,5 @@
 using ModelingToolkit
+using ModelingToolkit: t_nounits as t
 using ModelingToolkitStandardLibrary.Electrical
 using ModelingToolkitStandardLibrary.Electrical: OnePort
 using OrdinaryDiffEq
@@ -6,18 +7,16 @@ using OrdinaryDiffEq: ReturnCode.Success
 using IfElse: ifelse
 
 @testset "Chua Circuit" begin
-    @parameters t
-
     @component function NonlinearResistor(; name, Ga, Gb, Ve)
         @named oneport = OnePort()
         @unpack v, i = oneport
         pars = @parameters Ga=Ga Gb=Gb Ve=Ve
         eqs = [
             i ~ ifelse(v < -Ve,
-                Gb * (v + Ve) - Ga * Ve,
-                ifelse(v > Ve,
-                    Gb * (v - Ve) + Ga * Ve,
-                    Ga * v)),
+            Gb * (v + Ve) - Ga * Ve,
+            ifelse(v > Ve,
+                Gb * (v - Ve) + Ga * Ve,
+                Ga * v))
         ]
         extend(ODESystem(eqs, t, [], pars; name = name), oneport)
     end
@@ -33,14 +32,14 @@ using IfElse: ifelse
     @named Gnd = Ground()
 
     connections = [connect(L.p, G.p)
-        connect(G.n, Nr.p)
-        connect(Nr.n, Gnd.g)
-        connect(C1.p, G.n)
-        connect(L.n, Ro.p)
-        connect(G.p, C2.p)
-        connect(C1.n, Gnd.g)
-        connect(C2.n, Gnd.g)
-        connect(Ro.n, Gnd.g)]
+                   connect(G.n, Nr.p)
+                   connect(Nr.n, Gnd.g)
+                   connect(C1.p, G.n)
+                   connect(L.n, Ro.p)
+                   connect(G.p, C2.p)
+                   connect(C1.n, Gnd.g)
+                   connect(C2.n, Gnd.g)
+                   connect(Ro.n, Gnd.g)]
 
     @named model = ODESystem(connections, t, systems = [L, Ro, G, C1, C2, Nr, Gnd])
     sys = structural_simplify(model)

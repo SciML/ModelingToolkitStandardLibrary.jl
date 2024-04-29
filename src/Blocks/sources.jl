@@ -147,7 +147,7 @@ Generate sine signal.
     end
 
     eqs = [
-        output.u ~ equation,
+        output.u ~ equation
     ]
 
     compose(ODESystem(eqs, t, [], pars; name = name), [output])
@@ -157,12 +157,12 @@ end
     Cosine(; name, frequency, amplitude = 1, phase = 0, offset = 0, start_time = 0,
     smooth = false)
 
-Cosine signal.
+Generate cosine signal.
 
 # Parameters:
-- `frequency`: [Hz] Frequency of sine wave
-- `amplitude`: Amplitude of sine wave
-- `phase`: [rad] Phase of sine wave
+- `frequency`: [Hz] Frequency of cosine wave
+- `amplitude`: Amplitude of cosine wave
+- `phase`: [rad] Phase of cosine wave
 - `offset`: Offset of output signal
 - `start_time`: [s] Output `y = offset` for `t < start_time`
 - `smooth`:  If `true`, returns a smooth wave. Defaults to `false`
@@ -171,7 +171,6 @@ Cosine signal.
 # Connectors:
 - `output`
 """
-
 @component function Cosine(; name,
         frequency,
         amplitude = 1,
@@ -189,7 +188,7 @@ Cosine signal.
         smooth_cos(t, smooth, frequency, amplitude, phase, offset, start_time)
     end
     eqs = [
-        output.u ~ equation,
+        output.u ~ equation
     ]
 
     compose(ODESystem(eqs, t, [], pars; name = name), [output])
@@ -213,7 +212,7 @@ Generate current time signal.
     @named output = RealOutput()
     pars = @parameters offset=offset start_time=start_time
     eqs = [
-        output.u ~ offset + ifelse(t < start_time, zero(t), t - start_time),
+        output.u ~ offset + ifelse(t < start_time, zero(t), t - start_time)
     ]
 
     compose(ODESystem(eqs, t, [], pars; name = name), [output])
@@ -238,15 +237,15 @@ Generate ramp signal.
   - `output`
 """
 @component function Ramp(; name,
-        height = 1,
-        duration = 1,
-        offset = 0,
-        start_time = 0,
+        height = 1.0,
+        duration = 1.0,
+        offset = 0.0,
+        start_time = 0.0,
         smooth = false)
     @named output = RealOutput()
     pars = @parameters offset=offset start_time=start_time height=height duration=duration
     equation = if smooth == false
-        offset + ifelse(t < start_time, 0,
+        offset + ifelse(t < start_time, zero(height),
             ifelse(t < (start_time + duration), (t - start_time) * height / duration,
                 height))
     else
@@ -255,7 +254,7 @@ Generate ramp signal.
     end
 
     eqs = [
-        output.u ~ equation,
+        output.u ~ equation
     ]
 
     compose(ODESystem(eqs, t, [], pars; name = name), [output])
@@ -297,7 +296,7 @@ Generate smooth square signal.
     end
 
     eqs = [
-        output.u ~ equation,
+        output.u ~ equation
     ]
 
     compose(ODESystem(eqs, t, [], pars; name = name), [output])
@@ -321,25 +320,27 @@ Generate step signal.
 
   - `output`
 """
-@component function Step(; name, height = 1, offset = 0, start_time = 0, duration = Inf,
+@component function Step(;
+        name, height = 1.0, offset = 0.0, start_time = 0.0, duration = Inf,
         smooth = 1e-5)
     @named output = RealOutput()
     duration_numeric = duration
     pars = @parameters offset=offset start_time=start_time height=height duration=duration
     equation = if smooth == false # use comparison in case smooth is a float
-        offset + ifelse((start_time < t) & (t < start_time + duration), height, 0)
+        offset +
+        ifelse((start_time < t) & (t < start_time + duration), height, zero(height))
     else
         smooth === true && (smooth = 1e-5)
         if duration_numeric == Inf
             smooth_step(t, smooth, height, offset, start_time)
         else
             smooth_step(t, smooth, height, offset, start_time) -
-            smooth_step(t, smooth, height, 0, start_time + duration)
+            smooth_step(t, smooth, height, zero(start_time), start_time + duration)
         end
     end
 
     eqs = [
-        output.u ~ equation,
+        output.u ~ equation
     ]
 
     compose(ODESystem(eqs, t, [], pars; name = name), [output])
@@ -367,17 +368,17 @@ Exponentially damped sine signal.
 """
 @component function ExpSine(; name,
         frequency,
-        amplitude = 1,
+        amplitude = 1.0,
         damping = 0.1,
-        phase = 0,
-        offset = 0,
-        start_time = 0,
+        phase = 0.0,
+        offset = 0.0,
+        start_time = 0.0,
         smooth = false)
     @named output = RealOutput()
     pars = @parameters offset=offset start_time=start_time amplitude=amplitude frequency=frequency phase=phase damping=damping
 
     equation = if smooth == false
-        offset + ifelse(t < start_time, 0,
+        offset + ifelse(t < start_time, zero(amplitude),
             amplitude * exp(-damping * (t - start_time)) *
             sin(2 * pi * frequency * (t - start_time) + phase))
     else
@@ -387,7 +388,7 @@ Exponentially damped sine signal.
     end
 
     eqs = [
-        output.u ~ equation,
+        output.u ~ equation
     ]
 
     compose(ODESystem(eqs, t, [], pars; name = name), [output])
@@ -430,7 +431,7 @@ Generate smooth triangular signal for frequencies less than or equal to 25 Hz
     end
 
     eqs = [
-        output.u ~ equation,
+        output.u ~ equation
     ]
 
     compose(ODESystem(eqs, t, [], pars; name = name), [output])
@@ -521,7 +522,7 @@ function Base.show(io::IO, m::MIME"text/plain", p::Parameter)
 end
 
 get_sample_time(memory::Parameter) = memory.ref
-Symbolics.@register_symbolic get_sample_time(memory)
+Symbolics.@register_symbolic get_sample_time(memory::Parameter)
 
 Base.convert(::Type{T}, x::Parameter{T}) where {T <: Real} = x.ref
 function Base.convert(::Type{<:Parameter{T}}, x::Number) where {T <: Real}
@@ -603,8 +604,9 @@ end
 function get_sampled_data(t, buffer)
     get_sampled_data(t, buffer.data, buffer.ref, buffer.circular_buffer)
 end
-Symbolics.@register_symbolic get_sampled_data(t, buffer)
-Symbolics.@register_symbolic get_sampled_data(t, buffer, dt, circular_buffer) false
+Symbolics.@register_symbolic Parameter(data::Vector, ref, circular_buffer::Bool)
+Symbolics.@register_symbolic get_sampled_data(t, buffer::Parameter)
+Symbolics.@register_symbolic get_sampled_data(t, buffer::Vector, dt, circular_buffer) false
 
 function Symbolics.derivative(::typeof(get_sampled_data), args::NTuple{2, Any}, ::Val{1})
     t = @inbounds args[1]
@@ -655,21 +657,23 @@ data input component.
         buffer,
         sample_time,
         circular_buffer = true)
+    T = eltype(buffer)
     pars = @parameters begin
-        buffer = buffer #::Vector{Real}
-        sample_time = sample_time #::Real
-        circular_buffer = circular_buffer #::Bool
+        buffer::Vector{T} = buffer #::Vector{Real}
+        sample_time::T = sample_time #::Real
+        circular_buffer::Bool = circular_buffer #::Bool
     end
+    @parameters p::Parameter{T} = Parameter(buffer, sample_time, circular_buffer)
     vars = []
     systems = @named begin
         output = RealOutput()
     end
     eqs = [
-        output.u ~ get_sampled_data(t, buffer, sample_time, circular_buffer),
+        output.u ~ get_sampled_data(t, p)
     ]
-    return ODESystem(eqs, t, vars, pars; name, systems,
+    return ODESystem(eqs, t, vars, [pars; p]; name, systems,
         defaults = [
-            output.u => get_sampled_data(0.0, buffer, sample_time, circular_buffer),
+            output.u => get_sampled_data(0.0, p)
         ])
 end
 
@@ -684,16 +688,17 @@ data input component.
 # Connectors:
   - `output`
 """
-@component function SampledData(::Val{SampledDataType.struct_based}; name, buffer)
+@component function SampledData(
+        ::Val{SampledDataType.struct_based}; name, buffer::Parameter)
     pars = @parameters begin
-        buffer = buffer #::Parameter
+        buffer::typeof(buffer) = buffer #::Parameter
     end
     vars = []
     systems = @named begin
         output = RealOutput()
     end
     eqs = [
-        output.u ~ get_sampled_data(t, buffer),
+        output.u ~ get_sampled_data(t, buffer)
     ]
     return ODESystem(eqs, t, vars, pars; name, systems,
         defaults = [output.u => get_sampled_data(0.0, buffer)])

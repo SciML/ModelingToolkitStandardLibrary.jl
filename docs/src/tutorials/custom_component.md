@@ -8,6 +8,7 @@ First, we need to make some imports.
 
 ```@example components
 using ModelingToolkit
+using ModelingToolkit: t_nounits as t
 using ModelingToolkitStandardLibrary.Electrical
 using ModelingToolkitStandardLibrary.Electrical: OnePort
 using OrdinaryDiffEq
@@ -35,18 +36,16 @@ end NonlinearResistor;
 this can almost be directly translated to the syntax of `ModelingToolkit`.
 
 ```@example components
-@parameters t
-
 function NonlinearResistor(; name, Ga, Gb, Ve)
     @named oneport = OnePort()
     @unpack v, i = oneport
     pars = @parameters Ga=Ga Gb=Gb Ve=Ve
     eqs = [
         i ~ ifelse(v < -Ve,
-            Gb * (v + Ve) - Ga * Ve,
-            ifelse(v > Ve,
-                Gb * (v - Ve) + Ga * Ve,
-                Ga * v)),
+        Gb * (v + Ve) - Ga * Ve,
+        ifelse(v > Ve,
+            Gb * (v - Ve) + Ga * Ve,
+            Ga * v))
     ]
     extend(ODESystem(eqs, t, [], pars; name = name), oneport)
 end
@@ -102,14 +101,14 @@ The final model can now be created with the components from the library and the 
 @named Gnd = Ground()
 
 connections = [connect(L.p, G.p)
-    connect(G.n, Nr.p)
-    connect(Nr.n, Gnd.g)
-    connect(C1.p, G.n)
-    connect(L.n, Ro.p)
-    connect(G.p, C2.p)
-    connect(C1.n, Gnd.g)
-    connect(C2.n, Gnd.g)
-    connect(Ro.n, Gnd.g)]
+               connect(G.n, Nr.p)
+               connect(Nr.n, Gnd.g)
+               connect(C1.p, G.n)
+               connect(L.n, Ro.p)
+               connect(G.p, C2.p)
+               connect(C1.n, Gnd.g)
+               connect(C2.n, Gnd.g)
+               connect(Ro.n, Gnd.g)]
 
 @named model = ODESystem(connections, t, systems = [L, Ro, G, C1, C2, Nr, Gnd])
 nothing # hide
@@ -132,7 +131,7 @@ Plots.savefig("chua_phase_plane.png")
 nothing # hide
 
 Plots.plot(sol; idxs = [C1.v, C2.v, L.i],
-    labels = ["C1 Voltage in V" "C1 Voltage in V" "Inductor Current in A"])
+    labels = ["C1 Voltage in V" "C2 Voltage in V" "Inductor Current in A"])
 Plots.savefig("chua.png")
 nothing # hide
 ```

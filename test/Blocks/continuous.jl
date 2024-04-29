@@ -1,9 +1,8 @@
 using ModelingToolkit, ModelingToolkitStandardLibrary, OrdinaryDiffEq
 using ModelingToolkitStandardLibrary.Blocks
+using ModelingToolkit: t_nounits as t
 using OrdinaryDiffEq: ReturnCode.Success
 using Test
-
-@parameters t
 
 #=
 Testing strategy:
@@ -28,9 +27,10 @@ end
     @named source = Sine(; frequency = 1)
     @named int = Integrator(; k = 1)
     @named der = Derivative(; k = 1, T = 0.001)
-    @named iosys = ODESystem([
+    @named iosys = ODESystem(
+        [
             connect(source.output, der.input),
-            connect(der.output, int.input),
+            connect(der.output, int.input)
         ],
         t,
         systems = [int, source, der])
@@ -82,7 +82,7 @@ end
     @named pt2 = SecondOrder(; k = k, w = w, d = d)
     @named iosys = ODESystem(connect(c.output, pt2.input), t, systems = [pt2, c])
     sys = structural_simplify(iosys)
-    prob = ODEProblem(sys, Pair[], (0.0, 100.0))
+    prob = ODEProblem(sys, [unknowns(sys) .=> 0.0...; pt2.xd => 0.0], (0.0, 100.0))
     sol = solve(prob, Rodas4())
     @test sol.retcode == Success
     @test sol[pt2.output.u]≈pt2_func.(sol.t, k, w, d) atol=1e-3
@@ -96,7 +96,7 @@ end
     @named ss = StateSpace(; A, B, C, D, x = zeros(2))
     @named c = Constant(; k = 1)
     @named model = ODESystem([
-            connect(c.output, ss.input),
+            connect(c.output, ss.input)
         ],
         t,
         systems = [ss, c])
@@ -116,7 +116,7 @@ end
     y0 = [2]
     @named ss = StateSpace(; A, B, C, D, x = zeros(2), u0, y0)
     @named model = ODESystem([
-            connect(c.output, ss.input),
+            connect(c.output, ss.input)
         ],
         t,
         systems = [ss, c])
@@ -140,8 +140,8 @@ Second order demo plant
     D = Differential(t)
     sts = @variables x1(t)=x[1] x2(t)=x[2]
     eqs = [D(x1) ~ x2
-        D(x2) ~ -x1 - 0.5 * x2 + input.u
-        output.u ~ 0.9 * x1 + x2]
+           D(x2) ~ -x1 - 0.5 * x2 + input.u
+           output.u ~ 0.9 * x1 + x2]
     compose(ODESystem(eqs, t, sts, []; name), [input, output])
 end
 
@@ -151,11 +151,12 @@ end
     @named pi_controller = PI(k = 1, T = 1)
     @named plant = Plant()
     @named fb = Feedback()
-    @named model = ODESystem([
+    @named model = ODESystem(
+        [
             connect(ref.output, fb.input1),
             connect(plant.output, fb.input2),
             connect(fb.output, pi_controller.err_input),
-            connect(pi_controller.ctr_output, plant.input),
+            connect(pi_controller.ctr_output, plant.input)
         ],
         t,
         systems = [pi_controller, plant, ref, fb])
@@ -173,11 +174,12 @@ end
     @named pid_controller = PID(k = 3, Ti = 0.5, Td = 1 / 100)
     @named plant = Plant()
     @named fb = Feedback()
-    @named model = ODESystem([
+    @named model = ODESystem(
+        [
             connect(ref.output, fb.input1),
             connect(plant.output, fb.input2),
             connect(fb.output, pid_controller.err_input),
-            connect(pid_controller.ctr_output, plant.input),
+            connect(pid_controller.ctr_output, plant.input)
         ],
         t,
         systems = [pid_controller, plant, ref, fb])
@@ -190,11 +192,12 @@ end
 
     @testset "PI" begin
         @named pid_controller = PID(k = 3, Ti = 0.5, Td = false)
-        @named model = ODESystem([
+        @named model = ODESystem(
+            [
                 connect(ref.output, fb.input1),
                 connect(plant.output, fb.input2),
                 connect(fb.output, pid_controller.err_input),
-                connect(pid_controller.ctr_output, plant.input),
+                connect(pid_controller.ctr_output, plant.input)
             ],
             t,
             systems = [pid_controller, plant, ref, fb])
@@ -208,11 +211,12 @@ end
 
     @testset "PD" begin
         @named pid_controller = PID(k = 10, Ti = false, Td = 1)
-        @named model = ODESystem([
+        @named model = ODESystem(
+            [
                 connect(ref.output, fb.input1),
                 connect(plant.output, fb.input2),
                 connect(fb.output, pid_controller.err_input),
-                connect(pid_controller.ctr_output, plant.input),
+                connect(pid_controller.ctr_output, plant.input)
             ],
             t,
             systems = [pid_controller, plant, ref, fb])
@@ -240,12 +244,13 @@ end
 
     # without anti-windup measure
     sol = let
-        @named model = ODESystem([
+        @named model = ODESystem(
+            [
                 connect(ref.output, fb.input1),
                 connect(plant.output, fb.input2),
                 connect(fb.output, pi_controller.err_input),
                 connect(pi_controller.ctr_output, sat.input),
-                connect(sat.output, plant.input),
+                connect(sat.output, plant.input)
             ],
             t,
             systems = [pi_controller, plant, ref, fb, sat])
@@ -256,12 +261,13 @@ end
 
     # with anti-windup measure
     sol_lim = let
-        @named model = ODESystem([
+        @named model = ODESystem(
+            [
                 connect(ref.output, fb.input1),
                 connect(plant.output, fb.input2),
                 connect(fb.output, pi_controller_lim.err_input),
                 connect(pi_controller_lim.ctr_output, sat.input),
-                connect(sat.output, plant.input),
+                connect(sat.output, plant.input)
             ],
             t,
             systems = [pi_controller_lim, plant, ref, fb, sat])
@@ -285,13 +291,15 @@ end
 @testset "LimPID" begin
     re_val = 1
     @named ref = Constant(; k = re_val)
-    @named pid_controller = LimPID(k = 3, Ti = 0.5, Td = 1 / 100, u_max = 1.5, u_min = -1.5,
+    @named pid_controller = LimPID(
+        k = 3, Ti = 0.5, Td = 1 / 100, u_max = 1.5, u_min = -1.5,
         Ni = 0.1 / 0.5)
     @named plant = Plant()
-    @named model = ODESystem([
+    @named model = ODESystem(
+        [
             connect(ref.output, pid_controller.reference),
             connect(plant.output, pid_controller.measurement),
-            connect(pid_controller.ctr_output, plant.input),
+            connect(pid_controller.ctr_output, plant.input)
         ],
         t,
         systems = [pid_controller, plant, ref])
@@ -308,10 +316,11 @@ end
     @testset "PI" begin
         @named pid_controller = LimPID(k = 3, Ti = 0.5, Td = false, u_max = 1.5,
             u_min = -1.5, Ni = 0.1 / 0.5)
-        @named model = ODESystem([
+        @named model = ODESystem(
+            [
                 connect(ref.output, pid_controller.reference),
                 connect(plant.output, pid_controller.measurement),
-                connect(pid_controller.ctr_output, plant.input),
+                connect(pid_controller.ctr_output, plant.input)
             ],
             t,
             systems = [pid_controller, plant, ref])
@@ -328,10 +337,11 @@ end
     @testset "PD" begin
         @named pid_controller = LimPID(k = 10, Ti = false, Td = 1, u_max = 1.5,
             u_min = -1.5)
-        @named model = ODESystem([
+        @named model = ODESystem(
+            [
                 connect(ref.output, pid_controller.reference),
                 connect(plant.output, pid_controller.measurement),
-                connect(pid_controller.ctr_output, plant.input),
+                connect(pid_controller.ctr_output, plant.input)
             ],
             t,
             systems = [pid_controller, plant, ref])
@@ -349,10 +359,11 @@ end
         @testset "wp" begin
             @named pid_controller = LimPID(k = 3, Ti = 0.5, Td = 1 / 100, u_max = 1.5,
                 u_min = -1.5, Ni = 0.1 / 0.5, wp = 0, wd = 1)
-            @named model = ODESystem([
+            @named model = ODESystem(
+                [
                     connect(ref.output, pid_controller.reference),
                     connect(plant.output, pid_controller.measurement),
-                    connect(pid_controller.ctr_output, plant.input),
+                    connect(pid_controller.ctr_output, plant.input)
                 ],
                 t,
                 systems = [pid_controller, plant, ref])
@@ -370,10 +381,11 @@ end
         @testset "wd" begin
             @named pid_controller = LimPID(k = 3, Ti = 0.5, Td = 1 / 100, u_max = 1.5,
                 u_min = -1.5, Ni = 0.1 / 0.5, wp = 1, wd = 0)
-            @named model = ODESystem([
+            @named model = ODESystem(
+                [
                     connect(ref.output, pid_controller.reference),
                     connect(plant.output, pid_controller.measurement),
-                    connect(pid_controller.ctr_output, plant.input),
+                    connect(pid_controller.ctr_output, plant.input)
                 ],
                 t,
                 systems = [pid_controller, plant, ref])
@@ -392,10 +404,11 @@ end
     @testset "PI without AWM" begin
         @named pid_controller = LimPID(k = 3, Ti = 0.5, Td = false, u_max = 1.5,
             u_min = -1.5, Ni = Inf)
-        @named model = ODESystem([
+        @named model = ODESystem(
+            [
                 connect(ref.output, pid_controller.reference),
                 connect(plant.output, pid_controller.measurement),
-                connect(pid_controller.ctr_output, plant.input),
+                connect(pid_controller.ctr_output, plant.input)
             ],
             t,
             systems = [pid_controller, plant, ref])

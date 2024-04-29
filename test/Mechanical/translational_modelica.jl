@@ -1,10 +1,8 @@
 using ModelingToolkit, OrdinaryDiffEq, Test
+using ModelingToolkit: t_nounits as t, D_nounits as D
 
 using ModelingToolkitStandardLibrary.Blocks
 import ModelingToolkitStandardLibrary.Mechanical.TranslationalModelica as TP
-
-@parameters t
-D = Differential(t)
 
 @testset "spring damper mass fixed" begin
     @named damper = TP.Damper(; d = 1)
@@ -13,7 +11,7 @@ D = Differential(t)
     @named fixed = TP.Fixed(s0 = 1)
 
     eqs = [connect(spring.flange_a, mass.flange_a, damper.flange_a)
-        connect(spring.flange_b, damper.flange_b, fixed.flange)]
+           connect(spring.flange_b, damper.flange_b, fixed.flange)]
 
     @named model = ODESystem(eqs, t; systems = [fixed, mass, spring, damper])
 
@@ -37,9 +35,9 @@ end
     @named source = Sine(frequency = 3, amplitude = 2)
 
     eqs = [connect(force.f, source.output)
-        connect(force.flange, mass.flange_a)
-        connect(spring.flange_a, mass.flange_b, damper.flange_a)
-        connect(spring.flange_b, damper.flange_b, fixed.flange)]
+           connect(force.flange, mass.flange_a)
+           connect(spring.flange_a, mass.flange_b, damper.flange_a)
+           connect(spring.flange_b, damper.flange_b, fixed.flange)]
 
     @named model = ODESystem(eqs, t;
         systems = [fixed, mass, spring, damper, force, source])

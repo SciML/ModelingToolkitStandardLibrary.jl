@@ -5,7 +5,7 @@ pages = [
         "Custom Components" => "tutorials/custom_component.md",
         "Thermal Conduction Model" => "tutorials/thermal_model.md",
         "DC Motor with Speed Controller" => "tutorials/dc_motor_pi.md",
-        "SampledData Component" => "tutorials/input_component.md",
+        "SampledData Component" => "tutorials/input_component.md"
     ],
     "About Acausal Connections" => [
         "Theory" => "connectors/connections.md",
@@ -18,6 +18,6 @@ pages = [
         "Mechanical Components" => "API/mechanical.md",
         "Thermal Components" => "API/thermal.md",
         "Hydraulic Components" => "API/hydraulic.md",
-        "Linear Analysis" => "API/linear_analysis.md",
-    ],
+        "Linear Analysis" => "API/linear_analysis.md"
+    ]
 ]

@@ -81,7 +81,7 @@ Ideal sensor to measure the relative angular velocity
         w_rel = RealOutput()
     end
     @variables begin
-        phi_rel(t) = 0.0
+        phi_rel(t), [guess = 0.0]
     end
     @equations begin
         0 ~ flange_a.tau + flange_b.tau

@@ -5,15 +5,25 @@ Base.@kwdef mutable struct AnalysisPoint
     out = nothing
     name::Symbol = :nothing
 end
+Base.broadcastable(x::AnalysisPoint) = Ref(x)
+if Base.isdefined(ModelingToolkit, :isconnection)
+    ModelingToolkit.isconnection(::AnalysisPoint) = true
+end
 
 Base.nameof(ap::AnalysisPoint) = ap.name
+function Base.hash(ap::AnalysisPoint, seed::UInt)
+    h1 = hash(ap.in, seed)
+    h2 = hash(ap.out, h1)
+    h3 = hash(ap.name, h2)
+    h3 ⊻ (0xd29cdc51aa6562d4 % UInt)
+end
 
 function ap_var(sys)
     if hasproperty(sys, :u)
         # collect to turn symbolic arrays into arrays of symbols
         return length(sys.u) == 1 ? sys.u : collect(sys.u)
     end
-    x = states(sys)
+    x = unknowns(sys)
     length(x) == 1 && return x[1]
     error("Could not determine the analysis-point variable in system $(nameof(sys)). To use an analysis point, apply it to a connection between two causal blocks containing connectors of type `RealInput/RealOutput` from ModelingToolkitStandardLibrary.Blocks.")
 end
@@ -417,7 +427,7 @@ function ModelingToolkit.linearization_function(sys::ModelingToolkit.AbstractSys
             push!(multiplicities_y, length(yi))
             append!(y, yi)
             [ap_var(ap.in) .~ yi;
-                ap_var(ap.out) .~ ap_var(ap.in)], yi
+             ap_var(ap.out) .~ ap_var(ap.in)], yi
         else # loop opening
             [ap_var(ap.out) .~ 0;], []
         end

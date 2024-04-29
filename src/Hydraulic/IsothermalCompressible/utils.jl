@@ -68,7 +68,7 @@ Fluid parameter setter for isothermal compressible fluid domain.  Defaults given
     end
 
     eqs = [
-        dm ~ 0,
+        dm ~ 0
     ]
 
     ODESystem(eqs, t, vars, pars; name, defaults = [dm => 0])

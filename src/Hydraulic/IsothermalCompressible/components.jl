@@ -20,7 +20,7 @@ Caps a hydraulic port to prevent mass flow in or out.
     end
 
     eqs = [port.p ~ p
-        port.dm ~ 0]
+           port.dm ~ 0]
 
     ODESystem(eqs, t, vars, pars; name, systems)
 end
@@ -38,7 +38,7 @@ end
     end
 
     eqs = [port.p ~ p
-        port.dm ~ dm]
+           port.dm ~ dm]
 
     ODESystem(eqs, t, vars, pars; name, systems)
 end
@@ -117,7 +117,7 @@ Variable length internal flow model of the fully developed incompressible flow f
     end
 
     eqs = [0 ~ port_a.dm + port_b.dm
-        domain_connect(port_a, port_b)]
+           domain_connect(port_a, port_b)]
 
     if variable_length
         push!(eqs, Δp ~ ifelse(c > 0, shear + inertia, zero(c)))
@@ -204,7 +204,7 @@ Constant length internal flow model discretized by `N` (`FixedVolume`: `N`, `Tub
     end
 
     eqs = [connect(volumes[1].port, pipe_bases[1].port_a, port_a)
-        connect(volumes[end].port, pipe_bases[end].port_b, port_b)]
+           connect(volumes[end].port, pipe_bases[end].port_b, port_b)]
 
     for i in 2:(N - 1)
         push!(eqs,
@@ -253,11 +253,11 @@ Reduces the flow from `port_a` to `port_b` by `n`.  Useful for modeling parallel
     end
 
     eqs = [connect(port_a, port_b, open.port)
-        dm_a ~ port_a.dm
-        dm_b ~ dm_a / n
-        open.dm ~ dm_a - dm_b # extra flow dumps into an open port
-    # port_b.dm ~ dm_b # divided flow goes to port_b
-    ]
+           dm_a ~ port_a.dm
+           dm_b ~ dm_a / n
+           open.dm ~ dm_a - dm_b # extra flow dumps into an open port
+           # port_b.dm ~ dm_b # divided flow goes to port_b
+           ]
 
     ODESystem(eqs, t, vars, pars; name, systems)
 end
@@ -303,9 +303,9 @@ end
     end
 
     eqs = [0 ~ port_a.dm + port_b.dm
-        domain_connect(port_a, port_b)
-        dm ~ regRoot(2 * Δp * ρ / c) * x
-        y ~ x]
+           domain_connect(port_a, port_b)
+           dm ~ regRoot(2 * Δp * ρ / c) * x
+           y ~ x]
 
     ODESystem(eqs, t, vars, pars; name, systems)
 end
@@ -352,8 +352,8 @@ Valve with `area` input and discharge coefficient `Cd` defined by https://en.wik
     vars = []
 
     eqs = [connect(base.port_a, port_a)
-        connect(base.port_b, port_b)
-        base.area ~ area.u]
+           connect(base.port_b, port_b)
+           base.area ~ area.u]
 
     ODESystem(eqs, t, vars, pars; name, systems, defaults = [area.u => area_int])
 end
@@ -384,10 +384,10 @@ end
     p = port.p
 
     eqs = [vol ~ dead_volume + area * x
-        D(x) ~ dx
-        D(rho) ~ drho
-        rho ~ full_density(port, p)
-        dm ~ drho * vol * Χ1 + rho * area * dx * Χ2]
+           D(x) ~ dx
+           D(rho) ~ drho
+           rho ~ full_density(port, p)
+           dm ~ drho * vol * Χ1 + rho * area * dx * Χ2]
 
     ODESystem(eqs, t, vars, pars; name, systems)
 end
@@ -424,8 +424,8 @@ Fixed fluid volume.
     p = port.p
 
     eqs = [D(rho) ~ drho
-        rho ~ full_density(port, p)
-        dm ~ drho * vol]
+           rho ~ full_density(port, p)
+           dm ~ drho * vol]
 
     ODESystem(eqs, t, vars, pars; name, systems)
 end
@@ -647,9 +647,9 @@ dm ────►               │  │ area
     end
 
     eqs = [vol ~ x * area
-        D(x) ~ flange.v * direction
-        damper.area ~ damper_area
-        connect(port, damper.port_b)]
+           D(x) ~ flange.v * direction
+           damper.area ~ damper_area
+           connect(port, damper.port_b)]
 
     volumes = []
     if N > 0
@@ -680,10 +680,10 @@ dm ────►               │  │ area
 
         for i in 1:N
             push!(eqs,
-                volumes[i].dx ~ ifelse((vol >= (i - 1) * (x_max / N) * area) &
-                                       (vol < (i) * (x_max / N) * area),
-                    direction * flange.v, 0))
-
+                volumes[i].dx ~ ifelse(
+                    (vol >= (i - 1) * (x_max / N) * area) &
+                    (vol < (i) * (x_max / N) * area),
+                    flange.v * direction, 0))
             push!(eqs, pipe_bases[i].x ~ volumes[i].vol / volumes[i].area)
         end
     else
@@ -721,11 +721,11 @@ end
     end
 
     eqs = [D(x) ~ dx
-        flange.v ~ dx
-        flange.f ~ 0 #TODO: model flow force
-        connect(valve.port_a, port_a)
-        connect(valve.port_b, port_b)
-        valve.area ~ x * 2π * d]
+           flange.v ~ dx
+           flange.f ~ 0 #TODO: model flow force
+           connect(valve.port_a, port_a)
+           connect(valve.port_b, port_b)
+           valve.area ~ x * 2π * d]
 
     ODESystem(eqs, t, vars, pars; name, systems, defaults = [flange.v => 0])
 end
@@ -765,10 +765,10 @@ end
     end
 
     eqs = [connect(vSA.port_a, port_s)
-        connect(vSA.port_b, port_a)
-        connect(vBR.port_a, port_b)
-        connect(vBR.port_b, port_r)
-        connect(vSA.flange, vBR.flange, mass.flange, flange)]
+           connect(vSA.port_b, port_a)
+           connect(vBR.port_a, port_b)
+           connect(vBR.port_b, port_r)
+           connect(vSA.flange, vBR.flange, mass.flange, flange)]
 
     ODESystem(eqs, t, vars, pars; name, systems, defaults = [flange.v => 0])
 end
@@ -861,10 +861,10 @@ end
     end
 
     eqs = [connect(vol_a.port, port_a)
-        connect(vol_b.port, port_b)
-        connect(vol_a.flange, vol_b.flange, mass.flange, flange)
-        D(x) ~ dx
-        dx ~ vol_a.flange.v]
+           connect(vol_b.port, port_b)
+           connect(vol_a.flange, vol_b.flange, mass.flange, flange)
+           D(x) ~ dx
+           dx ~ vol_a.flange.v]
 
     ODESystem(eqs, t, vars, pars; name, systems, defaults = [flange.v => 0])
 end

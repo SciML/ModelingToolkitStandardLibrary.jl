@@ -90,16 +90,15 @@ As can be seen, this will give a 1 equation model matching our energy dissipatio
 
 ```@example connections
 using ModelingToolkitStandardLibrary.Electrical, ModelingToolkit, DifferentialEquations
+using ModelingToolkit: t_nounits as t
 using Plots
-
-@parameters t
 
 @named resistor = Resistor(R = 1)
 @named capacitor = Capacitor(C = 1)
 @named ground = Ground()
 
 eqs = [connect(capacitor.p, resistor.p)
-    connect(resistor.n, ground.g, capacitor.n)]
+       connect(resistor.n, ground.g, capacitor.n)]
 
 @named model = ODESystem(eqs, t; systems = [resistor, capacitor, ground])
 
@@ -139,7 +138,7 @@ const TV = ModelingToolkitStandardLibrary.Mechanical.Translational
 @named ground = TV.Fixed()
 
 eqs = [connect(damping.flange_a, body.flange)
-    connect(ground.flange, damping.flange_b)]
+       connect(ground.flange, damping.flange_b)]
 
 @named model = ODESystem(eqs, t; systems = [damping, body, ground])
 
@@ -172,7 +171,7 @@ const TP = ModelingToolkitStandardLibrary.Mechanical.TranslationalPosition
 @named ground = TP.Fixed(s_0 = 0)
 
 eqs = [connect(damping.flange_a, body.flange)
-    connect(ground.flange, damping.flange_b)]
+       connect(ground.flange, damping.flange_b)]
 
 @named model = ODESystem(eqs, t; systems = [damping, body, ground])
 
@@ -267,7 +266,7 @@ Let's define a quick function to simplify and solve the 2 different systems. Not
 ```@example connections
 function simplify_and_solve(damping, spring, body, ground)
     eqs = [connect(spring.flange_a, body.flange, damping.flange_a)
-        connect(spring.flange_b, damping.flange_b, ground.flange)]
+           connect(spring.flange_b, damping.flange_b, ground.flange)]
 
     @named model = ODESystem(eqs, t; systems = [ground, body, spring, damping])
 

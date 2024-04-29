@@ -1,8 +1,6 @@
 using ModelingToolkitStandardLibrary.Thermal, ModelingToolkit, OrdinaryDiffEq, Test
+using ModelingToolkit: t_nounits as t, D_nounits as D
 using OrdinaryDiffEq: ReturnCode.Success
-
-@parameters t
-D = Differential(t)
 
 # Modelica example
 @testset "demo" begin
@@ -16,7 +14,7 @@ D = Differential(t)
         connect(mass1.port, conduction.port_a),
         connect(conduction.port_b, mass2.port),
         connect(mass1.port, Tsensor1.port),
-        connect(mass2.port, Tsensor2.port),
+        connect(mass2.port, Tsensor2.port)
     ]
 
     @named model = ODESystem(connections, t,
