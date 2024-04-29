@@ -5,6 +5,9 @@ using SafeTestsets
 end
 
 # Blocks
+@safetestset "Blocks: utils" begin
+    include("Blocks/utils.jl")
+end
 @safetestset "Blocks: math" begin
     include("Blocks/math.jl")
 end

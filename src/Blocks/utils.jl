@@ -10,9 +10,8 @@
             input = true,
             description = "Inner variable in RealInput $name"
         ]
-        u = collect(u)
     end
-    ODESystem(Equation[], t, [u...], []; name = name, guesses = [u => u_start])
+    ODESystem(Equation[], t, [u], []; name = name, guesses = [u => u_start])
 end
 @doc """
     RealInput(;name, u_start)
@@ -31,8 +30,7 @@ Connector with one input signal of type Real.
         input = true,
         description = "Inner variable in RealInputArray $name"
     ]
-    u = collect(u)
-    ODESystem(Equation[], t, [u...], []; name = name, guesses = [u => u_start])
+    ODESystem(Equation[], t, [u], []; name = name, guesses = [u => u_start])
 end
 @doc """
     RealInputArray(;name, nin, u_start)
@@ -59,9 +57,8 @@ Connector with an array of input signals of type Real.
             output = true,
             description = "Inner variable in RealOutput $name"
         ]
-        u = collect(u)
     end
-    ODESystem(Equation[], t, [u...], []; name = name, guesses = [u => u_start])
+    ODESystem(Equation[], t, [u], []; name = name, guesses = [u => u_start])
 end
 @doc """
     RealOutput(;name, u_start)
@@ -80,8 +77,7 @@ Connector with one output signal of type Real.
         output = true,
         description = "Inner variable in RealOutputArray $name"
     ]
-    u = collect(u)
-    ODESystem(Equation[], t, [u...], []; name = name, guesses = [u => u_start])
+    ODESystem(Equation[], t, [u], []; name = name, guesses = [u => u_start])
 end
 @doc """
     RealOutputArray(;name, nout, u_start)
