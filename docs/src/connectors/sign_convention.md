@@ -2,7 +2,7 @@
 
 A sign convention is recommended for this library that implements the following rule:
 
-> An input component that specifies the *through* variable should be such that an oppossite equality is written such that when connected to a conserved quantity component (i.e. a mass or capacitor component) a positive value for a flow variable represents the accumulation of that conserved quantify over time in the component.
+> An input component that specifies the *through* variable should be such that an oppossite equality is written such that when connected to a conserved quantity component (i.e. a mass or capacitor component) a positive value for a flow variable represents the accumulation of that conserved quantity over time in the component.
 
 Note: that this implements the same convention as applied in Modelica Standard Library.
 
