@@ -45,7 +45,7 @@ For a 2 port connection component, then the *through* variable is exiting each c
 ![damper](damper.svg) -->
 # Discussion
 
-The energy disipation equation that governs the acausal connection definitions should be such that a positive *through* variable input will lead to an increasing *across* variable value.
+The energy dissipation equation that governs the acausal connection definitions should be such that a positive *through* variable input will lead to an increasing *across* variable value.
 
 ```math
 \frac{\partial \blue across}{\partial t} = \text{ {\green through} input}
