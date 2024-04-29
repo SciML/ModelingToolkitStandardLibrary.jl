@@ -200,7 +200,7 @@ Output first input divided by second input.
 @mtkmodel Division begin
     @components begin
         input1 = RealInput()
-        input2 = RealInput(u_start = 1.0) # denominator can not be zero
+        input2 = RealInput(guess = 1.0) # denominator can not be zero
         output = RealOutput()
     end
     @equations begin

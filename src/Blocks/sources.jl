@@ -320,13 +320,15 @@ Generate step signal.
 
   - `output`
 """
-@component function Step(; name, height = 1.0, offset = 0.0, start_time = 0.0, duration = Inf,
+@component function Step(;
+        name, height = 1.0, offset = 0.0, start_time = 0.0, duration = Inf,
         smooth = 1e-5)
     @named output = RealOutput()
     duration_numeric = duration
     pars = @parameters offset=offset start_time=start_time height=height duration=duration
     equation = if smooth == false # use comparison in case smooth is a float
-        offset + ifelse((start_time < t) & (t < start_time + duration), height, zero(height))
+        offset +
+        ifelse((start_time < t) & (t < start_time + duration), height, zero(height))
     else
         smooth === true && (smooth = 1e-5)
         if duration_numeric == Inf
