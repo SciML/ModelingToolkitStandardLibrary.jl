@@ -431,6 +431,89 @@ Fixed fluid volume.
 end
 
 """
+    Volume(; x, dx=0, p, drho=0, dm=0, area, direction = +1, name)
+
+Volume with moving wall with `flange` connector for converting hydraulic energy to 1D mechanical.  The `direction` argument aligns the mechanical port with the hydraulic port, useful when connecting two dynamic volumes together in oppsing directions to create an actuator.
+
+```
+     ┌─────────────────┐ ───
+     │                 │  ▲
+                       │  │
+dm ────►               │  │ area
+                       │  │
+     │                 │  ▼
+     └─────────────────┤ ───
+                       │
+                       └─► x (= ∫ flange.v * direction)
+```
+
+# Parameters:
+## volume
+- `p`: [Pa] initial pressure
+- `area`: [m^2] moving wall area
+- `x`: [m] initial wall position
+- `dx=0`: [m/s] initial wall velocity
+- `drho=0`: [kg/m^3/s] initial density derivative
+- `dm=0`: [kg/s] initial flow
+
+- `direction`: [+/-1] applies the direction conversion from the `flange` to `x`
+
+# Connectors:
+- `port`: hydraulic port
+- `flange`: mechanical translational port
+
+See also [`FixedVolume`](@ref), [`DynamicVolume`](@ref)
+"""
+@component function Volume(;
+        #initial conditions
+        x,
+        dx = 0,
+        p,
+        drho = 0,
+        dm = 0,
+
+        #parameters
+        area,
+        direction = +1, name)
+    pars = @parameters begin
+        area = area
+    end
+
+    vars = @variables begin
+        x(t) = x
+        dx(t) = dx
+        p(t) = p
+        f(t) = p * area
+        rho(t)
+        drho(t) = drho
+        dm(t) = dm
+    end
+
+    systems = @named begin
+        port = HydraulicPort(; p_int = p)
+        flange = MechanicalPort(; f, v = dx)
+    end
+
+    eqs = [
+    # connectors
+        port.p ~ p
+        port.dm ~ dm
+        flange.v * direction ~ dx
+        flange.f * direction ~ -f
+
+    # differentials
+        D(x) ~ dx
+        D(rho) ~ drho
+
+    # physics
+        rho ~ liquid_density(port, p)
+        f ~ p * area
+        dm ~ drho * x * area + rho * dx * area]
+
+    ODESystem(eqs, t, vars, pars; name, systems, defaults = [rho => liquid_density(port)])
+end
+
+"""
 DynamicVolume(N, add_inertia=true; p_int,  area, x_int = 0, x_max, x_min = 0, x_damp = x_min, direction = +1, perimeter = 2 * sqrt(area * pi), shape_factor = 64, head_factor = 1, Cd = 1e2, Cd_reverse = Cd, name)
 
 Volume with moving wall with `flange` connector for converting hydraulic energy to 1D mechanical.  The `direction` argument aligns the mechanical port with the hydraulic port, useful when connecting two dynamic volumes together in oppsing directions to create an actuator.
@@ -509,7 +592,7 @@ dm ────►               │  │ area
         x_min = x_min
         x_damp = x_damp
 
-        direction = direction
+        # direction = direction
 
         perimeter = perimeter
         shape_factor = shape_factor
@@ -588,11 +671,11 @@ dm ────►               │  │ area
             push!(volumes, comp)
         end
 
-        push!(eqs, connect(moving_volume.port, volumes[1].port, pipe_bases[1].port_a))
-        push!(eqs, connect(pipe_bases[end].port_b, damper.port_a))
-        for i in 2:N
+        push!(eqs, connect(moving_volume.port, volumes[end].port, pipe_bases[end].port_a))
+        push!(eqs, connect(pipe_bases[1].port_b, damper.port_a))
+        for i in 1:(N - 1)
             push!(eqs,
-                connect(volumes[i].port, pipe_bases[i - 1].port_b, pipe_bases[i].port_a))
+                connect(volumes[i].port, pipe_bases[i + 1].port_b, pipe_bases[i].port_a))
         end
 
         for i in 1:N
