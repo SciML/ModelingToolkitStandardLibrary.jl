@@ -115,36 +115,47 @@ Connector with an array of output signals of type Real.
 """ RealOutputArray
 
 """
-    SISO(;name, u_start = 0.0, y_start = 0.0)
+    SISO(;name, u_guess = 0.0, y_guess = 0.0)
 
 Single input single output (SISO) continuous system block.
 
 # Parameters:
 
-  - `u_start`: Initial value for the input
-  - `y_start`: Initial value for the output
+  - `u_guess`: Initial value for the input
+  - `y_guess`: Initial value for the output
 """
-@component function SISO(; name, u_start = 0.0, y_start = 0.0)
+@component function SISO(; name, u_start = nothing, y_start = nothing, u_guess = 0.0, y_guess = 0.0)
+    if u_start !== nothing
+        Base.depwarn(
+            "The keyword argument `u_start` is deprecated. Use `u_guess` instead.", :u_start)
+        u_guess = u_start
+    end
+    if y_start !== nothing
+        Base.depwarn(
+            "The keyword argument `y_start` is deprecated. Use `u_guess` instead.", :y_start)
+        y_guess = y_start
+    end
     pars = @parameters begin
-        u_start = u_start
-        y_start = y_start
+        u_guess = u_guess
+        y_guess = y_guess
     end
     vars = @variables begin
-        u(t), [guess = u_start, description = "Input of SISO system"]
-        y(t), [guess = y_start, description = "Output of SISO system"]
+        u(t), [guess = u_guess, description = "Input of SISO system"]
+        y(t), [guess = y_guess, description = "Output of SISO system"]
     end
-    @components begin
-        input = RealInput(guess = u_start)
-        output = RealOutput(guess = y_start)
-    end
-    @equations begin
+    
+    @named input = RealInput(guess = u_guess)
+    @named output = RealOutput(guess = y_guess)
+
+    eqs = [
         u ~ input.u
         y ~ output.u
+    ]
     return ODESystem(eqs, t, vars, pars; name = name, systems = [input, output])
 end
 
 """
-    MIMO(; name, nin = 1, nout = 1, u_start = zeros(nin), y_start = zeros(nout))
+    MIMO(; name, nin = 1, nout = 1, u_guess = zeros(nin), y_guess = zeros(nout))
 
 Base class for a multiple input multiple output (MIMO) continuous system block.
 
@@ -152,16 +163,25 @@ Base class for a multiple input multiple output (MIMO) continuous system block.
 
   - `nin`: Input dimension
   - `nout`: Output dimension
-  - `u_start`: Initial value for the input
+  - `u_guess`: Initial value for the input
   - `y_start`: Initial value for the output
 """
-@component function MIMO(; name, nin = 1, nout = 1, u_start = zeros(nin),
-        y_start = zeros(nout))
-    @named input = RealInput(nin = nin, u_start = u_start)
-    @named output = RealOutput(nout = nout, u_start = y_start)
+@component function MIMO(; name, nin = 1, nout = 1, u_start = nothing, y_start = nothing, u_guess = zeros(nin), y_guess = zeros(nout))
+    if u_start !== nothing
+        Base.depwarn(
+            "The keyword argument `u_start` is deprecated. Use `u_guess` instead.", :u_start)
+        u_guess = u_start
+    end
+    if y_start !== nothing
+        Base.depwarn(
+            "The keyword argument `y_start` is deprecated. Use `u_guess` instead.", :y_start)
+        y_guess = y_start
+    end
+    @named input = RealInput(nin = nin, guess = u_guess)
+    @named output = RealOutput(nout = nout, guess = y_guess)
     @variables begin
-        u(t)[1:nin], [guess = u_start, description = "Input of MIMO system $name"]
-        y(t)[1:nout], [guess = y_start, description = "Output of MIMO system $name"]
+        u(t)[1:nin], [guess = u_guess, description = "Input of MIMO system $name"]
+        y(t)[1:nout], [guess = y_guess, description = "Output of MIMO system $name"]
     end
     eqs = [
         [u[i] ~ input.u[i] for i in 1:nin]...,
