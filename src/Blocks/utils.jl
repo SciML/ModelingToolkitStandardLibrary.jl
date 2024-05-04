@@ -166,7 +166,7 @@ Base class for a multiple input multiple output (MIMO) continuous system block.
   - `u_guess`: Initial value for the input
   - `y_start`: Initial value for the output
 """
-@component function MIMO(; name, nin = 1, nout = 1, u_start = nothing, y_start = nothing, u_guess = zeros(nin), y_guess = zeros(nout))
+@component function MIMO(; name, nin = 1, nout = 1, u_start = nothing, y_start = nothing, u_guess = nin > 1 ? zeros(nin) : 0.0, y_guess = nout > 1 ? zeros(nout) : 0.0)
     if u_start !== nothing
         Base.depwarn(
             "The keyword argument `u_start` is deprecated. Use `u_guess` instead.", :u_start)
