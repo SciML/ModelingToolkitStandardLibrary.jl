@@ -174,7 +174,7 @@ Base class for a multiple input multiple output (MIMO) continuous system block.
     end
     if y_start !== nothing
         Base.depwarn(
-            "The keyword argument `y_start` is deprecated. Use `u_guess` instead.", :y_start)
+            "The keyword argument `y_start` is deprecated. Use `y_guess` instead.", :y_start)
         y_guess = y_start
     end
     @named input = RealInput(nin = nin, guess = u_guess)
