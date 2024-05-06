@@ -1,7 +1,7 @@
 z = ShiftIndex()
 
 """
-    DiscreteIntegrator(;name, k = 1, x = 0.0, method = :forward)
+    DiscreteIntegrator(;name, k = 1, x = 0.0, method = :backward)
 
 Outputs `y = ∫k*u dt`, corresponding to the discrete-time transfer function
 - `method = :forward`: ``T_s / (z - 1)``
@@ -22,26 +22,26 @@ Initial value of integrator state ``x`` can be set with `x`
 @mtkmodel DiscreteIntegrator begin
     @extend u, y = siso = SISO()
     @structural_parameters begin
-        method = :forward
+        method = :backward
     end
     @variables begin
-        I(t) = 0.0, [description = "State of Integrator"]
+        x(t) = 0.0, [description = "State of Integrator"]
     end
     @parameters begin
         k = 1, [description = "Gain"]
     end
     begin
-        Ts = sampletime(I)
+        Ts = ModelingToolkit.SampleTime()
     end
     @equations begin
         if method === :forward
-            I(z) ~ I(z-1) + k * Ts * u(z-1)
+            x(z) ~ x(z-1) + k * Ts * u(z-1)
         elseif method === :backward
-            I(z) ~ I(z-1) + k * Ts * u(z)
+            x(z) ~ x(z-1) + k * Ts * u(z)
         elseif method ∈ (:trapezoidal, :tustin)
-            I(z) ~ I(z-1) + k * Ts * (u(z) + u(z-1)) / 2
+            x(z) ~ x(z-1) + k * Ts * (u(z) + u(z-1)) / 2
         end
-        y ~ I(z)
+        y ~ x(z)
     end
 end
 
@@ -66,7 +66,7 @@ where `T_s` is the sample time of the derivative filter.
         k = 1, [description = "Gain"]
     end
     begin
-        Ts = sampletime()
+        Ts = SampleTime()
     end
     @equations begin
         y(z) ~ k*(u(z) - u(z-1)) / Ts
@@ -129,8 +129,10 @@ end
 
 """
     Sampler()
+    Sampler(; dt::Real)
+    Sampler(; clock::AbstractClock)
 
-Sampler translates a continuous-time signal into discrete time by sampling the input signal every time the associated clock ticks.
+`Sampler` transforms a continuous-time signal into discrete time by sampling the input signal every time the associated clock ticks. The clock can be specified explicitly using the `clock` keyword argument, or implicitly by providing a sample time `dt`, in which case a standard periodic `Clock` is used. 
 
 # Connectors:
 - `input` (continuous-time signal)
@@ -138,11 +140,12 @@ Sampler translates a continuous-time signal into discrete time by sampling the i
 """
 @mtkmodel Sampler begin
     @extend u, y = siso = SISO()
-    # @parameters begin
-    #     Ts = 1, [description = "Sample interval"]
-    # end # TODO: figure out how to connect a clock
+    @structural_parameters begin
+        dt = nothing
+        clock = (dt === nothing ? InferredDiscrete() : Clock(t, dt))
+    end   
     @equations begin
-        y ~ Sample(u)
+        y ~ Sample(clock)(u)
     end
 end
 
@@ -214,7 +217,7 @@ To use the controller in 1DOF mode, i.e., with only the control error as input, 
 - `eI`: Error signal input to integrator including anit-windup tracking signal
 - `e`: Error signal
 """
-@mtkmodel DiscretePID begin
+@mtkmodel DiscretePIDParallel begin
     @structural_parameters begin
         Imethod = :forward
         Dmethod = :backward
@@ -229,13 +232,13 @@ To use the controller in 1DOF mode, i.e., with only the control error as input, 
     @variables begin
         I(t) = 0.0, [description = "State of Integrator"]
         D(t) = 0.0, [description = "State of filtered derivative"]
-        r(t) = 0.0, [description = "Reference signal internal variable"]
-        y(t) = 0.0, [description = "Measurement signal internal variable"]
-        wde(t) = 0.0, [description = "Setpoint-weighted error for derivative"]
-        v(t) = 0.0, [description = "Un-saturated output of the controller"]
-        u(t) = 0.0, [description = "Saturated output of the controller"]
-        eI(t) = 0.0, [description = "Error signal input to integrator including anit-windup tracking signal"]
-        e(t) = 0.0, [description = "Error signal"]
+        r(t), [guess=0, description = "Reference signal internal variable"]
+        y(t), [guess=0, description = "Measurement signal internal variable"]
+        wde(t), [guess=0, description = "Setpoint-weighted error for derivative"]
+        v(t), [guess=0, description = "Un-saturated output of the controller"]
+        u(t), [guess=0, description = "Saturated output of the controller"]
+        eI(t), [guess=0, description = "Error signal input to integrator including anit-windup tracking signal"]
+        e(t), [guess=0, description = "Error signal"]
     end
     @parameters begin
         kp = 1, [description = "Proportional gain"]
@@ -249,14 +252,14 @@ To use the controller in 1DOF mode, i.e., with only the control error as input, 
         wd = 1, [description = "Set-point weighting in the derivative part."]
     end
     begin
-        Ts = sampletime()
+        Ts = SampleTime()
     end
     @equations begin
         r ~ reference.u
         y ~ measurement.u
         u ~ ctr_output.u
         e ~ r - y
-        v ~ kp*(wp*r-y) + I + D # Unsaturated control signal
+        v ~ kp*(wp*r-y) + I(z-1) + D # Unsaturated control signal
         u ~ _clamp(v, u_min, u_max) # Saturated control signal
         if with_I
             eI ~ e + Ni * (u-v) # Add anti-windup tracking signal to error before integration
@@ -264,7 +267,7 @@ To use the controller in 1DOF mode, i.e., with only the control error as input, 
                 I(z) ~ I(z-1) + Ts * ki * eI(z-1)
             elseif Imethod === :backward
                 I(z) ~ I(z-1) + Ts * ki * eI(z)
-            elseif Imethod === :trapezoidal
+            elseif Imethod ∈ (:trapezoidal, :tustin)
                 I(z) ~ I(z-1) + Ts * ki * (eI(z) + eI(z-1)) / 2
             else
                 error("Unknown integrator discretization method $Imethod, must be one of :forward, :backward, :trapezoidal")
@@ -273,7 +276,7 @@ To use the controller in 1DOF mode, i.e., with only the control error as input, 
             I(z) ~ 0
         end
         if with_D
-            wde = wd*r - y
+            wde ~ wd*r - y
             if Dmethod === :forward
                 D(z) ~ (kd-Nd*Ts)/kd * D(z-1) + Nd * (wde(z) - wde(z-1))
             elseif Dmethod === :backward
@@ -385,7 +388,7 @@ To use the controller in 1DOF mode, i.e., with only the control error as input, 
         K = 1, [description = "Proportional gain"]
         Ti = 1, [description = "Integral time"]
         Td = 1, [description = "Derivative time"]
-        Ni = √(max(kd * ki, 1e-6)), [description = "Anti-windup gain"]
+        Ni = √(max(Td / Ti, 1e-6)), [description = "Anti-windup gain"]
         Nd = 10, [description = "Maximum derivative gain"]
         u_max = Inf, [description = "Maximum output"]
         u_min = ifelse(u_max > 0, -u_max, -Inf), [description = "Minimum output"]
@@ -393,23 +396,23 @@ To use the controller in 1DOF mode, i.e., with only the control error as input, 
         wd = 1, [description = "Set-point weighting in the derivative part."]
     end
     begin
-        Ts = sampletime()
+        Ts = SampleTime()
     end
     @equations begin
         r ~ reference.u
         y ~ measurement.u
         u ~ ctr_output.u
         e ~ r - y
-        v ~ K * ((wp*r-y) + I + D) # Unsaturated control signal
+        v ~ K * ((wp*r-y) + I(z-1) + D) # Unsaturated control signal
         u ~ _clamp(v, u_min, u_max) # Saturated control signal
         if with_I
             eI ~ e + Ni * (u-v) # Add anti-windup tracking signal to error before integration
             if Imethod === :forward
-                I(z) ~ I(z-1) + Ts * ki * eI(z-1)
+                I(z) ~ I(z-1) + Ts / Ti * eI(z-1)
             elseif Imethod === :backward
-                I(z) ~ I(z-1) + Ts * ki * eI(z)
+                I(z) ~ I(z-1) + Ts / Ti * eI(z)
             elseif Imethod ∈ (:trapezoidal, :tustin)
-                I(z) ~ I(z-1) + Ts * ki * (eI(z) + eI(z-1)) / 2
+                I(z) ~ I(z-1) + Ts / Ti * (eI(z) + eI(z-1)) / 2
             else
                 error("Unknown integrator discretization method $Imethod, must be one of :forward, :backward, :trapezoidal")
             end
