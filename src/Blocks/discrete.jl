@@ -440,34 +440,33 @@ To use the controller in 1DOF mode, i.e., with only the control error as input, 
     end
 end
 
-"""
-    DiscreteStateSpace(; A, B, C, D, u0 = zeros(size(B, 2)), y0 = zeros(size(C, 1)))
+# """
+#     DiscreteStateSpace(; A, B, C, D, u0 = zeros(size(B, 2)), y0 = zeros(size(C, 1)))
 
-A linear, time invariant, discrete-time state-space system on the form
-```math
-x_{k+1} = A x_k + B u_k
-y_k = C x_k + D u_k
-```
+# A linear, time invariant, discrete-time state-space system on the form
+# ```math
+# x_{k+1} = A x_k + B u_k
+# y_k = C x_k + D u_k
+# ```
 
-`y0` and `u0` can be used to set an operating point, providing them changes the dynamics from an LTI system to the affine system
-```math
-x_{k+1} = A x_k + B (u_k - u_0)
-y_k = C x_k + D (u_k - u_0) + y_0
-```
-"""
+# `y0` and `u0` can be used to set an operating point, providing them changes the dynamics from an LTI system to the affine system
+# ```math
+# x_{k+1} = A x_k + B (u_k - u_0)
+# y_k = C x_k + D (u_k - u_0) + y_0
+# ```
+# """
 # @mtkmodel DiscreteStateSpace begin
+#     @structural_parameters begin
+#         z = ShiftIndex()
+#     end
 #     @parameters begin
 #         A, [description = "State matrix"]
 #         B, [description = "Input matrix"]
 #         C, [description = "Output matrix"]
-#         D = zeros(size(C,1), size(B,2)),      [description = "Feedthrough matrix"]
-#         u0[1:size(B, 2)] = zeros(size(B, 2)), [description = "Input operating point"]
-#         y0[1:size(C, 1)] = zeros(size(C, 1)), [description = "Output operating point"]
+#         (D = 0),      [description = "Feedthrough matrix"]
+#         (u0[1:size(B, 2)] = 0), [description = "Input operating point"]
+#         (y0[1:size(C, 1)] = 0), [description = "Output operating point"]
 #     end
-    # @structural_parameters begin
-    #     Ts = SampleTime()
-    #     z = ShiftIndex()
-    # end
 #     begin
 #         nx = size(A, 1)
 #         nu = size(B, 2)
@@ -475,28 +474,27 @@ y_k = C x_k + D (u_k - u_0) + y_0
 #         size(A, 2) == nx || error("`A` has to be a square matrix.")
 #         size(B, 1) == nx || error("`B` has to be of dimension ($nx x $nu).")
 #         size(C, 2) == nx || error("`C` has to be of dimension ($ny x $nx).")
-#         Ts = SampleTime()
 #     end
 #     @components begin
 #         input = RealInput(nin = nu)
 #         output = RealOutput(nout = ny)
 #     end
 #     @variables begin
-#         (x(t)[1:nx] = zeros(nx)), [description = "State"]
-#         (u(t)[1:nu] = zeros(nu)), [description = "Input"]
-#         (y(t)[1:ny] = zeros(ny)), [description = "Output"]
+#         (x(t)[1:nx]), [description = "State"]
+#         (u(t)[1:nu]), [description = "Input"]
+#         (y(t)[1:ny]), [description = "Output"]
 #     end
 #     @equations begin
-#         x(z+1) .~ A * x(z) .+ B * (u(z) .- u0)
-#         y(z) .~ C * x(z) .+ D * (u(z) .- u0) .+ y0
+#         x(z) ~ A * x(z-1) .+ B * (u(z-1) .- u0)
+#         y(z) ~ C * x(z) .+ D * (u(z) .- u0) .+ y0
 #         output.u ~ y
 #         input.u ~ u
 #     end
 # end
 
-function DiscreteStateSpace(A, B, C, D = nothing; kwargs...)
-    DiscreteStateSpace(; A, B, C, D, kwargs...)
-end
+# function DiscreteStateSpace(A, B, C, D = nothing; kwargs...)
+#     DiscreteStateSpace(; A, B, C, D, kwargs...)
+# end
 
 """
     DiscreteTransferFunction(; b, a)
@@ -529,8 +527,8 @@ See also [ControlSystemsMTK.jl](https://juliacontrol.github.io/ControlSystemsMTK
 #     end
 #     @structural_parameters begin
 #         verbose = true
-        # Ts = SampleTime()
-        # z = ShiftIndex()
+# Ts = SampleTime()
+# z = ShiftIndex()
 #     end
 #     begin
 #         na = length(a)
