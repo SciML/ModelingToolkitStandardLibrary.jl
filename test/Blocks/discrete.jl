@@ -21,61 +21,58 @@ an integrator with a constant input is often used together with the system under
 
     # Backward
     @named int = DiscreteIntegrator(x = 1)
-    @named iosys = ODESystem([
-        connect(c.output, sampler.input)
-        connect(sampler.output, int.input)
-        connect(c.output, intc.input)
-        ], t, systems = [sampler, int, intc, c])
+    @named iosys = ODESystem(
+        [connect(c.output, sampler.input)
+         connect(sampler.output, int.input)
+         connect(c.output, intc.input)],
+        t,
+        systems = [sampler, int, intc, c])
     model = complete(iosys)
     sys = structural_simplify(model)
-    prob = ODEProblem(sys, Pair[
-        int.x(k-1) => 0
-        int.u(k-1) => 0
-        ], (0.0, 1.0))
+    prob = ODEProblem(sys, Pair[int.x(k - 1) => 0
+                                int.u(k - 1) => 0], (0.0, 1.0))
     sol = solve(prob, Rodas4(), kwargshandle = KeywordArgSilent)
     @test sol.retcode == Success
     @test sol.prob.kwargs[:disc_saved_values][1].t ≈ 0:sampletime(clock):1
-    @test reduce(vcat, sol.prob.kwargs[:disc_saved_values][1].saveval) ≈ range(1.1, step=sampletime(clock), length=11)
-
+    @test reduce(vcat, sol.prob.kwargs[:disc_saved_values][1].saveval) ≈
+          range(1.1, step = sampletime(clock), length = 11)
 
     # Forward
-    @named int = DiscreteIntegrator(x = 1, method=:forward)
-    @named iosys = ODESystem([
-        connect(c.output, sampler.input)
-        connect(sampler.output, int.input)
-        connect(c.output, intc.input)
-        ], t, systems = [sampler, int, intc, c])
+    @named int = DiscreteIntegrator(x = 1, method = :forward)
+    @named iosys = ODESystem(
+        [connect(c.output, sampler.input)
+         connect(sampler.output, int.input)
+         connect(c.output, intc.input)],
+        t,
+        systems = [sampler, int, intc, c])
     model = complete(iosys)
     sys = structural_simplify(model)
-    prob = ODEProblem(sys, Pair[
-        int.x(k-1) => 0
-        int.u(k-1) => 0
-        ], (0.0, 1.0))
+    prob = ODEProblem(sys, Pair[int.x(k - 1) => 0
+                                int.u(k - 1) => 0], (0.0, 1.0))
     sol = solve(prob, Rodas4(), kwargshandle = KeywordArgSilent)
     @test sol.retcode == Success
     @test sol.prob.kwargs[:disc_saved_values][1].t ≈ 0:sampletime(clock):1
-    @test reduce(hcat, sol.prob.kwargs[:disc_saved_values][1].saveval)'[:, 2] ≈ range(1.0, step=sampletime(clock), length=11)
-
+    @test reduce(hcat, sol.prob.kwargs[:disc_saved_values][1].saveval)'[:, 2] ≈
+          range(1.0, step = sampletime(clock), length = 11)
 
     # Tustin
-    @named int = DiscreteIntegrator(x = 1, method=:tustin)
-    @named iosys = ODESystem([
-        connect(c.output, sampler.input)
-        connect(sampler.output, int.input)
-        connect(c.output, intc.input)
-        ], t, systems = [sampler, int, intc, c])
+    @named int = DiscreteIntegrator(x = 1, method = :tustin)
+    @named iosys = ODESystem(
+        [connect(c.output, sampler.input)
+         connect(sampler.output, int.input)
+         connect(c.output, intc.input)],
+        t,
+        systems = [sampler, int, intc, c])
     model = complete(iosys)
     sys = structural_simplify(model)
-    prob = ODEProblem(sys, Pair[
-        int.x(k-1) => 0
-        int.u(k-1) => 0
-        ], (0.0, 1.0))
+    prob = ODEProblem(sys, Pair[int.x(k - 1) => 0
+                                int.u(k - 1) => 0], (0.0, 1.0))
     sol = solve(prob, Rodas4(), kwargshandle = KeywordArgSilent)
     @test sol.retcode == Success
     @test sol.prob.kwargs[:disc_saved_values][1].t ≈ 0:sampletime(clock):1
-    @test reduce(hcat, sol.prob.kwargs[:disc_saved_values][1].saveval)'[:, 2] ≈ range(1.05, step=sampletime(clock), length=11)
+    @test reduce(hcat, sol.prob.kwargs[:disc_saved_values][1].saveval)'[:, 2] ≈
+          range(1.05, step = sampletime(clock), length = 11)
 end
-
 
 # for v in 𝑑vertices(graph)
 #     vd = var_domain[v]
@@ -109,7 +106,8 @@ k = ShiftIndex()
         plant = FirstOrder(k = 1, T = 1)
         sampler = Blocks.Sampler(; dt)
         zoh = Blocks.ZeroOrderHold()
-        controller = Blocks.DiscretePIDParallel(kp = 2, ki = 2, Imethod=:forward, with_D=false)
+        controller = Blocks.DiscretePIDParallel(
+            kp = 2, ki = 2, Imethod = :forward, with_D = false)
         ref = Constant(k = 0.5)
     end
     @equations begin
@@ -141,7 +139,8 @@ res = lsim(G, (x, t) -> [0.5], timevec)
 y = res.y[:]
 
 prob = ODEProblem(model,
-    [model.plant.x => 0.0; model.controller.kp => 2.0; model.controller.ki => 2.0; model.controller.eI => 0.0],
+    [model.plant.x => 0.0; model.controller.kp => 2.0; model.controller.ki => 2.0;
+     model.controller.eI => 0.0],
     (0.0, Tf))
 
 sol = solve(prob,
@@ -164,7 +163,6 @@ sol = solve(prob,
     # plot([y sol(timevec .+ 1e-12, idxs=model.controller.output.u)], lab=["CS" "MTK"])
 end
 
-
 # ==============================================================================
 ## DiscretePIDStandard
 # ==============================================================================
@@ -177,7 +175,8 @@ k = ShiftIndex()
         plant = FirstOrder(k = 1, T = 1)
         sampler = Blocks.Sampler(; dt)
         zoh = Blocks.ZeroOrderHold()
-        controller = Blocks.DiscretePIDStandard(K = 2, Ti = 1, Imethod=:forward, with_D=false)
+        controller = Blocks.DiscretePIDStandard(
+            K = 2, Ti = 1, Imethod = :forward, with_D = false)
         ref = Constant(k = 0.5)
     end
     @equations begin
@@ -231,3 +230,55 @@ sol = solve(prob,
     @test_broken sol(timevec .+ 1e-10, idxs = model.controller.output.u)≈y rtol=1e-8 # Broken due to discrete observed
     # plot([y sol(timevec .+ 1e-12, idxs=model.controller.output.u)], lab=["CS" "MTK"])
 end
+
+# ==============================================================================
+## Delay
+# ==============================================================================
+
+@mtkmodel DelayModel begin
+    @components begin
+        fake_plant = FirstOrder(T = 1e-4) # Included due to bug with only discrete-time systems
+        input = Step(start_time = 2, smooth = false)
+        sampler = Sampler(; dt = 1)
+        delay = Delay(n = 3)
+        zoh = ZeroOrderHold()
+    end
+    @equations begin
+        connect(input.output, sampler.input)
+        connect(sampler.output, delay.input)
+        connect(delay.output, zoh.input)
+        connect(zoh.output, fake_plant.input)
+    end
+end
+
+@mtkbuild m = DelayModel()
+prob = ODEProblem(
+    m, [m.delay.u(k - 3) => 0, m.delay.u(k - 2) => 0, m.delay.u(k - 1) => 0], (0.0, 10.0))
+sol = solve(prob, Tsit5(), kwargshandle = KeywordArgSilent)
+
+@test reduce(vcat, sol((0:10) .+ 1e-2))[:]≈[zeros(5); ones(6)] atol=1e-2
+
+# ==============================================================================
+## Difference
+# ==============================================================================
+using ModelingToolkitStandardLibrary.Blocks
+k = ShiftIndex(Clock(t, 1))
+
+@mtkmodel DiffModel begin
+    @components begin
+        input = Step(start_time = 2, smooth = false)
+        diff = Blocks.Difference(z = k)
+        zoh = Blocks.ZeroOrderHold()
+        plant = FirstOrder(T = 1e-4) # Included due to bug with only discrete-time systems
+    end
+    @equations begin
+        connect(input.output, diff.input)
+        connect(diff.output, zoh.input)
+        connect(zoh.output, plant.input)
+    end
+end
+
+@mtkbuild m = DiffModel()
+prob = ODEProblem(m, Dict(m.diff.u(k - 1) => 0), (0.0, 10.0))
+sol = solve(prob, Tsit5(), kwargshandle = KeywordArgSilent)
+@test reduce(vcat, sol((0:10) .+ 1e-2))[:]≈[zeros(2); 1; zeros(8)] atol=1e-2

@@ -30,16 +30,16 @@ Initial value of integrator state ``x`` can be set with `x`
     @parameters begin
         k = 1, [description = "Gain"]
     end
-    begin
+    @structural_parameters begin
         Ts = ModelingToolkit.SampleTime()
     end
     @equations begin
         if method === :forward
-            x(z) ~ x(z-1) + k * Ts * u(z-1)
+            x(z) ~ x(z - 1) + k * Ts * u(z - 1)
         elseif method === :backward
-            x(z) ~ x(z-1) + k * Ts * u(z)
+            x(z) ~ x(z - 1) + k * Ts * u(z)
         elseif method ∈ (:trapezoidal, :tustin)
-            x(z) ~ x(z-1) + k * Ts * (u(z) + u(z-1)) / 2
+            x(z) ~ x(z - 1) + k * Ts * (u(z) + u(z - 1)) / 2
         end
         y ~ x(z)
     end
@@ -69,7 +69,7 @@ where `T_s` is the sample time of the derivative filter.
         Ts = SampleTime()
     end
     @equations begin
-        y(z) ~ k*(u(z) - u(z-1)) / Ts
+        y(z) ~ k * (u(z) - u(z - 1)) / Ts
     end
 end
 
@@ -82,16 +82,17 @@ A discrete-time delay of `n` samples, corresponding to the transfer function ``z
 - `input`
 - `output`
 
-# Parameters:
+# Structural Parameters:
  - `n`: Number of delay samples
 """
 @mtkmodel Delay begin
     @extend u, y = siso = SISO()
-    @parameters begin
-        n = 1, [description = "Number of delay samples"]
+    @structural_parameters begin
+        n = 1
+        z = ShiftIndex()
     end
     @equations begin
-        y ~ u(z-n)
+        y(z) ~ u(z - n)
     end
 end
 
@@ -103,11 +104,16 @@ A discrete-time difference operator, corresponding to the transfer function ``1 
 # Connectors:
 - `input`
 - `output`
+
+For a discrete-time finite-difference derivative approximation, see [`DiscreteDerivative`](@ref).
 """
 @mtkmodel Difference begin
     @extend u, y = siso = SISO()
+    @structural_parameters begin
+        z = ShiftIndex()
+    end
     @equations begin
-        y(z) ~ u(z) - u(z-1)
+        y(z) ~ u(z) - u(z - 1)
     end
 end
 
@@ -143,12 +149,11 @@ end
     @structural_parameters begin
         dt = nothing
         clock = (dt === nothing ? InferredDiscrete() : Clock(t, dt))
-    end   
+    end
     @equations begin
         y ~ Sample(clock)(u)
     end
 end
-
 
 """
     DiscretePIDParallel(;name, kp = 1, ki = 1, kd = 1, Ni = √(max(kd * ki, 1e-6)), Nd = 10kp, u_max = Inf, u_min = -u_max, wp = 1, wd = 1, Ts = 1, with_I = true, with_D = true, Imethod = :forward, Dmethod = :backward)
@@ -221,31 +226,33 @@ To use the controller in 1DOF mode, i.e., with only the control error as input, 
     @structural_parameters begin
         Imethod = :forward
         Dmethod = :backward
-        with_I  = true
-        with_D  = true
+        with_I = true
+        with_D = true
     end
     @components begin
-        reference   = RealInput()
+        reference = RealInput()
         measurement = RealInput()
-        ctr_output  = RealOutput()
+        ctr_output = RealOutput()
     end
     @variables begin
         I(t) = 0.0, [description = "State of Integrator"]
         D(t) = 0.0, [description = "State of filtered derivative"]
-        r(t), [guess=0, description = "Reference signal internal variable"]
-        y(t), [guess=0, description = "Measurement signal internal variable"]
-        wde(t), [guess=0, description = "Setpoint-weighted error for derivative"]
-        v(t), [guess=0, description = "Un-saturated output of the controller"]
-        u(t), [guess=0, description = "Saturated output of the controller"]
-        eI(t), [guess=0, description = "Error signal input to integrator including anit-windup tracking signal"]
-        e(t), [guess=0, description = "Error signal"]
+        r(t), [guess = 0, description = "Reference signal internal variable"]
+        y(t), [guess = 0, description = "Measurement signal internal variable"]
+        wde(t), [guess = 0, description = "Setpoint-weighted error for derivative"]
+        v(t), [guess = 0, description = "Un-saturated output of the controller"]
+        u(t), [guess = 0, description = "Saturated output of the controller"]
+        eI(t),
+        [guess = 0,
+            description = "Error signal input to integrator including anit-windup tracking signal"]
+        e(t), [guess = 0, description = "Error signal"]
     end
     @parameters begin
         kp = 1, [description = "Proportional gain"]
         ki = 1, [description = "Integral gain"]
         kd = 1, [description = "Derivative gain"]
         Ni = √(max(kd * ki, 1e-6)), [description = "Anti-windup gain"]
-        Nd = 10*kp, [description = "Maximum derivative gain"]
+        Nd = 10 * kp, [description = "Maximum derivative gain"]
         u_max = Inf, [description = "Maximum output"]
         u_min = ifelse(u_max > 0, -u_max, -Inf), [description = "Minimum output"]
         wp = 1, [description = "Set-point weighting in the proportional part."]
@@ -259,16 +266,16 @@ To use the controller in 1DOF mode, i.e., with only the control error as input, 
         y ~ measurement.u
         u ~ ctr_output.u
         e ~ r - y
-        v ~ kp*(wp*r-y) + I(z-1) + D # Unsaturated control signal
+        v ~ kp * (wp * r - y) + I(z - 1) + D # Unsaturated control signal
         u ~ _clamp(v, u_min, u_max) # Saturated control signal
         if with_I
-            eI ~ e + Ni * (u-v) # Add anti-windup tracking signal to error before integration
+            eI ~ e + Ni * (u - v) # Add anti-windup tracking signal to error before integration
             if Imethod === :forward
-                I(z) ~ I(z-1) + Ts * ki * eI(z-1)
+                I(z) ~ I(z - 1) + Ts * ki * eI(z - 1)
             elseif Imethod === :backward
-                I(z) ~ I(z-1) + Ts * ki * eI(z)
+                I(z) ~ I(z - 1) + Ts * ki * eI(z)
             elseif Imethod ∈ (:trapezoidal, :tustin)
-                I(z) ~ I(z-1) + Ts * ki * (eI(z) + eI(z-1)) / 2
+                I(z) ~ I(z - 1) + Ts * ki * (eI(z) + eI(z - 1)) / 2
             else
                 error("Unknown integrator discretization method $Imethod, must be one of :forward, :backward, :trapezoidal")
             end
@@ -276,23 +283,20 @@ To use the controller in 1DOF mode, i.e., with only the control error as input, 
             I(z) ~ 0
         end
         if with_D
-            wde ~ wd*r - y
+            wde ~ wd * r - y
             if Dmethod === :forward
-                D(z) ~ (kd-Nd*Ts)/kd * D(z-1) + Nd * (wde(z) - wde(z-1))
+                D(z) ~ (kd - Nd * Ts) / kd * D(z - 1) + Nd * (wde(z) - wde(z - 1))
             elseif Dmethod === :backward
-                D(z) ~ kd/(kd+Nd*Ts) * D(z-1) + Nd*kd/(kd+Nd*Ts) * (wde(z) - wde(z-1))
+                D(z) ~ kd / (kd + Nd * Ts) * D(z - 1) +
+                       Nd * kd / (kd + Nd * Ts) * (wde(z) - wde(z - 1))
             else
                 error("Unknown derivative discretization method $Dmethod, must be one of :forward, :backward")
             end
         else
             D(z) ~ 0
         end
-
     end
 end
-
-
-
 
 """
     DiscretePIDStandard(;name, K = 1, Ti = 1, Td = 1, Ni = √(max(kd * ki, 1e-6)), Nd = 10, u_max = Inf, u_min = -u_max, wp = 1, wd = 1, Ts = 1, with_I = true, with_D = true, Imethod = :forward, Dmethod = :backward)
@@ -365,13 +369,13 @@ To use the controller in 1DOF mode, i.e., with only the control error as input, 
     @structural_parameters begin
         Imethod = :forward
         Dmethod = :backward
-        with_I  = true
-        with_D  = true
+        with_I = true
+        with_D = true
     end
     @components begin
-        reference   = RealInput()
+        reference = RealInput()
         measurement = RealInput()
-        ctr_output  = RealOutput()
+        ctr_output = RealOutput()
     end
     @variables begin
         I(t) = 0.0, [description = "State of Integrator"]
@@ -381,7 +385,8 @@ To use the controller in 1DOF mode, i.e., with only the control error as input, 
         wde(t) = 0.0, [description = "Setpoint-weighted error for derivative"]
         v(t) = 0.0, [description = "Un-saturated output of the controller"]
         u(t) = 0.0, [description = "Saturated output of the controller"]
-        eI(t) = 0.0, [description = "Error signal input to integrator including anit-windup tracking signal"]
+        eI(t) = 0.0,
+        [description = "Error signal input to integrator including anit-windup tracking signal"]
         e(t) = 0.0, [description = "Error signal"]
     end
     @parameters begin
@@ -403,16 +408,16 @@ To use the controller in 1DOF mode, i.e., with only the control error as input, 
         y ~ measurement.u
         u ~ ctr_output.u
         e ~ r - y
-        v ~ K * ((wp*r-y) + I(z-1) + D) # Unsaturated control signal
+        v ~ K * ((wp * r - y) + I(z - 1) + D) # Unsaturated control signal
         u ~ _clamp(v, u_min, u_max) # Saturated control signal
         if with_I
-            eI ~ e + Ni * (u-v) # Add anti-windup tracking signal to error before integration
+            eI ~ e + Ni * (u - v) # Add anti-windup tracking signal to error before integration
             if Imethod === :forward
-                I(z) ~ I(z-1) + Ts / Ti * eI(z-1)
+                I(z) ~ I(z - 1) + Ts / Ti * eI(z - 1)
             elseif Imethod === :backward
-                I(z) ~ I(z-1) + Ts / Ti * eI(z)
+                I(z) ~ I(z - 1) + Ts / Ti * eI(z)
             elseif Imethod ∈ (:trapezoidal, :tustin)
-                I(z) ~ I(z-1) + Ts / Ti * (eI(z) + eI(z-1)) / 2
+                I(z) ~ I(z - 1) + Ts / Ti * (eI(z) + eI(z - 1)) / 2
             else
                 error("Unknown integrator discretization method $Imethod, must be one of :forward, :backward, :trapezoidal")
             end
@@ -420,22 +425,20 @@ To use the controller in 1DOF mode, i.e., with only the control error as input, 
             I(z) ~ 0
         end
         if with_D
-            wde = wd*r - y
+            wde = wd * r - y
             if Dmethod === :forward
-                D(z) ~ (Td-Nd*Ts)/Td * D(z-1) + Nd * (wde(z) - wde(z-1))
+                D(z) ~ (Td - Nd * Ts) / Td * D(z - 1) + Nd * (wde(z) - wde(z - 1))
             elseif Dmethod === :backward
-                D(z) ~ Td/(Td+Nd*Ts) * D(z-1) + Nd*Td/(Td+Nd*Ts) * (wde(z) - wde(z-1))
+                D(z) ~ Td / (Td + Nd * Ts) * D(z - 1) +
+                       Nd * Td / (Td + Nd * Ts) * (wde(z) - wde(z - 1))
             else
                 error("Unknown derivative discretization method $Dmethod, must be one of :forward, :backward")
             end
         else
             D(z) ~ 0
         end
-
     end
 end
-
-
 
 """
     DiscreteStateSpace(; A, B, C, D, u0 = zeros(size(B, 2)), y0 = zeros(size(C, 1)))
