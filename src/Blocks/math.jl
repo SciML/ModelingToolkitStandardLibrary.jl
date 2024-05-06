@@ -46,8 +46,8 @@ Output the product of a gain matrix with the input signal vector.
         nin = size(K, 2)
     end
     @components begin
-        input = RealInput(; nin = nin)
-        output = RealOutput(; nout = nout)
+        input = RealInputArray(; nin = nin)
+        output = RealOutputArray(; nout = nout)
     end
     @equations begin
         [output.u[i] ~ sum(K[i, j] * input.u[j] for j in 1:nin)
@@ -68,7 +68,7 @@ Input port dimension can be set with `input__nin`
 """
 @mtkmodel Sum begin
     @components begin
-        input = RealInput(; nin)
+        input = RealInputArray(; nin)
         output = RealOutput()
     end
     @equations begin
