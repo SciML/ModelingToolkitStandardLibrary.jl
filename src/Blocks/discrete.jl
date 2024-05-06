@@ -32,6 +32,7 @@ Initial value of integrator state ``x`` can be set with `x`
     end
     @structural_parameters begin
         Ts = ModelingToolkit.SampleTime()
+        z = ShiftIndex()
     end
     @equations begin
         if method === :forward
@@ -65,8 +66,9 @@ where `T_s` is the sample time of the derivative filter.
     @parameters begin
         k = 1, [description = "Gain"]
     end
-    begin
+    @structural_parameters begin
         Ts = SampleTime()
+        z = ShiftIndex()
     end
     @equations begin
         y(z) ~ k * (u(z) - u(z - 1)) / Ts
@@ -228,6 +230,8 @@ To use the controller in 1DOF mode, i.e., with only the control error as input, 
         Dmethod = :backward
         with_I = true
         with_D = true
+        Ts = SampleTime()
+        z = ShiftIndex()
     end
     @components begin
         reference = RealInput()
@@ -257,9 +261,6 @@ To use the controller in 1DOF mode, i.e., with only the control error as input, 
         u_min = ifelse(u_max > 0, -u_max, -Inf), [description = "Minimum output"]
         wp = 1, [description = "Set-point weighting in the proportional part."]
         wd = 1, [description = "Set-point weighting in the derivative part."]
-    end
-    begin
-        Ts = SampleTime()
     end
     @equations begin
         r ~ reference.u
@@ -371,6 +372,8 @@ To use the controller in 1DOF mode, i.e., with only the control error as input, 
         Dmethod = :backward
         with_I = true
         with_D = true
+        Ts = SampleTime()
+        z = ShiftIndex()
     end
     @components begin
         reference = RealInput()
@@ -399,9 +402,6 @@ To use the controller in 1DOF mode, i.e., with only the control error as input, 
         u_min = ifelse(u_max > 0, -u_max, -Inf), [description = "Minimum output"]
         wp = 1, [description = "Set-point weighting in the proportional part."]
         wd = 1, [description = "Set-point weighting in the derivative part."]
-    end
-    begin
-        Ts = SampleTime()
     end
     @equations begin
         r ~ reference.u
@@ -455,43 +455,48 @@ x_{k+1} = A x_k + B (u_k - u_0)
 y_k = C x_k + D (u_k - u_0) + y_0
 ```
 """
-@mtkmodel DiscreteStateSpace begin
-    @parameters begin
-        A, [description = "State matrix"]
-        B, [description = "Input matrix"]
-        C, [description = "Output matrix"]
-        D = zeros(size(C,1), size(B,2)),      [description = "Feedthrough matrix"]
-        u0[1:size(B, 2)] = zeros(size(B, 2)), [description = "Input operating point"]
-        y0[1:size(C, 1)] = zeros(size(C, 1)), [description = "Output operating point"]
-    end
-    begin
-        nx = size(A, 1)
-        nu = size(B, 2)
-        ny = size(C, 1)
-        size(A, 2) == nx || error("`A` has to be a square matrix.")
-        size(B, 1) == nx || error("`B` has to be of dimension ($nx x $nu).")
-        size(C, 2) == nx || error("`C` has to be of dimension ($ny x $nx).")
-        Ts = sampletime()
-    end
-    @components begin
-        input = RealInput(nin = nu)
-        output = RealOutput(nout = ny)
-    end
-    @variables begin
-        x(t)[1:nx] = zeros(nx), [description = "State"]
-        u(t)[1:nu] = zeros(nu), [description = "Input"]
-        y(t)[1:ny] = zeros(ny), [description = "Output"]
-    end
-    @equations begin
-        x(z+1) .~ A * x(z) .+ B * (u(z) .- u0)
-        y(z) .~ C * x(z) .+ D * (u(z) .- u0) .+ y0
-        output.u ~ y
-        input.u ~ u
-    end
+# @mtkmodel DiscreteStateSpace begin
+#     @parameters begin
+#         A, [description = "State matrix"]
+#         B, [description = "Input matrix"]
+#         C, [description = "Output matrix"]
+#         D = zeros(size(C,1), size(B,2)),      [description = "Feedthrough matrix"]
+#         u0[1:size(B, 2)] = zeros(size(B, 2)), [description = "Input operating point"]
+#         y0[1:size(C, 1)] = zeros(size(C, 1)), [description = "Output operating point"]
+#     end
+    # @structural_parameters begin
+    #     Ts = SampleTime()
+    #     z = ShiftIndex()
+    # end
+#     begin
+#         nx = size(A, 1)
+#         nu = size(B, 2)
+#         ny = size(C, 1)
+#         size(A, 2) == nx || error("`A` has to be a square matrix.")
+#         size(B, 1) == nx || error("`B` has to be of dimension ($nx x $nu).")
+#         size(C, 2) == nx || error("`C` has to be of dimension ($ny x $nx).")
+#         Ts = SampleTime()
+#     end
+#     @components begin
+#         input = RealInput(nin = nu)
+#         output = RealOutput(nout = ny)
+#     end
+#     @variables begin
+#         (x(t)[1:nx] = zeros(nx)), [description = "State"]
+#         (u(t)[1:nu] = zeros(nu)), [description = "Input"]
+#         (y(t)[1:ny] = zeros(ny)), [description = "Output"]
+#     end
+#     @equations begin
+#         x(z+1) .~ A * x(z) .+ B * (u(z) .- u0)
+#         y(z) .~ C * x(z) .+ D * (u(z) .- u0) .+ y0
+#         output.u ~ y
+#         input.u ~ u
+#     end
+# end
+
+function DiscreteStateSpace(A, B, C, D = nothing; kwargs...)
+    DiscreteStateSpace(; A, B, C, D, kwargs...)
 end
-
-DiscreteStateSpace(A, B, C, D = nothing; kwargs...) = DiscreteStateSpace(; A, B, C, D, kwargs...)
-
 
 """
     DiscreteTransferFunction(; b, a)
@@ -517,33 +522,37 @@ This component supports SISO systems only. To simulate MIMO transfer functions, 
 
 See also [ControlSystemsMTK.jl](https://juliacontrol.github.io/ControlSystemsMTK.jl/stable/) for an interface between [ControlSystems.jl](https://juliacontrol.github.io/ControlSystems.jl/stable/) and ModelingToolkit.jl for advanced manipulation of transfer functions and linear statespace systems. For linearization, see [`linearize`](@ref) and [Linear Analysis](https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/API/linear_analysis/).
 """
-@mtkmodel DiscreteTransferFunction begin
-    @parameters begin
-        b = [1], [description = "Numerator coefficients of transfer function (e.g., z - 1 is specified as [1,-1])"]
-        a = [1], [description = "Denominator coefficients of transfer function (e.g., z^2 - 0.78z + 0.37 is specified as [1, -0.78, 0.37])"]
-    end
-    @structural_parameters begin
-        verbose = true
-    end
-    begin
-        na = length(a)
-        nb = length(b)
-        verbose && nb > na && @warn "DiscreteTransferFunction: Numerator degree is larger than denominator degree, this is not a proper transfer function. Simulation of a model including this transfer funciton will require at least $(nb-na) samples additional delay in series. Silence this warning with verbose=false"
-        Ts = sampletime()
-    end
-    @components begin
-        input = RealInput()
-        output = RealOutput()
-    end
-    @variables begin
-        u(t) = 0.0, [description = "Input flowing through connector `input`"]
-        y(t) = 0.0, [description = "Output flowing through connector `output`"]
-    end
-    @equations begin
-        sum(y(z+k-1) * a[na-k+1] for k in 1:na) ~ sum(u(z+k-1) * b[nb-k+1] for k in 1:nb)
-        input.u ~ u
-        output.u ~ y
-    end
-end
+# @mtkmodel DiscreteTransferFunction begin
+#     @parameters begin
+#         b = [1], [description = "Numerator coefficients of transfer function (e.g., z - 1 is specified as [1,-1])"]
+#         a = [1], [description = "Denominator coefficients of transfer function (e.g., z^2 - 0.78z + 0.37 is specified as [1, -0.78, 0.37])"]
+#     end
+#     @structural_parameters begin
+#         verbose = true
+        # Ts = SampleTime()
+        # z = ShiftIndex()
+#     end
+#     begin
+#         na = length(a)
+#         nb = length(b)
+#         verbose && nb > na && @warn "DiscreteTransferFunction: Numerator degree is larger than denominator degree, this is not a proper transfer function. Simulation of a model including this transfer funciton will require at least $(nb-na) samples additional delay in series. Silence this warning with verbose=false"
+#         Ts = SampleTime()
+#     end
+#     @components begin
+#         input = RealInput()
+#         output = RealOutput()
+#     end
+#     @variables begin
+#         u(t) = 0.0, [description = "Input flowing through connector `input`"]
+#         y(t) = 0.0, [description = "Output flowing through connector `output`"]
+#     end
+#     @equations begin
+#         sum(y(z+k-1) * a[na-k+1] for k in 1:na) ~ sum(u(z+k-1) * b[nb-k+1] for k in 1:nb)
+#         input.u ~ u
+#         output.u ~ y
+#     end
+# end
 
-DiscreteTransferFunction(b, a; kwargs...) = DiscreteTransferFunction(; b, a, kwargs...)
+# DiscreteTransferFunction(b, a; kwargs...) = DiscreteTransferFunction(; b, a, kwargs...)
+
+##
