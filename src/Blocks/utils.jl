@@ -177,8 +177,8 @@ Base class for a multiple input multiple output (MIMO) continuous system block.
             "The keyword argument `y_start` is deprecated. Use `y_guess` instead.", :y_start)
         y_guess = y_start
     end
-    @named input = RealInput(nin = nin, guess = u_guess)
-    @named output = RealOutput(nout = nout, guess = y_guess)
+    @named input = RealInputArray(nin = nin, guess = u_guess)
+    @named output = RealOutputArray(nout = nout, guess = y_guess)
     @variables begin
         u(t)[1:nin], [guess = u_guess, description = "Input of MIMO system $name"]
         y(t)[1:nout], [guess = y_guess, description = "Output of MIMO system $name"]
