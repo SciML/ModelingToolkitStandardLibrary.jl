@@ -246,8 +246,8 @@ Electromotoric force (electric/mechanic transformer)
         k, [description = "Transformation coefficient"]
     end
     @variables begin
-        phi(t) = 0.0, [description = "Rotation Angle"]
-        w(t) = 0.0
+        phi(t), [guess = 0.0, description = "Rotation Angle"]
+        w(t), [guess = 0.0]
     end
     @extend v, i = oneport = OnePort()
     @components begin
