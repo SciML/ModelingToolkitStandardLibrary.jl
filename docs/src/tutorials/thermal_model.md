@@ -12,11 +12,13 @@ using ModelingToolkit: t_nounits as t
 
 C1 = 15
 C2 = 15
-@named mass1 = HeatCapacitor(C = C1, T = 373.15)
-@named mass2 = HeatCapacitor(C = C2, T = 273.15)
-@named conduction = ThermalConductor(G = 10)
-@named Tsensor1 = TemperatureSensor()
-@named Tsensor2 = TemperatureSensor()
+systems = @named begin
+    mass1 = HeatCapacitor(C = C1, T = 373.15)
+    mass2 = HeatCapacitor(C = C2, T = 273.15)
+    conduction = ThermalConductor(G = 10)
+    Tsensor1 = TemperatureSensor()
+    Tsensor2 = TemperatureSensor()
+end
 
 connections = [
     connect(mass1.port, conduction.port_a),
@@ -25,8 +27,7 @@ connections = [
     connect(mass2.port, Tsensor2.port)
 ]
 
-@named model = ODESystem(connections, t,
-    systems = [mass1, mass2, conduction, Tsensor1, Tsensor2])
+@named model = ODESystem(connections, t; systems)
 sys = structural_simplify(model)
 prob = ODEProblem(sys, Pair[], (0, 5.0))
 sol = solve(prob, Tsit5())
