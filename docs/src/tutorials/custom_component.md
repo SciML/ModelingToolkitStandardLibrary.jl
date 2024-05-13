@@ -90,15 +90,17 @@ extend(ODESystem(eqs, t, [], pars; name = name), oneport)
 The final model can now be created with the components from the library and the new custom component.
 
 ```@example components
-@named L = Inductor(L = 18)
-@named Ro = Resistor(R = 12.5e-3)
-@named G = Conductor(G = 0.565)
-@named C1 = Capacitor(C = 10, v = 4)
-@named C2 = Capacitor(C = 100)
-@named Nr = NonlinearResistor(Ga = -0.757576,
-    Gb = -0.409091,
-    Ve = 1)
-@named Gnd = Ground()
+systems = @named begin
+    L = Inductor(L = 18)
+    Ro = Resistor(R = 12.5e-3)
+    G = Conductor(G = 0.565)
+    C1 = Capacitor(C = 10, v = 4)
+    C2 = Capacitor(C = 100)
+    Nr = NonlinearResistor(Ga = -0.757576,
+        Gb = -0.409091,
+        Ve = 1)
+    Gnd = Ground()
+end
 
 connections = [connect(L.p, G.p)
                connect(G.n, Nr.p)
@@ -110,7 +112,7 @@ connections = [connect(L.p, G.p)
                connect(C2.n, Gnd.g)
                connect(Ro.n, Gnd.g)]
 
-@named model = ODESystem(connections, t, systems = [L, Ro, G, C1, C2, Nr, Gnd])
+@named model = ODESystem(connections, t; systems)
 nothing # hide
 ```
 

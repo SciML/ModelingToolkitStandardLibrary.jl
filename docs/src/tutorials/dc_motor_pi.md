@@ -33,20 +33,22 @@ nothing # hide
 The actual model can now be composed.
 
 ```@example dc_motor_pi
-@named ground = Ground()
-@named source = Voltage()
-@named ref = Blocks.Step(height = 1, start_time = 0)
-@named pi_controller = Blocks.LimPI(k = 1.1, T = 0.035, u_max = 10, Ta = 0.035)
-@named feedback = Blocks.Feedback()
-@named R1 = Resistor(R = R)
-@named L1 = Inductor(L = L)
-@named emf = EMF(k = k)
-@named fixed = Fixed()
-@named load = Torque()
-@named load_step = Blocks.Step(height = tau_L_step, start_time = 3)
-@named inertia = Inertia(J = J)
-@named friction = Damper(d = f)
-@named speed_sensor = SpeedSensor()
+systems = @named begin
+    ground = Ground()
+    source = Voltage()
+    ref = Blocks.Step(height = 1, start_time = 0)
+    pi_controller = Blocks.LimPI(k = 1.1, T = 0.035, u_max = 10, Ta = 0.035)
+    feedback = Blocks.Feedback()
+    R1 = Resistor(R = R)
+    L1 = Inductor(L = L)
+    emf = EMF(k = k)
+    fixed = Fixed()
+    load = Torque()
+    load_step = Blocks.Step(height = tau_L_step, start_time = 3)
+    inertia = Inertia(J = J)
+    friction = Damper(d = f)
+    speed_sensor = SpeedSensor()
+end
 
 connections = [connect(fixed.flange, emf.support, friction.flange_b)
                connect(emf.flange, friction.flange_a, inertia.flange_a)
@@ -62,23 +64,7 @@ connections = [connect(fixed.flange, emf.support, friction.flange_b)
                connect(L1.n, emf.p)
                connect(emf.n, source.n, ground.g)]
 
-@named model = ODESystem(connections, t,
-    systems = [
-        ground,
-        ref,
-        pi_controller,
-        feedback,
-        source,
-        R1,
-        L1,
-        emf,
-        fixed,
-        load,
-        load_step,
-        inertia,
-        friction,
-        speed_sensor
-    ])
+@named model = ODESystem(connections, t; systems)
 nothing # hide
 ```
 

@@ -93,14 +93,16 @@ using ModelingToolkitStandardLibrary.Electrical, ModelingToolkit, DifferentialEq
 using ModelingToolkit: t_nounits as t
 using Plots
 
-@named resistor = Resistor(R = 1)
-@named capacitor = Capacitor(C = 1)
-@named ground = Ground()
+systems = @named begin
+    resistor = Resistor(R = 1)
+    capacitor = Capacitor(C = 1)
+    ground = Ground()
+end
 
 eqs = [connect(capacitor.p, resistor.p)
        connect(resistor.n, ground.g, capacitor.n)]
 
-@named model = ODESystem(eqs, t; systems = [resistor, capacitor, ground])
+@named model = ODESystem(eqs, t; systems)
 
 sys = structural_simplify(model)
 
@@ -133,14 +135,16 @@ Now using the Translational library based on velocity, we can see the same relat
 using ModelingToolkitStandardLibrary
 const TV = ModelingToolkitStandardLibrary.Mechanical.Translational
 
-@named damping = TV.Damper(d = 1, flange_a.v = 1)
-@named body = TV.Mass(m = 1, v = 1)
-@named ground = TV.Fixed()
+systems = @named begin
+    damping = TV.Damper(d = 1, flange_a.v = 1)
+    body = TV.Mass(m = 1, v = 1)
+    ground = TV.Fixed()
+end
 
 eqs = [connect(damping.flange_a, body.flange)
        connect(ground.flange, damping.flange_b)]
 
-@named model = ODESystem(eqs, t; systems = [damping, body, ground])
+@named model = ODESystem(eqs, t; systems)
 
 sys = structural_simplify(model)
 
@@ -166,14 +170,16 @@ Now, let's consider the position-based approach.  We can build the same model wi
 ```@example connections
 const TP = ModelingToolkitStandardLibrary.Mechanical.TranslationalPosition
 
-@named damping = TP.Damper(d = 1, va = 1, vb = 0.0)
-@named body = TP.Mass(m = 1, v = 1)
-@named ground = TP.Fixed(s_0 = 0)
+systems = @named begin
+    damping = TP.Damper(d = 1, va = 1, vb = 0.0)
+    body = TP.Mass(m = 1, v = 1)
+    ground = TP.Fixed(s_0 = 0)
+end
 
 eqs = [connect(damping.flange_a, body.flange)
        connect(ground.flange, damping.flange_b)]
 
-@named model = ODESystem(eqs, t; systems = [damping, body, ground])
+@named model = ODESystem(eqs, t; systems)
 
 sys = structural_simplify(model)
 
