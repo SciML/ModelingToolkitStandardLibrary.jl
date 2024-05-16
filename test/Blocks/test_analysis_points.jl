@@ -59,7 +59,7 @@ matrices, _ = get_comp_sensitivity(sys, :plant_input)
 
 ## get_looptransfer
 
-matrices, _ = Blocks.get_looptransfer(sys, :plant_input; p = Dict(P.input.u => P.u_start))
+matrices, _ = Blocks.get_looptransfer(sys, :plant_input)
 @test matrices.A[] == -1
 @test matrices.B[] * matrices.C[] == -1 # either one negative
 @test matrices.D[] == 0
@@ -300,7 +300,7 @@ T = -CS.feedback(Kss * Pss, I(2), pos_feedback = true)
 @test CS.tf(CS.ss(matrices...)) ≈ CS.tf(T)
 
 matrices, _ = Blocks.get_looptransfer(
-    sys, :plant_input; p = Dict(P.input.u[1] => 0.0, P.input.u[2] => 0.0))
+    sys, :plant_input)
 L = Kss * Pss
 @test CS.tf(CS.ss(matrices...)) ≈ CS.tf(L)
 
@@ -353,18 +353,17 @@ To = CS.feedback(Ps * Cs)
 
 # matrices, _ = get_looptransfer(sys_outer, [:inner_plant_input, :inner_plant_output])
 matrices, _ = get_looptransfer(
-    sys_outer, :inner_plant_input; p = Dict(sys_inner.P.input.u => sys_inner.P.u_start))
+    sys_outer, :inner_plant_input)
 L = CS.ss(matrices...) |> sminreal
 @test tf(L) ≈ -tf(Cs * Ps)
 
 matrices, _ = get_looptransfer(
-    sys_outer, :inner_plant_output; p = Dict(sys_inner.add.input2.u => 0.0))
+    sys_outer, :inner_plant_output)
 L = CS.ss(matrices...) |> sminreal
 @test tf(L[1, 1]) ≈ -tf(Ps * Cs)
 
 # Calling looptransfer like below is not the intended way, but we can work out what it should return if we did so it remains a valid test
-matrices, _ = get_looptransfer(sys_outer, [:inner_plant_input, :inner_plant_output];
-    p = Dict(sys_inner.P.input.u => sys_inner.P.u_start, sys_inner.add.input2.u => 0.0))
+matrices, _ = get_looptransfer(sys_outer, [:inner_plant_input, :inner_plant_output])
 L = CS.ss(matrices...) |> sminreal
 @test tf(L[1, 1]) ≈ tf(0)
 @test tf(L[2, 2]) ≈ tf(0)
