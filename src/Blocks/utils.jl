@@ -18,7 +18,7 @@
         ]
         u = collect(u)
     end
-    ODESystem(Equation[], t, [u;], []; name = name, guesses = [u => guess])
+    ODESystem(Equation[], t, [u;], []; name = name, guesses = [(u .=> guess);])
 end
 @doc """
     RealInput(;name, guess)
@@ -77,7 +77,7 @@ Connector with an array of input signals of type Real.
         ]
         u = collect(u)
     end
-    ODESystem(Equation[], t, [u;], []; name = name, guesses = [u => guess])
+    ODESystem(Equation[], t, [u;], []; name = name, guesses = [(u .=> guess);])
 end
 @doc """
     RealOutput(;name, guess)
