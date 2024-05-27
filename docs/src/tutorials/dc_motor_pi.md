@@ -43,7 +43,7 @@ The actual model can now be composed.
 @named emf = EMF(k = k)
 @named fixed = Fixed()
 @named load = Torque()
-@named load_step = Blocks.Step(height = tau_L_step, start_time = 3)
+@named load_step = Blocks.Step(height = tau_L_step, start_time = 2)
 @named inertia = Inertia(J = J)
 @named friction = Damper(d = f)
 @named speed_sensor = SpeedSensor()
@@ -62,7 +62,7 @@ connections = [connect(fixed.flange, emf.support, friction.flange_b)
                connect(L1.n, emf.p)
                connect(emf.n, source.n, ground.g)]
 
-@named model = ODESystem(connections, t,
+@named disc_model = ODESystem(connections, t,
     systems = [
         ground,
         ref,
@@ -79,6 +79,7 @@ connections = [connect(fixed.flange, emf.support, friction.flange_b)
         friction,
         speed_sensor
     ])
+disc_model = complete(disc_model)
 nothing # hide
 ```
 
@@ -87,14 +88,14 @@ Now the model can be simulated. Typical rotational mechanical systems are descri
 so that it can be represented as a system of `ODEs` (ordinary differential equations).
 
 ```@example dc_motor_pi
-sys = structural_simplify(model)
-prob = ODEProblem(sys, unknowns(sys) .=> 0.0, (0, 6.0))
-sol = solve(prob, Rodas4())
+sys = structural_simplify(disc_model)
+disc_prob = ODEProblem(sys, unknowns(sys) .=> 0.0, (0, 4.0))
+disc_sol = solve(disc_prob, Rodas4())
 
-p1 = Plots.plot(sol.t, sol[inertia.w], ylabel = "Angular Vel. in rad/s",
+p1 = Plots.plot(disc_sol.t, disc_sol[inertia.w], ylabel = "Angular Vel. in rad/s",
     label = "Measurement", title = "DC Motor with Speed Controller")
-Plots.plot!(sol.t, sol[ref.output.u], label = "Reference")
-p2 = Plots.plot(sol.t, sol[load.tau.u], ylabel = "Disturbance in Nm", label = "")
+Plots.plot!(disc_sol.t, disc_sol[ref.output.u], label = "Reference")
+p2 = Plots.plot(disc_sol.t, disc_sol[load.tau.u], ylabel = "Disturbance in Nm", label = "")
 Plots.plot(p1, p2, layout = (2, 1))
 ```
 
@@ -119,22 +120,78 @@ T(s) &= \dfrac{P(s)C(s)}{I + P(s)C(s)}
 ```@example dc_motor_pi
 using ControlSystemsBase
 matrices_S, simplified_sys = Blocks.get_sensitivity(
-    model, :y, op = Dict(unknowns(sys) .=> 0.0))
+    disc_model, :y, op = Dict(unknowns(sys) .=> 0.0))
 So = ss(matrices_S...) |> minreal # The output-sensitivity function as a StateSpace system
 matrices_T, simplified_sys = Blocks.get_comp_sensitivity(
-    model, :y, op = Dict(inertia.phi => 0.0, inertia.w => 0.0))
+    disc_model, :y, op = Dict(inertia.phi => 0.0, inertia.w => 0.0))
 To = ss(matrices_T...)# The output complementary sensitivity function as a StateSpace system
 bodeplot([So, To], label = ["S" "T"], plot_title = "Sensitivity functions",
-    plotphase = false)
+    plotphase = false, hz = true)
 ```
 
 Similarly, we may compute the loop-transfer function and plot its Nyquist curve
 
 ```@example dc_motor_pi
 matrices_L, simplified_sys = Blocks.get_looptransfer(
-    model, :y, op = Dict(unknowns(sys) .=> 0.0))
+    disc_model, :y, op = Dict(unknowns(sys) .=> 0.0))
 L = -ss(matrices_L...) # The loop-transfer function as a StateSpace system. The negative sign is to negate the built-in negative feedback
 Ms, ωMs = hinfnorm(So) # Compute the peak of the sensitivity function to draw a circle in the Nyquist plot
 nyquistplot(L, label = "\$L(s)\$", ylims = (-2.5, 0.5), xlims = (-1.2, 0.1),
     Ms_circles = Ms)
 ```
+
+## Discrete-time controller
+
+Until now, we have modeled both the physical part of the system, the DC motor, and the control systems, in continuous time. In practice, it is common to implement control systems on a computer operating at a fixed sample rate, i.e, in discrete time. A system containing both continuous-time parts and discrete-time parts is often referred to as a "sampled-data system", and the ModelingToolkit standard library contains several components to model such systems.
+
+Below, we re-model the system, this time with a discrete-time controller: `Blocks.DiscretePIDStandard`. To interface between the continuous and discrete parts of the model, we make use of a [`Sampler`](@ref) and [`ZeroOrderHold`](@ref) blocks. Apart from the three aforementioned components, the model is the same as before.
+
+```@example dc_motor_pi
+@mtkmodel DiscreteClosedLoop begin
+    @components begin
+        ground = Ground()
+        source = Voltage()
+        ref = Blocks.Step(height = 1, start_time = 0)
+        sampler = Sampler(dt = 0.005)
+        pi_controller = Blocks.DiscretePIDStandard(
+            K = 1.1, Ti = 0.035, u_max = 10, with_D = false)
+        zoh = ZeroOrderHold()
+        R1 = Resistor(R = R)
+        L1 = Inductor(L = L)
+        emf = EMF(k = k)
+        fixed = Fixed()
+        load = Torque()
+        load_step = Blocks.Step(height = tau_L_step, start_time = 2)
+        inertia = Inertia(J = J)
+        friction = Damper(d = f)
+        speed_sensor = SpeedSensor()
+    end
+
+    @equations begin
+        connect(fixed.flange, emf.support, friction.flange_b)
+        connect(emf.flange, friction.flange_a, inertia.flange_a)
+        connect(inertia.flange_b, load.flange)
+        connect(inertia.flange_b, speed_sensor.flange)
+        connect(load_step.output, load.tau)
+        connect(ref.output, pi_controller.reference)
+        connect(speed_sensor.w, sampler.input)
+        connect(sampler.output, pi_controller.measurement)
+        connect(pi_controller.ctr_output, zoh.input)
+        connect(zoh.output, source.V)
+        connect(source.p, R1.p)
+        connect(R1.n, L1.p)
+        connect(L1.n, emf.p)
+        connect(emf.n, source.n, ground.g)
+    end
+end
+
+@mtkbuild disc_model = DiscreteClosedLoop()
+disc_prob = ODEProblem(disc_model, unknowns(disc_model) .=> 0.0, (0, 4.0))
+disc_sol = solve(disc_prob, Rodas4(); kwargshandle = KeywordArgSilent)
+
+Plots.plot!(p1, disc_sol.t, disc_sol[inertia.w], ylabel = "Angular Vel. in rad/s",
+    label = "Measurement (disc. controller)", title = "DC Motor with Discrete-time Speed Controller")
+Plots.plot(p1, p2, layout = (2, 1))
+```
+
+In the plot above, we compare the result of the discrete-time control system to the continuous-time result from before. We see that with the chosen sample-interval of `dt=0.005` (provided to the `Sampler` block), we have a slight degradation in the control performance as a consequence of the discretization.
