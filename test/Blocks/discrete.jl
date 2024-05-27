@@ -235,50 +235,56 @@ end
 ## Delay
 # ==============================================================================
 
-@mtkmodel DelayModel begin
-    @components begin
-        fake_plant = FirstOrder(T = 1e-4) # Included due to bug with only discrete-time systems
-        input = Step(start_time = 2, smooth = false)
-        sampler = Sampler(; dt = 1)
-        delay = Delay(n = 3)
-        zoh = ZeroOrderHold()
+@testset "delay" begin
+    @mtkmodel DelayModel begin
+        @components begin
+            fake_plant = FirstOrder(T = 1e-4) # Included due to bug with only discrete-time systems
+            input = Step(start_time = 2, smooth = false)
+            sampler = Sampler(; dt = 1)
+            delay = Delay(n = 3)
+            zoh = ZeroOrderHold()
+        end
+        @equations begin
+            connect(input.output, sampler.input)
+            connect(sampler.output, delay.input)
+            connect(delay.output, zoh.input)
+            connect(zoh.output, fake_plant.input)
+        end
     end
-    @equations begin
-        connect(input.output, sampler.input)
-        connect(sampler.output, delay.input)
-        connect(delay.output, zoh.input)
-        connect(zoh.output, fake_plant.input)
-    end
+
+    @mtkbuild m = DelayModel()
+    prob = ODEProblem(
+        m, [m.delay.u(k - 3) => 0, m.delay.u(k - 2) => 0, m.delay.u(k - 1) => 0], (
+            0.0, 10.0))
+    sol = solve(prob, Tsit5(), kwargshandle = KeywordArgSilent)
+
+    @test reduce(vcat, sol((0:10) .+ 1e-2))[:]≈[zeros(5); ones(6)] atol=1e-2
 end
-
-@mtkbuild m = DelayModel()
-prob = ODEProblem(
-    m, [m.delay.u(k - 3) => 0, m.delay.u(k - 2) => 0, m.delay.u(k - 1) => 0], (0.0, 10.0))
-sol = solve(prob, Tsit5(), kwargshandle = KeywordArgSilent)
-
-@test reduce(vcat, sol((0:10) .+ 1e-2))[:]≈[zeros(5); ones(6)] atol=1e-2
 
 # ==============================================================================
 ## Difference
 # ==============================================================================
 using ModelingToolkitStandardLibrary.Blocks
-k = ShiftIndex(Clock(t, 1))
 
-@mtkmodel DiffModel begin
-    @components begin
-        input = Step(start_time = 2, smooth = false)
-        diff = Blocks.Difference(z = k)
-        zoh = Blocks.ZeroOrderHold()
-        plant = FirstOrder(T = 1e-4) # Included due to bug with only discrete-time systems
+@testset "Difference" begin
+    k = ShiftIndex(Clock(t, 1))
+
+    @mtkmodel DiffModel begin
+        @components begin
+            input = Step(start_time = 2, smooth = false)
+            diff = Blocks.Difference(z = k)
+            zoh = Blocks.ZeroOrderHold()
+            plant = FirstOrder(T = 1e-4) # Included due to bug with only discrete-time systems
+        end
+        @equations begin
+            connect(input.output, diff.input)
+            connect(diff.output, zoh.input)
+            connect(zoh.output, plant.input)
+        end
     end
-    @equations begin
-        connect(input.output, diff.input)
-        connect(diff.output, zoh.input)
-        connect(zoh.output, plant.input)
-    end
+
+    @mtkbuild m = DiffModel()
+    prob = ODEProblem(m, Dict(m.diff.u(k - 1) => 0), (0.0, 10.0))
+    sol = solve(prob, Tsit5(), kwargshandle = KeywordArgSilent, dtmax = 0.01)
+    @test reduce(vcat, sol((0:10) .+ 1e-2))[:]≈[zeros(2); 1; zeros(8)] atol=1e-2
 end
-
-@mtkbuild m = DiffModel()
-prob = ODEProblem(m, Dict(m.diff.u(k - 1) => 0), (0.0, 10.0))
-sol = solve(prob, Tsit5(), kwargshandle = KeywordArgSilent)
-@test reduce(vcat, sol((0:10) .+ 1e-2))[:]≈[zeros(2); 1; zeros(8)] atol=1e-2
