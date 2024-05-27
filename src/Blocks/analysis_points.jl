@@ -18,6 +18,10 @@ function Base.hash(ap::AnalysisPoint, seed::UInt)
     h3 ⊻ (0xd29cdc51aa6562d4 % UInt)
 end
 
+function ModelingToolkit.get_unit(ap::AnalysisPoint)
+    ModelingToolkit.unitless
+end
+
 function ap_var(sys)
     if hasproperty(sys, :u)
         # collect to turn symbolic arrays into arrays of symbols
