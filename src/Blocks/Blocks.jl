@@ -27,6 +27,7 @@ export PI, LimPI, PID, LimPID
 include("continuous.jl")
 
 export DiscreteIntegrator, DiscreteDerivative, Delay, Difference, ZeroOrderHold, Sampler,
+       ClockChanger,
        DiscretePIDParallel, DiscretePIDStandard, DiscreteStateSpace,
        DiscreteTransferFunction
 include("discrete.jl")

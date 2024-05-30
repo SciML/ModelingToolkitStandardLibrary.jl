@@ -134,9 +134,9 @@ Similarly, we may compute the loop-transfer function and plot its Nyquist curve
 ```@example dc_motor_pi
 matrices_L, simplified_sys = Blocks.get_looptransfer(
     disc_model, :y, op = Dict(unknowns(sys) .=> 0.0))
-L = -ss(matrices_L...) # The loop-transfer function as a StateSpace system. The negative sign is to negate the built-in negative feedback
+Lo = -ss(matrices_L...) # The loop-transfer function as a StateSpace system. The negative sign is to negate the built-in negative feedback
 Ms, ωMs = hinfnorm(So) # Compute the peak of the sensitivity function to draw a circle in the Nyquist plot
-nyquistplot(L, label = "\$L(s)\$", ylims = (-2.5, 0.5), xlims = (-1.2, 0.1),
+nyquistplot(Lo, label = "\$L(s)\$", ylims = (-2.5, 0.5), xlims = (-1.2, 0.1),
     Ms_circles = Ms)
 ```
 
@@ -148,11 +148,14 @@ Below, we re-model the system, this time with a discrete-time controller: `Block
 
 ```@example dc_motor_pi
 @mtkmodel DiscreteClosedLoop begin
+    @structural_parameters begin
+        use_ref = true
+    end
     @components begin
         ground = Ground()
         source = Voltage()
-        ref = Blocks.Step(height = 1, start_time = 0)
-        sampler = Sampler(dt = 0.005)
+        ref = Blocks.Step(height = 1, start_time = 0, smooth = false)
+        sampler = Blocks.Sampler(dt = 0.005)
         pi_controller = Blocks.DiscretePIDStandard(
             K = 1.1, Ti = 0.035, u_max = 10, with_D = false)
         zoh = ZeroOrderHold()
@@ -165,15 +168,18 @@ Below, we re-model the system, this time with a discrete-time controller: `Block
         inertia = Inertia(J = J)
         friction = Damper(d = f)
         speed_sensor = SpeedSensor()
+        angle_sensor = AngleSensor()
     end
 
     @equations begin
         connect(fixed.flange, emf.support, friction.flange_b)
         connect(emf.flange, friction.flange_a, inertia.flange_a)
         connect(inertia.flange_b, load.flange)
-        connect(inertia.flange_b, speed_sensor.flange)
+        connect(inertia.flange_b, speed_sensor.flange, angle_sensor.flange)
         connect(load_step.output, load.tau)
-        connect(ref.output, pi_controller.reference)
+        if use_ref
+            connect(ref.output, pi_controller.reference)
+        end
         connect(speed_sensor.w, sampler.input)
         connect(sampler.output, pi_controller.measurement)
         connect(pi_controller.ctr_output, zoh.input)
@@ -195,3 +201,40 @@ Plots.plot(p1, p2, layout = (2, 1))
 ```
 
 In the plot above, we compare the result of the discrete-time control system to the continuous-time result from before. We see that with the chosen sample-interval of `dt=0.005` (provided to the `Sampler` block), we have a slight degradation in the control performance as a consequence of the discretization.
+
+### Adding a slower outer position loop
+
+```@example dc_motor_pi
+@mtkmodel Cascade begin
+    @components begin
+        inner = DiscreteClosedLoop(use_ref = false)
+        sampler = Sampler(clock = Clock(t, 0.005))
+        # clockchange = ClockChanger(from = Blocks.clock(sampler), to = Blocks.clock(inner.sampler))
+        clockchange = Gain(k = 1)
+        ref = Blocks.Ramp(height = 1, start_time = 0.1, duration = 0.9, smooth = false)
+        ref_diff = Blocks.DiscreteDerivative() # This will differentiate q_ref to q̇_ref
+        add = Blocks.Add()      # The middle ∑ block in the diagram
+        p_controller = Blocks.DiscretePIDStandard(K = 20, with_D = false, with_I = false)
+        id = Blocks.Gain(k = 1.0)  # a trivial identity element to allow us to place the analysis point :r in the right spot
+    end
+    @equations begin
+        connect(ref.output, id.input)
+        connect(id.output, p_controller.reference, ref_diff.input)
+        connect(ref_diff.output, add.input1)
+        connect(add.output, clockchange.input)
+        connect(clockchange.output, inner.pi_controller.reference)
+        connect(p_controller.ctr_output, :up, add.input2)
+        connect(inner.angle_sensor.phi, :yp, sampler.input)
+        connect(sampler.output, p_controller.measurement)
+    end
+end
+
+@mtkbuild cascade = Cascade()
+cascade_prob = ODEProblem(cascade, unknowns(cascade) .=> 0.0, (0, 3.0))
+cascade_sol = solve(cascade_prob, Rodas5P(); kwargshandle = KeywordArgSilent)
+# cb = cascade_prob.kwargs[:callback].discrete_callbacks[1]
+d1 = reduce(vcat, cascade_sol.prob.kwargs[:disc_saved_values][1].saveval)
+Plots.plot(cascade_sol,
+    idxs = [cascade.inner.inertia.phi, cascade.inner.inertia.w, cascade.inner.source.p.i],
+    layout = 3)
+```

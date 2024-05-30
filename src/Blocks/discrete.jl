@@ -157,6 +157,37 @@ end
     end
 end
 
+function clock(s)
+    ModelingToolkit.get_gui_metadata(s).type == GlobalRef(@__MODULE__, :Sampler) ||
+        error("clock(sys) is supposed to be called on a ModelingToolkitStandardLibrary.Blocks.Sampler system, got $s")
+    for eq in equations(s)
+        td = ModelingToolkit.get_time_domain(eq.rhs)
+        if td isa ModelingToolkit.AbstractClock
+            return td
+        end
+    end
+    error("No clock found")
+end
+
+"""
+    ClockChanger()
+    ClockChanger(; to::AbstractClock, from::AbstractClock)
+
+# Connectors:
+- `input` (continuous-time signal)
+- `output` (discrete-time signal)
+"""
+@mtkmodel ClockChanger begin
+    @extend u, y = siso = SISO()
+    @structural_parameters begin
+        to
+        from
+    end
+    @equations begin
+        y ~ ModelingToolkit.ClockChange(; to, from)(u)
+    end
+end
+
 """
     DiscretePIDParallel(;name, kp = 1, ki = 1, kd = 1, Ni = √(max(kd * ki, 1e-6)), Nd = 10kp, u_max = Inf, u_min = -u_max, wp = 1, wd = 1, Ts = 1, with_I = true, with_D = true, Imethod = :forward, Dmethod = :backward)
 
