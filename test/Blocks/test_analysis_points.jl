@@ -242,6 +242,14 @@ Si = ss(matrices...)
     t,
     systems = [P_inner, feedback, ref])
 
+@test_nowarn Blocks.find_analysis_points(sys_inner)
+P_not_broken, _ = linearize(sys_inner, :u, :y)
+@test P_not_broken.A[] == -2
+P_broken, _ = linearize(sys_inner, :u, :y, loop_openings = [:u])
+@test P_broken.A[] == -1
+P_broken, _ = linearize(sys_inner, :u, :y, loop_openings = [:y])
+@test P_broken.A[] == -1
+
 Sinner = sminreal(ss(get_sensitivity(sys_inner, :u)[1]...))
 
 @named sys_inner = ODESystem(

@@ -18,6 +18,10 @@ function Base.hash(ap::AnalysisPoint, seed::UInt)
     h3 ⊻ (0xd29cdc51aa6562d4 % UInt)
 end
 
+function ModelingToolkit.get_unit(ap::AnalysisPoint)
+    ModelingToolkit.unitless
+end
+
 function ap_var(sys)
     if hasproperty(sys, :u)
         # collect to turn symbolic arrays into arrays of symbols
@@ -26,6 +30,23 @@ function ap_var(sys)
     x = unknowns(sys)
     length(x) == 1 && return x[1]
     error("Could not determine the analysis-point variable in system $(nameof(sys)). To use an analysis point, apply it to a connection between two causal blocks containing connectors of type `RealInput/RealOutput` from ModelingToolkitStandardLibrary.Blocks.")
+end
+
+"""
+    find_analysis_points(sys)
+
+Return a list of all analysis points in `sys`. If none are found, the list is empty.
+"""
+function find_analysis_points(sys)
+    sys = ModelingToolkit.flatten(sys)
+    eqs = equations(sys)
+    aps = []
+    for eq in eqs
+        if eq.rhs isa AnalysisPoint
+            push!(aps, eq.rhs)
+        end
+    end
+    aps
 end
 
 """
@@ -418,7 +439,12 @@ function ModelingToolkit.linearization_function(sys::ModelingToolkit.AbstractSys
             ui = get_perturbation_var(ap_var(ap.out), "u")
             push!(multiplicities_u, length(ui)) # one ap may yield several new vars
             append!(u, ui)
-            [ap_var(ap.out) .~ ap_var(ap.in) + ui;], ui
+            if loop_openings !== nothing && ap.name ∈ loop_openings
+                # In thise case, we break the existing connection.
+                [ap_var(ap.out) .~ ui;], ui
+            else
+                [ap_var(ap.out) .~ ap_var(ap.in) + ui;], ui
+            end
             #input.in.u ~ 0] # We only need to ground one of the ends, hence not including this equation
         elseif output_name isa SymOrVec && namespaced_ap_match(ap, ns, output_name, nothing)
             push!(namespace_y, ns) # Save the namespace to make it available for renamespace below
@@ -426,8 +452,13 @@ function ModelingToolkit.linearization_function(sys::ModelingToolkit.AbstractSys
             yi = get_perturbation_var(ap_var(ap.in), "y")
             push!(multiplicities_y, length(yi))
             append!(y, yi)
-            [ap_var(ap.in) .~ yi;
-             ap_var(ap.out) .~ ap_var(ap.in)], yi
+            if loop_openings !== nothing && ap.name ∈ loop_openings
+                [ap_var(ap.in) .~ yi;
+                 ap_var(ap.out) .~ 0], yi # In thise case, we break the existing connection.
+            else
+                [ap_var(ap.in) .~ yi;
+                 ap_var(ap.out) .~ ap_var(ap.in)], yi
+            end
         else # loop opening
             [ap_var(ap.out) .~ 0;], []
         end
