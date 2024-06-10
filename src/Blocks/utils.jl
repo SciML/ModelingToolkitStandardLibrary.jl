@@ -1,6 +1,5 @@
 @connector function RealInput(;
         name, nin = 1, u_start = nothing, guess = nin > 1 ? zeros(nin) : 0.0)
-    nin > 1 && @warn "For inputs greater than one, use `RealInputArray`."
     if u_start !== nothing
         Base.depwarn(
             "The keyword argument `u_start` is deprecated. Use `guess` instead.", :u_start)
@@ -16,8 +15,9 @@
             input = true,
             description = "Inner variable in RealInput $name"
         ]
+        u = collect(u)
     end
-    ODESystem(Equation[], t, [u], []; name = name, guesses = [u => guess])
+    ODESystem(Equation[], t, [u;], []; name = name, guesses = [(u .=> guess);])
 end
 @doc """
     RealInput(;name, guess)
@@ -58,7 +58,6 @@ Connector with an array of input signals of type Real.
 
 @connector function RealOutput(;
         name, nout = 1, u_start = nothing, guess = nout > 1 ? zeros(nout) : 0.0)
-    nout > 1 && @warn "For outputs greater than one, use `RealOutputArray`."
     if u_start !== nothing
         Base.depwarn(
             "The keyword argument `u_start` is deprecated. Use `guess` instead.", :u_start)
@@ -74,8 +73,9 @@ Connector with an array of input signals of type Real.
             output = true,
             description = "Inner variable in RealOutput $name"
         ]
+        u = collect(u)
     end
-    ODESystem(Equation[], t, [u], []; name = name, guesses = [u => guess])
+    ODESystem(Equation[], t, [u;], []; name = name, guesses = [(u .=> guess);])
 end
 @doc """
     RealOutput(;name, guess)
