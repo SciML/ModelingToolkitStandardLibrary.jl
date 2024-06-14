@@ -495,20 +495,20 @@ See also [`FixedVolume`](@ref), [`DynamicVolume`](@ref)
     end
 
     eqs = [
-    # connectors
-        port.p ~ p
-        port.dm ~ dm
-        flange.v * direction ~ dx
-        flange.f * direction ~ -f
+           # connectors
+           port.p ~ p
+           port.dm ~ dm
+           flange.v * direction ~ dx
+           flange.f * direction ~ -f
 
-    # differentials
-        D(x) ~ dx
-        D(rho) ~ drho
+           # differentials
+           D(x) ~ dx
+           D(rho) ~ drho
 
-    # physics
-        rho ~ liquid_density(port, p)
-        f ~ p * area
-        dm ~ drho * x * area + rho * dx * area]
+           # physics
+           rho ~ liquid_density(port, p)
+           f ~ p * area
+           dm ~ drho * x * area + rho * dx * area]
 
     ODESystem(eqs, t, vars, pars; name, systems, defaults = [rho => liquid_density(port)])
 end

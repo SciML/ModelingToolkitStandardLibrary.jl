@@ -9,7 +9,7 @@ pages = [
     ],
     "About Acausal Connections" => [
         "Theory" => "connectors/connections.md",
-        "Sign Convention" => "connectors/sign_convention.md",
+        "Sign Convention" => "connectors/sign_convention.md"
     ],
     "API" => [
         "Basic Blocks" => "API/blocks.md",

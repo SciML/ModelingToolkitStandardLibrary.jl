@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        group:
+        GROUP:
           - QA
           - Core
         version:
