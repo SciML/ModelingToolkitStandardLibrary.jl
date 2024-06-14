@@ -440,7 +440,7 @@ function ModelingToolkit.linearization_function(sys::ModelingToolkit.AbstractSys
             push!(multiplicities_u, length(ui)) # one ap may yield several new vars
             append!(u, ui)
             if loop_openings !== nothing && ap.name ∈ loop_openings
-                # In thise case, we break the existing connection.
+                # In this case, we break the existing connection.
                 [ap_var(ap.out) .~ ui;], ui
             else
                 [ap_var(ap.out) .~ ap_var(ap.in) + ui;], ui
@@ -454,7 +454,7 @@ function ModelingToolkit.linearization_function(sys::ModelingToolkit.AbstractSys
             append!(y, yi)
             if loop_openings !== nothing && ap.name ∈ loop_openings
                 [ap_var(ap.in) .~ yi;
-                 ap_var(ap.out) .~ 0], yi # In thise case, we break the existing connection.
+                 ap_var(ap.out) .~ 0], yi # In this case, we break the existing connection.
             else
                 [ap_var(ap.in) .~ yi;
                  ap_var(ap.out) .~ ap_var(ap.in)], yi
