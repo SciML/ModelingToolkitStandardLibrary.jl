@@ -157,8 +157,8 @@ Base class for a multiple input multiple output (MIMO) continuous system block.
 """
 @component function MIMO(; name, nin = 1, nout = 1, u_start = zeros(nin),
         y_start = zeros(nout))
-    @named input = RealInput(nin = nin, guess = u_start)
-    @named output = RealOutput(nout = nout, guess = y_start)
+    @named input = RealInputArray(nin = nin, guess = u_start)
+    @named output = RealOutputArray(nout = nout, guess = y_start)
     @variables(u(t)[1:nin]=u_start, [description = "Input of MIMO system $name"],
         y(t)[1:nout]=y_start, [description = "Output of MIMO system $name"],)
     eqs = [
