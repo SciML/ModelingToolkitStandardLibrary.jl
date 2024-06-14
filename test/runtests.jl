@@ -1,5 +1,7 @@
 using SafeTestsets
 
+const GROUP = get(ENV, "GROUP", "All")
+
 @time begin
     if GROUP == "QA" || GROUP == "All"
         @time @safetestset "Aqua" begin
