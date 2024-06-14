@@ -2,13 +2,13 @@ name: CI
 on:
   pull_request:
     branches:
-      - master
+      - main
       - 'release-'
     paths-ignore:
       - 'docs/**'
   push:
     branches:
-      - master
+      - main
     paths-ignore:
       - 'docs/**'
 
