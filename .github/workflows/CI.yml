@@ -16,7 +16,8 @@ jobs:
     strategy:
       matrix:
         group:
-          - All
+          - QA
+          - Core
         version:
           - '1'
     steps:
