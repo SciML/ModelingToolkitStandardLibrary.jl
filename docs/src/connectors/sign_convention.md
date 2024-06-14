@@ -60,6 +60,7 @@ The flow variable (i.e. force) input component for the `Mechanical` domain is
 ```@example sign_convention
 using ModelingToolkit
 using ModelingToolkitStandardLibrary.Mechanical.Translational
+using ModelingToolkit: t_nounits as t
 
 @mtkmodel ConstantForce begin
     @parameters begin
