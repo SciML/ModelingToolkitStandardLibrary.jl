@@ -10,12 +10,15 @@ Linear 1D force sensor, measures the force between two flanges.
 """
 @mtkmodel ForceSensor begin
     @components begin
-        flange = MechanicalPort()
+        flange_a = MechanicalPort()
+        flange_b = MechanicalPort()
         output = RealOutput()
     end
 
     @equations begin
-        flange.f ~ -output.u
+        flange_a.v ~ flange_b.v
+        flange_a.f + flange_b.f ~ 0.0
+        output.u ~ flange_a.f
     end
 end
 
