@@ -16,4 +16,7 @@ include("components.jl")
 export Force
 include("sources.jl")
 
+export PositionSensor, ForceSensor, AccelerationSensor
+include("sensors.jl")
+
 end
