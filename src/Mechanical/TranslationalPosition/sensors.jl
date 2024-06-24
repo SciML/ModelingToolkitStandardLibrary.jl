@@ -1,7 +1,7 @@
 """
     ForceSensor(; name)
 
-Linear 1D force input sensor.
+Linear 1D force sensor, measures the force between two flanges.
 
 # Connectors:
 
@@ -26,7 +26,7 @@ end
 """
     PositionSensor(; s = 0, name)
 
-Linear 1D position input sensor.
+Linear 1D position sensor.
 
 # States:
 
@@ -52,7 +52,7 @@ end
 """
     AccelerationSensor(; name)
 
-Linear 1D position input sensor.
+Linear 1D acceleration sensor.
 
 # States:
 
