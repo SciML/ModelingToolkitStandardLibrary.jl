@@ -135,7 +135,8 @@ end
 
                 eqs = [connect(pos.s, src1.output)
                        connect(force.f, src2.output)
-                       connect(spring.flange_a, pos.flange, force_sensor.flange)
+                       connect(pos.flange, force_sensor.flange_a)
+                       connect(force_sensor.flange_b, spring.flange_a)
                        connect(spring.flange_b, force.flange, pos_sensor.flange)
                        connect(pos_value, pos_sensor.output)
                        connect(force_output, force_sensor.output)]
@@ -153,6 +154,7 @@ end
             s_b = 2 - delta_s + 1
 
             @test sol[s.pos_value.u][end]≈s_b atol=1e-3
+            @test all(sol[s.spring.flange_a.f] .== sol[s.force_output.u])
         end
 
         @testset "AccelerationSensor" begin
