@@ -115,61 +115,120 @@ end
 end
 
 @testset "sources & sensors" begin
-    function System(; name)
-        systems = @named begin
-            pos = TV.Position()
-            pos_sensor = TV.PositionSensor(; s = 1)
-            force = TV.Force()
-            force_sensor = TV.ForceSensor()
+    @testset "Translational" begin
+        @testset "PositionSensor & ForceSensor" begin
+            function System(; name)
+                systems = @named begin
+                    pos = TV.Position()
+                    pos_sensor = TV.PositionSensor(; s = 1)
+                    force = TV.Force()
+                    force_sensor = TV.ForceSensor()
 
-            spring = TV.Spring(; k = 1000)
+                    spring = TV.Spring(; k = 1000)
 
-            src1 = Sine(frequency = 100, amplitude = 2)
-            src2 = Sine(frequency = 100, amplitude = -1)
+                    src1 = Sine(frequency = 100, amplitude = 2)
+                    src2 = Sine(frequency = 100, amplitude = -1)
 
-            pos_value = RealInput()
-            force_output = RealOutput()
+                    pos_value = RealInput()
+                    force_output = RealOutput()
+                end
+
+                eqs = [connect(pos.s, src1.output)
+                       connect(force.f, src2.output)
+                       connect(spring.flange_a, pos.flange, force_sensor.flange)
+                       connect(spring.flange_b, force.flange, pos_sensor.flange)
+                       connect(pos_value, pos_sensor.output)
+                       connect(force_output, force_sensor.output)]
+
+                ODESystem(eqs, t, [], []; name, systems)
+            end
+
+            @named system = System()
+            s = complete(system)
+            sys = structural_simplify(system)
+            prob = ODEProblem(sys, [], (0, 1 / 400))
+            sol = solve(prob, Rosenbrock23())
+
+            delta_s = 1 / 1000
+            s_b = 2 - delta_s + 1
+
+            @test sol[s.pos_value.u][end]≈s_b atol=1e-3
         end
 
-        eqs = [connect(pos.s, src1.output)
-               connect(force.f, src2.output)
-               connect(spring.flange_a, pos.flange, force_sensor.flange)
-               connect(spring.flange_b, force.flange, pos_sensor.flange)
-               connect(pos_value, pos_sensor.output)
-               connect(force_output, force_sensor.output)]
-
-        ODESystem(eqs, t, [], []; name, systems)
+        @testset "AccelerationSensor" begin
+            @named acc = TV.AccelerationSensor()
+            m = 4
+            @named mass = TV.Mass(m = m)
+            @named force = TV.Force()
+            @named source = Sine(frequency = 2, amplitude = 1)
+            @named acc_output = RealOutput()
+            eqs = [
+                connect(force.f, source.output),
+                connect(force.flange, mass.flange),
+                connect(acc.flange, mass.flange),
+                connect(acc_output, acc.output)
+            ]
+            @named sys = ODESystem(
+                eqs, t, [], []; systems = [force, source, mass, acc, acc_output])
+            s = complete(structural_simplify(sys))
+            prob = ODEProblem(s, [], (0.0, pi))
+            sol = solve(prob, Tsit5())
+            @test sol[sys.acc_output.u] ≈ (sol[sys.mass.f] ./ m)
+        end
     end
 
-    @named system = System()
-    s = complete(system)
-    sys = structural_simplify(system)
-    prob = ODEProblem(sys, [], (0, 1 / 400))
-    sol = solve(prob, Rosenbrock23())
+    @testset "TranslationalPosition" begin
+        @testset "PositionSensor & ForceSensor" begin
+            function mass_spring(; name)
+                systems = @named begin
+                    fixed = TP.Fixed()
+                    spring = TP.Spring(;
+                        k = 10.0, l = 1.0, flange_a__s = 0.0, flange_b__s = 2.0)
+                    mass = TP.Mass(; m = 100.0, s = 2.0, v = 0.0)
+                    pos_sensor = TP.PositionSensor()
+                    force_sensor = TP.ForceSensor()
+                    pos_value = RealOutput()
+                    force_value = RealOutput()
+                end
+                eqs = [
+                    connect(fixed.flange, force_sensor.flange_a),
+                    connect(force_sensor.flange_b, spring.flange_a),
+                    connect(spring.flange_b, mass.flange, pos_sensor.flange),
+                    connect(pos_sensor.output, pos_value),
+                    connect(force_sensor.output, force_value)
+                ]
+                ODESystem(eqs, t, [], []; name, systems)
+            end
 
-    delta_s = 1 / 1000
-    s_b = 2 - delta_s + 1
+            @named model = mass_spring()
+            sys = structural_simplify(model)
 
-    @test sol[s.pos_value.u][end]≈s_b atol=1e-3
+            prob = ODEProblem(sys, [], (0.0, 1.0))
+            sol = solve(prob, Tsit5())
 
-    @testset "AccelerationSensor" begin
-        @named acc = TV.AccelerationSensor()
-        m = 4
-        @named mass = TV.Mass(m = m)
-        @named force = TV.Force()
-        @named source = Sine(frequency = 2, amplitude = 1)
-        @named acc_output = RealOutput()
-        eqs = [
-            connect(force.f, source.output),
-            connect(force.flange, mass.flange),
-            connect(acc.flange, mass.flange),
-            connect(acc_output, acc.output)
-        ]
-        @named sys = ODESystem(
-            eqs, t, [], []; systems = [force, source, mass, acc, acc_output])
-        s = complete(structural_simplify(sys))
-        prob = ODEProblem(s, [], (0.0, pi))
-        sol = solve(prob, Tsit5())
-        @test sol[sys.acc_output.u] ≈ (sol[sys.mass.f] ./ m)
+            @test all(sol[sys.spring.flange_a.f] .== sol[sys.force_value.u])
+            @test all(sol[sys.mass.s] .== sol[sys.pos_value.u])
+        end
+
+        @testset "AccelerationSensor" begin
+            @named acc = TP.AccelerationSensor()
+            m = 4
+            @named mass = TP.Mass(m = m)
+            @named force = TP.Force()
+            @named source = Sine(frequency = 2, amplitude = 1)
+            @named acc_output = RealOutput()
+            eqs = [
+                connect(force.f, source.output),
+                connect(force.flange, mass.flange),
+                connect(acc.flange, mass.flange),
+                connect(acc_output, acc.output)
+            ]
+            @named sys = ODESystem(
+                eqs, t, [], []; systems = [force, source, mass, acc, acc_output])
+            s = complete(structural_simplify(sys))
+            prob = ODEProblem(s, [], (0.0, pi))
+            sol = solve(prob, Tsit5())
+            @test sol[sys.acc_output.u] ≈ (sol[sys.mass.f] ./ m)
+        end
     end
 end
