@@ -62,7 +62,7 @@ connections = [connect(fixed.flange, emf.support, friction.flange_b)
                connect(L1.n, emf.p)
                connect(emf.n, source.n, ground.g)]
 
-@named disc_model = ODESystem(connections, t,
+@named model = ODESystem(connections, t,
     systems = [
         ground,
         ref,
@@ -79,7 +79,7 @@ connections = [connect(fixed.flange, emf.support, friction.flange_b)
         friction,
         speed_sensor
     ])
-disc_model = complete(disc_model)
+model = complete(model)
 nothing # hide
 ```
 
@@ -88,14 +88,14 @@ Now the model can be simulated. Typical rotational mechanical systems are descri
 so that it can be represented as a system of `ODEs` (ordinary differential equations).
 
 ```@example dc_motor_pi
-sys = structural_simplify(disc_model)
-disc_prob = ODEProblem(sys, unknowns(sys) .=> 0.0, (0, 4.0))
-disc_sol = solve(disc_prob, Rodas4())
+sys = structural_simplify(model)
+prob = ODEProblem(sys, unknowns(sys) .=> 0.0, (0, 4.0))
+sol = solve(prob, Rodas4())
 
-p1 = Plots.plot(disc_sol.t, disc_sol[inertia.w], ylabel = "Angular Vel. in rad/s",
+p1 = Plots.plot(sol.t, sol[inertia.w], ylabel = "Angular Vel. in rad/s",
     label = "Measurement", title = "DC Motor with Speed Controller")
-Plots.plot!(disc_sol.t, disc_sol[ref.output.u], label = "Reference")
-p2 = Plots.plot(disc_sol.t, disc_sol[load.tau.u], ylabel = "Disturbance in Nm", label = "")
+Plots.plot!(sol.t, sol[ref.output.u], label = "Reference")
+p2 = Plots.plot(sol.t, sol[load.tau.u], ylabel = "Disturbance in Nm", label = "")
 Plots.plot(p1, p2, layout = (2, 1))
 ```
 
@@ -120,10 +120,10 @@ T(s) &= \dfrac{P(s)C(s)}{I + P(s)C(s)}
 ```@example dc_motor_pi
 using ControlSystemsBase
 matrices_S, simplified_sys = Blocks.get_sensitivity(
-    disc_model, :y, op = Dict(unknowns(sys) .=> 0.0))
+    model, :y, op = Dict(unknowns(sys) .=> 0.0))
 So = ss(matrices_S...) |> minreal # The output-sensitivity function as a StateSpace system
 matrices_T, simplified_sys = Blocks.get_comp_sensitivity(
-    disc_model, :y, op = Dict(inertia.phi => 0.0, inertia.w => 0.0))
+    model, :y, op = Dict(inertia.phi => 0.0, inertia.w => 0.0))
 To = ss(matrices_T...)# The output complementary sensitivity function as a StateSpace system
 bodeplot([So, To], label = ["S" "T"], plot_title = "Sensitivity functions",
     plotphase = false, hz = true)
@@ -133,7 +133,7 @@ Similarly, we may compute the loop-transfer function and plot its Nyquist curve
 
 ```@example dc_motor_pi
 matrices_L, simplified_sys = Blocks.get_looptransfer(
-    disc_model, :y, op = Dict(unknowns(sys) .=> 0.0))
+    model, :y, op = Dict(unknowns(sys) .=> 0.0))
 Lo = -ss(matrices_L...) # The loop-transfer function as a StateSpace system. The negative sign is to negate the built-in negative feedback
 Ms, ωMs = hinfnorm(So) # Compute the peak of the sensitivity function to draw a circle in the Nyquist plot
 nyquistplot(Lo, label = "\$L(s)\$", ylims = (-2.5, 0.5), xlims = (-1.2, 0.1),
@@ -147,6 +147,7 @@ Until now, we have modeled both the physical part of the system, the DC motor, a
 Below, we re-model the system, this time with a discrete-time controller: `Blocks.DiscretePIDStandard`. To interface between the continuous and discrete parts of the model, we make use of a [`Sampler`](@ref) and [`ZeroOrderHold`](@ref) blocks. Apart from the three aforementioned components, the model is the same as before.
 
 ```@example dc_motor_pi
+z = ShiftIndex()
 @mtkmodel DiscreteClosedLoop begin
     @structural_parameters begin
         use_ref = true
@@ -191,13 +192,19 @@ Below, we re-model the system, this time with a discrete-time controller: `Block
     end
 end
 
-@mtkbuild disc_model = DiscreteClosedLoop()
-disc_prob = ODEProblem(disc_model, unknowns(disc_model) .=> 0.0, (0, 4.0))
-disc_sol = solve(disc_prob, Rodas4(); kwargshandle = KeywordArgSilent)
+@named disc_model = DiscreteClosedLoop()
+disc_model = complete(disc_model)
+ssys = structural_simplify(IRSystem(disc_model))
 
-Plots.plot!(p1, disc_sol.t, disc_sol[inertia.w], ylabel = "Angular Vel. in rad/s",
-    label = "Measurement (disc. controller)", title = "DC Motor with Discrete-time Speed Controller")
-Plots.plot(p1, p2, layout = (2, 1))
+disc_prob = ODEProblem(ssys, [unknowns(disc_model) .=> 0.0; disc_model.pi_controller.I(z-1) => 0; disc_model.pi_controller.eI(z-1) => 0], (0, 4.0))
+disc_sol = solve(disc_prob, Tsit5())
+
+
+Plots.plot(sol.t, sol[inertia.w], ylabel = "Angular Vel. in rad/s",
+    label = "Measurement (cont. controller)", title = "DC Motor with Speed Controller")
+Plots.plot!(disc_sol.t, disc_sol[inertia.w], ylabel = "Angular Vel. in rad/s",
+    label = "Measurement (disc. controller)", title = "DC Motor with Discrete-time Speed Controller", legend=:bottomleft, dpi=600)
+lens!([1.9, 2.3], [0.75, 1.02], inset=(1, bbox(.6, .5, .3, .4))) # 1 is subplot index
 ```
 
 In the plot above, we compare the result of the discrete-time control system to the continuous-time result from before. We see that with the chosen sample-interval of `dt=0.005` (provided to the `Sampler` block), we have a slight degradation in the control performance as a consequence of the discretization.
@@ -208,9 +215,9 @@ In the plot above, we compare the result of the discrete-time control system to 
 @mtkmodel Cascade begin
     @components begin
         inner = DiscreteClosedLoop(use_ref = false)
-        sampler = Sampler(clock = Clock(t, 0.005))
-        # clockchange = ClockChanger(from = Blocks.clock(sampler), to = Blocks.clock(inner.sampler))
-        clockchange = Gain(k = 1)
+        sampler = Sampler(clock = Clock(0.01))
+        cc = ClockChanger(from = Blocks.clock(sampler), to = Blocks.clock(inner.sampler))
+        # cc = Gain(k = 1)
         ref = Blocks.Ramp(height = 1, start_time = 0.1, duration = 0.9, smooth = false)
         ref_diff = Blocks.DiscreteDerivative() # This will differentiate q_ref to q̇_ref
         add = Blocks.Add()      # The middle ∑ block in the diagram
@@ -221,20 +228,26 @@ In the plot above, we compare the result of the discrete-time control system to 
         connect(ref.output, id.input)
         connect(id.output, p_controller.reference, ref_diff.input)
         connect(ref_diff.output, add.input1)
-        connect(add.output, clockchange.input)
-        connect(clockchange.output, inner.pi_controller.reference)
+        connect(add.output, cc.input)
+        connect(cc.output, inner.pi_controller.reference)
         connect(p_controller.ctr_output, :up, add.input2)
         connect(inner.angle_sensor.phi, :yp, sampler.input)
         connect(sampler.output, p_controller.measurement)
     end
 end
 
-@mtkbuild cascade = Cascade()
-cascade_prob = ODEProblem(cascade, unknowns(cascade) .=> 0.0, (0, 3.0))
-cascade_sol = solve(cascade_prob, Rodas5P(); kwargshandle = KeywordArgSilent)
-# cb = cascade_prob.kwargs[:callback].discrete_callbacks[1]
-d1 = reduce(vcat, cascade_sol.prob.kwargs[:disc_saved_values][1].saveval)
+@named cascade = Cascade()
+cascade = complete(cascade)
+ssys = structural_simplify(IRSystem(cascade))
+cascade_prob = ODEProblem(ssys, [
+    unknowns(cascade) .=> 0.0;
+    cascade.inner.pi_controller.I(z-1) => 0;
+    cascade.inner.pi_controller.eI(z-1) => 0;
+    cascade.p_controller.I(z-1) => 0;
+    cascade.ref_diff.u(z-1) => 0;
+    ], (0, 3.0))
+cascade_sol = solve(cascade_prob, Tsit5())
 Plots.plot(cascade_sol,
-    idxs = [cascade.inner.inertia.phi, cascade.inner.inertia.w, cascade.inner.source.p.i],
-    layout = 3)
+    idxs = [cascade.inner.inertia.phi, cascade.inner.inertia.w],
+    layout = 2)
 ```

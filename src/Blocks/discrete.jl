@@ -150,7 +150,7 @@ end
     @extend u, y = siso = SISO()
     @structural_parameters begin
         dt = nothing
-        clock = (dt === nothing ? InferredDiscrete() : Clock(t, dt))
+        clock = (dt === nothing ? InferredDiscrete() : Clock(dt))
     end
     @equations begin
         y ~ Sample(clock)(u)
@@ -162,7 +162,7 @@ function clock(s)
         error("clock(sys) is supposed to be called on a ModelingToolkitStandardLibrary.Blocks.Sampler system, got $s")
     for eq in equations(s)
         td = ModelingToolkit.get_time_domain(eq.rhs)
-        if td isa ModelingToolkit.AbstractClock
+        if td !== nothing #&& td != ModelingToolkit.AbstractClock
             return td
         end
     end
@@ -178,13 +178,19 @@ end
 - `output` (discrete-time signal)
 """
 @mtkmodel ClockChanger begin
+    begin
+        isdefined(Main, :JuliaSimCompiler) || error("JuliaSimCompiler must be defined in the Main module for the ClockChanger component to work. Run `import JuliaSimCompiler`.")
+    end
     @extend u, y = siso = SISO()
     @structural_parameters begin
         to
         from
     end
+    @parameters begin
+        O = 0 # This is just a dummy to workaround a bug in JSComp
+    end
     @equations begin
-        y ~ ModelingToolkit.ClockChange(; to, from)(u)
+        y(ShiftIndex(to)) ~ Main.JuliaSimCompiler.ClockChange(; to, from)(u(ShiftIndex(from))) + O
     end
 end
 
