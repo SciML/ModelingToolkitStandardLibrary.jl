@@ -48,9 +48,9 @@ Sliding mass with inertia
         m
     end
     @variables begin
-        s(t) = 0.0
-        v(t) = 0.0
-        f(t) = 0.0
+        s(t)
+        v(t)
+        f(t)
     end
     @components begin
         flange = Flange(; s = s)
@@ -164,8 +164,8 @@ Linear 1D translational damper
         d
     end
     @variables begin
-        va(t) = 0.0
-        vb(t) = 0.0
+        va(t)
+        vb(t)
         f(t) = +(va - vb) * d
     end
 

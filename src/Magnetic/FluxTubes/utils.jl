@@ -30,8 +30,8 @@ Partial component with magnetic potential difference between two magnetic ports 
         port_n = NegativeMagneticPort()
     end
     @variables begin
-        V_m(t) = 0.0
-        Phi(t) = 0.0
+        V_m(t)
+        Phi(t)
     end
     @equations begin
         V_m ~ port_p.V_m - port_n.V_m

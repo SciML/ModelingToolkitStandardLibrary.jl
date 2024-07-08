@@ -12,7 +12,7 @@ Use to close a system that has un-connected `MechanicalPort`'s where the force s
         flange = MechanicalPort()
     end
     @variables begin
-        f(t) = 0.0
+        f(t)
     end
     @equations begin
         flange.f ~ f

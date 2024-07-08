@@ -136,7 +136,7 @@ Partial model for a component with two translational 1-dim. flanges and a suppor
     @named flange_a = Flange()
     @named flange_b = Flange()
     sys = [flange_a, flange_b]
-    @variables s_support(t) = 0.0
+    @variables s_support(t)
     if use_support
         @named support = Support()
         eqs = [support.s ~ s_support

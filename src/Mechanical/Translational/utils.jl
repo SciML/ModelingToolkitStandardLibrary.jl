@@ -1,6 +1,6 @@
 @connector MechanicalPort begin
-    v(t) = 0.0
-    f(t) = 0.0, [connect = Flow]
+    v(t)
+    f(t), [connect = Flow]
 end
 Base.@doc """
     MechanicalPort(;name)
