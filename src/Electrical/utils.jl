@@ -1,5 +1,5 @@
 @connector Pin begin
-    v(t)                    # Potential at the pin [V]
+    v(t)                  # Potential at the pin [V]
     i(t), [connect = Flow]    # Current flowing into the pin [A]
 end
 @doc """
@@ -33,8 +33,8 @@ Component with two electrical pins `p` and `n` and current `i` flows from `p` to
         n = Pin()
     end
     @variables begin
-        v(t) = 0.0
-        i(t) = 0.0
+        v(t)
+        i(t)
     end
     @equations begin
         v ~ p.v - n.v
@@ -70,10 +70,10 @@ Current `i1` flows from `p1` to `n1` and `i2` from `p2` to `n2`.
         n2 = Pin()
     end
     @variables begin
-        v1(t) = 0.0
-        i1(t) = 0.0
-        v2(t) = 0.0
-        i2(t) = 0.0
+        v1(t)
+        i1(t)
+        v2(t)
+        i2(t)
     end
     @equations begin
         v1 ~ p1.v - n1.v
@@ -91,7 +91,7 @@ end
         val ~ IfElse.ifelse((0.0 <= v) & (v <= 0.8) | (2.0 <= v) & (v <= 5.0),
         IfElse.ifelse(v > 2.0, 1, 0), X)
     ]
-    ODESystem(Equation[], t, [val, v, i], [], defaults = Dict(val => 0, i => 0),
+    ODESystem(Equation[], t, [val, v, i], [], guesses = Dict(val => 0, i => 0),
         name = name)
 end
 @doc """
