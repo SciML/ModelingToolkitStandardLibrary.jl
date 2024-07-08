@@ -25,7 +25,7 @@ Lumped thermal element storing heat
     end
     @variables begin
         T(t) = 273.15 + 20
-        der_T(t) = 0.0
+        der_T(t)
     end
 
     @equations begin
