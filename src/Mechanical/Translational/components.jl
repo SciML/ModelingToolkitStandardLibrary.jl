@@ -66,7 +66,7 @@ Sliding mass with inertia
 
     vars = @variables begin
         v(t) = v
-        f(t) = 0
+        f(t)
     end
 
     eqs = [flange.v ~ v
@@ -123,7 +123,7 @@ end # default
     end
     vars = @variables begin
         delta_s(t) = delta_s
-        f(t) = 0
+        f(t)
     end
 
     @named flange_a = MechanicalPort(; v = flange_a__v)
@@ -148,7 +148,7 @@ const ABS = Val(:absolute)
     vars = @variables begin
         sa(t) = sa
         sb(t) = sb
-        f(t) = 0
+        f(t)
     end
 
     @named flange_a = MechanicalPort(; v = flange_a__v)

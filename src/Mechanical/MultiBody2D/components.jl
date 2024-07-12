@@ -9,35 +9,35 @@
     end
 
     @variables begin
-        (A(t) = 0), [state_priority = 10]
-        (dA(t) = 0), [state_priority = 10]
-        (ddA(t) = 0), [state_priority = 10]
+        (A(t)), [state_priority = 10]
+        (dA(t)), [state_priority = 10]
+        (ddA(t)), [state_priority = 10]
 
-        fx1(t) = 0
-        fy1(t) = 0
+        fx1(t)
+        fy1(t)
 
-        fx2(t) = 0
-        fy2(t) = 0
+        fx2(t)
+        fy2(t)
 
         x1(t) = x1_0
-        dx1(t) = 0
+        dx1(t)
 
         y1(t) = y1_0
-        dy1(t) = 0
+        dy1(t)
 
         x2(t) = l + x1_0
-        dx2(t) = 0
+        dx2(t)
 
-        y2(t) = 0
-        dy2(t) = 0
+        y2(t)
+        dy2(t)
 
         x_cm(t) = l / 2 + x1_0
-        dx_cm(t) = 0
-        ddx_cm(t) = 0
+        dx_cm(t)
+        ddx_cm(t)
 
-        y_cm(t) = 0
-        dy_cm(t) = 0
-        ddy_cm(t) = 0
+        y_cm(t)
+        dy_cm(t)
+        ddy_cm(t)
     end
 
     @components begin
