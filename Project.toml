@@ -1,7 +1,7 @@
 name = "ModelingToolkitStandardLibrary"
 uuid = "16a59e39-deab-5bd0-87e4-056b12336739"
 authors = ["Chris Rackauckas and Julia Computing"]
-version = "2.7.4"
+version = "2.7.5"
 
 [deps]
 ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
