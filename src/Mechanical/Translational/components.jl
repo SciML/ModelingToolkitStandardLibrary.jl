@@ -184,7 +184,7 @@ Linear 1D translational damper
     end
     @variables begin
         v(t)
-        f(t) = 0.0
+        f(t)
     end
 
     @components begin

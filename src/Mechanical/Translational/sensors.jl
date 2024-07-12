@@ -40,7 +40,7 @@ Linear 1D position input sensor.
     end
 
     @variables begin
-        s(t) = 0.0
+        s(t)
     end
 
     @equations begin
@@ -71,7 +71,7 @@ Linear 1D position input sensor.
     end
 
     @variables begin
-        a(t) = 0.0
+        a(t)
     end
 
     @equations begin

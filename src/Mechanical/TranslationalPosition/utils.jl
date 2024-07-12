@@ -42,10 +42,10 @@ Partial model for the compliant connection of two translational 1-dim. flanges.
         flange_b = Flange()
     end
     @variables begin
-        v_a(t) = 0.0
-        v_b(t) = 0.0
-        s_rel(t) = 0.0
-        f(t) = 0.0
+        v_a(t)
+        v_b(t)
+        s_rel(t)
+        f(t)
     end
     @equations begin
         D(flange_a.s) ~ v_a
@@ -81,8 +81,8 @@ Partial model for the compliant connection of two translational 1-dim. flanges.
         flange_b = Flange()
     end
     @variables begin
-        delta_s(t) = 0.0
-        f(t) = 0.0
+        delta_s(t)
+        f(t)
     end
     @equations begin
         delta_s ~ flange_a.s - flange_b.s
