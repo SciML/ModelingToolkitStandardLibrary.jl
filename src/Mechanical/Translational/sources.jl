@@ -88,7 +88,7 @@ Linear 1D position input source.  Set `solves_force=false` to force input force 
         a = RealInput()
     end
 
-    vars = @variables v(t) = 0
+    vars = @variables v(t)
 
     eqs = [v ~ flange.v
            D(v) ~ a.u]

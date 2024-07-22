@@ -30,7 +30,7 @@ end
 
     vars = @variables begin
         p(t) = p_int
-        dm(t) = 0
+        dm(t)
     end
 
     systems = @named begin
@@ -79,7 +79,7 @@ Variable length internal flow model of the fully developed incompressible flow f
 
     @variables begin
         x(t) = length_int
-        ddm(t) = 0
+        ddm(t)
     end
 
     vars = []
@@ -242,8 +242,8 @@ Reduces the flow from `port_a` to `port_b` by `n`.  Useful for modeling parallel
     end
 
     vars = @variables begin
-        dm_a(t) = 0
-        dm_b(t) = 0
+        dm_a(t)
+        dm_b(t)
     end
 
     systems = @named begin
@@ -373,9 +373,9 @@ end
 
     vars = @variables begin
         x(t) = x_int
-        dx(t) = 0
+        dx(t)
         rho(t) = liquid_density(port)
-        drho(t) = 0
+        drho(t)
         vol(t) = dead_volume + area * x_int
     end
 
@@ -416,7 +416,7 @@ Fixed fluid volume.
 
     vars = @variables begin
         rho(t) = liquid_density(port)
-        drho(t) = 0
+        drho(t)
     end
 
     # let
@@ -717,7 +717,7 @@ end
 
     vars = @variables begin
         x(t) = x_int
-        dx(t) = 0
+        dx(t)
     end
 
     eqs = [D(x) ~ dx
@@ -822,7 +822,7 @@ end
 
     vars = @variables begin
         x(t) = x_int
-        dx(t) = 0
+        dx(t)
     end
 
     total_length = length_a_int + length_b_int

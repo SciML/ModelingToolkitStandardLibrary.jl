@@ -48,8 +48,8 @@ Sliding mass with inertia
         m = 0.0, [description = "Mass of sliding mass [kg]"]
     end
     @variables begin
-        v(t) = 0.0, [description = "Absolute linear velocity of sliding mass [m/s]"]
-        a(t) = 0.0, [description = "Absolute linear acceleration of sliding mass [m/s^2]"]
+        v(t), [description = "Absolute linear velocity of sliding mass [m/s]"]
+        a(t), [description = "Absolute linear acceleration of sliding mass [m/s^2]"]
     end
     @extend flange_a, flange_b, s = pr = PartialRigid(; L = 0.0, s)
     @equations begin
@@ -106,7 +106,7 @@ Linear 1D translational damper
         d = 0.0, [description = "Damping constant [Ns/m]"]
     end
     @variables begin
-        lossPower(t) = 0.0, [description = "Power dissipated by the damper [W]"]
+        lossPower(t), [description = "Power dissipated by the damper [W]"]
     end
     @equations begin
         f ~ d * v_rel

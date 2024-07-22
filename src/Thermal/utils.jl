@@ -1,6 +1,6 @@
 @connector HeatPort begin
     T(t) = 273.15 + 20.0
-    Q_flow(t) = 0.0, [connect = Flow]
+    Q_flow(t), [connect = Flow]
 end
 Base.@doc """
     HeatPort(; name, T = 273.15 + 20.0, Q_flow = 0.0)
