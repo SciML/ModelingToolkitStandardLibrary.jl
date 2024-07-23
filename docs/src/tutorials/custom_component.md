@@ -10,9 +10,7 @@ First, we need to make some imports.
 using ModelingToolkit
 using ModelingToolkit: t_nounits as t
 using ModelingToolkitStandardLibrary.Electrical
-using ModelingToolkitStandardLibrary.Electrical: OnePort
 using OrdinaryDiffEq
-using IfElse: ifelse
 using Plots
 ```
 
@@ -36,102 +34,94 @@ end NonlinearResistor;
 this can almost be directly translated to the syntax of `ModelingToolkit`.
 
 ```@example components
-function NonlinearResistor(; name, Ga, Gb, Ve)
-    @named oneport = OnePort()
-    @unpack v, i = oneport
-    pars = @parameters Ga=Ga Gb=Gb Ve=Ve
-    eqs = [
+@mtkmodel NonlinearResistor begin
+    @extend OnePort()
+    @parameters begin
+        Ga
+        Gb
+        Ve
+    end
+    @equations begin
         i ~ ifelse(v < -Ve,
-        Gb * (v + Ve) - Ga * Ve,
-        ifelse(v > Ve,
-            Gb * (v - Ve) + Ga * Ve,
-            Ga * v))
-    ]
-    extend(ODESystem(eqs, t, [], pars; name = name), oneport)
+            Gb * (v + Ve) - Ga * Ve,
+            ifelse(v > Ve,
+                Gb * (v - Ve) + Ga * Ve,
+                Ga * v))
+    end
 end
 nothing # hide
 ```
 
 ### Explanation
 
-All components in `ModelingToolkit` are created via a function that serves as the constructor and returns some form of system, in this case, an `ODESystem`.
 Since the non-linear resistor is essentially a standard electrical component with two ports, we can extend from the `OnePort` component of the library.
 
 ```julia
-@named oneport = OnePort()
+@extend OnePort()
 ```
 
-This creates a `OnePort` with the `name = :oneport`.
-For easier notation, we can unpack the states of the component
-
-```julia
-@unpack v, i = oneport
-```
+This extends `OnePort` and unpacks `v` and `i` variables.
 
 It might be a good idea to create parameters for the constants of the `NonlinearResistor`.
 
 ```julia
-pars = @parameters Ga=Ga Gb=Gb Ve=Ve
+@parameters begin
+    Ga
+    Gb
+    Ve
+end
 ```
 
-The syntax looks funny but it simply creates symbolic parameters with the name `Ga` where its default value is set from the function's argument `Ga`.
-While this is not strictly necessary it allows the user to `remake` the problem easily with different parameters or allow for auto-tuning or parameter optimization without having to do all the costly steps that may be involved with building and simplifying a model.
-The non-linear (in this case piece-wise constant) equation for the current can be implemented using `IfElse.ifelse`.
-Finally, the created `oneport` component is extended with the created equations and parameters.
-In this case, no extra state variables are added, hence an empty vector is supplied.
-The independent variable `t` needs to be supplied as the second argument.
-
-```julia
-extend(ODESystem(eqs, t, [], pars; name = name), oneport)
-```
+This creates symbolic parameters with the name `Ga`, `Gb` and `Ve` whose default values are set from the function's arguments `Ga`, `Gb` and `Ve`, respectively.
+This allows the user to `remake` the problem easily with different parameters or allow for auto-tuning or parameter optimization without having to do all the costly steps that may be involved with building and simplifying a model.
+The non-linear (in this case piece-wise constant) equation for the current can be implemented using `ifelse`.
 
 ## Building the Model
 
 The final model can now be created with the components from the library and the new custom component.
 
 ```@example components
-systems = @named begin
-    L = Inductor(L = 18, i = 0)
-    Ro = Resistor(R = 12.5e-3)
-    G = Conductor(G = 0.565)
-    C1 = Capacitor(C = 10, v = 4)
-    C2 = Capacitor(C = 100, v = 0)
-    Nr = NonlinearResistor(Ga = -0.757576,
-        Gb = -0.409091,
-        Ve = 1)
-    Gnd = Ground()
+@mtkmodel ChaoticAttractor begin
+    @components begin
+        inductor = Inductor(L = 18, i = 0)
+        resistor = Resistor(R = 12.5e-3)
+        conductor = Conductor(G = 0.565)
+        capacitor1 = Capacitor(C = 10, v = 4)
+        capacitor2 = Capacitor(C = 100, v = 0)
+        non_linear_resistor = NonlinearResistor(
+            Ga = -0.757576,
+            Gb = -0.409091,
+            Ve = 1
+        )
+        ground = Ground()
+    end
+    @equations begin
+        connect(inductor.p, conductor.p)
+        connect(conductor.n, non_linear_resistor.p)
+        connect(capacitor1.p, conductor.n)
+        connect(inductor.n, resistor.p)
+        connect(conductor.p, capacitor2.p)
+        connect(capacitor1.n, capacitor2.n, non_linear_resistor.n, resistor.n, ground.g)
+    end
 end
-
-connections = [connect(L.p, G.p)
-               connect(G.n, Nr.p)
-               connect(Nr.n, Gnd.g)
-               connect(C1.p, G.n)
-               connect(L.n, Ro.p)
-               connect(G.p, C2.p)
-               connect(C1.n, Gnd.g)
-               connect(C2.n, Gnd.g)
-               connect(Ro.n, Gnd.g)]
-
-@named model = ODESystem(connections, t; systems)
 nothing # hide
 ```
 
 ## Simulating the Model
 
-Now the model can be simulated.
-First, `structural_simplify` is called on the model and an `ODEProblem` is built from the result.
-Since the initial voltage of the first capacitor was already specified via `v`, no initial condition is given and an empty pair is supplied.
+`@mtkbuild` builds a structurally simplified `ChaoticAttractor` model.
+Since the initial voltage of the capacitors was already specified via `v` and the initial current of inductor via `i`, no initial condition is given and an empty pair is supplied.
 
 ```@example components
-sys = structural_simplify(model)
-prob = ODEProblem(sys, Pair[], (0, 5e4))
-sol = solve(prob, Rodas4(); saveat = 1.0)
+@mtkbuild sys = ChaoticAttractor()
+prob = ODEProblem(sys, Pair[], (0, 5e4), saveat = 0.01)
+sol = solve(prob)
 
-plot(sol[C1.v], sol[C2.v], title = "Chaotic Attractor", label = "",
+plot(sol[capacitor1.v], sol[capacitor2.v], title = "Chaotic Attractor", label = "",
     ylabel = "C1 Voltage in V", xlabel = "C2 Voltage in V")
 ```
 
 ```@example components
-plot(sol; idxs = [C1.v, C2.v, L.i],
+plot(sol; idxs = [capacitor1.v, capacitor2.v, inductor.i],
     labels = ["C1 Voltage in V" "C2 Voltage in V" "Inductor Current in A"])
 ```
