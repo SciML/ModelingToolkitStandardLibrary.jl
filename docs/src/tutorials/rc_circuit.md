@@ -35,8 +35,4 @@ sol = solve(prob, Tsit5())
 plot(sol, idxs = [capacitor.v, resistor.i],
     title = "RC Circuit Demonstration",
     labels = ["Capacitor Voltage" "Resistor Current"])
-savefig("plot.png");
-nothing; # hide
 ```
-
-![](plot.png)

@@ -77,11 +77,11 @@ sys = structural_simplify(model)
 prob = ODEProblem(sys, unknowns(sys) .=> 0.0, (0, 6.0))
 sol = solve(prob, Rodas4())
 
-p1 = Plots.plot(sol.t, sol[inertia.w], ylabel = "Angular Vel. in rad/s",
+p1 = plot(sol.t, sol[inertia.w], ylabel = "Angular Vel. in rad/s",
     label = "Measurement", title = "DC Motor with Speed Controller")
-Plots.plot!(sol.t, sol[ref.output.u], label = "Reference")
-p2 = Plots.plot(sol.t, sol[load.tau.u], ylabel = "Disturbance in Nm", label = "")
-Plots.plot(p1, p2, layout = (2, 1))
+plot!(sol.t, sol[ref.output.u], label = "Reference")
+p2 = plot(sol.t, sol[load.tau.u], ylabel = "Disturbance in Nm", label = "")
+plot(p1, p2, layout = (2, 1))
 ```
 
 ## Closed-loop analysis

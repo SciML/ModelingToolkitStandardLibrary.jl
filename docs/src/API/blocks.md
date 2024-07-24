@@ -19,7 +19,10 @@ Pages = ["blocks.md"]
 ```@docs
 RealInput
 RealOutput
+RealInputArray
+RealOutputArray
 SISO
+MIMO
 ```
 
 ## Math Blocks

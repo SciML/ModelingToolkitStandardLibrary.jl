@@ -91,11 +91,11 @@ The final model can now be created with the components from the library and the 
 
 ```@example components
 systems = @named begin
-    L = Inductor(L = 18)
+    L = Inductor(L = 18, i = 0)
     Ro = Resistor(R = 12.5e-3)
     G = Conductor(G = 0.565)
     C1 = Capacitor(C = 10, v = 4)
-    C2 = Capacitor(C = 100)
+    C2 = Capacitor(C = 100, v = 0)
     Nr = NonlinearResistor(Ga = -0.757576,
         Gb = -0.409091,
         Ve = 1)
@@ -124,20 +124,14 @@ Since the initial voltage of the first capacitor was already specified via `v`, 
 
 ```@example components
 sys = structural_simplify(model)
-prob = ODEProblem(sys, Pair[], (0, 5e4), saveat = 0.01)
-sol = solve(prob, Rodas4())
+prob = ODEProblem(sys, Pair[], (0, 5e4))
+sol = solve(prob, Rodas4(); saveat = 1.0)
 
-Plots.plot(sol[C1.v], sol[C2.v], title = "Chaotic Attractor", label = "",
+plot(sol[C1.v], sol[C2.v], title = "Chaotic Attractor", label = "",
     ylabel = "C1 Voltage in V", xlabel = "C2 Voltage in V")
-Plots.savefig("chua_phase_plane.png")
-nothing # hide
-
-Plots.plot(sol; idxs = [C1.v, C2.v, L.i],
-    labels = ["C1 Voltage in V" "C2 Voltage in V" "Inductor Current in A"])
-Plots.savefig("chua.png")
-nothing # hide
 ```
 
-![Time series plot of C1.v, C2.v and L.i](chua_phase_plane.png)
-
-![Phase plane plot of C1.v and C2.v](chua.png)
+```@example components
+plot(sol; idxs = [C1.v, C2.v, L.i],
+    labels = ["C1 Voltage in V" "C2 Voltage in V" "Inductor Current in A"])
+```

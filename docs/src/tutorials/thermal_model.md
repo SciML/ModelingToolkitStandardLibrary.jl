@@ -37,8 +37,4 @@ T_final_K = sol[(mass1.T * C1 + mass2.T * C2) / (C1 + C2)]
 plot(title = "Thermal Conduction Demonstration")
 plot!(sol, idxs = [mass1.T, mass2.T], labels = ["Mass 1 Temperature" "Mass 2 Temperature"])
 plot!(sol.t, T_final_K, label = "Steady-State Temperature")
-savefig("thermal_plot.png");
-nothing; # hide
 ```
-
-![Plot of Temperatures](thermal_plot.png)
