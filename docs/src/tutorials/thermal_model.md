@@ -10,31 +10,34 @@ from dividing the total initial energy in the system by the sum of the heat capa
 using ModelingToolkitStandardLibrary.Thermal, ModelingToolkit, OrdinaryDiffEq, Plots
 using ModelingToolkit: t_nounits as t
 
-C1 = 15
-C2 = 15
-systems = @named begin
-    mass1 = HeatCapacitor(C = C1, T = 373.15)
-    mass2 = HeatCapacitor(C = C2, T = 273.15)
-    conduction = ThermalConductor(G = 10)
-    Tsensor1 = TemperatureSensor()
-    Tsensor2 = TemperatureSensor()
+@mtkmodel HeatConductionModel begin
+    @parameters begin
+        C1 = 15
+        C2 = 15
+    end
+    @components begin
+        mass1 = HeatCapacitor(C = C1, T = 373.15)
+        mass2 = HeatCapacitor(C = C2, T = 273.15)
+        conduction = ThermalConductor(G = 10)
+        Tsensor1 = TemperatureSensor()
+        Tsensor2 = TemperatureSensor()
+    end
+    @equations begin
+        connect(mass1.port, conduction.port_a)
+        connect(conduction.port_b, mass2.port)
+        connect(mass1.port, Tsensor1.port)
+        connect(mass2.port, Tsensor2.port)
+    end
 end
 
-connections = [
-    connect(mass1.port, conduction.port_a),
-    connect(conduction.port_b, mass2.port),
-    connect(mass1.port, Tsensor1.port),
-    connect(mass2.port, Tsensor2.port)
-]
-
-@named model = ODESystem(connections, t; systems)
-sys = structural_simplify(model)
+@mtkbuild sys = HeatConductionModel()
 prob = ODEProblem(sys, Pair[], (0, 5.0))
-sol = solve(prob, Tsit5())
+sol = solve(prob)
 
-T_final_K = sol[(mass1.T * C1 + mass2.T * C2) / (C1 + C2)]
+T_final_K = sol[(sys.mass1.T * sys.C1 + sys.mass2.T * sys.C2) / (sys.C1 + sys.C2)]
 
 plot(title = "Thermal Conduction Demonstration")
-plot!(sol, idxs = [mass1.T, mass2.T], labels = ["Mass 1 Temperature" "Mass 2 Temperature"])
+plot!(sol, idxs = [sys.mass1.T, sys.mass2.T],
+    labels = ["Mass 1 Temperature" "Mass 2 Temperature"])
 plot!(sol.t, T_final_K, label = "Steady-State Temperature")
 ```
