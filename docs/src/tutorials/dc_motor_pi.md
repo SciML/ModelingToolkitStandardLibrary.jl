@@ -20,51 +20,54 @@ using ModelingToolkitStandardLibrary.Mechanical.Rotational
 using ModelingToolkitStandardLibrary.Blocks
 using OrdinaryDiffEq
 using Plots
-
-R = 0.5 # [Ohm] armature resistance
-L = 4.5e-3 # [H] armature inductance
-k = 0.5 # [N.m/A] motor constant
-J = 0.02 # [kg.m²] inertia
-f = 0.01 # [N.m.s/rad] friction factor
-tau_L_step = -0.3 # [N.m] amplitude of the load torque step
-nothing # hide
 ```
 
 The actual model can now be composed.
 
 ```@example dc_motor_pi
-systems = @named begin
-    ground = Ground()
-    source = Voltage()
-    ref = Blocks.Step(height = 1, start_time = 0)
-    pi_controller = Blocks.LimPI(k = 1.1, T = 0.035, u_max = 10, Ta = 0.035)
-    feedback = Blocks.Feedback()
-    R1 = Resistor(R = R)
-    L1 = Inductor(L = L)
-    emf = EMF(k = k)
-    fixed = Fixed()
-    load = Torque()
-    load_step = Blocks.Step(height = tau_L_step, start_time = 3)
-    inertia = Inertia(J = J)
-    friction = Damper(d = f)
-    speed_sensor = SpeedSensor()
+@mtkmodel DCMotor begin
+    @parameters begin
+        R = 0.5, [description = "Armature resistance"] # Ohm
+        L = 4.5e-3, [description = "Armature inductance"] # H
+        k = 0.5, [description = "Motor constant"] # N.m/A
+        J = 0.02, [description = "Inertia"] # kg.m²
+        f = 0.01, [description = "Friction factor"] # N.m.s/rad
+        tau_L_step = -0.3, [description = "Amplitude of the load torque step"] # N.m
+    end
+    @components begin
+        ground = Ground()
+        source = Voltage()
+        ref = Blocks.Step(height = 1, start_time = 0)
+        pi_controller = Blocks.LimPI(k = 1.1, T = 0.035, u_max = 10, Ta = 0.035)
+        feedback = Blocks.Feedback()
+        R1 = Resistor(R = R)
+        L1 = Inductor(L = L)
+        emf = EMF(k = k)
+        fixed = Fixed()
+        load = Torque()
+        load_step = Blocks.Step(height = tau_L_step, start_time = 3)
+        inertia = Inertia(J = J)
+        friction = Damper(d = f)
+        speed_sensor = SpeedSensor()
+    end
+    @equations begin
+        connect(fixed.flange, emf.support, friction.flange_b)
+        connect(emf.flange, friction.flange_a, inertia.flange_a)
+        connect(inertia.flange_b, load.flange)
+        connect(inertia.flange_b, speed_sensor.flange)
+        connect(load_step.output, load.tau)
+        connect(ref.output, feedback.input1)
+        connect(speed_sensor.w, :y, feedback.input2)
+        connect(feedback.output, pi_controller.err_input)
+        connect(pi_controller.ctr_output, :u, source.V)
+        connect(source.p, R1.p)
+        connect(R1.n, L1.p)
+        connect(L1.n, emf.p)
+        connect(emf.n, source.n, ground.g)
+    end
 end
 
-connections = [connect(fixed.flange, emf.support, friction.flange_b)
-               connect(emf.flange, friction.flange_a, inertia.flange_a)
-               connect(inertia.flange_b, load.flange)
-               connect(inertia.flange_b, speed_sensor.flange)
-               connect(load_step.output, load.tau)
-               connect(ref.output, feedback.input1)
-               connect(speed_sensor.w, :y, feedback.input2)
-               connect(feedback.output, pi_controller.err_input)
-               connect(pi_controller.ctr_output, :u, source.V)
-               connect(source.p, R1.p)
-               connect(R1.n, L1.p)
-               connect(L1.n, emf.p)
-               connect(emf.n, source.n, ground.g)]
-
-@named model = ODESystem(connections, t; systems)
+@named model = DCMotor()
 nothing # hide
 ```
 
@@ -75,12 +78,12 @@ so that it can be represented as a system of `ODEs` (ordinary differential equat
 ```@example dc_motor_pi
 sys = structural_simplify(model)
 prob = ODEProblem(sys, unknowns(sys) .=> 0.0, (0, 6.0))
-sol = solve(prob, Rodas4())
+sol = solve(prob)
 
-p1 = plot(sol.t, sol[inertia.w], ylabel = "Angular Vel. in rad/s",
+p1 = plot(sol.t, sol[sys.inertia.w], ylabel = "Angular Vel. in rad/s",
     label = "Measurement", title = "DC Motor with Speed Controller")
-plot!(sol.t, sol[ref.output.u], label = "Reference")
-p2 = plot(sol.t, sol[load.tau.u], ylabel = "Disturbance in Nm", label = "")
+plot!(sol.t, sol[sys.ref.output.u], label = "Reference")
+p2 = plot(sol.t, sol[sys.load.tau.u], ylabel = "Disturbance in Nm", label = "")
 plot(p1, p2, layout = (2, 1))
 ```
 
@@ -89,8 +92,8 @@ plot(p1, p2, layout = (2, 1))
 When implementing and tuning a control system in simulation, it is a good practice to analyze the closed-loop properties and verify robustness of the closed-loop with respect to, e.g., modeling errors. To facilitate this, we added two analysis points to the set of connections above, more specifically, we added the analysis points named `:y` and `:u` to the connections (for more details on analysis points, see [Linear Analysis](@ref))
 
 ```julia
-connect(speed_sensor.w, :y, feedback.input2)
-connect(pi_controller.ctr_output, :u, source.V)
+connect(sys.speed_sensor.w, :y, feedback.input2)
+connect(sys.pi_controller.ctr_output, :u, source.V)
 ```
 
 one at the plant output (`:y`) and one at the plant input (`:u`). We may use these analysis points to calculate, e.g., sensitivity functions, illustrated below. Here, we calculate the sensitivity function $S(s)$ and the complimentary sensitivity function $T(s) = I - S(s)$, defined as
@@ -108,7 +111,7 @@ matrices_S, simplified_sys = Blocks.get_sensitivity(
     model, :y, op = Dict(unknowns(sys) .=> 0.0))
 So = ss(matrices_S...) |> minreal # The output-sensitivity function as a StateSpace system
 matrices_T, simplified_sys = Blocks.get_comp_sensitivity(
-    model, :y, op = Dict(inertia.phi => 0.0, inertia.w => 0.0))
+    model, :y, op = Dict(model.inertia.phi => 0.0, model.inertia.w => 0.0))
 To = ss(matrices_T...)# The output complementary sensitivity function as a StateSpace system
 bodeplot([So, To], label = ["S" "T"], plot_title = "Sensitivity functions",
     plotphase = false)
