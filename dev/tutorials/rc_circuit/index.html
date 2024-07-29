@@ -4,26 +4,31 @@ using ModelingToolkitStandardLibrary.Electrical
 using ModelingToolkitStandardLibrary.Blocks: Constant
 using ModelingToolkit: t_nounits as t
 
-R = 1.0
-C = 1.0
-V = 1.0
-systems = @named begin
-    resistor = Resistor(R = R)
-    capacitor = Capacitor(C = C, v = 0.0)
-    source = Voltage()
-    constant = Constant(k = V)
-    ground = Ground()
+@mtkmodel RC begin
+    @parameters begin
+        R = 1.0
+        C = 1.0
+        V = 1.0
+    end
+    @components begin
+        resistor = Resistor(R = R)
+        capacitor = Capacitor(C = C, v = 0.0)
+        source = Voltage()
+        constant = Constant(k = V)
+        ground = Ground()
+    end
+    @equations begin
+        connect(constant.output, source.V)
+        connect(source.p, resistor.p)
+        connect(resistor.n, capacitor.p)
+        connect(capacitor.n, source.n, ground.g)
+    end
 end
 
-rc_eqs = [connect(constant.output, source.V)
-          connect(source.p, resistor.p)
-          connect(resistor.n, capacitor.p)
-          connect(capacitor.n, source.n, ground.g)]
-
-@named rc_model = ODESystem(rc_eqs, t; systems)
-sys = structural_simplify(rc_model)
+@mtkbuild sys = RC()
 prob = ODEProblem(sys, Pair[], (0, 10.0))
-sol = solve(prob, Tsit5())
-plot(sol, idxs = [capacitor.v, resistor.i],
+sol = solve(prob)
+
+plot(sol, idxs = [sys.capacitor.v, sys.resistor.i],
     title = &quot;RC Circuit Demonstration&quot;,
-    labels = [&quot;Capacitor Voltage&quot; &quot;Resistor Current&quot;])</code></pre><img src="6d5ab272.svg" alt="Example block output"/></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../">« ModelingToolkitStandardLibrary.jl: A Standard Library for ModelingToolkit</a><a class="docs-footer-nextpage" href="../custom_component/">Custom Components »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.5.0 on <span class="colophon-date" title="Friday 26 July 2024 13:04">Friday 26 July 2024</span>. Using Julia version 1.10.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+    labels = [&quot;Capacitor Voltage&quot; &quot;Resistor Current&quot;])</code></pre><img src="4bef70ed.svg" alt="Example block output"/></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../">« ModelingToolkitStandardLibrary.jl: A Standard Library for ModelingToolkit</a><a class="docs-footer-nextpage" href="../custom_component/">Custom Components »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.5.0 on <span class="colophon-date" title="Monday 29 July 2024 11:59">Monday 29 July 2024</span>. Using Julia version 1.10.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
