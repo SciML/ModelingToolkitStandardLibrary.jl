@@ -114,8 +114,8 @@ Since the initial voltage of the capacitors was already specified via `v` and th
 
 ```@example components
 @mtkbuild sys = ChaoticAttractor()
-prob = ODEProblem(sys, Pair[], (0, 5e4), saveat = 0.01)
-sol = solve(prob)
+prob = ODEProblem(sys, Pair[], (0, 5e4))
+sol = solve(prob; saveat = 1.0)
 
 plot(sol[sys.capacitor1.v], sol[sys.capacitor2.v], title = "Chaotic Attractor", label = "",
     ylabel = "C1 Voltage in V", xlabel = "C2 Voltage in V")
