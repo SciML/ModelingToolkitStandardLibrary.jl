@@ -543,8 +543,8 @@ linearized around the operating point `x₀, u₀`, we have `y0, u0 = h(x₀, u�
     else
         size(D) == (ny, nu) || error("`D` has to be of dimension ($ny x $nu).")
     end
-    @named input = RealInput(nin = nu)
-    @named output = RealOutput(nout = ny)
+    @named input = RealInputArray(nin = nu)
+    @named output = RealOutputArray(nout = ny)
     @variables x(t)[1:nx]=x [
         description = "State variables of StateSpace system $name"
     ]
