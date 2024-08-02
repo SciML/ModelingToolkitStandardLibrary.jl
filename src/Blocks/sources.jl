@@ -730,3 +730,29 @@ end
 function SampledData(; name, buffer, sample_time, circular_buffer)
     SampledData(SampledDataType.vector_based; name, buffer, sample_time, circular_buffer)
 end
+
+# This needs to be extend for interpolation types
+apply_interpolation(interp, t) = interp(t)
+
+
+@register_symbolic build_interpolation(
+    interpolation_type::UnionAll, u::AbstractArray, x::AbstractArray)
+build_interpolation(interpolation_type, u, x) = interpolation_type(u, x)
+
+function ParametrizedInterpolation(interp_type::T, u, x, t = t; name) where {T}
+    @parameters data[1:length(x)] = u
+    @parameters ts[1:length(x)] = x
+    @parameters interpolation_type::T=interp_type [tunable = false]
+    @parameters interpolator::interp_type
+
+    @named output = RealOutput()
+
+    eqs = [output.u ~ apply_interpolation(interpolator, t)]
+
+    ODESystem(eqs, t, [], [u, x, interpolation_type, interpolator];
+        parameter_dependencies = [
+            interpolator => build_interpolation(interpolation_type, u, x)
+        ],
+        systems = [output],
+        name)
+end
