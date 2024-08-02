@@ -1,0 +1,10 @@
+module ModelingToolkitStandardLibraryDataInterpolationsExt
+
+using ModelingToolkitStandardLibrary
+using ModelingToolkitStandardLibrary.Blocks.Symbolics
+using DataInterpolations
+
+@register_symbolic ModelingToolkitStandardLibrary.Blocks.apply_interpolation(
+    i::DataInterpolations.AbstractInterpolation, t)
+
+end
