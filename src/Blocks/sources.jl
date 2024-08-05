@@ -739,22 +739,23 @@ function Symbolics.derivative(::typeof(apply_interpolation), args::NTuple{2, Any
 end
 
 @register_symbolic build_interpolation(
-    interpolation_type::UnionAll, u::AbstractArray, x::AbstractArray)
-build_interpolation(interpolation_type, u, x) = interpolation_type(u, x)
+    interpolation_type::UnionAll, u::AbstractArray, x::AbstractArray, args::Tuple)
+build_interpolation(interpolation_type, u, x, args) = interpolation_type(u, x, args...)
 
-function ParametrizedInterpolation(interp_type::T, u, x, t = t; name) where {T}
+function ParametrizedInterpolation(interp_type::T, u, x, args...; name) where {T}
     @parameters data[1:length(x)] = u
     @parameters ts[1:length(x)] = x
-    @parameters interpolation_type::T=interp_type [tunable = false]
+    @parameters interpolation_type::T=interp_type [tunable = false] interpolation_args::Tuple=args [tunable = false]
     @parameters interpolator::interp_type
 
     @named output = RealOutput()
 
     eqs = [output.u ~ apply_interpolation(interpolator, t)]
 
-    ODESystem(eqs, t, [], [u, x, interpolation_type, interpolator];
+    ODESystem(eqs, t, [], [u, x, interpolation_type, interpolator, interpolation_args];
         parameter_dependencies = [
-            interpolator => build_interpolation(interpolation_type, u, x)
+            interpolator => build_interpolation(
+            interpolation_type, u, x, interpolation_args)
         ],
         systems = [output],
         name)
