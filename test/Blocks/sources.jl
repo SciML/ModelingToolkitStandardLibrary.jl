@@ -481,16 +481,32 @@ end
 @testset "ParametrizedInterpolation" begin
     @variables y(t) = 0
     @parameters u[1:15] = rand(15)
-    @parameters x[1:15] = 0:14
+    @parameters x[1:15] = 0:14.0
 
-    @named i = ParametrizedInterpolation(LinearInterpolation, u, x)
-    eqs = [D(y) ~ i.output.u]
+    @testset "LinearInterpolation" begin
+        @named i = ParametrizedInterpolation(LinearInterpolation, u, x)
+        eqs = [D(y) ~ i.output.u]
 
-    @named model = ODESystem(eqs, t, systems = [i])
-    sys = structural_simplify(model)
+        @named model = ODESystem(eqs, t, systems = [i])
+        sys = structural_simplify(model)
 
-    prob = ODEProblem(sys, [], (0.0, 4))
-    sol = solve(prob)
+        prob = ODEProblem(sys, [], (0.0, 4))
+        sol = solve(prob)
 
-    @test SciMLBase.successful_retcode(sol)
+        @test SciMLBase.successful_retcode(sol)
+    end
+
+    @testset "BSplineInterpolation" begin
+        @named i = ParametrizedInterpolation(
+            BSplineInterpolation, u, x, 3, :Uniform, :Uniform)
+        eqs = [D(y) ~ i.output.u]
+
+        @named model = ODESystem(eqs, t, systems = [i])
+        sys = structural_simplify(model)
+
+        prob = ODEProblem(sys, [], (0.0, 4))
+        sol = solve(prob)
+
+        @test SciMLBase.successful_retcode(sol)
+    end
 end
