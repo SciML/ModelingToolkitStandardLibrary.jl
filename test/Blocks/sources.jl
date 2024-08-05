@@ -5,6 +5,7 @@ using ModelingToolkitStandardLibrary.Blocks: smooth_sin, smooth_cos, smooth_damp
                                              smooth_square, smooth_step, smooth_ramp,
                                              smooth_triangular, triangular, square
 using OrdinaryDiffEq: ReturnCode.Success
+using DataInterpolations
 
 @testset "Constant" begin
     @named src = Constant(k = 2)
@@ -412,8 +413,6 @@ end
 end
 
 @testset "SampledData" begin
-    using DataInterpolations
-
     dt = 4e-4
     t_end = 10.0
     time = 0:dt:t_end
@@ -477,4 +476,21 @@ end
         @test sol[dy][end]≈2 * time[end] atol=1e-3
         @test sol[ddy][end]≈2 atol=1e-3
     end
+end
+
+@testset "ParametrizedInterpolation" begin
+    @variables y(t) = 0
+    @parameters u[1:15] = rand(15)
+    @parameters x[1:15] = 0:14
+
+    @named i = ParametrizedInterpolation(LinearInterpolation, u, x)
+    eqs = [D(y) ~ i.output.u]
+
+    @named model = ODESystem(eqs, t, systems = [i])
+    sys = structural_simplify(model)
+
+    prob = ODEProblem(sys, [], (0.0, 4))
+    sol = solve(prob)
+
+    @test SciMLBase.successful_retcode(sol)
 end
