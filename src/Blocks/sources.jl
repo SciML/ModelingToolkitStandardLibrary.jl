@@ -730,3 +730,53 @@ end
 function SampledData(; name, buffer, sample_time, circular_buffer)
     SampledData(SampledDataType.vector_based; name, buffer, sample_time, circular_buffer)
 end
+
+# This needs to be extend for interpolation types
+apply_interpolation(interp, t) = interp(t)
+
+function Symbolics.derivative(::typeof(apply_interpolation), args::NTuple{2, Any}, ::Val{2})
+    Symbolics.derivative(args[1], (args[2],), Val(1))
+end
+
+@register_symbolic build_interpolation(
+    interpolation_type::UnionAll, u::AbstractArray, x::AbstractArray, args::Tuple)
+build_interpolation(interpolation_type, u, x, args) = interpolation_type(u, x, args...)
+
+"""
+    ParametrizedInterpolation(interp_type, u, x, args...; name)
+
+Represent function interpolation symbolically as a block component. By default interpolation types
+from [`DataInterpolations.jl`](https://github.com/SciML/DataInterpolations.jl) are supported.
+# Arguments:
+  - `interp_type`: the type of the interpolation. For `DataInterpolations`,
+these would be any of [the available interpolations](https://github.com/SciML/DataInterpolations.jl?tab=readme-ov-file#available-interpolations),
+such as `LinearInterpolation`, `ConstantInterpolation` or `CubicSpline`.
+  - `u`: the data used for interpolation. For `DataInterpolations` this will be an `AbstractVector`
+  - `x`: the values that each data points correspond to, usually the times corresponding to each value in `u`.
+  - `args`: any other arguments beeded to build the interpolation
+
+# Parameters:
+  - `data`: the symbolic representation of the data passed at construction time via `u`.
+  - `ts`: the symbolic representation of times corresponding to the data passed at construction time via `x`.
+
+# Connectors:
+  - `output`: a [`RealOutput`](@ref) connector corresponding to the interpolated value
+"""
+function ParametrizedInterpolation(interp_type::T, u, x, args...; name) where {T}
+    @parameters data[1:length(x)] = u
+    @parameters ts[1:length(x)] = x
+    @parameters interpolation_type::T=interp_type [tunable = false] interpolation_args::Tuple=args [tunable = false]
+    @parameters interpolator::interp_type
+
+    @named output = RealOutput()
+
+    eqs = [output.u ~ apply_interpolation(interpolator, t)]
+
+    ODESystem(eqs, t, [], [u, x, interpolation_type, interpolator, interpolation_args];
+        parameter_dependencies = [
+            interpolator => build_interpolation(
+            interpolation_type, u, x, interpolation_args)
+        ],
+        systems = [output],
+        name)
+end
