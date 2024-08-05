@@ -734,6 +734,9 @@ end
 # This needs to be extend for interpolation types
 apply_interpolation(interp, t) = interp(t)
 
+function Symbolics.derivative(::typeof(apply_interpolation), args::NTuple{2, Any}, ::Val{2})
+    Symbolics.derivative(args[1], (args[2],), Val(1))
+end
 
 @register_symbolic build_interpolation(
     interpolation_type::UnionAll, u::AbstractArray, x::AbstractArray)
