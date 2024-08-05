@@ -742,6 +742,26 @@ end
     interpolation_type::UnionAll, u::AbstractArray, x::AbstractArray, args::Tuple)
 build_interpolation(interpolation_type, u, x, args) = interpolation_type(u, x, args...)
 
+"""
+    ParametrizedInterpolation(interp_type, u, x, args...; name)
+
+Represent function interpolation symbolically as a block component. By default interpolation types
+from [`DataInterpolations.jl`](https://github.com/SciML/DataInterpolations.jl) are supported.
+# Arguments:
+  - `interp_type`: the type of the interpolation. For `DataInterpolations`,
+these would be any of [the available interpolations](https://github.com/SciML/DataInterpolations.jl?tab=readme-ov-file#available-interpolations),
+such as `LinearInterpolation`, `ConstantInterpolation` or `CubicSpline`.
+  - `u`: the data used for interpolation. For `DataInterpolations` this will be an `AbstractVector`
+  - `x`: the values that each data points correspond to, usually the times corresponding to each value in `u`.
+  - `args`: any other arguments beeded to build the interpolation
+
+# Parameters:
+  - `data`: the symbolic representation of the data passed at construction time via `u`.
+  - `ts`: the symbolic representation of times corresponding to the data passed at construction time via `x`.
+
+# Connectors:
+  - `output`: a [`RealOutput`](@ref) connector corresponding to the interpolated value
+"""
 function ParametrizedInterpolation(interp_type::T, u, x, args...; name) where {T}
     @parameters data[1:length(x)] = u
     @parameters ts[1:length(x)] = x
