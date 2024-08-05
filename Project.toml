@@ -19,7 +19,7 @@ ModelingToolkitStandardLibraryDataInterpolationsExt = "DataInterpolations"
 
 [compat]
 Aqua = "0.8"
-ChainRulesCore = "1.18"
+ChainRulesCore = "1.24"
 ControlSystemsBase = "1.4"
 DataInterpolations = "4.6, 5, 6"
 DiffEqBase = "6.152"
