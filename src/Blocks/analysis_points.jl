@@ -285,7 +285,8 @@ end
 
 const SymOrVec = Union{Symbol, Vector{Symbol}}
 
-function get_sensitivity_function(sys, ap_name::SymOrVec; loop_openings = nothing,
+function get_sensitivity_function(
+        sys, ap_name::SymOrVec; loop_openings = nothing, system_modifier = identity,
         kwargs...)
     find = namespaced_ap_match(ap_name, loop_openings)
     t = get_iv(sys)
@@ -311,10 +312,12 @@ function get_sensitivity_function(sys, ap_name::SymOrVec; loop_openings = nothin
     permutation = _check_and_sort!(ap_name, aps, namespaces, multiplicities)
     dn = ModelingToolkit.renamespace.(namespaces, d[permutation])
     un = ModelingToolkit.renamespace.(namespaces, u[permutation])
+    sys = system_modifier(sys)
     ModelingToolkit.linearization_function(sys, dn, un; kwargs...)
 end
 
-function get_comp_sensitivity_function(sys, ap_name::SymOrVec; loop_openings = nothing,
+function get_comp_sensitivity_function(
+        sys, ap_name::SymOrVec; loop_openings = nothing, system_modifier = identity,
         kwargs...)
     find = namespaced_ap_match(ap_name, loop_openings)
     t = get_iv(sys)
@@ -340,10 +343,12 @@ function get_comp_sensitivity_function(sys, ap_name::SymOrVec; loop_openings = n
     permutation = _check_and_sort!(ap_name, aps, namespaces, multiplicities)
     dn = ModelingToolkit.renamespace.(namespaces, d[permutation])
     un = ModelingToolkit.renamespace.(namespaces, u[permutation])
+    sys = system_modifier(sys)
     ModelingToolkit.linearization_function(sys, dn, un; kwargs...)
 end
 
-function get_looptransfer_function(sys, ap_name::SymOrVec; loop_openings = nothing,
+function get_looptransfer_function(
+        sys, ap_name::SymOrVec; loop_openings = nothing, system_modifier = identity,
         kwargs...)
     find = namespaced_ap_match(ap_name, loop_openings)
     t = get_iv(sys)
@@ -366,6 +371,7 @@ function get_looptransfer_function(sys, ap_name::SymOrVec; loop_openings = nothi
     y = reduce(vcat, ap_var(ap.in) for ap in aps)
     yn = ModelingToolkit.renamespace.(namespaces, y)# permutation applied in _check_and_sort
     un = ModelingToolkit.renamespace.(namespaces, u)
+    sys = system_modifier(sys)
     ModelingToolkit.linearization_function(sys, un, yn; kwargs...)
 end
 
@@ -387,7 +393,8 @@ Open the loop at analysis point `ap` by breaking the connection through `ap`.
 
 See also [`get_sensitivity`](@ref), [`get_comp_sensitivity`](@ref), [`get_looptransfer`](@ref).
 """
-function open_loop(sys, ap_name::Symbol; ground_input = false, kwargs...)
+function open_loop(
+        sys, ap_name::Symbol; ground_input = false, system_modifier = identity, kwargs...)
     find = namespaced_ap_match(ap_name, nothing)
     t = get_iv(sys)
     @variables u(t)=0 [input = true]
@@ -407,12 +414,13 @@ function open_loop(sys, ap_name::Symbol; ground_input = false, kwargs...)
     end
     sys = expand_connections(sys, find, replace)
     (ap = apr[]) === nothing && error("Did not find analysis point $ap_name")
-    sys
+    sys = system_modifier(sys)
 end
 
 function ModelingToolkit.linearization_function(sys::ModelingToolkit.AbstractSystem,
         input_name::SymOrVec, output_name;
         loop_openings = nothing,
+        system_modifier = identity, # This is used to, e.g., apply JuliaSimCompiler.IRSystem after analysis-point handling
         kwargs...)
     t = get_iv(sys)
     @variables u(t)=0 [input = true]
@@ -474,7 +482,7 @@ function ModelingToolkit.linearization_function(sys::ModelingToolkit.AbstractSys
     else
         yn = output_name
     end
-    ModelingToolkit.linearization_function(sys, un, yn; kwargs...)
+    ModelingToolkit.linearization_function(system_modifier(sys), un, yn; kwargs...)
 end
 
 # Add a method to get_sensitivity that accepts the name of an AnalysisPoint
@@ -497,9 +505,10 @@ for f in [:get_sensitivity, :get_comp_sensitivity, :get_looptransfer]
             loop_openings = nothing,
             op = Dict(),
             p = DiffEqBase.NullParameters(),
+            system_modifier = identity,
             kwargs...)
         lin_fun, ssys = $(Symbol(string(f) * "_function"))(sys, ap, args...; op, p,
-            loop_openings,
+            loop_openings, system_modifier,
             kwargs...)
         ModelingToolkit.linearize(ssys, lin_fun; op, p, kwargs...), ssys
     end
@@ -513,9 +522,9 @@ Linearize a system between two analysis points. To get a loop-transfer function,
 The output is allowed to be either an analysis-point name, or a vector of symbolic variables like the standard interface to `linearize`. The input must be an analysis-point name.
 """
 function ModelingToolkit.linearize(sys, input_name::SymOrVec, output_name;
-        loop_openings = nothing, kwargs...)
-    lin_fun, ssys = linearization_function(sys, input_name, output_name; loop_openings,
-        kwargs...)
+        loop_openings = nothing, system_modifier = identity, kwargs...)
+    lin_fun, ssys = linearization_function(sys, input_name, output_name;
+        loop_openings, system_modifier, kwargs...)
     ModelingToolkit.linearize(ssys, lin_fun; kwargs...), ssys
 end
 
