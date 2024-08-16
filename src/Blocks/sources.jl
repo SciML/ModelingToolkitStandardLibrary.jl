@@ -738,9 +738,30 @@ function Symbolics.derivative(::typeof(apply_interpolation), args::NTuple{2, Any
     Symbolics.derivative(args[1], (args[2],), Val(1))
 end
 
-@register_symbolic build_interpolation(
-    interpolation_type::UnionAll, u::AbstractArray, x::AbstractArray, args::Tuple)
-build_interpolation(interpolation_type, u, x, args) = interpolation_type(u, x, args...)
+function cached_interpolation(interpolation_type, u, x, args)
+    prev_u = Ref(collect(copy(u)))
+    prev_x = Ref(collect(copy(x)))
+    # MTKParameters use views, so we want to ensure that the type is the same
+    interp = Ref(interpolation_type(prev_u[], prev_x[], args...))
+
+    let prev_u = prev_u,
+        prev_x = prev_x,
+        interp = interp,
+        interpolation_type = interpolation_type
+        function build_interpolation(u, x, args)
+            if (u, x) ≠ (prev_u[], prev_x[])
+                prev_u[] = collect(u)
+                prev_x[] = collect(x)
+                interp[] = interpolation_type(prev_u[], prev_x[], args...)
+            else
+                interp[]
+            end
+        end
+    end
+end
+
+@register_symbolic interpolation_builder(f::Function, u::AbstractArray, x::AbstractArray, args::Tuple)
+interpolation_builder(f, u, x, args) = f(u, x, args)
 
 """
     ParametrizedInterpolation(interp_type, u, x, args...; name)
@@ -762,20 +783,22 @@ such as `LinearInterpolation`, `ConstantInterpolation` or `CubicSpline`.
 # Connectors:
   - `output`: a [`RealOutput`](@ref) connector corresponding to the interpolated value
 """
-function ParametrizedInterpolation(interp_type::T, u, x, args...; name) where {T}
+function ParametrizedInterpolation(interp_type::T, u::AbstractVector, x::AbstractVector, args...; name) where {T}
     @parameters data[1:length(x)] = u
     @parameters ts[1:length(x)] = x
     @parameters interpolation_type::T=interp_type [tunable = false] interpolation_args::Tuple=args [tunable = false]
     @parameters interpolator::interp_type
 
+    build_interpolation = cached_interpolation(interp_type, u, x, args)
+    @parameters memoized_builder::typeof(build_interpolation)=build_interpolation [tunable = false]
+
     @named output = RealOutput()
 
     eqs = [output.u ~ apply_interpolation(interpolator, t)]
 
-    ODESystem(eqs, t, [], [u, x, interpolation_type, interpolator, interpolation_args];
+    ODESystem(eqs, t, [], [data, ts, interpolation_type, interpolation_args, interpolator, memoized_builder];
         parameter_dependencies = [
-            interpolator => build_interpolation(
-            interpolation_type, u, x, interpolation_args)
+            interpolator => interpolation_builder(memoized_builder, data, ts, interpolation_args)
         ],
         systems = [output],
         name)
