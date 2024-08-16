@@ -6,6 +6,9 @@ using ModelingToolkitStandardLibrary.Blocks: smooth_sin, smooth_cos, smooth_damp
                                              smooth_triangular, triangular, square
 using OrdinaryDiffEq: ReturnCode.Success
 using DataInterpolations
+using SymbolicIndexingInterface
+using SciMLStructures: SciMLStructures, Tunable
+using Optimization
 
 @testset "Constant" begin
     @named src = Constant(k = 2)
@@ -480,8 +483,8 @@ end
 
 @testset "ParametrizedInterpolation" begin
     @variables y(t) = 0
-    @parameters u[1:15] = rand(15)
-    @parameters x[1:15] = 0:14.0
+    u = rand(15)
+    x = 0:14.0
 
     @testset "LinearInterpolation" begin
         @named i = ParametrizedInterpolation(LinearInterpolation, u, x)
@@ -494,6 +497,41 @@ end
         sol = solve(prob)
 
         @test SciMLBase.successful_retcode(sol)
+
+        prob2 = remake(prob, p=[i.data => ones(15)])
+        sol2 = solve(prob2)
+
+        @test SciMLBase.successful_retcode(sol2)
+        @test all(only.(sol2.u) .≈ sol2.t) # the solution for y' = 1 is y(t) = t
+
+        set_data! = setp(prob2, i.data)
+        set_data!(prob2, zeros(15))
+        sol3 = solve(prob2)
+        @test SciMLBase.successful_retcode(sol3)
+        @test iszero(sol3)
+
+        function loss(x, p)
+            prob0, set_data! = p
+            ps = parameter_values(prob0)
+            arr, repack, alias = SciMLStructures.canonicalize(Tunable(), ps)
+            T = promote_type(eltype(x), eltype(arr))
+            promoted_ps = SciMLStructures.replace(Tunable(), ps, T.(arr))
+            prob = remake(prob0; p = promoted_ps)
+
+            set_data!(prob, x)
+            sol = solve(prob)
+            sum(abs2.(only.(sol.u) .- sol.t))
+        end
+
+        set_data! = setp(prob, i.data)
+        of = OptimizationFunction(loss, AutoForwardDiff())
+        op = OptimizationProblem(of, u, (prob, set_data!), lb = zeros(15), ub = fill(2.0, 15))
+
+        # check that type changing works
+        @test length(ForwardDiff.gradient(x -> of(x, (prob, set_data!)), u)) == 15
+
+        r = solve(op, Optimization.LBFGS(), maxiters = 1000)
+        @test of(r.u, (prob, set_data!)) < of(u, (prob, set_data!))
     end
 
     @testset "BSplineInterpolation" begin
