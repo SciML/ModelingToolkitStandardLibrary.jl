@@ -1,5 +1,6 @@
 using DiffEqBase
 import ChainRulesCore
+using PreallocationTools
 
 # Define and register smooth functions
 # These are "smooth" aka differentiable and avoid Gibbs effect
@@ -739,22 +740,28 @@ function Symbolics.derivative(::typeof(apply_interpolation), args::NTuple{2, Any
 end
 
 function cached_interpolation(interpolation_type, u, x, args)
-    prev_u = Ref(collect(copy(u)))
-    prev_x = Ref(collect(copy(x)))
-    # MTKParameters use views, so we want to ensure that the type is the same
-    interp = Ref(interpolation_type(prev_u[], prev_x[], args...))
+    prev_u = DiffCache(u)
+    # Interpolation points can be a range, but we want to be able
+    # to update the cache if needed (and setindex! is not defined on ranges)
+    # with a view from MTKParameters, so we collect to get a vector
+    prev_x = DiffCache(collect(x))
+    interp = GeneralLazyBufferCache() do (u,x)
+        interpolation_type(get_tmp(prev_u, u), get_tmp(prev_x, x), args...)
+    end
 
     let prev_u = prev_u,
         prev_x = prev_x,
         interp = interp,
         interpolation_type = interpolation_type
+
         function build_interpolation(u, x, args)
-            if (u, x) ≠ (prev_u[], prev_x[])
-                prev_u[] = collect(u)
-                prev_x[] = collect(x)
-                interp[] = interpolation_type(prev_u[], prev_x[], args...)
+            if (u, x) ≠ (get_tmp(prev_u, u), get_tmp(prev_x, x))
+                get_tmp(prev_u, u) .= u
+                get_tmp(prev_x, x) .= x
+                interp.bufs[(u,x)] = interpolation_type(
+                    get_tmp(prev_u, u), get_tmp(prev_x, x), args...)
             else
-                interp[]
+                interp[(u,x)]
             end
         end
     end
