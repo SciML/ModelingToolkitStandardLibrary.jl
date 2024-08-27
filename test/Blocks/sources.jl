@@ -9,6 +9,7 @@ using DataInterpolations
 using SymbolicIndexingInterface
 using SciMLStructures: SciMLStructures, Tunable
 using Optimization
+using ForwardDiff
 
 @testset "Constant" begin
     @named src = Constant(k = 2)
