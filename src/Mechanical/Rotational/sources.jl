@@ -118,3 +118,63 @@ Forced movement of a flange according to a reference angular velocity signal
     return extend(ODESystem(eqs, t, [phi, w, a], pars; name = name, systems = [w_ref]),
         partial_element)
 end
+
+"""
+    Position(; name, exact = false, f_crit = 50, use_support = false)
+
+Forced movement of a flange according to a reference angle signal.
+
+The input signal `phi_ref` defines the reference angle in [rad]. Flange is forced to move according to this reference motion relative to flange support. According to parameter `exact` (default = `false`), this is done in the following way:
+
+- `exact=true`: The reference angle is treated exactly. This is only possible if the input signal is defined by an analytical function that can be differentiated at least twice in order to compute the acceleration.
+- `exact=false`: The reference angle is filtered and the second derivative of the filtered curve is used to compute the reference acceleration of the flange. This second derivative is not computed by numerical differentiation but by an appropriate realization of the filter. For filtering, a second-order Bessel filter is used. The critical frequency (also called cut-off frequency) of the filter is defined via parameter `f_crit` in [Hz]. This value should be selected in such a way that it is higher than the essential low frequencies in the signal.
+
+# Connectors 
+- `flange::Flange`: Flange to be moved
+- `phi_ref::RealInput`: Reference angle of flange with respect to support
+
+# Variables
+- `phi(t)`: Rotation angle of flange with respect to support
+- `w(t)`: If `exact=false`, Angular velocity of flange with respect to support
+- `a(t)`: If `exact=false`, Angular acceleration of flange with respect to support
+
+# Parameters
+- `exact`: (structural) true/false exact treatment/filtering the input signal
+- `f_crit`: [Hz] if `exact=false`, Critical frequency of filter to filter input signal
+"""
+@component function Position(; name, exact = false, f_crit = 50, use_support = false)
+    systems = @named begin
+        partial_element = PartialElementaryOneFlangeAndSupport2(; use_support)
+        phi_ref = RealInput()
+    end
+    @unpack flange, phi_support = partial_element
+
+    pars = @parameters begin
+        f_crit = f_crit, [description = "Critical frequency of input-signal filter"]
+    end
+
+    w_crit = 2 * π * f_crit
+    af = 1.3617 # s coefficient of Bessel filter
+    bf = 0.6180 # s*s coefficient of Bessel filter
+
+    vars = @variables begin
+        phi(t),
+        [guess = 0.0, description = "Rotation angle of flange with respect to support"]
+        w(t),
+        [guess = 0.0, description = "Angular velocity of flange with respect to support"]
+        a(t),
+        [guess = 0.0,
+            description = "Angular acceleration of flange with respect to support"]
+    end
+
+    equations = if exact
+        [phi ~ flange.phi - phi_support
+         phi ~ phi_ref.u]
+    else
+        [phi ~ flange.phi - phi_support
+         D(phi) ~ w
+         D(w) ~ a
+         a ~ ((phi_ref.u - phi) * w_crit - af * w) * (w_crit / bf)]
+    end
+    extend(ODESystem(equations, t; name, systems = [phi_ref]), partial_element)
+end
