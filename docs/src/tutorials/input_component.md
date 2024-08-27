@@ -2,25 +2,29 @@
 
 There are 3 ways to include data as part of a model.
 
- 1. using `ModelingToolkitStandardLibrary.Blocks.TimeVaryingFunction`
- 2. using a custom component with external data
- 3. using `ModelingToolkitStandardLibrary.Blocks.SampledData`
+ 1. using `ModelingToolkitStandardLibrary.Blocks.ParametrizedInterpolation` & `DataInterpolations`
+ 2. using a custom component with external data (not recommended)
+ 3. using `ModelingToolkitStandardLibrary.Blocks.SampledData` (legacy)
 
 This tutorial demonstrate each case and explain the pros and cons of each.
 
-## `TimeVaryingFunction` Component
+## `ParametrizedInterpolation` Component
 
-The `ModelingToolkitStandardLibrary.Blocks.TimeVaryingFunction` component is easy to use and is performant.  However the data is locked to the `ODESystem` and can only be changed by building a new `ODESystem`.  Therefore, running a batch of data would not be efficient.  Below is an example of how to use the `TimeVaryingFunction` with `DataInterpolations` to build the function from sampled discrete data.
+The `ModelingToolkitStandardLibrary.Blocks.ParametrizedInterpolation` component is easy to use and is performant.
+It allows one to change the underlying data without rebuilding the model as the data is represented via vector parameters.
+The `ParametrizedInterpolation` is compatible with interpolation types from `DataInterpolation`.
+Here is an example on how to use it
 
-```julia
+```@example parametrized_interpolation
 using ModelingToolkit
 using ModelingToolkit: t_nounits as t, D_nounits as D
 using ModelingToolkitStandardLibrary.Blocks
 using DataInterpolations
 using OrdinaryDiffEq
+using Plots
 
-function System(f; name)
-    src = TimeVaryingFunction(f)
+function System(data, time; name)
+    @named src = ParametrizedInterpolation(LinearInterpolation, data, time)
 
     vars = @variables f(t)=0 x(t)=0 dx(t)=0 ddx(t)=0
     pars = @parameters m=10 k=1000 d=1
@@ -37,21 +41,28 @@ dt = 4e-4
 time = 0:dt:0.1
 data = sin.(2 * pi * time * 100) # example data
 
-f = LinearInterpolation(data, time)
-
-@named system = System(f)
+@named system = System(data, time)
 sys = structural_simplify(system)
 prob = ODEProblem(sys, [], (0, time[end]))
-sol = solve(prob, ImplicitEuler())
+sol = solve(prob)
+plot(sol)
 ```
 
-If we want to run a new data set, this requires building a new `LinearInterpolation` and `ODESystem` followed by running `structural_simplify`, all of which takes time.  Therefore, to run several pieces of data it's better to re-use an `ODESystem`.  The next couple methods will demonstrate how to do this.
+If we want to run a new data set, this requires only remaking the problem and solving again
+```@example parametrized_interpolation
+prob2 = remake(prob, p = [sys.src.data => ones(length(data))])
+sol2 = solve(prob2)
+plot(sol2)
+```
+
+!!! note
+    Note that when changing the data, the length of the new data must be the same as the lenght of the original data.
 
 ## Custom Component with External Data
 
 The below code shows how to include data using a `Ref` and registered `get_sampled_data` function.  This example uses a very basic function which requires non-adaptive solving and sampled data.  As can be seen, the data can easily be set and changed before solving.
 
-```julia
+```@example custom_component_external_data
 const rdata = Ref{Vector{Float64}}()
 
 # Data Sets
@@ -105,9 +116,9 @@ Additional code could be added to resolve this issue, for example by using a `Re
 
 To resolve the issues presented above, the `ModelingToolkitStandardLibrary.Blocks.SampledData` component can be used which allows for a resusable `ODESystem` and self contained data which ensures a solution which remains valid for it's lifetime.  Now it's possible to also parallelize the call to `solve()`.
 
-```julia
+```@example sampled_data_component
 function System(; name)
-    src = SampledData(Float64)
+    @named src = SampledData(Float64)
 
     vars = @variables f(t)=0 x(t)=0 dx(t)=0 ddx(t)=0
     pars = @parameters m=10 k=1000 d=1
@@ -121,9 +132,9 @@ function System(; name)
 end
 
 @named system = System()
-sys = structural_simplify(system)
+sys = structural_simplify(system, split=false)
 s = complete(system)
-prob = ODEProblem(sys, [], (0, time[end]); tofloat = false)
+prob = ODEProblem(sys, [], (0, time[end]); tofloat = false, use_union=true)
 defs = ModelingToolkit.defaults(sys)
 
 function get_prob(data)
