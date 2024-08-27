@@ -14,7 +14,7 @@ using IfElse: ifelse
 export HydraulicPort, HydraulicFluid
 include("utils.jl")
 
-export Cap, Tube, FixedVolume, DynamicVolume
+export Cap, Tube, FixedVolume, DynamicVolume, Open, FlowDivider, Valve, Volume, SpoolValve, SpoolValve2Way, Actuator
 include("components.jl")
 
 export MassFlow, Pressure, FixedPressure
