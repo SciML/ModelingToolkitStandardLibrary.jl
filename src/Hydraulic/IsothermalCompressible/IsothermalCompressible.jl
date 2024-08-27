@@ -1,5 +1,5 @@
 """
-Library to model iso-thermal compressible liquid fluid flow 
+Library to model iso-thermal compressible liquid fluid flow
 """
 module IsothermalCompressible
 

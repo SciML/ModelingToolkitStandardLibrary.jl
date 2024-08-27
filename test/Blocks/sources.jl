@@ -498,7 +498,7 @@ end
 
         @test SciMLBase.successful_retcode(sol)
 
-        prob2 = remake(prob, p=[i.data => ones(15)])
+        prob2 = remake(prob, p = [i.data => ones(15)])
         sol2 = solve(prob2)
 
         @test SciMLBase.successful_retcode(sol2)
@@ -525,7 +525,8 @@ end
 
         set_data! = setp(prob, i.data)
         of = OptimizationFunction(loss, AutoForwardDiff())
-        op = OptimizationProblem(of, u, (prob, set_data!), lb = zeros(15), ub = fill(2.0, 15))
+        op = OptimizationProblem(
+            of, u, (prob, set_data!), lb = zeros(15), ub = fill(2.0, 15))
 
         # check that type changing works
         @test length(ForwardDiff.gradient(x -> of(x, (prob, set_data!)), u)) == 15

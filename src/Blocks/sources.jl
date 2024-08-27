@@ -745,7 +745,7 @@ function cached_interpolation(interpolation_type, u, x, args)
     # to update the cache if needed (and setindex! is not defined on ranges)
     # with a view from MTKParameters, so we collect to get a vector
     prev_x = DiffCache(collect(x))
-    interp = GeneralLazyBufferCache() do (u,x)
+    interp = GeneralLazyBufferCache() do (u, x)
         interpolation_type(get_tmp(prev_u, u), get_tmp(prev_x, x), args...)
     end
 
@@ -758,16 +758,17 @@ function cached_interpolation(interpolation_type, u, x, args)
             if (u, x) ≠ (get_tmp(prev_u, u), get_tmp(prev_x, x))
                 get_tmp(prev_u, u) .= u
                 get_tmp(prev_x, x) .= x
-                interp.bufs[(u,x)] = interpolation_type(
+                interp.bufs[(u, x)] = interpolation_type(
                     get_tmp(prev_u, u), get_tmp(prev_x, x), args...)
             else
-                interp[(u,x)]
+                interp[(u, x)]
             end
         end
     end
 end
 
-@register_symbolic interpolation_builder(f::Function, u::AbstractArray, x::AbstractArray, args::Tuple)
+@register_symbolic interpolation_builder(
+    f::Function, u::AbstractArray, x::AbstractArray, args::Tuple)
 interpolation_builder(f, u, x, args) = f(u, x, args)
 
 """
@@ -790,7 +791,8 @@ such as `LinearInterpolation`, `ConstantInterpolation` or `CubicSpline`.
 # Connectors:
   - `output`: a [`RealOutput`](@ref) connector corresponding to the interpolated value
 """
-function ParametrizedInterpolation(interp_type::T, u::AbstractVector, x::AbstractVector, args...; name) where {T}
+function ParametrizedInterpolation(
+        interp_type::T, u::AbstractVector, x::AbstractVector, args...; name) where {T}
     @parameters data[1:length(x)] = u
     @parameters ts[1:length(x)] = x
     @parameters interpolation_type::T=interp_type [tunable = false] interpolation_args::Tuple=args [tunable = false]
@@ -803,9 +805,11 @@ function ParametrizedInterpolation(interp_type::T, u::AbstractVector, x::Abstrac
 
     eqs = [output.u ~ apply_interpolation(interpolator, t)]
 
-    ODESystem(eqs, t, [], [data, ts, interpolation_type, interpolation_args, interpolator, memoized_builder];
+    ODESystem(eqs, t, [],
+        [data, ts, interpolation_type, interpolation_args, interpolator, memoized_builder];
         parameter_dependencies = [
-            interpolator => interpolation_builder(memoized_builder, data, ts, interpolation_args)
+            interpolator => interpolation_builder(
+            memoized_builder, data, ts, interpolation_args)
         ],
         systems = [output],
         name)
