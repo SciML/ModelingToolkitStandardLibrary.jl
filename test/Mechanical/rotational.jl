@@ -275,3 +275,47 @@ end
 
     # Plots.plot(sol; vars=[inertia1.w, inertia2.w])
 end
+
+@testset "Position" begin
+    @mtkmodel TestPosition begin
+        @components begin
+            pos = Rotational.Position(exact = true, f_crit = 500)
+            input = Blocks.Sine(frequency = 1, amplitude = 1)
+            inertia = Rotational.Inertia(J = 1)
+        end
+        @equations begin
+            connect(input.output, pos.phi_ref)
+            connect(pos.flange, inertia.flange_a)
+        end
+    end
+    @mtkbuild sys = TestPosition()
+    prob = ODEProblem(sys, [
+            sys.inertia.phi => 0,
+            sys.inertia.w => 0
+        ], (0, 10.0))
+    sol = solve(prob, Tsit5())
+    @test SciMLBase.successful_retcode(sol)
+    tv = 0:0.01:10
+    @test sol(tv, idxs = sys.inertia.phi).u≈sin.(2pi .* tv) atol=1e-12
+
+    @mtkmodel TestPosition begin
+        @components begin
+            pos = Rotational.Position(exact = false, f_crit = 500)
+            input = Blocks.Sine(frequency = 1, amplitude = 1)
+            inertia = Rotational.Inertia(J = 1)
+        end
+        @equations begin
+            connect(input.output, pos.phi_ref)
+            connect(pos.flange, inertia.flange_a)
+        end
+    end
+    @mtkbuild sys = TestPosition()
+    prob = ODEProblem(sys, [
+            sys.inertia.phi => 0,
+            sys.inertia.w => 0
+        ], (0, 10.0))
+    sol = solve(prob, Tsit5())
+    @test SciMLBase.successful_retcode(sol)
+    tv = 0:0.01:10
+    @test sol(tv, idxs = sys.inertia.phi).u≈sin.(2pi .* tv) atol=1e-1
+end
