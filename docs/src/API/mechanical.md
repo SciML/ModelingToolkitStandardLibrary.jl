@@ -45,6 +45,7 @@ RotationalFriction
 ```@docs
 Torque
 Speed
+Position
 ```
 
 ### Rotational Sensors
