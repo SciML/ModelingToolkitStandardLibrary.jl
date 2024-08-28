@@ -49,6 +49,8 @@ const GROUP = get(ENV, "GROUP", "All")
             end
             @safetestset "Thermal Demo" begin
                 include("Thermal/demo.jl")
+                include("Thermal/motor.jl")
+                include("Thermal/piston.jl")
             end
 
             # Magnetic
