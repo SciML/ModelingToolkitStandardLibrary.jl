@@ -25,6 +25,17 @@ Caps a hydraulic port to prevent mass flow in or out.
     ODESystem(eqs, t, vars, pars; name, systems)
 end
 
+"""
+    Open(; p_int, name)
+
+Simple hydraulic port for use in multiport components like FlowDivider.
+
+# Parameters:
+- `p_int`: [Pa] initial pressure (set by `p_int` argument)
+
+# Connectors:
+- `port`: hydraulic port
+"""
 @component function Open(; p_int, name)
     pars = @parameters p_int = p_int
 
@@ -447,6 +458,10 @@ dm ────►               │  │ area
                        └─► x (= ∫ flange.v * direction)
 ```
 
+# Features:
+- volume discretization with flow resistance and inertia: use `N` to control number of volume and resistance elements.  Set `N=0` to turn off volume discretization. See `TubeBase` for more information about flow resistance.
+- minimum volume flow shutoff with damping and directional resistance.  Use `reversible=false` when problem defines volume position `x` and solves for `dm` to prevent numerical instability.
+
 # Parameters:
 ## volume
 - `p`: [Pa] initial pressure
@@ -514,7 +529,7 @@ See also [`FixedVolume`](@ref), [`DynamicVolume`](@ref)
 end
 
 """
-DynamicVolume(N, add_inertia=true; p_int,  area, x_int = 0, x_max, x_min = 0, x_damp = x_min, direction = +1, perimeter = 2 * sqrt(area * pi), shape_factor = 64, head_factor = 1, Cd = 1e2, Cd_reverse = Cd, name)
+    DynamicVolume(N, add_inertia=true; p_int,  area, x_int = 0, x_max, x_min = 0, x_damp = x_min, direction = +1, perimeter = 2 * sqrt(area * pi), shape_factor = 64, head_factor = 1, Cd = 1e2, Cd_reverse = Cd, name)
 
 Volume with moving wall with `flange` connector for converting hydraulic energy to 1D mechanical.  The `direction` argument aligns the mechanical port with the hydraulic port, useful when connecting two dynamic volumes together in oppsing directions to create an actuator.
 
@@ -698,6 +713,23 @@ dm ────►               │  │ area
         defaults = [flange.v => 0])
 end
 
+"""
+    SpoolValve(reversible = false; p_a_int, p_b_int, x_int, Cd, d, name)
+
+Spool valve with `x` valve opening input as mechanical flange port and `d` diameter of orifice. See `Valve` for more information.
+
+# Parameters:
+- `p_a_int`: [Pa] initial pressure for `port_a`
+- `p_b_int`: [Pa] initial pressure for `port_b`
+- `x_int`: [m] initial valve opening
+- `d`: [m] orifice diameter
+- `Cd`: discharge coefficient flowing from `a → b`
+
+# Connectors:
+- `port_a`: hydraulic port
+- `port_b`: hydraulic port
+- `flange`: mechanical translational port
+"""
 @component function SpoolValve(reversible = false; p_a_int, p_b_int, x_int, Cd, d, name)
     pars = @parameters begin
         p_a_int = p_a_int
@@ -730,6 +762,29 @@ end
     ODESystem(eqs, t, vars, pars; name, systems, defaults = [flange.v => 0])
 end
 
+"""
+    SpoolValve2Way(reversible = false; p_s_int, p_a_int, p_b_int, p_r_int, m, g, x_int, Cd, d, name)
+
+2-ways spool valve with 4 ports and mass. Fluid flow direction S → A and B → R. See `SpoolValve` for more information.
+
+# Parameters:
+- `p_s_int`: [Pa] initial pressure for `port_s`
+- `p_a_int`: [Pa] initial pressure for `port_a`
+- `p_b_int`: [Pa] initial pressure for `port_b`
+- `p_r_int`: [Pa] initial pressure for `port_r`
+- `m`: [kg] mass of the body
+- `g`: [m/s²] gravity field acting on the mass, positive value acts in the positive direction
+- `x_int`: [m] initial valve opening
+- `d`: [m] orifice diameter
+- `Cd`: discharge coefficient flowing from `s → a` and `b → r`
+
+# Connectors:
+- `port_s`: hydraulic port
+- `port_a`: hydraulic port
+- `port_b`: hydraulic port
+- `port_r`: hydraulic port
+- `flange`: mechanical translational port
+"""
 @component function SpoolValve2Way(reversible = false; p_s_int, p_a_int, p_b_int, p_r_int,
         m, g, x_int, Cd, d, name)
     pars = @parameters begin
@@ -773,6 +828,73 @@ end
     ODESystem(eqs, t, vars, pars; name, systems, defaults = [flange.v => 0])
 end
 
+"""
+    Actuator(N, add_inertia = true, reversible = false;
+        p_a_int,
+        p_b_int,
+        area_a,
+        area_b,
+        perimeter_a = 2 * sqrt(area_a * pi),
+        perimeter_b = 2 * sqrt(area_b * pi),
+        length_a_int,
+        length_b_int,
+        shape_factor_a = 64,
+        shape_factor_b = 64,
+        head_factor_a = 1,
+        head_factor_b = 1,
+        m,
+        g,
+        x_int = 0,
+        minimum_volume_a = 0,
+        minimum_volume_b = 0,
+        damping_volume_a = minimum_volume_a,
+        damping_volume_b = minimum_volume_b,
+        Cd = 1e4,
+        Cd_reverse = Cd,
+        name)
+        
+Actuator made of two DynamicVolumes connected in opposite direction with body mass attached.
+
+# Features:
+- volume discretization with flow resistance and inertia: use `N` to control number of volume and resistance elements.  Set `N=0` to turn off volume discretization. See `TubeBase` for more information about flow resistance.
+- minimum volume flow shutoff with damping and directional resistance.  Use `reversible=false` when problem defines volume position `x` and solves for `dm` to prevent numerical instability.
+
+# Parameters:
+## volume
+- `p_a_int`: [Pa] initial pressure for `port_a`
+- `p_b_int`: [Pa] initial pressure for `port_b`
+- `area_a`: [m^2] moving wall area of volume `A`
+- `area_b`: [m^2] moving wall area of volume `B`
+- `length_a_int`: [m] initial wall position for `A`
+- `length_b_int`: [m] initial wall position for `b`
+
+## mass
+- `m`: [kg] mass of the body
+- `g`: [m/s²] gravity field acting on the mass, positive value acts in the positive direction
+- `x_int`: [m] initial flange position
+
+## flow resistance
+- `perimeter_a`: [m] perimeter of the cross section `A` (needed only for non-circular volumes)
+- `perimeter_b`: [m] perimeter of the cross section `B` (needed only for non-circular volumes)
+- `shape_factor_a`: shape factor of `A`, see `friction_factor` function
+- `shape_factor_b`: shape factor of `B`, see `friction_factor` function
+- `head_factor_a`: effective length multiplier for `A`, used to account for addition friction from flow development and additional friction such as pipe bends, entrance/exit lossses, etc.
+- `head_factor_b`: effective length multiplier for `B`, used to account for addition friction from flow development and additional friction such as pipe bends, entrance/exit lossses, etc.
+
+## flow shut off and damping
+- `minimum_volume_a`: [m^3] minimum volume `A` that shuts off flow and prevents negative volume.
+- `minimum_volume_b`: [m^3] minimum volume `B` that shuts off flow and prevents negative volume.
+- `damping_volume_a`: [m^3] volume of `A` that initiates a linear damping region before reaching full flow shut off.  Helps provide a smooth end stop.
+- `damping_volume_b`: [m^3] volume of `B` that initiates a linear damping region before reaching full flow shut off.  Helps provide a smooth end stop.
+- `Cd`: discharge coefficient for flow out of the volume.  *Note: area is 1m² when valve is fully open.  Ensure this does not induce unwanted flow resistance.*
+- `Cd_reverse`: discharge coefficient for flow into the volume. Use a lower value to allow easy wall release, in some cases the wall can "stick".
+
+
+# Connectors:
+- `port_a`: hydraulic port
+- `port_b`: hydraulic port
+- `flange`: mechanical translational port
+"""
 @component function Actuator(N, add_inertia = true, reversible = false;
         p_a_int,
         p_b_int,
