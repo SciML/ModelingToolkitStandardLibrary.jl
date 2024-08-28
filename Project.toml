@@ -21,6 +21,7 @@ IfElse = "0.1"
 LinearAlgebra = "1.10"
 ModelingToolkit = "9.2"
 OrdinaryDiffEq = "6.72"
+OrdinaryDiffEqDefault = "1.1"
 SafeTestsets = "0.1"
 Symbolics = "5.20"
 Test = "1"
@@ -32,8 +33,9 @@ ControlSystemsBase = "aaaaaaaa-a6ca-5380-bf3e-84a91bcd477e"
 DataInterpolations = "82cc6244-b520-54b8-b5a6-8a565e85f1d0"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 OrdinaryDiffEq = "1dea7af3-3e70-54e6-95c3-0bf5283fa5ed"
+OrdinaryDiffEqDefault = "50262376-6c5a-4cf5-baba-aaf4f84d72d7"
 SafeTestsets = "1bc83da4-3b8d-516f-aca4-4fe02f6d838f"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["Aqua", "LinearAlgebra", "OrdinaryDiffEq", "SafeTestsets", "Test", "ControlSystemsBase", "DataInterpolations"]
+test = ["Aqua", "LinearAlgebra", "OrdinaryDiffEq", "OrdinaryDiffEqDefault", "SafeTestsets", "Test", "ControlSystemsBase", "DataInterpolations"]
