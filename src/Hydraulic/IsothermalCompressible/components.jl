@@ -28,7 +28,7 @@ end
 """
     Open(; p_int, name)
 
-Simple hydraulic port for use in multiport components like FlowDivider.
+Provides an "open" boundary condition for a hydraulic port such that mass flow `dm` is non-zero.  This is opposite from an un-connected hydraulic port or the `Cap` boundary component which sets the mass flow `dm` to zero.  
 
 # Parameters:
 - `p_int`: [Pa] initial pressure (set by `p_int` argument)
@@ -729,6 +729,8 @@ Spool valve with `x` valve opening input as mechanical flange port and `d` diame
 - `port_a`: hydraulic port
 - `port_b`: hydraulic port
 - `flange`: mechanical translational port
+
+See [`Valve`](@ref) for more information.
 """
 @component function SpoolValve(reversible = false; p_a_int, p_b_int, x_int, Cd, d, name)
     pars = @parameters begin
@@ -765,15 +767,15 @@ end
 """
     SpoolValve2Way(reversible = false; p_s_int, p_a_int, p_b_int, p_r_int, m, g, x_int, Cd, d, name)
 
-2-ways spool valve with 4 ports and mass. Fluid flow direction S → A and B → R. See `SpoolValve` for more information.
+2-ways spool valve with 4 ports and spool mass. Fluid flow direction S → A and B → R when `x` is positive and S → B and A → R when `x` is negative. 
 
 # Parameters:
 - `p_s_int`: [Pa] initial pressure for `port_s`
 - `p_a_int`: [Pa] initial pressure for `port_a`
 - `p_b_int`: [Pa] initial pressure for `port_b`
 - `p_r_int`: [Pa] initial pressure for `port_r`
-- `m`: [kg] mass of the body
-- `g`: [m/s²] gravity field acting on the mass, positive value acts in the positive direction
+- `m`: [kg] mass of the  spool
+- `g`: [m/s²] gravity field acting on the spool, positive value acts in the positive direction
 - `x_int`: [m] initial valve opening
 - `d`: [m] orifice diameter
 - `Cd`: discharge coefficient flowing from `s → a` and `b → r`
@@ -784,6 +786,8 @@ end
 - `port_b`: hydraulic port
 - `port_r`: hydraulic port
 - `flange`: mechanical translational port
+
+See [`SpoolValve`](@ref) for more information.
 """
 @component function SpoolValve2Way(reversible = false; p_s_int, p_a_int, p_b_int, p_r_int,
         m, g, x_int, Cd, d, name)
