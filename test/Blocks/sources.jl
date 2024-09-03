@@ -233,6 +233,7 @@ end
 
     @test sol.retcode == Success
     @test sol[src.output.u]≈step.(sol.t, offset, height, start_time) atol=1e-2
+    @test sol(start_time, idxs = src.output.u) == height + offset # Test that the step is applied at the start time
 
     # test with duration
     duration = 1.2

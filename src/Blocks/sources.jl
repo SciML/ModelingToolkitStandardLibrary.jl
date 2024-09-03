@@ -328,7 +328,7 @@ Generate step signal.
     pars = @parameters offset=offset start_time=start_time height=height duration=duration
     equation = if smooth == false # use comparison in case smooth is a float
         offset +
-        ifelse((start_time < t) & (t < start_time + duration), height, zero(height))
+        ifelse((start_time <= t) & (t < start_time + duration), height, zero(height))
     else
         smooth === true && (smooth = 1e-5)
         if duration_numeric == Inf
