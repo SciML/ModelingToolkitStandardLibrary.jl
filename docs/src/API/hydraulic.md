@@ -29,10 +29,17 @@ friction_factor
 
 ```@docs
 Cap
+Open
 TubeBase
 Tube
+FlowDivider
+Valve
 FixedVolume
+Volume
 DynamicVolume
+SpoolValve
+SpoolValve2Way
+Actuator
 ```
 
 ### IsothermalCompressible Sources
