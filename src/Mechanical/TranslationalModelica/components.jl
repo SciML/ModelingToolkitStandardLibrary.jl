@@ -13,11 +13,11 @@ Flange fixed in housing at a given position.
 """
 @mtkmodel Fixed begin
     @parameters begin
-        s0
+        s0 = 0
     end
 
     @components begin
-        flange = Flange(; s = 0.0)
+        flange = Flange()
     end
 
     @equations begin

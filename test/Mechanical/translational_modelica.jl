@@ -3,7 +3,7 @@ using ModelingToolkit: t_nounits as t, D_nounits as D
 
 using ModelingToolkitStandardLibrary.Blocks: Sine
 using ModelingToolkitStandardLibrary.Mechanical.TranslationalModelica: Damper, Spring, Mass,
-                                                                       Fixed, Force
+                                                                       Fixed, Force, SpringDamper
 
 @testset "spring damper mass fixed" begin
     @mtkmodel SpringDamperMassFixed begin
@@ -60,7 +60,7 @@ end
 @testset "driven SpringDamper mass" begin
     @mtkmodel DrivenSpringDamperMass2 begin
         @components begin
-            springdamper = TranslationalModelica.SpringDamper(; d = 1, c = 1, s_rel0 = 1)
+            springdamper = SpringDamper(; d = 1, c = 1, s_rel0 = 1)
             mass = Mass(; m = 1, v = 1, s = 0)
             fixed = Fixed(; s0 = 1)
             force = Force()
