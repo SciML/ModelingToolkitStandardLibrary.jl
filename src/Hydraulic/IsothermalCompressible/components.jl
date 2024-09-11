@@ -11,18 +11,17 @@ Caps a hydraulic port to prevent mass flow in or out.
 - `port`: hydraulic port
 """
 @component function Cap(; p_int, name)
-    pars = @parameters p_int = p_int
-
-    vars = @variables p(t) = p_int
+    
+    vars = @variables p(t), [guess=0]
 
     systems = @named begin
-        port = HydraulicPort(; p_int = p_int)
+        port = HydraulicPort()
     end
 
     eqs = [port.p ~ p
            port.dm ~ 0]
 
-    ODESystem(eqs, t, vars, pars; name, systems)
+    ODESystem(eqs, t, vars, []; name, systems)
 end
 
 """
@@ -36,16 +35,16 @@ Provides an "open" boundary condition for a hydraulic port such that mass flow `
 # Connectors:
 - `port`: hydraulic port
 """
-@component function Open(; p_int, name)
-    pars = @parameters p_int = p_int
+@component function Open(; name)
+    pars = []
 
     vars = @variables begin
-        p(t) = p_int
-        dm(t)
+        p(t), [guess=0]
+        dm(t), [guess=0]
     end
 
     systems = @named begin
-        port = HydraulicPort(; p_int = p_int)
+        port = HydraulicPort()
     end
 
     eqs = [port.p ~ p
@@ -75,12 +74,14 @@ Variable length internal flow model of the fully developed incompressible flow f
 - `port_a`: hydraulic port
 - `port_b`: hydraulic port
 """
-@component function TubeBase(add_inertia = true, variable_length = true; p_int, area,
-        length_int, head_factor = 1,
+@component function TubeBase(add_inertia = true, variable_length = true; 
+        area,
+        length_int, 
+        head_factor = 1,
         perimeter = 2 * sqrt(area * pi),
-        shape_factor = 64, name)
+        shape_factor = 64, 
+        name)
     pars = @parameters begin
-        p_int = p_int
         area = area
         length_int = length_int
         perimeter = perimeter
@@ -89,8 +90,8 @@ Variable length internal flow model of the fully developed incompressible flow f
     end
 
     @variables begin
-        x(t) = length_int
-        ddm(t)
+        x(t), [guess=length_int]
+        ddm(t), [guess=0]
     end
 
     vars = []
@@ -103,8 +104,8 @@ Variable length internal flow model of the fully developed incompressible flow f
     add_inertia && push!(vars, ddm)
 
     systems = @named begin
-        port_a = HydraulicPort(; p_int)
-        port_b = HydraulicPort(; p_int)
+        port_a = HydraulicPort()
+        port_b = HydraulicPort()
     end
 
     # let ----------------------
@@ -120,7 +121,7 @@ Variable length internal flow model of the fully developed incompressible flow f
     f = friction_factor(dm, area, d_h, μ, shape_factor)
     u = dm / (ρ * area)
 
-    shear = (1 / 2) * ρ * regPow(u, 2) * f * head_factor * (c / d_h)
+    shear = (1 / 2) * ρ * u * abs(u) * f * head_factor * (c / d_h)
     inertia = if add_inertia
         (c / area) * ddm
     else
@@ -160,7 +161,7 @@ Constant length internal flow model discretized by `N` (`FixedVolume`: `N`, `Tub
 - `port_a`: hydraulic port
 - `port_b`: hydraulic port
 """
-@component function Tube(N, add_inertia = true; p_int, area, length, head_factor = 1,
+@component function Tube(N, add_inertia = true; area, length, head_factor = 1,
         perimeter = 2 * sqrt(area * pi),
         shape_factor = 64, name)
     @assert(N>0,
@@ -170,7 +171,6 @@ Constant length internal flow model discretized by `N` (`FixedVolume`: `N`, `Tub
         return TubeBase(add_inertia,
             false;
             shape_factor,
-            p_int,
             area,
             length_int = length,
             head_factor,
@@ -180,7 +180,6 @@ Constant length internal flow model discretized by `N` (`FixedVolume`: `N`, `Tub
 
     #TODO: How to set an assert effective_length >= length ??
     pars = @parameters begin
-        p_int = p_int
         area = area
         length = length
         head_factor = head_factor
@@ -191,8 +190,8 @@ Constant length internal flow model discretized by `N` (`FixedVolume`: `N`, `Tub
     vars = []
 
     ports = @named begin
-        port_a = HydraulicPort(; p_int)
-        port_b = HydraulicPort(; p_int)
+        port_a = HydraulicPort()
+        port_b = HydraulicPort()
     end
 
     pipe_bases = []
@@ -243,24 +242,23 @@ Reduces the flow from `port_a` to `port_b` by `n`.  Useful for modeling parallel
 - `port_a`: full flow hydraulic port
 - `port_b`: part flow hydraulic port
 """
-@component function FlowDivider(; p_int, n, name)
+@component function FlowDivider(; n, name)
 
     #TODO: assert n >= 1
 
     pars = @parameters begin
         n = n
-        p_int = p_int
     end
 
     vars = @variables begin
-        dm_a(t)
-        dm_b(t)
+        dm_a(t), [guess=0]
+        dm_b(t), [guess=0]
     end
 
     systems = @named begin
-        port_a = HydraulicPort(; p_int)
-        port_b = HydraulicPort(; p_int)
-        open = Open(; p_int)
+        port_a = HydraulicPort()
+        port_b = HydraulicPort()
+        open = Open()
     end
 
     eqs = [connect(port_a, port_b, open.port)
@@ -273,11 +271,9 @@ Reduces the flow from `port_a` to `port_b` by `n`.  Useful for modeling parallel
     ODESystem(eqs, t, vars, pars; name, systems)
 end
 
-@component function ValveBase(reversible = false; p_a_int, p_b_int, minimum_area = 0,
+@component function ValveBase(reversible = false; minimum_area = 0,
         area_int, Cd, Cd_reverse = Cd, name)
     pars = @parameters begin
-        p_a_int = p_a_int
-        p_b_int = p_b_int
         area_int = area_int
         Cd = Cd
         Cd_reverse = Cd_reverse
@@ -285,8 +281,8 @@ end
     end
 
     systems = @named begin
-        port_a = HydraulicPort(; p_int = p_a_int)
-        port_b = HydraulicPort(; p_int = p_b_int)
+        port_a = HydraulicPort()
+        port_b = HydraulicPort()
     end
 
     vars = @variables begin
@@ -339,13 +335,11 @@ Valve with `area` input and discharge coefficient `Cd` defined by https://en.wik
 - `port_b`: hydraulic port
 - `area`: real input setting the valve `area`.  When `reversible = true`, negative input reverses flow direction, otherwise a floor of `minimum_area` is enforced.
 """
-@component function Valve(reversible = false; p_a_int, p_b_int,
+@component function Valve(reversible = false;
         area_int, Cd, Cd_reverse = Cd,
         minimum_area = 0,
         name)
     pars = @parameters begin
-        p_a_int = p_a_int
-        p_b_int = p_b_int
         area_int = area_int
         Cd = Cd
         Cd_reverse = Cd_reverse
@@ -353,10 +347,10 @@ Valve with `area` input and discharge coefficient `Cd` defined by https://en.wik
     end
 
     systems = @named begin
-        port_a = HydraulicPort(; p_int = p_a_int)
-        port_b = HydraulicPort(; p_int = p_b_int)
+        port_a = HydraulicPort()
+        port_b = HydraulicPort()
         area = RealInput()
-        base = ValveBase(reversible; p_a_int, p_b_int, area_int, Cd, Cd_reverse,
+        base = ValveBase(reversible; area_int, Cd, Cd_reverse,
             minimum_area)
     end
 
@@ -366,27 +360,26 @@ Valve with `area` input and discharge coefficient `Cd` defined by https://en.wik
            connect(base.port_b, port_b)
            base.area ~ area.u]
 
-    ODESystem(eqs, t, vars, pars; name, systems, defaults = [area.u => area_int])
+    ODESystem(eqs, t, vars, pars; name, systems)
 end
 
-@component function VolumeBase(; p_int, x_int = 0, area, dead_volume = 0, Χ1 = 1, Χ2 = 1,
+@component function VolumeBase(; x_int = 0, area, dead_volume = 0, Χ1 = 1, Χ2 = 1,
         name)
     pars = @parameters begin
-        p_int = p_int
         x_int = x_int
         area = area
         dead_volume = dead_volume
     end
 
     systems = @named begin
-        port = HydraulicPort(; p_int)
+        port = HydraulicPort()
     end
 
     vars = @variables begin
         x(t) = x_int
-        dx(t)
-        rho(t) = liquid_density(port)
-        drho(t)
+        dx(t), [guess=0]
+        rho(t), [guess = liquid_density(port)]
+        drho(t), [guess=0]
         vol(t) = dead_volume + area * x_int
     end
 
@@ -426,8 +419,8 @@ Fixed fluid volume.
     end
 
     vars = @variables begin
-        rho(t) = liquid_density(port)
-        drho(t)
+        rho(t), [guess = liquid_density(port)]
+        drho(t), [guess = 0]
     end
 
     # let
@@ -505,8 +498,8 @@ See also [`FixedVolume`](@ref), [`DynamicVolume`](@ref)
     end
 
     systems = @named begin
-        port = HydraulicPort(; p_int = p)
-        flange = MechanicalPort(; f, v = dx)
+        port = HydraulicPort()
+        flange = MechanicalPort()
     end
 
     eqs = [

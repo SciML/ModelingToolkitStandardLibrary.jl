@@ -1,6 +1,6 @@
 import ChainRulesCore
 
-regPow(x, a, delta = 0.01) = x * (x * x + delta * delta)^((a - 1) / 2);
+regPow(x, a, delta = 0.01) =  x * (x * x + delta * delta)^((a - 1) / 2);
 regRoot(x, delta = 0.01) = regPow(x, 0.5, delta)
 
 """
@@ -16,7 +16,7 @@ Connector port for hydraulic components.
 - `p`: [Pa] gauge total pressure
 - `dm`: [kg/s] mass flow
 """
-@connector function HydraulicPort(; p_int, name)
+@connector function HydraulicPort(; name)
     pars = @parameters begin
         ρ
         β
@@ -28,11 +28,11 @@ Connector port for hydraulic components.
     end
 
     vars = @variables begin
-        p(t) = p_int
-        dm(t), [connect = Flow]
+        p(t), [guess = 0]
+        dm(t), [guess = 0, connect = Flow]
     end
 
-    ODESystem(Equation[], t, vars, pars; name, defaults = [dm => 0])
+    ODESystem(Equation[], t, vars, pars; name)
 end
 
 """
@@ -64,14 +64,14 @@ Fluid parameter setter for isothermal compressible fluid domain.  Defaults given
     end
 
     vars = @variables begin
-        dm(t), [connect = Flow]
+        dm(t), [guess = 0, connect = Flow]
     end
 
     eqs = [
         dm ~ 0
     ]
 
-    ODESystem(eqs, t, vars, pars; name, defaults = [dm => 0])
+    ODESystem(eqs, t, vars, pars; name)
 end
 
 f_laminar(shape_factor, Re) = shape_factor * regPow(Re, -1, 0.1) #regPow used to avoid dividing by 0, min value is 0.1

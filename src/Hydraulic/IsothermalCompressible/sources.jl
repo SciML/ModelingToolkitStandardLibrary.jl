@@ -43,7 +43,7 @@ Fixed pressure source
     vars = []
 
     systems = @named begin
-        port = HydraulicPort(; p_int = p)
+        port = HydraulicPort()
     end
 
     eqs = [
@@ -66,15 +66,12 @@ input pressure source
 - `port`: hydraulic port
 - `p`: real input 
 """
-@component function Pressure(; p_int, name)
-    pars = @parameters begin
-        p_int = p_int
-    end
-
+@component function Pressure(; name)
+    pars = []
     vars = []
 
     systems = @named begin
-        port = HydraulicPort(; p_int)
+        port = HydraulicPort()
         p = RealInput()
     end
 
