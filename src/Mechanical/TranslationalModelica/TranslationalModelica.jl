@@ -10,7 +10,7 @@ using ...Blocks: RealInput, RealOutput
 export Flange
 include("utils.jl")
 
-export Fixed, Mass, Spring, Damper
+export Fixed, Mass, Spring, Damper, SpringDamper
 include("components.jl")
 
 export Force
