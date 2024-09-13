@@ -13,3 +13,34 @@ Input signal acting as external force on a flange
         flange.f ~ -f.u
     end
 end
+
+@mtkmodel Position begin
+    @extend (s,) = ptf = PartialElementaryOneFlangeAndSupport2()
+    @structural_parameters begin
+        exact = false
+    end
+    @parameters begin
+        f_crit = 50
+    end
+    @variables begin
+        v(t)
+        a(t)
+    end
+    @components begin
+        s_ref = RealInput()
+    end
+    begin
+        w_crit = 2π * f_crit
+        af = 1.3617
+        bf = 0.6180
+    end
+    @equations begin
+        if exact
+            s ~ s_ref.u
+        else
+            a ~ ((s_ref.u - s) * w_crit - af * v) * (w_crit / bf)
+        end
+        v ~ D(s)
+        a ~ D(v)
+    end
+end

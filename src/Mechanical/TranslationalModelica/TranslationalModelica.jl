@@ -13,7 +13,7 @@ include("utils.jl")
 export Fixed, Mass, Spring, Damper, SpringDamper
 include("components.jl")
 
-export Force
+export Force, Position
 include("sources.jl")
 
 end
