@@ -4,7 +4,8 @@ using ModelingToolkit: t_nounits as t, D_nounits as D
 using ModelingToolkitStandardLibrary.Blocks: Sine
 using ModelingToolkitStandardLibrary.Mechanical.TranslationalModelica: Damper, Spring, Mass,
                                                                        Fixed, Force,
-                                                                       SpringDamper
+                                                                       SpringDamper,
+                                                                       Position
 
 @testset "spring damper mass fixed" begin
     @mtkmodel SpringDamperMassFixed begin
@@ -84,4 +85,25 @@ end
     lb, ub = extrema(sol(15:0.05:20, idxs = sys.mass.v).u)
     @test -lb≈ub atol=1e-2
     @test -0.11 < lb < -0.1
+end
+
+@testset "Position source" begin
+    @mtkmodel TestPositionSource begin
+        @components begin
+            p1 = Position(exact = true)
+            source = Sine(frequency = 3, amplitude = 2)
+            mass = Mass(m = 1, v = 1, s = 0)
+        end
+
+        @equations begin
+            connect(source.output, p1.s_ref)
+            connect(p1.flange, mass.flange_a)
+        end
+    end
+
+    @mtkbuild sys = TestPositionSource()
+    prob = ODEProblem(sys, [], (0, 2pi))
+    sol = solve(prob, Rodas4())
+    tv = 0:0.1:(2pi)
+    @test sol(tv, idxs = sys.mass.s)≈@.(2sin(2pi * tv * 3)) atol=1e-2
 end
