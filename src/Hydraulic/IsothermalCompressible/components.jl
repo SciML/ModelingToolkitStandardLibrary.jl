@@ -54,7 +54,7 @@ Provides an "open" boundary condition for a hydraulic port such that mass flow `
 end
 
 """
-    TubeBase(add_inertia = true; p_int, area, length_int, head_factor = 1, perimeter = 2 * sqrt(area * pi), shape_factor = 64, name)
+    TubeBase(add_inertia = true; area, length_int, head_factor = 1, perimeter = 2 * sqrt(area * pi), shape_factor = 64, name)
 
 Variable length internal flow model of the fully developed incompressible flow friction.  Includes optional inertia term when `add_inertia = true` to model wave propagation.  Hydraulic ports have equal flow but variable pressure.  Density is averaged over the pressures, used to calculated average flow velocity and flow friction.
 
@@ -63,7 +63,6 @@ Variable length internal flow model of the fully developed incompressible flow f
 - `ddm`: [kg/s^2] Rate of change of mass flow rate in control volume.
 
 # Parameters:
-- `p_int`: [Pa] initial pressure
 - `area`: [m^2] tube cross sectional area
 - `length_int`: [m] initial tube length
 - `perimeter`: [m] perimeter of the pipe cross section (needed only for non-circular pipes)
@@ -145,12 +144,11 @@ Variable length internal flow model of the fully developed incompressible flow f
 end
 
 """
-    Tube(N, add_inertia=true; p_int, area, length, head_factor=1, perimeter = 2 * sqrt(area * pi), shape_factor = 64, name)
+    Tube(N, add_inertia=true; area, length, head_factor=1, perimeter = 2 * sqrt(area * pi), shape_factor = 64, name)
 
 Constant length internal flow model discretized by `N` (`FixedVolume`: `N`, `TubeBase`:`N-1`) which models the fully developed flow friction, compressibility (when `N>1`), and inertia effects when `add_inertia = true`.  See `TubeBase` and `FixedVolume` for more information.
 
 # Parameters:
-- `p_int`: [Pa] initial pressure
 - `area`: [m^2] tube cross sectional area
 - `length`: [m] real length of the tube
 - `perimeter`: [m] perimeter of the pipe cross section (needed only for non-circular pipes)
@@ -198,7 +196,7 @@ Constant length internal flow model discretized by `N` (`FixedVolume`: `N`, `Tub
     for i in 1:(N - 1)
         x = TubeBase(add_inertia; name = Symbol("p$i"),
             shape_factor = ParentScope(shape_factor),
-            p_int = ParentScope(p_int), area = ParentScope(area),
+            area = ParentScope(area),
             length_int = ParentScope(length) / (N - 1),
             head_factor = ParentScope(head_factor),
             perimeter = ParentScope(perimeter))
@@ -208,8 +206,7 @@ Constant length internal flow model discretized by `N` (`FixedVolume`: `N`, `Tub
     volumes = []
     for i in 1:N
         x = FixedVolume(; name = Symbol("v$i"),
-            vol = ParentScope(area) * ParentScope(length) / N,
-            p_int = ParentScope(p_int))
+            vol = ParentScope(area) * ParentScope(length) / N)
         push!(volumes, x)
     end
 
@@ -397,29 +394,27 @@ end
 end
 
 """
-    FixedVolume(; vol, p_int, name)
+    FixedVolume(; vol, name)
 
 Fixed fluid volume.
 
 # Parameters:
 - `vol`: [m^3] fixed volume
-- `p_int`: [Pa] initial pressure
 
 # Connectors:
 - `port`: hydraulic port
 """
-@component function FixedVolume(; vol, p_int, name)
+@component function FixedVolume(; vol, name)
     pars = @parameters begin
-        p_int = p_int
         vol = vol
     end
 
     systems = @named begin
-        port = HydraulicPort(; p_int)
+        port = HydraulicPort(;)
     end
 
     vars = @variables begin
-        rho(t), [guess = liquid_density(port)]
+        rho(t)#, [guess = liquid_density(port)]
         drho(t), [guess = 0]
     end
 

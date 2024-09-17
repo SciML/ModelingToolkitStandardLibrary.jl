@@ -55,12 +55,9 @@ end
 @deprecate Source FixedPressure
 
 """
-    Pressure(; p_int, name)
+    Pressure(; name)
 
 input pressure source
-
-# Parameters:
-- `p_int`: [Pa] initial pressure (set by `p_int` argument)
 
 # Connectors:
 - `port`: hydraulic port
