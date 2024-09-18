@@ -414,7 +414,7 @@ Fixed fluid volume.
     end
 
     vars = @variables begin
-        rho(t)#, [guess = liquid_density(port)]
+        rho(t), [guess = liquid_density(port)]
         drho(t), [guess = 0]
     end
 

@@ -17,7 +17,7 @@ NEWTON = NLNewton(check_div = false, always_new = true, max_iter = 100, relax = 
         systems = @named begin
             fluid = IC.HydraulicFluid(; bulk_modulus)
             stp = B.Step(; height = 2*101325, offset = 101325, start_time = 0.05, duration = Inf,
-                smooth = true)
+                smooth = false)
             src = IC.Pressure(;)
             vol = IC.FixedVolume(; vol = 10.0)
             res = IC.Tube(N; area = 0.01, length = 50.0)
@@ -33,7 +33,7 @@ NEWTON = NLNewton(check_div = false, always_new = true, max_iter = 100, relax = 
 
     @named sys1_2 = System(1; bulk_modulus = 2e9)
     @named sys1_1 = System(1; bulk_modulus = 1e7)
-    @named sys5_1 = System(5; bulk_modulus = 1e9)
+    @named sys5_1 = System(2; bulk_modulus = 1e9)
 
 #    syss = structural_simplify.([sys1_2, sys1_1, sys5_1])
 
@@ -46,18 +46,19 @@ NEWTON = NLNewton(check_div = false, always_new = true, max_iter = 100, relax = 
     initsys1_1 = structural_simplify(initsys1_1)
     initprob1_1 = NonlinearProblem(initsys1_1, [t=>0])
     initsol1_1 = solve(initprob1_1)
-    initsol1_1[sys.src.port.p]
-    initsol1_1[sys.src.port.dm]
-    initsol1_1[sys.vol.port.p]
+    initsol1_1[sys1_1.src.port.p]
+    initsol1_1[sys1_1.src.port.dm]
+    initsol1_1[sys1_1.vol.port.p]
 #    probs = [ODEProblem(sys, ModelingToolkit.missing_variable_defaults(sys), (0, 0.05))
 #             for sys in syss] #
-    prob1_1 = ODEProblem(sys1_1, ModelingToolkit.missing_variable_defaults(sys), (0, 1.05))
+#    prob1_1 = ODEProblem(sys1_1, ModelingToolkit.missing_variable_defaults(sys), (0, 1.05))
+    prob1_1 = ODEProblem(sys1_1, [], (0, 50); initialization_eqs)
               #
 
 #    sols = [solve(prob, ImplicitEuler(nlsolve = NEWTON); dt = 1e-4, adaptive = false)
 #            for prob in probs]
 
-    sol1_1 = solve(prob1_1, ImplicitEuler(nlsolve = NEWTON); dt = 1e-4, adaptive = false)
+    sol1_1 = solve(prob1_1)
 
 #    s1_2 = complete(sys1_2)
     s1_1 = complete(sys1_1)
@@ -65,32 +66,32 @@ NEWTON = NLNewton(check_div = false, always_new = true, max_iter = 100, relax = 
 
 # system 1_2
     sys1_2 = structural_simplify(sys1_2)
-    initialization_eqs = [sys1_2.vol.port.p ~ 101800, sys1_2.res.port_a.dm ~ 0]
+    initialization_eqs = [sys1_2.vol.port.p ~ 101325, sys1_2.res.port_a.dm ~ 0]
     initsys1_2 = ModelingToolkit.generate_initializesystem(sys1_2;initialization_eqs)
 
     initsys1_2 = structural_simplify(initsys1_2)
     initprob1_2 = NonlinearProblem(initsys1_2, [t=>0])
     initsol1_2 = solve(initprob1_2)
 
-    prob1_2 = ODEProblem(sys1_2, ModelingToolkit.missing_variable_defaults(sys), (0, 1.05))
-    sol1_2 = solve(prob1_2, ImplicitEuler(nlsolve = NEWTON); dt = 1e-4, adaptive = false)
+    prob1_2 = ODEProblem(sys1_2, [], (0, 50); initialization_eqs)
+    sol1_2 = solve(prob1_2)
     s1_2 = complete(sys1_2)
 # system 5-1
 
     sys5_1 = structural_simplify(sys5_1)
-    initialization_eqs = [sys5_1.vol.port.p ~ 101325,sys5_1.res.p1.port_a.dm ~ 0, 
-    sys5_1.res.p2.port_a.dm ~ 0,sys5_1.res.p3.port_a.dm ~ 0, sys5_1.res.p4.port_a.dm ~ 0,
-    sys5_1.res.p1.port_a.p ~ 101325,
-    sys5_1.res.p2.port_a.p ~ 101325,
-    sys5_1.src.port.dm~0]
+#    initialization_eqs = [sys5_1.vol.port.p ~ 101325,sys5_1.res.p1.port_a.dm ~ 0,
+#                        sys5_1.res.v2.port.p ~ 101325,sys5_1.res.v2.port.dm ~ 0,
+#                        sys5_1.res.v3.port.p ~ 101325,sys5_1.res.v3.port.dm ~ 0,
+#                        sys5_1.res.v4.port.p ~ 101325,sys5_1.res.v4.port.dm ~ 0]
+   initialization_eqs = [sys5_1.vol.port.p ~ 101325,sys5_1.res.p1.port_a.dm ~ 0]
     initsys5_1 = ModelingToolkit.generate_initializesystem(sys5_1;initialization_eqs)
 
     initsys5_1 = structural_simplify(initsys5_1)
     initprob5_1 = NonlinearProblem(initsys5_1, [t=>0])
     initsol5_1 = solve(initprob5_1)
 
-    prob5_1 = ODEProblem(sys5_1, ModelingToolkit.missing_variable_defaults(sys), (0, 0.05))
-    sol5_1 = solve(prob5_1, ImplicitEuler(nlsolve = NEWTON); dt = 1e-4, adaptive = false)
+    prob5_1 = ODEProblem(sys5_1, [], (0, 50); initialization_eqs)
+    sol5_1 = solve(prob5_1) # This model is unstable whether N=1 or N = 5
     s5_1 = complete(sys5_1)
 
     # higher stiffness should compress more quickly and give a higher pressure
@@ -99,14 +100,17 @@ NEWTON = NLNewton(check_div = false, always_new = true, max_iter = 100, relax = 
     # N=5 pipe is compressible, will pressurize more slowly
     @test sols[2][s1_1.vol.port.p][end] > sols[3][s5_1.vol.port.p][end]
 
+    using CairoMakie
      fig = Figure()
      ax = Axis(fig[1,1])
      # hlines!(ax, 10e5)
     #  lines!(ax, sols[1][s1_2.vol.port.p])
     # lines!(ax, sols[2][s1_1.vol.port.p])
     # lines!(ax, sols[3][s5_1.vol.port.p])
-    lines!(ax, sol1_1[s1_1.vol.rho])
-    lines!(ax, sol1_2[s1_2.vol.rho])
+    #lines!(ax, sol1_1.t, sol1_1[s1_1.vol.port.p])
+    #lines!(ax, sol1_2.t,sol1_2[s1_2.vol.port.p])
+    lines!(ax, sol5_1.t,sol5_1[s5_1.vol.port.p])
+    #lines!(ax, sol1_2[s1_2.vol.rho])
      fig
 
 #end
