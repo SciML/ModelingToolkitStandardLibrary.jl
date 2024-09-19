@@ -206,7 +206,7 @@ end
     sys.vol2.p1.port_b.p ~ 101325,sys.vol1.p1.port_b.p ~ 101325, 
     sys.mass.flange.v ~ 0,sys.mass.flange.f ~ 0,sys.vol2.moving_volume.x ~ 0]
     initsys = ModelingToolkit.generate_initializesystem(sys;initialization_eqs)
-    initsys = structural_simplify(initsys)
+    initsys = structural_simplify(initsys)  # Error: Structurally Singular
     initprob = NonlinearProblem(initsys, [t=>0])
     initsol = solve(initprob)
 
