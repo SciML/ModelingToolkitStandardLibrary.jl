@@ -268,10 +268,8 @@ Reduces the flow from `port_a` to `port_b` by `n`.  Useful for modeling parallel
     ODESystem(eqs, t, vars, pars; name, systems)
 end
 
-@component function ValveBase(reversible = false; minimum_area = 0,
-        area_int, Cd, Cd_reverse = Cd, name)
+@component function ValveBase(reversible = false; minimum_area = 0, Cd, Cd_reverse = Cd, name)
     pars = @parameters begin
-        area_int = area_int
         Cd = Cd
         Cd_reverse = Cd_reverse
         minimum_area = minimum_area
@@ -283,8 +281,8 @@ end
     end
 
     vars = @variables begin
-        area(t) = area_int
-        y(t) = area_int
+        area(t) 
+        y(t)
     end
 
     # let
@@ -333,11 +331,10 @@ Valve with `area` input and discharge coefficient `Cd` defined by https://en.wik
 - `area`: real input setting the valve `area`.  When `reversible = true`, negative input reverses flow direction, otherwise a floor of `minimum_area` is enforced.
 """
 @component function Valve(reversible = false;
-        area_int, Cd, Cd_reverse = Cd,
+        Cd, Cd_reverse = Cd,
         minimum_area = 0,
         name)
     pars = @parameters begin
-        area_int = area_int
         Cd = Cd
         Cd_reverse = Cd_reverse
         minimum_area = minimum_area
@@ -347,7 +344,7 @@ Valve with `area` input and discharge coefficient `Cd` defined by https://en.wik
         port_a = HydraulicPort()
         port_b = HydraulicPort()
         area = RealInput()
-        base = ValveBase(reversible; area_int, Cd, Cd_reverse,
+        base = ValveBase(reversible; Cd, Cd_reverse,
             minimum_area)
     end
 
@@ -360,10 +357,9 @@ Valve with `area` input and discharge coefficient `Cd` defined by https://en.wik
     ODESystem(eqs, t, vars, pars; name, systems)
 end
 
-@component function VolumeBase(; x_int = 0, area, dead_volume = 0, Χ1 = 1, Χ2 = 1,
-        name)
+@component function VolumeBase(; area, dead_volume = 0, Χ1 = 1, Χ2 = 1,
+        name) # x_int = 0, 
     pars = @parameters begin
-        x_int = x_int
         area = area
         dead_volume = dead_volume
     end
@@ -373,11 +369,11 @@ end
     end
 
     vars = @variables begin
-        x(t) = x_int
+        x(t) 
         dx(t), [guess=0]
         rho(t), [guess = liquid_density(port)]
         drho(t), [guess=0]
-        vol(t) = dead_volume + area * x_int
+        vol(t) # = dead_volume + area * x_int
     end
 
     # let
@@ -468,12 +464,6 @@ dm ────►               │  │ area
 See also [`FixedVolume`](@ref), [`DynamicVolume`](@ref)
 """
 @component function Volume(;
-        #initial conditions
-        x,
-        dx = 0,
-        p,
-        drho = 0,
-        dm = 0,
 
         #parameters
         area,
@@ -483,13 +473,13 @@ See also [`FixedVolume`](@ref), [`DynamicVolume`](@ref)
     end
 
     vars = @variables begin
-        x(t) = x
-        dx(t) = dx
-        p(t) = p
-        f(t) = p * area
+        x(t)
+        dx(t)
+        p(t)
+        f(t)
         rho(t)
-        drho(t) = drho
-        dm(t) = dm
+        drho(t)
+        dm(t)
     end
 
     systems = @named begin
@@ -539,9 +529,7 @@ dm ────►               │  │ area
 
 # Parameters:
 ## volume
-- `p_int`: [Pa] initial pressure
 - `area`: [m^2] moving wall area
-- `x_int`: [m] initial wall position
 - `x_max`: [m] max wall position, needed for volume discretization to apply the correct volume sizing as a function of `x`
 - `x_min`: [m] wall position that shuts off flow and prevents negative volume.
 - `x_damp`: [m] wall position that initiates a linear damping region before reaching full flow shut off.  Helps provide a smooth end stop.
@@ -563,9 +551,9 @@ dm ────►               │  │ area
 - `flange`: mechanical translational port
 """
 @component function DynamicVolume(N, add_inertia = true, reversible = false;
-        p_int,
+     #   p_int,
         area,
-        x_int = 0,
+    #    x_int = 0,
         x_max,
         x_min = 0,
         x_damp = x_min,
@@ -587,10 +575,10 @@ dm ────►               │  │ area
 
     #TODO: How to set an assert effective_length >= length ??
     pars = @parameters begin
-        p_int = p_int
+    #    p_int = p_int
         area = area
 
-        x_int = x_int
+    #    x_int = x_int
         x_max = x_max
         x_min = x_min
         x_damp = x_damp
@@ -606,15 +594,12 @@ dm ────►               │  │ area
         minimum_area = minimum_area
     end
 
-    vars = @variables x(t)=x_int vol(t)=x_int * area
+    vars = @variables x(t) vol(t)
 
     ports = @named begin
-        port = HydraulicPort(; p_int)
-        flange = MechanicalPort(; f = -direction * p_int * area)
+        port = HydraulicPort(;)
+        flange = MechanicalPort(;)
         damper = ValveBase(reversible;
-            p_a_int = p_int,
-            p_b_int = p_int,
-            area_int = 1,
             Cd,
             Cd_reverse,
             minimum_area)
@@ -624,7 +609,7 @@ dm ────►               │  │ area
     for i in 1:N
         comp = TubeBase(add_inertia; name = Symbol("p$i"),
             shape_factor = ParentScope(shape_factor),
-            p_int = ParentScope(p_int), area = ParentScope(area),
+            area = ParentScope(area),
             length_int = 0, #set in equations
             head_factor = ParentScope(head_factor),
             perimeter = ParentScope(perimeter))
@@ -634,12 +619,11 @@ dm ────►               │  │ area
     #TODO: How to handle x_int?
     #TODO: Handle direction
     @named moving_volume = VolumeBase(;
-        p_int,
-        x_int = 0,
+    #    x_int = 0,
         area,
-        dead_volume = N == 0 ? area * x_int : 0,
+        dead_volume = N == 0 ? area * x_min : 0,
         Χ1 = N == 0 ? 1 : 0,
-        Χ2 = 1)
+        Χ2 = 1) # changed x_int to x_min
 
     ratio = (x - x_min) / (x_damp - x_min)
 
@@ -657,7 +641,7 @@ dm ────►               │  │ area
     volumes = []
     if N > 0
         Δx = ParentScope(x_max) / N
-        x₀ = ParentScope(x_int)
+       x₀ = ParentScope(x) # x_int
 
         for i in 1:N
             length = ifelse(x₀ > Δx * i,
@@ -666,8 +650,8 @@ dm ────►               │  │ area
                     x₀ - Δx * (i - 1),
                     zero(Δx)))
 
-            comp = VolumeBase(; name = Symbol("v$i"), p_int = ParentScope(p_int),
-                x_int = 0,
+            comp = VolumeBase(; name = Symbol("v$i"),
+            #    x_int = 0,
                 area = ParentScope(area),
                 dead_volume = ParentScope(area) * length, Χ1 = 1, Χ2 = 0)
 
@@ -720,25 +704,21 @@ Spool valve with `x` valve opening input as mechanical flange port and `d` diame
 
 See [`Valve`](@ref) for more information.
 """
-@component function SpoolValve(reversible = false; p_a_int, p_b_int, x_int, Cd, d, name)
+@component function SpoolValve(reversible = false; Cd, d, name)
     pars = @parameters begin
-        p_a_int = p_a_int
-        p_b_int = p_b_int
         d = d
-        x_int = x_int
         Cd = Cd
     end
 
     systems = @named begin
-        port_a = HydraulicPort(; p_int = p_a_int)
-        port_b = HydraulicPort(; p_int = p_b_int)
+        port_a = HydraulicPort(; )
+        port_b = HydraulicPort(; )
         flange = MechanicalPort()
-        valve = ValveBase(reversible; p_a_int, p_b_int,
-            area_int = ParentScope(x_int) * 2π * ParentScope(d), Cd)
+        valve = ValveBase(reversible; Cd)
     end
 
     vars = @variables begin
-        x(t) = x_int
+        x(t) 
         dx(t)
     end
 
@@ -777,18 +757,11 @@ end
 
 See [`SpoolValve`](@ref) for more information.
 """
-@component function SpoolValve2Way(reversible = false; p_s_int, p_a_int, p_b_int, p_r_int,
-        m, g, x_int, Cd, d, name)
+@component function SpoolValve2Way(reversible = false; m, g, Cd, d, name)
     pars = @parameters begin
-        p_s_int = p_s_int
-        p_a_int = p_a_int
-        p_b_int = p_b_int
-        p_r_int = p_r_int
 
         m = m
         g = g
-
-        x_int = x_int
 
         d = d
 
@@ -798,13 +771,13 @@ See [`SpoolValve`](@ref) for more information.
     vars = []
 
     systems = @named begin
-        vSA = SpoolValve(reversible; p_a_int = p_s_int, p_b_int = p_a_int, x_int, Cd, d)
-        vBR = SpoolValve(reversible; p_a_int = p_b_int, p_b_int = p_r_int, x_int, Cd, d)
+        vSA = SpoolValve(reversible; Cd, d)
+        vBR = SpoolValve(reversible; Cd, d)
 
-        port_s = HydraulicPort(; p_int = p_s_int)
-        port_a = HydraulicPort(; p_int = p_a_int)
-        port_b = HydraulicPort(; p_int = p_b_int)
-        port_r = HydraulicPort(; p_int = p_r_int)
+        port_s = HydraulicPort(; )
+        port_a = HydraulicPort(; )
+        port_b = HydraulicPort(; )
+        port_r = HydraulicPort(; )
 
         mass = Mass(; m = m, g = g)
 
@@ -888,21 +861,17 @@ Actuator made of two DynamicVolumes connected in opposite direction with body ma
 - `flange`: mechanical translational port
 """
 @component function Actuator(N, add_inertia = true, reversible = false;
-        p_a_int,
-        p_b_int,
+        total_length,
         area_a,
         area_b,
         perimeter_a = 2 * sqrt(area_a * pi),
         perimeter_b = 2 * sqrt(area_b * pi),
-        length_a_int,
-        length_b_int,
         shape_factor_a = 64,
         shape_factor_b = 64,
         head_factor_a = 1,
         head_factor_b = 1,
         m,
         g,
-        x_int = 0,
         minimum_volume_a = 0,
         minimum_volume_b = 0,
         damping_volume_a = minimum_volume_a,
@@ -911,8 +880,6 @@ Actuator made of two DynamicVolumes connected in opposite direction with body ma
         Cd_reverse = Cd,
         name)
     pars = @parameters begin
-        p_a_int = p_a_int
-        p_b_int = p_b_int
         area_a = area_a
         area_b = area_b
         perimeter_a = perimeter_a
@@ -921,9 +888,6 @@ Actuator made of two DynamicVolumes connected in opposite direction with body ma
         shape_factor_b = shape_factor_b
         head_factor_a = head_factor_a
         head_factor_b = head_factor_b
-        x_int = x_int
-        length_a_int = length_a_int
-        length_b_int = length_b_int
         minimum_volume_a = minimum_volume_a
         minimum_volume_b = minimum_volume_b
         damping_volume_a = damping_volume_a
@@ -935,18 +899,16 @@ Actuator made of two DynamicVolumes connected in opposite direction with body ma
     end
 
     vars = @variables begin
-        x(t) = x_int
+        x(t) 
         dx(t)
     end
 
-    total_length = length_a_int + length_b_int
+#    total_length = length_a_int + length_b_int # Need parameters to define the total length.
 
     #TODO: include effective_length
     systems = @named begin
         vol_a = DynamicVolume(N, add_inertia, reversible; direction = +1,
-            p_int = p_a_int,
             area = area_a,
-            x_int = length_a_int,
             x_max = total_length,
             x_min = minimum_volume_a / area_a,
             x_damp = damping_volume_a / area_a,
@@ -957,9 +919,7 @@ Actuator made of two DynamicVolumes connected in opposite direction with body ma
             Cd_reverse)
 
         vol_b = DynamicVolume(N, add_inertia, reversible; direction = -1,
-            p_int = p_b_int,
             area = area_b,
-            x_int = length_b_int,
             x_max = total_length,
             x_min = minimum_volume_b / area_b,
             x_damp = damping_volume_b / area_b,
@@ -969,8 +929,8 @@ Actuator made of two DynamicVolumes connected in opposite direction with body ma
             Cd,
             Cd_reverse)
         mass = Mass(; m, g)
-        port_a = HydraulicPort(; p_int = p_a_int)
-        port_b = HydraulicPort(; p_int = p_b_int)
+        port_a = HydraulicPort(; )
+        port_b = HydraulicPort(; )
         flange = MechanicalPort()
     end
 
