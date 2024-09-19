@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Sign Convention · ModelingToolkitStandardLibrary.jl</title><meta name="title" content="Sign Convention · ModelingToolkitStandardLibrary.jl"/><meta property="og:title" content="Sign Convention · ModelingToolkitStandardLibrary.jl"/><meta property="twitter:title" content="Sign Convention · ModelingToolkitStandardLibrary.jl"/><meta name="description" content="Documentation for ModelingToolkitStandardLibrary.jl."/><meta property="og:description" content="Documentation for ModelingToolkitStandardLibrary.jl."/><meta property="twitter:description" content="Documentation for ModelingToolkitStandardLibrary.jl."/><meta property="og:url" content="https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/connectors/sign_convention/"/><meta property="twitter:url" content="https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/connectors/sign_convention/"/><link rel="canonical" href="https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/connectors/sign_convention/"/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script><link href="../../assets/favicon.ico" rel="icon" type="image/x-icon"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img src="../../assets/logo.png" alt="ModelingToolkitStandardLibrary.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">ModelingToolkitStandardLibrary.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">ModelingToolkitStandardLibrary.jl: A Standard Library for ModelingToolkit</a></li><li><span class="tocitem">Tutorials</span><ul><li><a class="tocitem" href="../../tutorials/rc_circuit/">RC Circuit</a></li><li><a class="tocitem" href="../../tutorials/custom_component/">Custom Components</a></li><li><a class="tocitem" href="../../tutorials/thermal_model/">Thermal Conduction Model</a></li><li><a class="tocitem" href="../../tutorials/dc_motor_pi/">DC Motor with Speed Controller</a></li><li><a class="tocitem" href="../../tutorials/input_component/">SampledData Component</a></li></ul></li><li><span class="tocitem">About Acausal Connections</span><ul><li><a class="tocitem" href="../connections/">Theory</a></li><li class="is-active"><a class="tocitem" href>Sign Convention</a><ul class="internal"><li class="toplevel"><a class="tocitem" href="#Discussion"><span>Discussion</span></a></li><li><a class="tocitem" href="#Mechanical"><span>Mechanical</span></a></li><li><a class="tocitem" href="#Electrical"><span>Electrical</span></a></li><li><a class="tocitem" href="#Hydraulic"><span>Hydraulic</span></a></li></ul></li></ul></li><li><span class="tocitem">API</span><ul><li><a class="tocitem" href="../../API/blocks/">Basic Blocks</a></li><li><a class="tocitem" href="../../API/electrical/">Electrical Components</a></li><li><a class="tocitem" href="../../API/magnetic/">Magnetic Components</a></li><li><a class="tocitem" href="../../API/mechanical/">Mechanical Components</a></li><li><a class="tocitem" href="../../API/thermal/">Thermal Components</a></li><li><a class="tocitem" href="../../API/hydraulic/">Hydraulic Components</a></li><li><a class="tocitem" href="../../API/linear_analysis/">Linear Analysis</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">About Acausal Connections</a></li><li class="is-active"><a href>Sign Convention</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Sign Convention</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/SciML/ModelingToolkitStandardLibrary.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/SciML/ModelingToolkitStandardLibrary.jl/blob/main/docs/src/connectors/sign_convention.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Sign-Convention"><a class="docs-heading-anchor" href="#Sign-Convention">Sign Convention</a><a id="Sign-Convention-1"></a><a class="docs-heading-anchor-permalink" href="#Sign-Convention" title="Permalink"></a></h1><p>A sign convention is recommended for this library that implements the following rule:</p><blockquote><p>An input component that specifies the <em>through</em> variable should be such that an oppossite equality is written such that when connected to a conserved quantity component (i.e. a mass or capacitor component) a positive value for a flow variable represents the accumulation of that conserved quantity over time in the component.</p></blockquote><p>Note: that this implements the same convention as applied in Modelica Standard Library.</p><p>For example, the following would be the <em>correct</em> sign convention for the <code>Mechanical.Translational</code> force variable <code>f</code></p><pre><code class="language-julia hljs">@mtkmodel ConstantForce begin
+    @parameters begin
+        f = 0
+    end
+    @components begin
+        flange = MechanicalPort()
+    end
+    @equations begin
+        # connectors
+        flange.f ~ -f # &lt;-- force is leaving
+    end
+end</code></pre><p>And writing the following would be the <em>incorrect</em> sign convention.</p><pre><code class="language-julia hljs">@equations begin
+    # connectors
+    flange.f ~ f # &lt;-- wrong through variable input sign!
+end</code></pre><p>&lt;!– To visualize the sign convention, one can draw the orientation of the connector port <em>across</em> and <em>through</em> variables and the subsequent component variables.  For example, the <code>Mechanical.Translation</code> mass component would look like</p><p><img src="../mass.svg" alt="mass"/></p><p>In this case we know from Newton that mass times acceleration equals force, therefore the direction of movement is in the opposite direction of the force.  In other words, if we push the mass from left to right (i.e. in the positive direction), then the mass will generate a force in the negative direction.  This would be the general rule for a single port component of any domain.  The exception is for a <em>through</em> variable <strong>input</strong> component, which should align the component and port connection <em>through</em> variables.  For example, a force input diagram would look like this:</p><p><img src="../force_input.svg" alt="force"/></p><p>For a 2 port connection component, then the <em>through</em> variable is exiting each connection port in opposing directions.  Using a damper as an example, if the positive direction is to the right, then the force of the damper is pushing left (i.e. in the negative direction) on connection port <code>a</code> and right (positive direction) on connection port <code>b</code>.</p><p><img src="../damper.svg" alt="damper"/> –&gt;</p><h1 id="Discussion"><a class="docs-heading-anchor" href="#Discussion">Discussion</a><a id="Discussion-1"></a><a class="docs-heading-anchor-permalink" href="#Discussion" title="Permalink"></a></h1><p>The energy dissipation equation that governs the acausal connection definitions should be such that a positive <em>through</em> variable input will lead to an increasing <em>across</em> variable value.</p><p class="math-container">\[\frac{\partial \blue across}{\partial t} = \text{ {\green through} input}\]</p><p>This is demonstrated in the following domains of <code>Mechanical</code>, <code>Electrical</code>, and <code>Hydraulic</code>.</p><h2 id="Mechanical"><a class="docs-heading-anchor" href="#Mechanical">Mechanical</a><a id="Mechanical-1"></a><a class="docs-heading-anchor-permalink" href="#Mechanical" title="Permalink"></a></h2><p>The flow variable (i.e. force) input component for the <code>Mechanical</code> domain is</p><pre><code class="language-julia hljs">using ModelingToolkit
+using ModelingToolkitStandardLibrary.Mechanical.Translational
+using ModelingToolkit: t_nounits as t
+
+@mtkmodel ConstantForce begin
+    @parameters begin
+        f
+    end
+    @components begin
+        flange = MechanicalPort()
+    end
+    @equations begin
+        # connectors
+        flange.f ~ -f
+    end
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ModelingToolkit.Model{typeof(Main.__ConstantForce__), Dict{Symbol, Any}}(Main.__ConstantForce__, Dict{Symbol, Any}(:components =&gt; Any[Union{Expr, Symbol}[:flange, :MechanicalPort]], :kwargs =&gt; Dict{Symbol, Dict}(:f =&gt; Dict{Symbol, Union{Nothing, DataType}}(:value =&gt; nothing, :type =&gt; Real)), :independent_variable =&gt; t, :parameters =&gt; Dict{Symbol, Dict{Symbol, Any}}(:f =&gt; Dict(:type =&gt; Real)), :equations =&gt; Any[&quot;flange.f ~ -f&quot;]), false)</code></pre><p>Here we can see that a positive input force results in an increasing velocity.</p><pre><code class="language-julia hljs">@mtkmodel System begin
+    @components begin
+        mass = Mass(; m = 10)
+        force = ConstantForce(; f = 1)
+    end
+    @equations begin
+        connect(mass.flange, force.flange)
+    end
+end
+@mtkbuild sys = System()
+full_equations(sys)</code></pre><p class="math-container">\[ \begin{align}
+\frac{\mathrm{d} mass_{+}v\left( t \right)}{\mathrm{d}t} &amp;= \frac{force_{+}f}{mass_{+}m}
+\end{align}
+ \]</p><h2 id="Electrical"><a class="docs-heading-anchor" href="#Electrical">Electrical</a><a id="Electrical-1"></a><a class="docs-heading-anchor-permalink" href="#Electrical" title="Permalink"></a></h2><p>The flow variable (i.e. current) input component for the <code>Electrical</code> domain is</p><pre><code class="language-julia hljs">using ModelingToolkitStandardLibrary.Electrical
+
+@mtkmodel ConstantCurrent begin
+    @parameters begin
+        i
+    end
+    @components begin
+        p = Pin()
+        n = Pin()
+    end
+    @equations begin
+        0 ~ p.i + n.i
+        i ~ -n.i # can also be written as i ~ p.i
+    end
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ModelingToolkit.Model{typeof(Main.__ConstantCurrent__), Dict{Symbol, Any}}(Main.__ConstantCurrent__, Dict{Symbol, Any}(:components =&gt; Any[Union{Expr, Symbol}[:p, :Pin], Union{Expr, Symbol}[:n, :Pin]], :kwargs =&gt; Dict{Symbol, Dict}(:i =&gt; Dict{Symbol, Union{Nothing, DataType}}(:value =&gt; nothing, :type =&gt; Real)), :independent_variable =&gt; t, :parameters =&gt; Dict{Symbol, Dict{Symbol, Any}}(:i =&gt; Dict(:type =&gt; Real)), :equations =&gt; Any[&quot;0 ~ p.i + n.i&quot;, &quot;0 ~ p.i + n.i&quot;, &quot;i ~ -(n.i)&quot;]), false)</code></pre><p>Here we can see that a positive input current results in an increasing voltage. Note that the electrical domain uses pins <code>p</code> and <code>n</code> at each side of the source and energy storage components.  The direction of connection is not important here, only that a positive connector <code>p</code> connects with a negative connector <code>n</code>.</p><pre><code class="language-julia hljs">@mtkmodel System begin
+    @components begin
+        capacitor = Capacitor(; C = 10)
+        current = ConstantCurrent(; i = 1)
+        ground = Ground()
+    end
+    @equations begin
+        connect(current.n, capacitor.p)
+        connect(capacitor.n, current.p, ground.g)
+    end
+end
+@mtkbuild sys = System()
+full_equations(sys)</code></pre><p class="math-container">\[ \begin{align}
+\frac{\mathrm{d} capacitor_{+}v\left( t \right)}{\mathrm{d}t} &amp;= \frac{current_{+}i}{capacitor_{+}C}
+\end{align}
+ \]</p><p>Reversing the pins gives the same result</p><pre><code class="language-julia hljs">@mtkmodel System begin
+    @components begin
+        capacitor = Capacitor(; C = 10)
+        current = ConstantCurrent(; i = 1)
+        ground = Ground()
+    end
+    @equations begin
+        connect(current.p, capacitor.n)
+        connect(capacitor.p, current.n, ground.g)
+    end
+end
+@mtkbuild sys = System()
+full_equations(sys)</code></pre><p class="math-container">\[ \begin{align}
+\frac{\mathrm{d} capacitor_{+}v\left( t \right)}{\mathrm{d}t} &amp;= \frac{current_{+}i}{capacitor_{+}C}
+\end{align}
+ \]</p><h2 id="Hydraulic"><a class="docs-heading-anchor" href="#Hydraulic">Hydraulic</a><a id="Hydraulic-1"></a><a class="docs-heading-anchor-permalink" href="#Hydraulic" title="Permalink"></a></h2><p>The flow variable (i.e. mass flow) input component for the <code>Hydraulic</code> domain is</p><pre><code class="language-julia hljs">using ModelingToolkitStandardLibrary.Hydraulic.IsothermalCompressible
+
+@mtkmodel ConstantMassFlow begin
+    @parameters begin
+        p_int
+        dm
+    end
+    @components begin
+        port = HydraulicPort(; p_int)
+    end
+    @equations begin
+        port.dm ~ -dm
+    end
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ModelingToolkit.Model{typeof(Main.__ConstantMassFlow__), Dict{Symbol, Any}}(Main.__ConstantMassFlow__, Dict{Symbol, Any}(:components =&gt; Any[Union{Expr, Symbol}[:port, :HydraulicPort]], :kwargs =&gt; Dict{Symbol, Dict}(:p_int =&gt; Dict{Symbol, Union{Nothing, DataType}}(:value =&gt; nothing, :type =&gt; Real), :dm =&gt; Dict{Symbol, Union{Nothing, DataType}}(:value =&gt; nothing, :type =&gt; Real)), :independent_variable =&gt; t, :parameters =&gt; Dict{Symbol, Dict{Symbol, Any}}(:p_int =&gt; Dict(:type =&gt; Real), :dm =&gt; Dict(:type =&gt; Real)), :equations =&gt; Any[&quot;port.dm ~ -dm&quot;]), false)</code></pre><p>A positive input mass flow leads to an increasing pressure (in this case we get increasing density (<code>rho</code>), which is directly related to an increasing pressure).</p><pre><code class="language-julia hljs">@mtkmodel System begin
+    @components begin
+        volume = FixedVolume(; vol = 10.0, p_int = 0.0)
+        flow = ConstantMassFlow(; dm = 1)
+        fluid = HydraulicFluid()
+    end
+    @equations begin
+        connect(flow.port, volume.port)
+        connect(fluid, flow.port)
+    end
+end
+@mtkbuild sys = System()
+full_equations(sys) |&gt; first</code></pre><p class="math-container">\[ \begin{equation}
+\frac{\mathrm{d} volume_{+}rho\left( t \right)}{\mathrm{d}t} = \frac{flow_{+}dm}{volume_{+}vol}
+\end{equation}
+ \]</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../connections/">« Theory</a><a class="docs-footer-nextpage" href="../../API/blocks/">Basic Blocks »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.7.0 on <span class="colophon-date" title="Thursday 19 September 2024 10:15">Thursday 19 September 2024</span>. Using Julia version 1.10.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
