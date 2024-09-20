@@ -10,7 +10,7 @@ Caps a hydraulic port to prevent mass flow in or out.
 # Connectors:
 - `port`: hydraulic port
 """
-@component function Cap(; p_int, name)
+@component function Cap(; name)
     
     vars = @variables p(t), [guess=0]
 
@@ -553,7 +553,7 @@ dm ────►               │  │ area
 @component function DynamicVolume(N, add_inertia = true, reversible = false;
      #   p_int,
         area,
-    #    x_int = 0,
+        x_int = 0,
         x_max,
         x_min = 0,
         x_damp = x_min,
@@ -578,7 +578,7 @@ dm ────►               │  │ area
     #    p_int = p_int
         area = area
 
-    #    x_int = x_int
+        x_int = x_int
         x_max = x_max
         x_min = x_min
         x_damp = x_damp
@@ -594,7 +594,7 @@ dm ────►               │  │ area
         minimum_area = minimum_area
     end
 
-    vars = @variables x(t) vol(t)
+    vars = @variables x(t)=x_int vol(t)=x_int * area
 
     ports = @named begin
         port = HydraulicPort(;)
@@ -621,7 +621,7 @@ dm ────►               │  │ area
     @named moving_volume = VolumeBase(;
     #    x_int = 0,
         area,
-        dead_volume = N == 0 ? area * x_min : 0,
+        dead_volume = N == 0 ? area * x_int : 0,
         Χ1 = N == 0 ? 1 : 0,
         Χ2 = 1) # changed x_int to x_min
 
@@ -641,7 +641,7 @@ dm ────►               │  │ area
     volumes = []
     if N > 0
         Δx = ParentScope(x_max) / N
-       x₀ = ParentScope(x) # x_int
+        x₀ = ParentScope(x_int)
 
         for i in 1:N
             length = ifelse(x₀ > Δx * i,
@@ -729,7 +729,7 @@ See [`Valve`](@ref) for more information.
            connect(valve.port_b, port_b)
            valve.area ~ x * 2π * d]
 
-    ODESystem(eqs, t, vars, pars; name, systems, defaults = [flange.v => 0])
+    ODESystem(eqs, t, vars, pars; name, systems)
 end
 
 """
@@ -790,7 +790,7 @@ See [`SpoolValve`](@ref) for more information.
            connect(vBR.port_b, port_r)
            connect(vSA.flange, vBR.flange, mass.flange, flange)]
 
-    ODESystem(eqs, t, vars, pars; name, systems, defaults = [flange.v => 0])
+    ODESystem(eqs, t, vars, pars; name, systems)
 end
 
 """
@@ -861,17 +861,19 @@ Actuator made of two DynamicVolumes connected in opposite direction with body ma
 - `flange`: mechanical translational port
 """
 @component function Actuator(N, add_inertia = true, reversible = false;
-        total_length,
         area_a,
         area_b,
         perimeter_a = 2 * sqrt(area_a * pi),
         perimeter_b = 2 * sqrt(area_b * pi),
+        length_a_int,
+        length_b_int,
         shape_factor_a = 64,
         shape_factor_b = 64,
         head_factor_a = 1,
         head_factor_b = 1,
         m,
         g,
+        x_int = 0,
         minimum_volume_a = 0,
         minimum_volume_b = 0,
         damping_volume_a = minimum_volume_a,
@@ -888,6 +890,9 @@ Actuator made of two DynamicVolumes connected in opposite direction with body ma
         shape_factor_b = shape_factor_b
         head_factor_a = head_factor_a
         head_factor_b = head_factor_b
+        x_int = x_int
+        length_a_int = length_a_int
+        length_b_int = length_b_int
         minimum_volume_a = minimum_volume_a
         minimum_volume_b = minimum_volume_b
         damping_volume_a = damping_volume_a
@@ -899,16 +904,17 @@ Actuator made of two DynamicVolumes connected in opposite direction with body ma
     end
 
     vars = @variables begin
-        x(t) 
+        x(t) = x_int
         dx(t)
     end
 
-#    total_length = length_a_int + length_b_int # Need parameters to define the total length.
+    total_length = length_a_int + length_b_int
 
     #TODO: include effective_length
     systems = @named begin
         vol_a = DynamicVolume(N, add_inertia, reversible; direction = +1,
             area = area_a,
+            x_int = length_a_int,
             x_max = total_length,
             x_min = minimum_volume_a / area_a,
             x_damp = damping_volume_a / area_a,
@@ -920,6 +926,7 @@ Actuator made of two DynamicVolumes connected in opposite direction with body ma
 
         vol_b = DynamicVolume(N, add_inertia, reversible; direction = -1,
             area = area_b,
+            x_int = length_b_int,
             x_max = total_length,
             x_min = minimum_volume_b / area_b,
             x_damp = damping_volume_b / area_b,
@@ -929,16 +936,16 @@ Actuator made of two DynamicVolumes connected in opposite direction with body ma
             Cd,
             Cd_reverse)
         mass = Mass(; m, g)
-        port_a = HydraulicPort(; )
-        port_b = HydraulicPort(; )
+        port_a = HydraulicPort()
+        port_b = HydraulicPort()
         flange = MechanicalPort()
     end
 
     eqs = [connect(vol_a.port, port_a)
-           connect(vol_b.port, port_b)
-           connect(vol_a.flange, vol_b.flange, mass.flange, flange)
-           D(x) ~ dx
-           dx ~ vol_a.flange.v]
+        connect(vol_b.port, port_b)
+        connect(vol_a.flange, vol_b.flange, mass.flange, flange)
+        D(x) ~ dx
+        dx ~ vol_a.flange.v]
 
-    ODESystem(eqs, t, vars, pars; name, systems, defaults = [flange.v => 0])
+    ODESystem(eqs, t, vars, pars; name, systems)
 end

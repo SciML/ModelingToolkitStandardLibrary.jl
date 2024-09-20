@@ -8,11 +8,11 @@ Hydraulic mass flow input source
   - `port`: hydraulic port
   - `dm`: real input 
 """
-@component function MassFlow(; name, p_int)
-    pars = @parameters p_int = p_int
+@component function MassFlow(; name)
+    pars = []
 
     systems = @named begin
-        port = HydraulicPort(; p_int)
+        port = HydraulicPort()
         dm = RealInput()
     end
 
