@@ -1,6 +1,6 @@
 import ChainRulesCore
 
-regPow(x, a, delta = 0.01) =  x * (x * x + delta * delta)^((a - 1) / 2);
+regPow(x, a, delta = 0.01) = x * (x * x + delta * delta)^((a - 1) / 2);
 regRoot(x, delta = 0.01) = regPow(x, 0.5, delta)
 
 """

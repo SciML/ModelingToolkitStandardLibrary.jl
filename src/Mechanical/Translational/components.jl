@@ -70,13 +70,10 @@ Sliding mass with inertia
         f(t)
     end
 
-    eqs = [
-        flange.v ~ v
-        flange.f ~ f
-
-        D(s) ~ v
-        D(v) ~ f / m + g
-        ]
+    eqs = [flange.v ~ v
+           flange.f ~ f
+           D(s) ~ v
+           D(v) ~ f / m + g]
 
     return compose(ODESystem(eqs, t, vars, pars; name = name),
         flange)

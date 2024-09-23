@@ -44,7 +44,6 @@ end
     @named gp = TP.Fixed(s_0 = 1)
 
     function simplify_and_solve(damping, spring, body, ground)
-
         eqs = [connect(spring.flange_a, body.flange, damping.flange_a)
                connect(spring.flange_b, damping.flange_b, ground.flange)]
 
@@ -174,7 +173,7 @@ end
             @named sys = ODESystem(
                 eqs, t, [], []; systems = [force, source, mass, acc, acc_output])
             s = complete(structural_simplify(sys))
-            prob = ODEProblem(s, [mass.s=>0], (0.0, pi))
+            prob = ODEProblem(s, [mass.s => 0], (0.0, pi))
             sol = solve(prob, Tsit5())
             @test sol[sys.acc_output.u] ≈ (sol[sys.mass.f] ./ m)
         end
@@ -229,7 +228,7 @@ end
             @named sys = ODESystem(
                 eqs, t, [], []; systems = [force, source, mass, acc, acc_output])
             s = complete(structural_simplify(sys))
-            prob = ODEProblem(s, [mass.s=>0], (0.0, pi))
+            prob = ODEProblem(s, [mass.s => 0], (0.0, pi))
             sol = solve(prob, Tsit5())
             @test sol[sys.acc_output.u] ≈ (sol[sys.mass.f] ./ m)
         end

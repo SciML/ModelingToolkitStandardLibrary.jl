@@ -11,8 +11,7 @@ Caps a hydraulic port to prevent mass flow in or out.
 - `port`: hydraulic port
 """
 @component function Cap(; name)
-    
-    vars = @variables p(t), [guess=0]
+    vars = @variables p(t), [guess = 0]
 
     systems = @named begin
         port = HydraulicPort()
@@ -39,8 +38,8 @@ Provides an "open" boundary condition for a hydraulic port such that mass flow `
     pars = []
 
     vars = @variables begin
-        p(t), [guess=0]
-        dm(t), [guess=0]
+        p(t), [guess = 0]
+        dm(t), [guess = 0]
     end
 
     systems = @named begin
@@ -73,12 +72,12 @@ Variable length internal flow model of the fully developed incompressible flow f
 - `port_a`: hydraulic port
 - `port_b`: hydraulic port
 """
-@component function TubeBase(add_inertia = true, variable_length = true; 
+@component function TubeBase(add_inertia = true, variable_length = true;
         area,
-        length_int, 
+        length_int,
         head_factor = 1,
         perimeter = 2 * sqrt(area * pi),
-        shape_factor = 64, 
+        shape_factor = 64,
         name)
     pars = @parameters begin
         area = area
@@ -89,8 +88,8 @@ Variable length internal flow model of the fully developed incompressible flow f
     end
 
     @variables begin
-        x(t), [guess=length_int]
-        ddm(t), [guess=0]
+        x(t), [guess = length_int]
+        ddm(t), [guess = 0]
     end
 
     vars = []
@@ -248,8 +247,8 @@ Reduces the flow from `port_a` to `port_b` by `n`.  Useful for modeling parallel
     end
 
     vars = @variables begin
-        dm_a(t), [guess=0]
-        dm_b(t), [guess=0]
+        dm_a(t), [guess = 0]
+        dm_b(t), [guess = 0]
     end
 
     systems = @named begin
@@ -268,7 +267,8 @@ Reduces the flow from `port_a` to `port_b` by `n`.  Useful for modeling parallel
     ODESystem(eqs, t, vars, pars; name, systems)
 end
 
-@component function ValveBase(reversible = false; minimum_area = 0, Cd, Cd_reverse = Cd, name)
+@component function ValveBase(
+        reversible = false; minimum_area = 0, Cd, Cd_reverse = Cd, name)
     pars = @parameters begin
         Cd = Cd
         Cd_reverse = Cd_reverse
@@ -281,7 +281,7 @@ end
     end
 
     vars = @variables begin
-        area(t) 
+        area(t)
         y(t)
     end
 
@@ -369,10 +369,10 @@ end
     end
 
     vars = @variables begin
-        x(t) 
-        dx(t), [guess=0]
+        x(t)
+        dx(t), [guess = 0]
         rho(t), [guess = liquid_density(port)]
-        drho(t), [guess=0]
+        drho(t), [guess = 0]
         vol(t) # = dead_volume + area * x_int
     end
 
@@ -551,7 +551,7 @@ dm ────►               │  │ area
 - `flange`: mechanical translational port
 """
 @component function DynamicVolume(N, add_inertia = true, reversible = false;
-     #   p_int,
+        #   p_int,
         area,
         x_int = 0,
         x_max,
@@ -575,7 +575,7 @@ dm ────►               │  │ area
 
     #TODO: How to set an assert effective_length >= length ??
     pars = @parameters begin
-    #    p_int = p_int
+        #    p_int = p_int
         area = area
 
         x_int = x_int
@@ -619,7 +619,7 @@ dm ────►               │  │ area
     #TODO: How to handle x_int?
     #TODO: Handle direction
     @named moving_volume = VolumeBase(;
-    #    x_int = 0,
+        #    x_int = 0,
         area,
         dead_volume = N == 0 ? area * x_int : 0,
         Χ1 = N == 0 ? 1 : 0,
@@ -651,7 +651,7 @@ dm ────►               │  │ area
                     zero(Δx)))
 
             comp = VolumeBase(; name = Symbol("v$i"),
-            #    x_int = 0,
+                #    x_int = 0,
                 area = ParentScope(area),
                 dead_volume = ParentScope(area) * length, Χ1 = 1, Χ2 = 0)
 
@@ -711,14 +711,14 @@ See [`Valve`](@ref) for more information.
     end
 
     systems = @named begin
-        port_a = HydraulicPort(; )
-        port_b = HydraulicPort(; )
+        port_a = HydraulicPort(;)
+        port_b = HydraulicPort(;)
         flange = MechanicalPort()
         valve = ValveBase(reversible; Cd)
     end
 
     vars = @variables begin
-        x(t) 
+        x(t)
         dx(t)
     end
 
@@ -759,7 +759,6 @@ See [`SpoolValve`](@ref) for more information.
 """
 @component function SpoolValve2Way(reversible = false; m, g, Cd, d, name)
     pars = @parameters begin
-
         m = m
         g = g
 
@@ -774,10 +773,10 @@ See [`SpoolValve`](@ref) for more information.
         vSA = SpoolValve(reversible; Cd, d)
         vBR = SpoolValve(reversible; Cd, d)
 
-        port_s = HydraulicPort(; )
-        port_a = HydraulicPort(; )
-        port_b = HydraulicPort(; )
-        port_r = HydraulicPort(; )
+        port_s = HydraulicPort(;)
+        port_a = HydraulicPort(;)
+        port_b = HydraulicPort(;)
+        port_r = HydraulicPort(;)
 
         mass = Mass(; m = m, g = g)
 
@@ -942,10 +941,10 @@ Actuator made of two DynamicVolumes connected in opposite direction with body ma
     end
 
     eqs = [connect(vol_a.port, port_a)
-        connect(vol_b.port, port_b)
-        connect(vol_a.flange, vol_b.flange, mass.flange, flange)
-        D(x) ~ dx
-        dx ~ vol_a.flange.v]
+           connect(vol_b.port, port_b)
+           connect(vol_a.flange, vol_b.flange, mass.flange, flange)
+           D(x) ~ dx
+           dx ~ vol_a.flange.v]
 
     ODESystem(eqs, t, vars, pars; name, systems)
 end

@@ -6,7 +6,8 @@ import ModelingToolkitStandardLibrary.Mechanical.Translational as T
 
 using ModelingToolkitStandardLibrary.Blocks: Parameter
 
-NEWTON = NLNewton(check_div = false, always_new = true, max_iter = 100, relax = 9 // 10, κ=1e-6)
+NEWTON = NLNewton(
+    check_div = false, always_new = true, max_iter = 100, relax = 9 // 10, κ = 1e-6)
 
 #TODO: add initialization test for N=5
 @testset "Fluid Domain and Tube" begin
@@ -29,19 +30,19 @@ NEWTON = NLNewton(check_div = false, always_new = true, max_iter = 100, relax = 
                connect(src.port, res.port_a)
                connect(res.port_b, vol.port)]
 
-               ODESystem(eqs, t, [], pars; name, systems)
+        ODESystem(eqs, t, [], pars; name, systems)
     end
 
     @named sys1_2 = System(1; bulk_modulus = 1e9)
     @named sys1_1 = System(1; bulk_modulus = 1e7)
     @named sys5_1 = System(5; bulk_modulus = 1e9)
 
-
     syss = structural_simplify.([sys1_2, sys1_1]) #removed sys5_1 for now
-    probs = [ODEProblem(sys, [], (0, 0.05); initialization_eqs = [sys.vol.port.p ~ 0, sys.res.port_a.dm ~ 0])
-              for sys in syss] #
+    probs = [ODEProblem(sys, [], (0, 0.05);
+                 initialization_eqs = [sys.vol.port.p ~ 0, sys.res.port_a.dm ~ 0])
+             for sys in syss] #
     sols = [solve(prob, Rodas5P())
-             for prob in probs]
+            for prob in probs]
 
     s1_2 = complete(sys1_2)
     s1_1 = complete(sys1_1)
@@ -87,15 +88,13 @@ end
     @named valve_system = System()
     sys = structural_simplify(valve_system)
     initialization_eqs = [sys.vol.port.p ~ 101325]
-    initsys = ModelingToolkit.generate_initializesystem(sys;initialization_eqs)
- #   initsys = structural_simplify(initsys)   
- #   initprob = NonlinearProblem(initsys, [t=>0])
- #   initsol = solve(initprob)
+    initsys = ModelingToolkit.generate_initializesystem(sys; initialization_eqs)
+    #   initsys = structural_simplify(initsys)   
+    #   initprob = NonlinearProblem(initsys, [t=>0])
+    #   initsol = solve(initprob)
     prob = ODEProblem(sys, [], (0, 0.01))
     sol = solve(prob, Rodas5P())
     s = complete(valve_system)
-    
-
 
     # the volume should discharge to 10bar
     @test sol[s.vol.port.p][end]≈10e5 atol=1e5
@@ -151,12 +150,12 @@ end
             sys = structural_simplify(system)
 
             u0 = ModelingToolkit.missing_variable_defaults(sys) |> Dict{Num, Num}
-    
+
             u0[sys.vol1.x] = 0.1
             u0[sys.vol1.v1.rho] = IC.liquid_density(sys.fluid, 10e5)
             u0[sys.vol1.v1.port.p] = 10e5
             u0[sys.vol1.damper.port_a.p] = 10e5
-            
+
             u0[sys.vol2.x] = 0.1
             u0[sys.vol2.v1.rho] = IC.liquid_density(sys.fluid, 10e5)
             u0[sys.vol2.v1.port.p] = 10e5
@@ -221,7 +220,7 @@ end
 end
 
 #TODO: implement initialization system, currently seems to have an issue with DynamicVolume and issue: https://github.com/SciML/ModelingToolkit.jl/issues/2952
-@testset "Actuator System" begin  
+@testset "Actuator System" begin
     function System(use_input, f; name)
         pars = @parameters begin
             p_s = 200e5
@@ -303,15 +302,14 @@ end
     sys = structural_simplify(system)
     defs = ModelingToolkit.defaults(sys)
     s = complete(system)
-    
+
     dt = 1e-4
     time = 0:dt:0.1
-    
+
     x = @. (time - 0.015)^2 - 10 * (time - 0.02)^3
     x[1:150] = zeros(150)
-    
-    defs[s.input.buffer] = Parameter(0.5*x, dt)
-    
+
+    defs[s.input.buffer] = Parameter(0.5 * x, dt)
 
     u0 = ModelingToolkit.missing_variable_defaults(sys) |> Dict{Num, Num}
 
@@ -335,12 +333,12 @@ end
     @test Symbol(defs[s.snk.port.ρ]) == Symbol(s.fluid.ρ)
 
     prob = remake(prob; tspan = (0, time[end]))
-    @time sol = solve(prob, ImplicitEuler(nlsolve=NEWTON); adaptive = false, dt,
+    @time sol = solve(prob, ImplicitEuler(nlsolve = NEWTON); adaptive = false, dt,
         initializealg = NoInit())
 
     @test sol[sys.ddx][1] == 0.0
     @test maximum(sol[sys.ddx]) > 200
-    @test sol[s.piston.x][end]>0.6
+    @test sol[s.piston.x][end] > 0.6
 end
 
 #TODO: implement initialization system, currently seems to have an issue with DynamicVolume and issue: https://github.com/SciML/ModelingToolkit.jl/issues/2952
@@ -377,9 +375,11 @@ end
     prob2 = ODEProblem(sys, u0, (0, 0.05),
         [s.let_gas => 0])
 
-    @time sol1 = solve(prob1, ImplicitEuler(nlsolve = NEWTON); adaptive = false, dt = 1e-4, initializealg=NoInit())
-    @time sol2 = solve(prob2, ImplicitEuler(nlsolve = NEWTON); adaptive = false, dt = 1e-4, initializealg=NoInit())
-    
+    @time sol1 = solve(prob1, ImplicitEuler(nlsolve = NEWTON);
+        adaptive = false, dt = 1e-4, initializealg = NoInit())
+    @time sol2 = solve(prob2, ImplicitEuler(nlsolve = NEWTON);
+        adaptive = false, dt = 1e-4, initializealg = NoInit())
+
     # case 1: no negative pressure will only have gravity pulling mass back down
     # case 2: with negative pressure, added force pulling mass back down
     # - case 1 should push the mass higher
@@ -428,7 +428,7 @@ end
 #     tspan = (0.0, 1000.0)
 #     prob = ODEProblem(sys, tspan)  # u0 guess can be supplied or not
 #     @time sol = solve(prob)
-    
+
 # end
 
 #TODO
