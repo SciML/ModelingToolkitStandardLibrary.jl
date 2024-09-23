@@ -23,7 +23,7 @@ import ModelingToolkitStandardLibrary.Mechanical.TranslationalPosition as TP
     @named system = System()
     s = complete(system)
     sys = structural_simplify(system)
-    prob = ODEProblem(sys, [], (0, 0.1))
+    prob = ODEProblem(sys, [s.mass.s => 0], (0, 0.1))
     sol = solve(prob, Rosenbrock23())
 
     @test sol[s.mass.flange.v][end]≈-0.1 * 10 atol=1e-3
@@ -31,19 +31,20 @@ import ModelingToolkitStandardLibrary.Mechanical.TranslationalPosition as TP
 end
 
 @testset "Spring, Damper, Mass, Fixed" begin
-    @named dv = TV.Damper(d = 1, flange_a.v = 1)
+    @named dv = TV.Damper(d = 1)
     @named dp = TP.Damper(d = 1, va = 1, vb = 0.0, flange_a.s = 3, flange_b.s = 1)
 
     @named sv = TV.Spring(k = 1, flange_a__v = 1, delta_s = 1)
     @named sp = TP.Spring(k = 1, flange_a__s = 3, flange_b__s = 1, l = 1)
 
-    @named bv = TV.Mass(m = 1, v = 1)
+    @named bv = TV.Mass(m = 1)
     @named bp = TP.Mass(m = 1, v = 1, s = 3)
 
     @named gv = TV.Fixed()
     @named gp = TP.Fixed(s_0 = 1)
 
     function simplify_and_solve(damping, spring, body, ground)
+
         eqs = [connect(spring.flange_a, body.flange, damping.flange_a)
                connect(spring.flange_b, damping.flange_b, ground.flange)]
 
@@ -51,7 +52,7 @@ end
 
         sys = structural_simplify(model)
 
-        prob = ODEProblem(sys, [], (0, 20.0), [])
+        prob = ODEProblem(sys, [body.s => 0], (0, 20.0), [])
         sol = solve(prob, ImplicitMidpoint(), dt = 0.01)
 
         return sol
@@ -68,13 +69,13 @@ end
 end
 
 @testset "driven spring damper mass" begin
-    @named dv = TV.Damper(d = 1, flange_a.v = 1)
+    @named dv = TV.Damper(d = 1)
     @named dp = TP.Damper(d = 1, va = 1.0, vb = 0.0, flange_a.s = 3, flange_b.s = 1)
 
-    @named sv = TV.Spring(k = 1, flange_a__v = 1, delta_s = 1)
+    @named sv = TV.Spring(k = 1)
     @named sp = TP.Spring(k = 1, flange_a__s = 3, flange_b__s = 1, l = 1)
 
-    @named bv = TV.Mass(m = 1, v = 1)
+    @named bv = TV.Mass(m = 1)
     @named bp = TP.Mass(m = 1, v = 1, s = 3)
 
     @named gv = TV.Fixed()
@@ -99,7 +100,7 @@ end
 
     model = System(dv, sv, bv, gv, fv, source)
     sys = structural_simplify(model)
-    prob = ODEProblem(sys, [], (0, 20.0), [])
+    prob = ODEProblem(sys, [bv.s => 0], (0, 20.0), [])
     solv = solve(prob, Rodas4())
 
     model = System(dp, sp, bp, gp, fp, source)
@@ -173,7 +174,7 @@ end
             @named sys = ODESystem(
                 eqs, t, [], []; systems = [force, source, mass, acc, acc_output])
             s = complete(structural_simplify(sys))
-            prob = ODEProblem(s, [], (0.0, pi))
+            prob = ODEProblem(s, [mass.s=>0], (0.0, pi))
             sol = solve(prob, Tsit5())
             @test sol[sys.acc_output.u] ≈ (sol[sys.mass.f] ./ m)
         end
@@ -228,7 +229,7 @@ end
             @named sys = ODESystem(
                 eqs, t, [], []; systems = [force, source, mass, acc, acc_output])
             s = complete(structural_simplify(sys))
-            prob = ODEProblem(s, [], (0.0, pi))
+            prob = ODEProblem(s, [mass.s=>0], (0.0, pi))
             sol = solve(prob, Tsit5())
             @test sol[sys.acc_output.u] ≈ (sol[sys.mass.f] ./ m)
         end
