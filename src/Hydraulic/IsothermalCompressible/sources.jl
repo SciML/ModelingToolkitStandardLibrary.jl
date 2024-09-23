@@ -8,11 +8,11 @@ Hydraulic mass flow input source
   - `port`: hydraulic port
   - `dm`: real input 
 """
-@component function MassFlow(; name, p_int)
-    pars = @parameters p_int = p_int
+@component function MassFlow(; name)
+    pars = []
 
     systems = @named begin
-        port = HydraulicPort(; p_int)
+        port = HydraulicPort()
         dm = RealInput()
     end
 
@@ -43,7 +43,7 @@ Fixed pressure source
     vars = []
 
     systems = @named begin
-        port = HydraulicPort(; p_int = p)
+        port = HydraulicPort()
     end
 
     eqs = [
@@ -55,26 +55,20 @@ end
 @deprecate Source FixedPressure
 
 """
-    Pressure(; p_int, name)
+    Pressure(; name)
 
 input pressure source
-
-# Parameters:
-- `p_int`: [Pa] initial pressure (set by `p_int` argument)
 
 # Connectors:
 - `port`: hydraulic port
 - `p`: real input 
 """
-@component function Pressure(; p_int, name)
-    pars = @parameters begin
-        p_int = p_int
-    end
-
+@component function Pressure(; name)
+    pars = []
     vars = []
 
     systems = @named begin
-        port = HydraulicPort(; p_int)
+        port = HydraulicPort()
         p = RealInput()
     end
 

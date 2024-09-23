@@ -38,16 +38,15 @@ Fixes a flange position (velocity = 0)
 end
 
 """
-    Mass(; name, v_0 = 0.0, m, s = nothing, g = nothing)
+    Mass(; name, m, g = 0)
 
 Sliding mass with inertia
 
 # Parameters:
 
   - `m`: [kg] mass of sliding body
-  - `v_0`: [m/s] Initial value of absolute linear velocity of sliding mass (default 0 m/s)
-  - `s`: [m] initial value of absolute position of sliding mass (optional)
-  - `g`: [m/s²] gravity field acting on the mass, positive value acts in the positive direction (optional)
+  - `g = 0`: [m/s^2] [m/s²] gravity field acting on the mass, positive value acts in the positive direction
+  
 
 # States:
 
@@ -58,36 +57,23 @@ Sliding mass with inertia
 
   - `flange`: 1-dim. translational flange
 """
-@component function Mass(; name, v = 0.0, m, s = nothing, g = nothing)
+@component function Mass(; name, m, g = 0)
     pars = @parameters begin
         m = m
+        g = g
     end
-    @named flange = MechanicalPort(; v = v)
+    @named flange = MechanicalPort()
 
     vars = @variables begin
-        v(t) = v
+        s(t)
+        v(t)
         f(t)
     end
 
     eqs = [flange.v ~ v
-           flange.f ~ f]
-
-    # gravity option
-    if g !== nothing
-        @parameters g = g
-        push!(pars, g)
-        push!(eqs, D(v) ~ f / m + g)
-    else
-        push!(eqs, D(v) ~ f / m)
-    end
-
-    # position option
-    if s !== nothing
-        @variables s(t) = s
-        push!(vars, s)
-
-        push!(eqs, D(s) ~ v)
-    end
+           flange.f ~ f
+           D(s) ~ v
+           D(v) ~ f / m + g]
 
     return compose(ODESystem(eqs, t, vars, pars; name = name),
         flange)
@@ -188,8 +174,8 @@ Linear 1D translational damper
     end
 
     @components begin
-        flange_a = MechanicalPort(; v = 0.0)
-        flange_b = MechanicalPort(; v = 0.0)
+        flange_a = MechanicalPort()
+        flange_b = MechanicalPort()
     end
 
     @equations begin

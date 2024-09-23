@@ -159,11 +159,10 @@ using ModelingToolkitStandardLibrary.Hydraulic.IsothermalCompressible
 
 @mtkmodel ConstantMassFlow begin
     @parameters begin
-        p_int
         dm
     end
     @components begin
-        port = HydraulicPort(; p_int)
+        port = HydraulicPort()
     end
     @equations begin
         port.dm ~ -dm
@@ -176,7 +175,7 @@ A positive input mass flow leads to an increasing pressure (in this case we get 
 ```@example sign_convention
 @mtkmodel System begin
     @components begin
-        volume = FixedVolume(; vol = 10.0, p_int = 0.0)
+        volume = FixedVolume(; vol = 10.0)
         flow = ConstantMassFlow(; dm = 1)
         fluid = HydraulicFluid()
     end
