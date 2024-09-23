@@ -358,7 +358,7 @@ Valve with `area` input and discharge coefficient `Cd` defined by https://en.wik
 end
 
 @component function VolumeBase(; area, dead_volume = 0, Χ1 = 1, Χ2 = 1,
-        name) # x_int = 0, 
+        name)
     pars = @parameters begin
         area = area
         dead_volume = dead_volume
@@ -373,7 +373,7 @@ end
         dx(t), [guess = 0]
         rho(t), [guess = liquid_density(port)]
         drho(t), [guess = 0]
-        vol(t) # = dead_volume + area * x_int
+        vol(t)
     end
 
     # let
@@ -551,7 +551,6 @@ dm ────►               │  │ area
 - `flange`: mechanical translational port
 """
 @component function DynamicVolume(N, add_inertia = true, reversible = false;
-        #   p_int,
         area,
         x_int = 0,
         x_max,
@@ -575,15 +574,12 @@ dm ────►               │  │ area
 
     #TODO: How to set an assert effective_length >= length ??
     pars = @parameters begin
-        #    p_int = p_int
         area = area
 
         x_int = x_int
         x_max = x_max
         x_min = x_min
         x_damp = x_damp
-
-        # direction = direction
 
         perimeter = perimeter
         shape_factor = shape_factor
@@ -619,7 +615,6 @@ dm ────►               │  │ area
     #TODO: How to handle x_int?
     #TODO: Handle direction
     @named moving_volume = VolumeBase(;
-        #    x_int = 0,
         area,
         dead_volume = N == 0 ? area * x_int : 0,
         Χ1 = N == 0 ? 1 : 0,
@@ -651,7 +646,6 @@ dm ────►               │  │ area
                     zero(Δx)))
 
             comp = VolumeBase(; name = Symbol("v$i"),
-                #    x_int = 0,
                 area = ParentScope(area),
                 dead_volume = ParentScope(area) * length, Χ1 = 1, Χ2 = 0)
 
