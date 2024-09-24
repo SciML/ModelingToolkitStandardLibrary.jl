@@ -70,7 +70,7 @@ Linear 1D acceleration sensor.
     end
 
     @variables begin
-        a(t) = 0.0
+        a(t)
     end
 
     @equations begin
