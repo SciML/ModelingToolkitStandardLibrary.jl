@@ -133,7 +133,7 @@ end #default function
     end
 
     @named flange_a = Flange(; s = flange_a__s, f = k * (flange_a__s - flange_b__s - l))
-    @named flange_b = Flange(; s = flange_a__s, f = -k * (flange_a__s - flange_b__s - l))
+    @named flange_b = Flange(; s = flange_b__s, f = -k * (flange_a__s - flange_b__s - l))
 
     eqs = [
            #    delta_s ~ flange_a.s - flange_b.s
