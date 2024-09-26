@@ -733,43 +733,86 @@ function SampledData(; name, buffer, sample_time, circular_buffer)
 end
 
 # This needs to be extend for interpolation types
-apply_interpolation(interp, t) = interp(t)
+# apply_interpolation(interp, t) = interp(t)
 
-function Symbolics.derivative(::typeof(apply_interpolation), args::NTuple{2, Any}, ::Val{2})
-    Symbolics.derivative(args[1], (args[2],), Val(1))
-end
+# function Symbolics.derivative(::typeof(apply_interpolation), args::NTuple{2, Any}, ::Val{2})
+#     Symbolics.derivative(args[1], (args[2],), Val(1))
+# end
 
-function cached_interpolation(interpolation_type, u, x, args)
-    prev_u = DiffCache(u)
-    # Interpolation points can be a range, but we want to be able
-    # to update the cache if needed (and setindex! is not defined on ranges)
-    # with a view from MTKParameters, so we collect to get a vector
-    prev_x = DiffCache(collect(x))
-    interp = GeneralLazyBufferCache() do (u, x)
-        interpolation_type(get_tmp(prev_u, u), get_tmp(prev_x, x), args...)
-    end
+# function cached_interpolation(interpolation_type, u, x, args)
+#     prev_u = DiffCache(u)
+#     # Interpolation points can be a range, but we want to be able
+#     # to update the cache if needed (and setindex! is not defined on ranges)
+#     # with a view from MTKParameters, so we collect to get a vector
+#     prev_x = DiffCache(collect(x))
+#     interp = GeneralLazyBufferCache() do (u, x)
+#         interpolation_type(get_tmp(prev_u, u), get_tmp(prev_x, x), args...)
+#     end
 
-    let prev_u = prev_u,
-        prev_x = prev_x,
-        interp = interp,
-        interpolation_type = interpolation_type
+#     let prev_u = prev_u,
+#         prev_x = prev_x,
+#         interp = interp,
+#         interpolation_type = interpolation_type
 
-        function build_interpolation(u, x, args)
-            if (u, x) ≠ (get_tmp(prev_u, u), get_tmp(prev_x, x))
-                get_tmp(prev_u, u) .= u
-                get_tmp(prev_x, x) .= x
-                interp.bufs[(u, x)] = interpolation_type(
-                    get_tmp(prev_u, u), get_tmp(prev_x, x), args...)
-            else
-                interp[(u, x)]
-            end
+#         function build_interpolation(u, x, args)
+#             if (u, x) ≠ (get_tmp(prev_u, u), get_tmp(prev_x, x))
+#                 get_tmp(prev_u, u) .= u
+#                 get_tmp(prev_x, x) .= x
+#                 interp.bufs[(u, x)] = interpolation_type(
+#                     get_tmp(prev_u, u), get_tmp(prev_x, x), args...)
+#             else
+#                 interp[(u, x)]
+#             end
+#         end
+#     end
+# end
+
+struct CachedInterpolation{T,I,U,X,C}
+    interpolation_type::I
+    prev_u::U
+    prev_x::X
+    cache::C
+
+    function CachedInterpolation(interpolation_type, u, x, args)
+        # we need to copy the inputs to avoid aliasing
+        prev_u = DiffCache(copy(u))
+        # Interpolation points can be a range, but we want to be able
+        # to update the cache if needed (and setindex! is not defined on ranges)
+        # with a view from MTKParameters, so we collect to get a vector
+        prev_x = DiffCache(collect(copy(x)))
+        cache = GeneralLazyBufferCache() do (u, x)
+            interpolation_type(get_tmp(prev_u, u), get_tmp(prev_x, x), args...)
         end
+        T = typeof(cache[(get_tmp(prev_u, u), get_tmp(prev_x, x))])
+        I = typeof(interpolation_type)
+        U = typeof(prev_u)
+        X = typeof(prev_x)
+        C = typeof(cache)
+
+        new{T,I,U,X,C}(interpolation_type, prev_u, prev_x, cache)
     end
 end
 
-@register_symbolic interpolation_builder(
-    f::Function, u::AbstractArray, x::AbstractArray, args::Tuple)
-interpolation_builder(f, u, x, args) = f(u, x, args)
+function (f::CachedInterpolation{T})(u, x, args) where T
+    (;prev_u, prev_x, cache, interpolation_type) = f
+
+    interp = @inbounds if (u, x) ≠ (get_tmp(prev_u, u), get_tmp(prev_x, x))
+        get_tmp(prev_u, u) .= u
+        get_tmp(prev_x, x) .= x
+        # @info "cache miss"
+        cache.bufs[(u, x)] = interpolation_type(
+            get_tmp(prev_u, u), get_tmp(prev_x, x), args...)
+    else
+        # @info "cache hit"
+        cache[(u, x)]
+    end
+
+    return interp
+end
+
+Base.nameof(::CachedInterpolation) = :CachedInterpolation
+
+@register_symbolic (f::CachedInterpolation)(u::AbstractArray, x::AbstractArray, args::Tuple)
 
 """
     ParametrizedInterpolation(interp_type, u, x, args...; name)
@@ -792,24 +835,22 @@ such as `LinearInterpolation`, `ConstantInterpolation` or `CubicSpline`.
   - `output`: a [`RealOutput`](@ref) connector corresponding to the interpolated value
 """
 function ParametrizedInterpolation(
-        interp_type::T, u::AbstractVector, x::AbstractVector, args...; name) where {T}
+        interp_type::T, u::AbstractVector, x::AbstractVector, args...; name) where T
+
     @parameters data[1:length(x)] = u
     @parameters ts[1:length(x)] = x
-    @parameters interpolation_type::T=interp_type [tunable = false] interpolation_args::Tuple=args [tunable = false]
-    @parameters interpolator::interp_type
-
-    build_interpolation = cached_interpolation(interp_type, u, x, args)
-    @parameters memoized_builder::typeof(build_interpolation)=build_interpolation [tunable = false]
+    @parameters interpolation_type::T=interp_type [tunable = false]
+    build_interpolation = CachedInterpolation(interp_type, u, x, args)
+    @parameters (interpolator::interp_type)(..)::eltype(u)
 
     @named output = RealOutput()
 
-    eqs = [output.u ~ apply_interpolation(interpolator, t)]
+    eqs = [output.u ~ interpolator(t)]
 
     ODESystem(eqs, t, [],
-        [data, ts, interpolation_type, interpolation_args, interpolator, memoized_builder];
+        [data, ts, interpolation_type, interpolator];
         parameter_dependencies = [
-            interpolator => interpolation_builder(
-            memoized_builder, data, ts, interpolation_args)
+            interpolator ~ build_interpolation(data, ts, args)
         ],
         systems = [output],
         name)
