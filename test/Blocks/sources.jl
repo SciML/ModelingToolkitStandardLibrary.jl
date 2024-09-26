@@ -494,8 +494,8 @@ end
         @named model = ODESystem(eqs, t, systems = [i])
         sys = structural_simplify(model)
 
-        prob = ODEProblem(sys, [], (0.0, 4))
-        sol = solve(prob)
+        prob = ODEProblem{true, SciMLBase.FullSpecialize}(sys, [], (0.0, 4))
+        sol = solve(prob, Tsit5())
 
         @test SciMLBase.successful_retcode(sol)
 
