@@ -130,8 +130,8 @@ Single input single output (SISO) continuous system block.
         y_start = 0.0
     end
     @variables begin
-        u(t) = u_start, [description = "Input of SISO system"]
-        y(t) = y_start, [description = "Output of SISO system"]
+        u(t), [guess = u_start, description = "Input of SISO system"]
+        y(t), [guess = y_start, description = "Output of SISO system"]
     end
     @components begin
         input = RealInput(guess = u_start)
