@@ -1,6 +1,6 @@
 using SafeTestsets, Test
 
-const GROUP = "Core" #get(ENV, "GROUP", "All")
+const GROUP = get(ENV, "GROUP", "All")
 
 @time begin
     if GROUP == "QA" || GROUP == "All"
