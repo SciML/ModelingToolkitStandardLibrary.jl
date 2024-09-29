@@ -1,6 +1,7 @@
 using ModelingToolkitStandardLibrary.Blocks
 using ModelingToolkit
 using OrdinaryDiffEq
+using ModelingToolkit: t_nounits as t, D_nounits as D
 
 @testset "Array Guesses" begin
     for (block, guess) in [
