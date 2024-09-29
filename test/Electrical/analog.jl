@@ -342,7 +342,7 @@ end
 
     for i in 1:lastindex(sources)
         source = sources[i]
-        @info "Testing Current with $(source.name) source"
+        @info "Testing Current with $(nameof(source)) source"
         eqs = [connect(source.output, current.I)
                connect(current.p, current_sensor.n)
                connect(current_sensor.p, res.p)
