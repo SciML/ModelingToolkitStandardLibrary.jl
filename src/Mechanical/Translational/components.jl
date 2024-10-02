@@ -65,9 +65,9 @@ Sliding mass with inertia
     @named flange = MechanicalPort()
 
     vars = @variables begin
-        s(t), [guess=0]
-        v(t), [guess=0]
-        f(t), [guess=0]
+        s(t), [guess = 0]
+        v(t), [guess = 0]
+        f(t), [guess = 0]
     end
 
     eqs = [flange.v ~ v
@@ -108,7 +108,7 @@ end # default
     end
     vars = @variables begin
         delta_s(t), [guess = 0]
-        f(t), [guess=0]
+        f(t), [guess = 0]
     end
 
     @named flange_a = MechanicalPort()
@@ -130,9 +130,9 @@ const ABS = Val(:absolute)
         l = l
     end
     vars = @variables begin
-        sa(t), [guess=0]
-        sb(t), [guess=0]
-        f(t), [guess=0]
+        sa(t), [guess = 0]
+        sb(t), [guess = 0]
+        f(t), [guess = 0]
     end
 
     @named flange_a = MechanicalPort()
@@ -167,8 +167,8 @@ Linear 1D translational damper
         d
     end
     @variables begin
-        v(t), [guess=0]
-        f(t), [guess=0]
+        v(t), [guess = 0]
+        f(t), [guess = 0]
     end
 
     @components begin

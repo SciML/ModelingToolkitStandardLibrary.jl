@@ -155,7 +155,8 @@ nothing # hide
 As expected, we have a similar solution…
 
 ```@example connections
-prob = ODEProblem(sys, [], (0, 10.0), [];   initialization_eqs=[sys.body.s ~ 0, sys.body.v ~ 1])
+prob = ODEProblem(
+    sys, [], (0, 10.0), []; initialization_eqs = [sys.body.s ~ 0, sys.body.v ~ 1])
 sol_v = solve(prob)
 
 p1 = plot(sol_v, idxs = [body.v])
@@ -281,7 +282,7 @@ function simplify_and_solve(damping, spring, body, ground; initialization_eqs = 
     println.(full_equations(sys))
 
     prob = ODEProblem(sys, [], (0, 10.0), []; initialization_eqs)
-    sol = solve(prob; abstol=1e-9, reltol=1e-9)
+    sol = solve(prob; abstol = 1e-9, reltol = 1e-9)
 
     return sol
 end
@@ -291,11 +292,9 @@ nothing # hide
 Now let's solve the velocity domain model
 
 ```@example connections
-initialization_eqs = [
-  bv.s ~ 3
-  bv.v ~ 1
-  sv.delta_s ~ 1
-]
+initialization_eqs = [bv.s ~ 3
+                      bv.v ~ 1
+                      sv.delta_s ~ 1]
 solv = simplify_and_solve(dv, sv, bv, gv; initialization_eqs);
 nothing # hide
 ```
