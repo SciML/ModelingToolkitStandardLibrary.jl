@@ -482,13 +482,30 @@ end
     end
 end
 
-@testset "ParametrizedInterpolation" begin
+@testset "InterpolationBlock" begin
+    @variables y(t) = 0
+    u = rand(15)
+    x = 0:14.0
+
+    @named i = InterpolationBlock(LinearInterpolation, u, x)
+    eqs = [D(y) ~ i.output.u]
+
+    @named model = ODESystem(eqs, t, systems = [i])
+    sys = structural_simplify(model)
+
+    prob = ODEProblem{true, SciMLBase.FullSpecialize}(sys, [], (0.0, 4))
+    sol = solve(prob, Tsit5())
+
+    @test SciMLBase.successful_retcode(sol)
+end
+
+@testset "ParametrizedInterpolationBlock" begin
     @variables y(t) = 0
     u = rand(15)
     x = 0:14.0
 
     @testset "LinearInterpolation" begin
-        @named i = ParametrizedInterpolation(LinearInterpolation, u, x)
+        @named i = ParametrizedInterpolationBlock(LinearInterpolation, u, x)
         eqs = [D(y) ~ i.output.u]
 
         @named model = ODESystem(eqs, t, systems = [i])
@@ -537,7 +554,7 @@ end
     end
 
     @testset "BSplineInterpolation" begin
-        @named i = ParametrizedInterpolation(
+        @named i = ParametrizedInterpolationBlock(
             BSplineInterpolation, u, x, 3, :Uniform, :Uniform)
         eqs = [D(y) ~ i.output.u]
 
