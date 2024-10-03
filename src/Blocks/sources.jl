@@ -733,7 +733,7 @@ function SampledData(; name, buffer, sample_time, circular_buffer)
 end
 
 """
-    InterpolationBlock(interp_type, u, x, args...; name, t = ModelingToolkit.t_nounits)
+    Interpolation(interp_type, u, x, args...; name)
 
 Represent function interpolation symbolically as a block component.
 By default interpolation types from [`DataInterpolations.jl`](https://github.com/SciML/DataInterpolations.jl) are supported,
@@ -749,7 +749,6 @@ such as `LinearInterpolation`, `ConstantInterpolation` or `CubicSpline`.
   - `args`: any other arguments beeded to build the interpolation
 # Keyword arguments:
   - `name`: the name of the component
-  - `t`: the interpolation parameter, this is the time (`ModelingToolkit.t_nounits`) by default
 
 # Parameters:
   - `interpolator`: the symbolic
@@ -758,12 +757,12 @@ such as `LinearInterpolation`, `ConstantInterpolation` or `CubicSpline`.
 # Connectors:
   - `output`: a [`RealOutput`](@ref) connector corresponding to the interpolated value
 """
-function InterpolationBlock(interp_type, u, x, args...; name, t = ModelingToolkit.t_nounits)
+function Interpolation(interp_type, u, x, args...; name)
     itp = interp_type(u, x, args...)
     InterpolationBlock(itp; name, t)
 end
 
-function InterpolationBlock(itp; name, t = ModelingToolkit.t_nounits)
+function Interpolation(itp; name)
     @parameters (interpolator::typeof(itp))(..) = itp
 
     @named output = RealOutput()
@@ -825,7 +824,7 @@ Base.nameof(::CachedInterpolation) = :CachedInterpolation
 @register_symbolic (f::CachedInterpolation)(u::AbstractArray, x::AbstractArray, args::Tuple)
 
 """
-    ParametrizedInterpolationBlock(interp_type, u, x, args...; name, t = ModelingToolkit.t_nounits)
+    ParametrizedInterpolation(interp_type, u, x, args...; name, t = ModelingToolkit.t_nounits)
 
 Represent function interpolation symbolically as a block component, with the interpolation data represented parametrically.
 By default interpolation types from [`DataInterpolations.jl`](https://github.com/SciML/DataInterpolations.jl) are supported,
@@ -851,7 +850,7 @@ such as `LinearInterpolation`, `ConstantInterpolation` or `CubicSpline`.
 # Connectors:
   - `output`: a [`RealOutput`](@ref) connector corresponding to the interpolated value
 """
-function ParametrizedInterpolationBlock(
+function ParametrizedInterpolation(
         interp_type::T, u::AbstractVector, x::AbstractVector, args...;
         name, t = ModelingToolkit.t_nounits) where {T}
 
