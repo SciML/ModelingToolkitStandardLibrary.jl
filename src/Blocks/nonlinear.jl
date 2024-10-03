@@ -93,20 +93,30 @@ Initial value of state `Y` can be set with `int.y`
   - `input`
   - `output`
 """
-@mtkmodel SlewRateLimiter begin
-    @parameters begin
-        rising = 1.0, [description = "Maximum rising slew rate of SlewRateLimiter"]
-        falling = -rising, [description = "Derivative time constant of SlewRateLimiter"]
-        Td = 0.001, [description = "Derivative time constant"]
+@component function SlewRateLimiter(;
+        name, y_start = 0.0, rising = 1.0, falling = -rising, Td = 0.001)
+    pars = @parameters begin
+        rising = rising, [description = "Maximum rising slew rate of SlewRateLimiter"]
+        falling = falling, [description = "Derivative time constant of SlewRateLimiter"]
+        Td = Td, [description = "Derivative time constant"]
+        y_start = y_start
     end
-    begin
-        getdefault(rising) ≥ getdefault(falling) ||
-            throw(ArgumentError("`rising` must be smaller than `falling`"))
-        getdefault(Td) > 0 ||
-            throw(ArgumentError("Time constant `Td` must be strictly positive"))
-    end
-    @extend u, y = siso = SISO(; y_start)
-    @equations begin
+
+    getdefault(rising) ≥ getdefault(falling) ||
+        throw(ArgumentError("`rising` must be smaller than `falling`"))
+    getdefault(Td) > 0 ||
+        throw(ArgumentError("Time constant `Td` must be strictly positive"))
+
+    @named siso = SISO(; y_start)
+    @unpack y, u = siso
+
+    eqs = [
         D(y) ~ max(min((u - y) / Td, rising), falling)
-    end
+    ]
+
+    initialization_eqs = [
+        y ~ y_start
+    ]
+
+    return extend(ODESystem(eqs, t, [], pars; name, initialization_eqs), siso)
 end
