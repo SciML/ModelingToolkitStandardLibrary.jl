@@ -2,19 +2,27 @@
 
 There are 4 ways to include data as part of a model.
 
- 1. using `ModelingToolkitStandardLibrary.Blocks.InterpolationBlock`
- 2. using `ModelingToolkitStandardLibrary.Blocks.ParametrizedInterpolationBlock`
+ 1. using `ModelingToolkitStandardLibrary.Blocks.Interpolation`
+ 2. using `ModelingToolkitStandardLibrary.Blocks.ParametrizedInterpolation`
  3. using a custom component with external data (not recommended)
  4. using `ModelingToolkitStandardLibrary.Blocks.SampledData` (legacy)
 
 This tutorial demonstrate each case and explain the pros and cons of each.
 
-## `InterpolationBlock` Component
+## `Interpolation` Block
 
-The `ModelingToolkitStandardLibrary.Blocks.InterpolationBlock` component is easy to use and is performant.
-It is simlar to using callable paramterers, but it provides a block interface and a `RealOutput` connector.
-The `InterpolationBlock` is compatible with interpolation types from `DataInterpolation`.
-Here is an example on how to use it
+The `ModelingToolkitStandardLibrary.Blocks.Interpolation` component is easy to use and is performant.
+It is simlar to using callable paramterers, but it provides a block interface with `RealInput` and `RealOutput` connectors.
+The `Interpolation` is compatible with interpolation types from `DataInterpolation`.
+
+```@docs
+ModelingToolkitStandardLibrary.Blocks.Interpolation
+```
+
+Here is an example on how to use it. Let's consider a mass-spring-damper system, where
+we have an external force as an input. We then generate some example data in a `DataFrame`
+that would represent a measurement of the input. In a more realistic case, this `DataFrame`
+would be read from a file.
 
 ```@example interpolation_block
 using ModelingToolkit
@@ -22,37 +30,63 @@ using ModelingToolkit: t_nounits as t, D_nounits as D
 using ModelingToolkitStandardLibrary.Blocks
 using DataInterpolations
 using OrdinaryDiffEq
+using DataFrames
 using Plots
 
-function System(data, time; name)
-    @named src = InterpolationBlock(LinearInterpolation, data, time)
+function MassSpringDamper(; name)
+    @named input = RealInput()
+    @variables f(t)=0 x(t)=0 dx(t)=0 ddx(t)=0
+    @parameters m=10 k=1000 d=1
 
-    vars = @variables f(t)=0 x(t)=0 dx(t)=0 ddx(t)=0
-    pars = @parameters m=10 k=1000 d=1
-
-    eqs = [f ~ src.output.u
+    eqs = [
+           f ~ input.u
            ddx * 10 ~ k * x + d * dx + f
            D(x) ~ dx
            D(dx) ~ ddx]
 
-    ODESystem(eqs, t, vars, pars; systems = [src], name)
+    ODESystem(eqs, t, [], []; name, systems = [input])
 end
 
-dt = 4e-4
-time = 0:dt:0.1
-data = sin.(2 * pi * time * 100) # example data
+function MassSpringDamperSystem(data, time; name)
+    @named src = Interpolation(LinearInterpolation, data, time)
+    @named clk = ContinuousClock()
+    @named model = MassSpringDamper()
 
-@named system = System(data, time)
+    eqs = [
+        connect(src.input, clk.output)
+        connect(src.output, model.input)
+    ]
+
+    ODESystem(eqs, t, [], []; name, systems = [src, clk, model])
+end
+
+function generate_data()
+    dt = 4e-4
+    time = 0:dt:0.1
+    data = sin.(2 * pi * time * 100)
+
+    return DataFrame(; time, data)
+end
+
+df = generate_data() # example data
+
+@named system = MassSpringDamperSystem(df.data, df.time)
 sys = structural_simplify(system)
-prob = ODEProblem(sys, [], (0, time[end]))
+prob = ODEProblem(sys, [], (0, df.time[end]))
 sol = solve(prob)
 plot(sol)
 ```
 
-## `ParametrizedInterpolationBlock` Component
+## `ParametrizedInterpolation` Block
 
-The `ModelingToolkitStandardLibrary.Blocks.ParametrizedInterpolationBlock` component is similar to `InterpolationBlock`, but as the name suggests, it is parametrized by the data, allowing one to change the underlying data without rebuilding the model as the data is represented via vector parameters.
-The `ParametrizedInterpolationBlock` is compatible with interpolation types from `DataInterpolation`.
+The `ModelingToolkitStandardLibrary.Blocks.ParametrizedInterpolation` component is similar to `Interpolation`, but as the name suggests, it is parametrized by the data, allowing one to change the underlying data without rebuilding the model as the data is represented via vector parameters.
+The main advantage of this block over the [`Interpolation`](@ref) one is that one can use it for optimization problems. Currently, this supports forward mode AD via ForwardDiff, but due to the increased flexibility of the types in the component, this is not as fast as the `Interpolation` block,
+so it is recommended to use only when the added flexibility is required.
+
+```@docs
+ModelingToolkitStandardLibrary.Blocks.ParametrizedInterpolation
+```
+
 Here is an example on how to use it
 
 ```@example parametrized_interpolation
@@ -61,29 +95,49 @@ using ModelingToolkit: t_nounits as t, D_nounits as D
 using ModelingToolkitStandardLibrary.Blocks
 using DataInterpolations
 using OrdinaryDiffEq
+using DataFrames
 using Plots
 
-function System(data, time; name)
-    @named src = ParametrizedInterpolation(LinearInterpolation, data, time)
-
+function MassSpringDamper(; name)
+    @named input = RealInput()
     vars = @variables f(t)=0 x(t)=0 dx(t)=0 ddx(t)=0
     pars = @parameters m=10 k=1000 d=1
 
-    eqs = [f ~ src.output.u
+    eqs = [
+           f ~ input.u
            ddx * 10 ~ k * x + d * dx + f
            D(x) ~ dx
            D(dx) ~ ddx]
 
-    ODESystem(eqs, t, vars, pars; systems = [src], name)
+    ODESystem(eqs, t, vars, pars; name, systems = [input])
 end
 
-dt = 4e-4
-time = 0:dt:0.1
-data = sin.(2 * pi * time * 100) # example data
+function MassSpringDamperSystem(data, time; name)
+    @named src = ParametrizedInterpolation(LinearInterpolation, data, time)
+    @named clk = ContinuousClock()
+    @named model = MassSpringDamper()
 
-@named system = System(data, time)
+    eqs = [
+        connect(model.input, src.output)
+        connect(src.input, clk.output)
+    ]
+
+    ODESystem(eqs, t, [], []; name, systems = [src, clk, model])
+end
+
+function generate_data()
+    dt = 4e-4
+    time = 0:dt:0.1
+    data = sin.(2 * pi * time * 100)
+
+    return DataFrame(; time, data)
+end
+
+df = generate_data() # example data
+
+@named system = MassSpringDamperSystem(df.data, df.time)
 sys = structural_simplify(system)
-prob = ODEProblem(sys, [], (0, time[end]))
+prob = ODEProblem(sys, [], (0, df.time[end]))
 sol = solve(prob)
 plot(sol)
 ```
