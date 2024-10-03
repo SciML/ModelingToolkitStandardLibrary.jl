@@ -732,40 +732,46 @@ function SampledData(; name, buffer, sample_time, circular_buffer)
     SampledData(SampledDataType.vector_based; name, buffer, sample_time, circular_buffer)
 end
 
-# This needs to be extend for interpolation types
-# apply_interpolation(interp, t) = interp(t)
+"""
+    InterpolationBlock(interp_type, u, x, args...; name, t = ModelingToolkit.t_nounits)
 
-# function Symbolics.derivative(::typeof(apply_interpolation), args::NTuple{2, Any}, ::Val{2})
-#     Symbolics.derivative(args[1], (args[2],), Val(1))
-# end
+Represent function interpolation symbolically as a block component.
+By default interpolation types from [`DataInterpolations.jl`](https://github.com/SciML/DataInterpolations.jl) are supported,
+but in general any callable type that builds the interpolation object via `itp = interpolation_type(u, x, args...)` and calls
+the interpolation with `itp(t)` should work. This does not need to represent an interpolation, it can be any type that satisfies
+the interface, such as lookup tables.
+# Arguments:
+  - `interp_type`: the type of the interpolation. For `DataInterpolations`,
+these would be any of [the available interpolations](https://github.com/SciML/DataInterpolations.jl?tab=readme-ov-file#available-interpolations),
+such as `LinearInterpolation`, `ConstantInterpolation` or `CubicSpline`.
+  - `u`: the data used for interpolation. For `DataInterpolations` this will be an `AbstractVector`
+  - `x`: the values that each data points correspond to, usually the times corresponding to each value in `u`.
+  - `args`: any other arguments beeded to build the interpolation
+# Keyword arguments:
+  - `name`: the name of the component
+  - `t`: the interpolation parameter, this is the time (`ModelingToolkit.t_nounits`) by default
 
-# function cached_interpolation(interpolation_type, u, x, args)
-#     prev_u = DiffCache(u)
-#     # Interpolation points can be a range, but we want to be able
-#     # to update the cache if needed (and setindex! is not defined on ranges)
-#     # with a view from MTKParameters, so we collect to get a vector
-#     prev_x = DiffCache(collect(x))
-#     interp = GeneralLazyBufferCache() do (u, x)
-#         interpolation_type(get_tmp(prev_u, u), get_tmp(prev_x, x), args...)
-#     end
+# Parameters:
+  - `interpolator`: the symbolic
+  - `t`: the parameter used for interpolation
 
-#     let prev_u = prev_u,
-#         prev_x = prev_x,
-#         interp = interp,
-#         interpolation_type = interpolation_type
+# Connectors:
+  - `output`: a [`RealOutput`](@ref) connector corresponding to the interpolated value
+"""
+function InterpolationBlock(interp_type, u, x, args...; name, t = ModelingToolkit.t_nounits)
+    itp = interp_type(u, x, args...)
+    InterpolationBlock(itp; name, t)
+end
 
-#         function build_interpolation(u, x, args)
-#             if (u, x) ≠ (get_tmp(prev_u, u), get_tmp(prev_x, x))
-#                 get_tmp(prev_u, u) .= u
-#                 get_tmp(prev_x, x) .= x
-#                 interp.bufs[(u, x)] = interpolation_type(
-#                     get_tmp(prev_u, u), get_tmp(prev_x, x), args...)
-#             else
-#                 interp[(u, x)]
-#             end
-#         end
-#     end
-# end
+function InterpolationBlock(itp; name, t = ModelingToolkit.t_nounits)
+    @parameters (interpolator::typeof(itp))(..) = itp
+
+    @named output = RealOutput()
+
+    eqs = [output.u ~ interpolator(t)]
+
+    ODESystem(eqs, ModelingToolkit.t_nounits, [], [interpolator, t]; name, systems = [output])
+end
 
 struct CachedInterpolation{T,I,U,X,C}
     interpolation_type::I
