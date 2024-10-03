@@ -77,7 +77,7 @@ so that it can be represented as a system of `ODEs` (ordinary differential equat
 
 ```@example dc_motor_pi
 sys = structural_simplify(model)
-prob = ODEProblem(sys, unknowns(sys) .=> 0.0, (0, 6.0))
+prob = ODEProblem(sys, [sys.L1.i => 0.0,], (0, 6.0))
 sol = solve(prob)
 
 p1 = plot(sol.t, sol[sys.inertia.w], ylabel = "Angular Vel. in rad/s",
