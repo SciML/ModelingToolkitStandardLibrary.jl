@@ -144,7 +144,7 @@ end
     end
 
     for N in [1, 2]
-        for damping_volume in [0.01 * 0.1 * 0.25]
+        for damping_volume in [0.01 * 0.1 * 0.25] # doesn't this only produce one value of 0.00025, so why the for loop?
             @named system = System(N; damping_volume)
             s = complete(system)
             sys = structural_simplify(system)

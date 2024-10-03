@@ -306,7 +306,7 @@ end
 
     eqs = [0 ~ port_a.dm + port_b.dm
            domain_connect(port_a, port_b)
-           dm ~ regRoot(2 * Δp * ρ / c) * x
+           dm ~ regRoot(2 * Δp * ρ / c) * x # I think this should be reformulated as: regRoot(2 DP rho) c x
            y ~ x]
 
     ODESystem(eqs, t, vars, pars; name, systems)
