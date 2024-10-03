@@ -34,7 +34,7 @@ end
     @named dv = TV.Damper(d = 1)
     @named dp = TP.Damper(d = 1, va = 1, vb = 0.0, flange_a.s = 3, flange_b.s = 1)
 
-    @named sv = TV.Spring(k = 1, flange_a__v = 1, delta_s = 1)
+    @named sv = TV.Spring(k = 1)
     @named sp = TP.Spring(k = 1, flange_a__s = 3, flange_b__s = 1, l = 1)
 
     @named bv = TV.Mass(m = 1)
@@ -43,7 +43,7 @@ end
     @named gv = TV.Fixed()
     @named gp = TP.Fixed(s_0 = 1)
 
-    function simplify_and_solve(damping, spring, body, ground)
+    function simplify_and_solve(damping, spring, body, ground; initialization_eqs=Equation[])
         eqs = [connect(spring.flange_a, body.flange, damping.flange_a)
                connect(spring.flange_b, damping.flange_b, ground.flange)]
 
@@ -51,13 +51,13 @@ end
 
         sys = structural_simplify(model)
 
-        prob = ODEProblem(sys, [body.s => 0], (0, 20.0), [])
-        sol = solve(prob, ImplicitMidpoint(), dt = 0.01)
+        prob = ODEProblem(sys, [], (0, 20.0), []; initialization_eqs)
+        sol = solve(prob; abstol = 1e-9, reltol = 1e-9)
 
         return sol
     end
 
-    solv = simplify_and_solve(dv, sv, bv, gv)
+    solv = simplify_and_solve(dv, sv, bv, gv; initialization_eqs=[bv.s ~ 3, bv.v ~ 1, sv.delta_s ~ 1])
     solp = simplify_and_solve(dp, sp, bp, gp)
 
     @test solv[bv.v][1] == 1.0
