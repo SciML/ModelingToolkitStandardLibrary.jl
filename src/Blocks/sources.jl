@@ -773,7 +773,7 @@ function Interpolation(itp; name)
         eqs, t, [], [interpolator]; name, systems = [input, output])
 end
 
-struct CachedInterpolation{T,I,U,X,C}
+struct CachedInterpolation{T, I, U, X, C}
     interpolation_type::I
     prev_u::U
     prev_x::X
@@ -795,12 +795,12 @@ struct CachedInterpolation{T,I,U,X,C}
         X = typeof(prev_x)
         C = typeof(cache)
 
-        new{T,I,U,X,C}(interpolation_type, prev_u, prev_x, cache)
+        new{T, I, U, X, C}(interpolation_type, prev_u, prev_x, cache)
     end
 end
 
-function (f::CachedInterpolation{T})(u, x, args) where T
-    (;prev_u, prev_x, cache, interpolation_type) = f
+function (f::CachedInterpolation{T})(u, x, args) where {T}
+    (; prev_u, prev_x, cache, interpolation_type) = f
 
     interp = @inbounds if (u, x) ≠ (get_tmp(prev_u, u), get_tmp(prev_x, x))
         get_tmp(prev_u, u) .= u
