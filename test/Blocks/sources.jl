@@ -482,12 +482,12 @@ end
     end
 end
 
-@testset "InterpolationBlock" begin
+@testset "Interpolation" begin
     @variables y(t) = 0
     u = rand(15)
     x = 0:14.0
 
-    @named i = InterpolationBlock(LinearInterpolation, u, x)
+    @named i = Interpolation(LinearInterpolation, u, x)
     eqs = [D(y) ~ i.output.u]
 
     @named model = ODESystem(eqs, t, systems = [i])
@@ -499,13 +499,13 @@ end
     @test SciMLBase.successful_retcode(sol)
 end
 
-@testset "ParametrizedInterpolationBlock" begin
+@testset "ParametrizedInterpolation" begin
     @variables y(t) = 0
     u = rand(15)
     x = 0:14.0
 
     @testset "LinearInterpolation" begin
-        @named i = ParametrizedInterpolationBlock(LinearInterpolation, u, x)
+        @named i = ParametrizedInterpolation(LinearInterpolation, u, x)
         eqs = [D(y) ~ i.output.u]
 
         @named model = ODESystem(eqs, t, systems = [i])
