@@ -1,18 +1,58 @@
 # Running Models with Discrete Data
 
-There are 3 ways to include data as part of a model.
+There are 4 ways to include data as part of a model.
 
- 1. using `ModelingToolkitStandardLibrary.Blocks.ParametrizedInterpolation` & `DataInterpolations`
- 2. using a custom component with external data (not recommended)
- 3. using `ModelingToolkitStandardLibrary.Blocks.SampledData` (legacy)
+ 1. using `ModelingToolkitStandardLibrary.Blocks.InterpolationBlock`
+ 2. using `ModelingToolkitStandardLibrary.Blocks.ParametrizedInterpolationBlock`
+ 3. using a custom component with external data (not recommended)
+ 4. using `ModelingToolkitStandardLibrary.Blocks.SampledData` (legacy)
 
 This tutorial demonstrate each case and explain the pros and cons of each.
 
-## `ParametrizedInterpolation` Component
+## `InterpolationBlock` Component
 
-The `ModelingToolkitStandardLibrary.Blocks.ParametrizedInterpolation` component is easy to use and is performant.
-It allows one to change the underlying data without rebuilding the model as the data is represented via vector parameters.
-The `ParametrizedInterpolation` is compatible with interpolation types from `DataInterpolation`.
+The `ModelingToolkitStandardLibrary.Blocks.InterpolationBlock` component is easy to use and is performant.
+It is simlar to using callable paramterers, but it provides a block interface and a `RealOutput` connector.
+The `InterpolationBlock` is compatible with interpolation types from `DataInterpolation`.
+Here is an example on how to use it
+
+```@example interpolation_block
+using ModelingToolkit
+using ModelingToolkit: t_nounits as t, D_nounits as D
+using ModelingToolkitStandardLibrary.Blocks
+using DataInterpolations
+using OrdinaryDiffEq
+using Plots
+
+function System(data, time; name)
+    @named src = InterpolationBlock(LinearInterpolation, data, time)
+
+    vars = @variables f(t)=0 x(t)=0 dx(t)=0 ddx(t)=0
+    pars = @parameters m=10 k=1000 d=1
+
+    eqs = [f ~ src.output.u
+           ddx * 10 ~ k * x + d * dx + f
+           D(x) ~ dx
+           D(dx) ~ ddx]
+
+    ODESystem(eqs, t, vars, pars; systems = [src], name)
+end
+
+dt = 4e-4
+time = 0:dt:0.1
+data = sin.(2 * pi * time * 100) # example data
+
+@named system = System(data, time)
+sys = structural_simplify(system)
+prob = ODEProblem(sys, [], (0, time[end]))
+sol = solve(prob)
+plot(sol)
+```
+
+## `ParametrizedInterpolationBlock` Component
+
+The `ModelingToolkitStandardLibrary.Blocks.ParametrizedInterpolationBlock` component is similar to `InterpolationBlock`, but as the name suggests, it is parametrized by the data, allowing one to change the underlying data without rebuilding the model as the data is represented via vector parameters.
+The `ParametrizedInterpolationBlock` is compatible with interpolation types from `DataInterpolation`.
 Here is an example on how to use it
 
 ```@example parametrized_interpolation
