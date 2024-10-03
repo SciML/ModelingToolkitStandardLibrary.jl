@@ -816,15 +816,22 @@ function (f::CachedInterpolation{T})(u, x, args) where T
     return interp
 end
 
+# function Symbolics.derivative(::typeof(CachedInterpolation), args::NTuple{2, Any}, ::Val{2})
+#     Symbolics.derivative(args[1], (args[2],), Val(1))
+# end
+
 Base.nameof(::CachedInterpolation) = :CachedInterpolation
 
 @register_symbolic (f::CachedInterpolation)(u::AbstractArray, x::AbstractArray, args::Tuple)
 
 """
-    ParametrizedInterpolation(interp_type, u, x, args...; name)
+    ParametrizedInterpolationBlock(interp_type, u, x, args...; name, t = ModelingToolkit.t_nounits)
 
-Represent function interpolation symbolically as a block component. By default interpolation types
-from [`DataInterpolations.jl`](https://github.com/SciML/DataInterpolations.jl) are supported.
+Represent function interpolation symbolically as a block component, with the interpolation data represented parametrically.
+By default interpolation types from [`DataInterpolations.jl`](https://github.com/SciML/DataInterpolations.jl) are supported,
+but in general any callable type that builds the interpolation object via `itp = interpolation_type(u, x, args...)` and calls
+the interpolation with `itp(t)` should work. This does not need to represent an interpolation, it can be any type that satisfies
+the interface, such as lookup tables.
 # Arguments:
   - `interp_type`: the type of the interpolation. For `DataInterpolations`,
 these would be any of [the available interpolations](https://github.com/SciML/DataInterpolations.jl?tab=readme-ov-file#available-interpolations),
@@ -832,29 +839,35 @@ such as `LinearInterpolation`, `ConstantInterpolation` or `CubicSpline`.
   - `u`: the data used for interpolation. For `DataInterpolations` this will be an `AbstractVector`
   - `x`: the values that each data points correspond to, usually the times corresponding to each value in `u`.
   - `args`: any other arguments beeded to build the interpolation
+# Keyword arguments:
+  - `name`: the name of the component
+  - `t`: the interpolation parameter, this is the time (`ModelingToolkit.t_nounits`) by default
 
 # Parameters:
   - `data`: the symbolic representation of the data passed at construction time via `u`.
   - `ts`: the symbolic representation of times corresponding to the data passed at construction time via `x`.
+  - `t`: the parameter used for interpolation
 
 # Connectors:
   - `output`: a [`RealOutput`](@ref) connector corresponding to the interpolated value
 """
-function ParametrizedInterpolation(
-        interp_type::T, u::AbstractVector, x::AbstractVector, args...; name) where T
+function ParametrizedInterpolationBlock(
+        interp_type::T, u::AbstractVector, x::AbstractVector, args...;
+        name, t = ModelingToolkit.t_nounits) where {T}
+
+    build_interpolation = CachedInterpolation(interp_type, u, x, args)
 
     @parameters data[1:length(x)] = u
     @parameters ts[1:length(x)] = x
     @parameters interpolation_type::T=interp_type [tunable = false]
-    build_interpolation = CachedInterpolation(interp_type, u, x, args)
     @parameters (interpolator::interp_type)(..)::eltype(u)
 
     @named output = RealOutput()
 
     eqs = [output.u ~ interpolator(t)]
 
-    ODESystem(eqs, t, [],
-        [data, ts, interpolation_type, interpolator];
+    ODESystem(eqs, ModelingToolkit.t_nounits, [],
+        [data, ts, interpolation_type, interpolator, t];
         parameter_dependencies = [
             interpolator ~ build_interpolation(data, ts, args)
         ],
