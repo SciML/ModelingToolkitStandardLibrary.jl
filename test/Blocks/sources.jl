@@ -488,7 +488,7 @@ end
     x = 0:14.0
 
     @named i = Interpolation(LinearInterpolation, u, x)
-    eqs = [D(y) ~ i.output.u]
+    eqs = [i.input.u ~ t, D(y) ~ i.output.u]
 
     @named model = ODESystem(eqs, t, systems = [i])
     sys = structural_simplify(model)
@@ -506,7 +506,7 @@ end
 
     @testset "LinearInterpolation" begin
         @named i = ParametrizedInterpolation(LinearInterpolation, u, x)
-        eqs = [D(y) ~ i.output.u]
+        eqs = [i.input.u ~ t, D(y) ~ i.output.u]
 
         @named model = ODESystem(eqs, t, systems = [i])
         sys = structural_simplify(model)
@@ -556,7 +556,7 @@ end
     @testset "BSplineInterpolation" begin
         @named i = ParametrizedInterpolationBlock(
             BSplineInterpolation, u, x, 3, :Uniform, :Uniform)
-        eqs = [D(y) ~ i.output.u]
+        eqs = [i.input.u ~ t, D(y) ~ i.output.u]
 
         @named model = ODESystem(eqs, t, systems = [i])
         sys = structural_simplify(model)

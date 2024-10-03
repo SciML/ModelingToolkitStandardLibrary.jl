@@ -752,24 +752,25 @@ such as `LinearInterpolation`, `ConstantInterpolation` or `CubicSpline`.
 
 # Parameters:
   - `interpolator`: the symbolic
-  - `t`: the parameter used for interpolation
 
 # Connectors:
+  - `input`: a [`RealInput`](@ref) connector corresponding to the independent variable
   - `output`: a [`RealOutput`](@ref) connector corresponding to the interpolated value
 """
 function Interpolation(interp_type, u, x, args...; name)
     itp = interp_type(u, x, args...)
-    InterpolationBlock(itp; name, t)
+    Interpolation(itp; name)
 end
 
 function Interpolation(itp; name)
     @parameters (interpolator::typeof(itp))(..) = itp
-
+    @named input = RealInput()
     @named output = RealOutput()
 
-    eqs = [output.u ~ interpolator(t)]
+    eqs = [output.u ~ interpolator(input.u)]
 
-    ODESystem(eqs, ModelingToolkit.t_nounits, [], [interpolator, t]; name, systems = [output])
+    ODESystem(
+        eqs, t, [], [interpolator]; name, systems = [input, output])
 end
 
 struct CachedInterpolation{T,I,U,X,C}
@@ -840,20 +841,18 @@ such as `LinearInterpolation`, `ConstantInterpolation` or `CubicSpline`.
   - `args`: any other arguments beeded to build the interpolation
 # Keyword arguments:
   - `name`: the name of the component
-  - `t`: the interpolation parameter, this is the time (`ModelingToolkit.t_nounits`) by default
 
 # Parameters:
   - `data`: the symbolic representation of the data passed at construction time via `u`.
   - `ts`: the symbolic representation of times corresponding to the data passed at construction time via `x`.
-  - `t`: the parameter used for interpolation
 
 # Connectors:
+  - `input`: a [`RealInput`](@ref) connector corresponding to the independent variable
   - `output`: a [`RealOutput`](@ref) connector corresponding to the interpolated value
 """
 function ParametrizedInterpolation(
         interp_type::T, u::AbstractVector, x::AbstractVector, args...;
-        name, t = ModelingToolkit.t_nounits) where {T}
-
+        name) where {T}
     build_interpolation = CachedInterpolation(interp_type, u, x, args)
 
     @parameters data[1:length(x)] = u
@@ -861,15 +860,16 @@ function ParametrizedInterpolation(
     @parameters interpolation_type::T=interp_type [tunable = false]
     @parameters (interpolator::interp_type)(..)::eltype(u)
 
+    @named input = RealInput()
     @named output = RealOutput()
 
-    eqs = [output.u ~ interpolator(t)]
+    eqs = [output.u ~ interpolator(input.u)]
 
     ODESystem(eqs, ModelingToolkit.t_nounits, [],
-        [data, ts, interpolation_type, interpolator, t];
+        [data, ts, interpolation_type, interpolator];
         parameter_dependencies = [
             interpolator ~ build_interpolation(data, ts, args)
         ],
-        systems = [output],
+        systems = [input, output],
         name)
 end
