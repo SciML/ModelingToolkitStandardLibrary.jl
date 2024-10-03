@@ -43,7 +43,8 @@ end
     @named gv = TV.Fixed()
     @named gp = TP.Fixed(s_0 = 1)
 
-    function simplify_and_solve(damping, spring, body, ground; initialization_eqs=Equation[])
+    function simplify_and_solve(
+            damping, spring, body, ground; initialization_eqs = Equation[])
         eqs = [connect(spring.flange_a, body.flange, damping.flange_a)
                connect(spring.flange_b, damping.flange_b, ground.flange)]
 
@@ -57,7 +58,8 @@ end
         return sol
     end
 
-    solv = simplify_and_solve(dv, sv, bv, gv; initialization_eqs=[bv.s ~ 3, bv.v ~ 1, sv.delta_s ~ 1])
+    solv = simplify_and_solve(
+        dv, sv, bv, gv; initialization_eqs = [bv.s ~ 3, bv.v ~ 1, sv.delta_s ~ 1])
     solp = simplify_and_solve(dp, sp, bp, gp)
 
     @test solv[bv.v][1] == 1.0
