@@ -12,7 +12,7 @@ This tutorial demonstrate each case and explain the pros and cons of each.
 ## `Interpolation` Block
 
 The `ModelingToolkitStandardLibrary.Blocks.Interpolation` component is easy to use and is performant.
-It is simlar to using callable paramterers, but it provides a block interface with `RealInput` and `RealOutput` connectors.
+It is similar to using callable parameters, but it provides a block interface with `RealInput` and `RealOutput` connectors.
 The `Interpolation` is compatible with interpolation types from `DataInterpolation`.
 
 ```@docs
@@ -150,7 +150,7 @@ plot(sol2)
 ```
 
 !!! note
-    Note that when changing the data, the length of the new data must be the same as the lenght of the original data.
+    Note that when changing the data, the length of the new data must be the same as the length of the original data.
 
 ## Custom Component with External Data
 

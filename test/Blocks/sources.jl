@@ -554,7 +554,7 @@ end
     end
 
     @testset "BSplineInterpolation" begin
-        @named i = ParametrizedInterpolationBlock(
+        @named i = ParametrizedInterpolation(
             BSplineInterpolation, u, x, 3, :Uniform, :Uniform)
         eqs = [i.input.u ~ t, D(y) ~ i.output.u]
 
