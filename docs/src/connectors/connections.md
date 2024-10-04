@@ -136,8 +136,8 @@ using ModelingToolkitStandardLibrary
 const TV = ModelingToolkitStandardLibrary.Mechanical.Translational
 
 systems = @named begin
-    damping = TV.Damper(d = 1, flange_a.v = 1)
-    body = TV.Mass(m = 1, v = 1)
+    damping = TV.Damper(d = 1)
+    body = TV.Mass(m = 1)
     ground = TV.Fixed()
 end
 
@@ -155,7 +155,8 @@ nothing # hide
 As expected, we have a similar solution…
 
 ```@example connections
-prob = ODEProblem(sys, [], (0, 10.0), [])
+prob = ODEProblem(
+    sys, [], (0, 10.0), []; initialization_eqs = [sys.body.s ~ 0, sys.body.v ~ 1])
 sol_v = solve(prob)
 
 p1 = plot(sol_v, idxs = [body.v])
@@ -228,7 +229,7 @@ In this problem, we have a mass, spring, and damper which are connected to a fix
 The damper will connect the flange/flange 1 (`flange_a`) to the mass, and flange/flange 2 (`flange_b`) to the fixed point.  For both position- and velocity-based domains, we set the damping constant `d=1` and `va=1` and leave the default for `v_b_0` at 0.  For the position domain, we also need to set the initial positions for `flange_a` and `flange_b`.
 
 ```@example connections
-@named dv = TV.Damper(d = 1, flange_a.v = 1)
+@named dv = TV.Damper(d = 1)
 @named dp = TP.Damper(d = 1, va = 1, vb = 0.0, flange_a__s = 3, flange_b__s = 1)
 nothing # hide
 ```
@@ -238,7 +239,7 @@ nothing # hide
 The spring will connect the flange/flange 1 (`flange_a`) to the mass, and flange/flange 2 (`flange_b`) to the fixed point.  For both position- and velocity-based domains, we set the spring constant `k=1`.  The velocity domain then requires the initial velocity `va` and initial spring stretch `delta_s`.  The position domain instead needs the initial positions for `flange_a` and `flange_b` and the natural spring length `l`.
 
 ```@example connections
-@named sv = TV.Spring(k = 1, flange_a__v = 1, delta_s = 1)
+@named sv = TV.Spring(k = 1)
 @named sp = TP.Spring(k = 1, flange_a__s = 3, flange_b__s = 1, l = 1)
 nothing # hide
 ```
@@ -248,7 +249,7 @@ nothing # hide
 For both position- and velocity-based domains, we set the mass `m=1` and initial velocity `v=1`. Like the damper, the position domain requires the position initial conditions set as well.
 
 ```@example connections
-@named bv = TV.Mass(m = 1, v = 1)
+@named bv = TV.Mass(m = 1)
 @named bp = TP.Mass(m = 1, v = 1, s = 3)
 nothing # hide
 ```
@@ -270,7 +271,7 @@ As can be seen, the position-based domain requires more initial condition inform
 Let's define a quick function to simplify and solve the 2 different systems. Note, we will solve with a fixed time step and a set tolerance to compare the numerical differences.
 
 ```@example connections
-function simplify_and_solve(damping, spring, body, ground)
+function simplify_and_solve(damping, spring, body, ground; initialization_eqs = Equation[])
     eqs = [connect(spring.flange_a, body.flange, damping.flange_a)
            connect(spring.flange_b, damping.flange_b, ground.flange)]
 
@@ -280,8 +281,8 @@ function simplify_and_solve(damping, spring, body, ground)
 
     println.(full_equations(sys))
 
-    prob = ODEProblem(sys, [], (0, 10.0), [])
-    sol = solve(prob; dt = 0.1, adaptive = false, reltol = 1e-9, abstol = 1e-9)
+    prob = ODEProblem(sys, [], (0, 10.0), []; initialization_eqs)
+    sol = solve(prob; abstol = 1e-9, reltol = 1e-9)
 
     return sol
 end
@@ -291,7 +292,10 @@ nothing # hide
 Now let's solve the velocity domain model
 
 ```@example connections
-solv = simplify_and_solve(dv, sv, bv, gv);
+initialization_eqs = [bv.s ~ 3
+                      bv.v ~ 1
+                      sv.delta_s ~ 1]
+solv = simplify_and_solve(dv, sv, bv, gv; initialization_eqs);
 nothing # hide
 ```
 
@@ -346,12 +350,11 @@ By definition, the spring stretch is
 \Delta s = s - s_{b_0} - l
 ```
 
-Which means both systems are actually solving the same exact system.  We can plot the numerical difference between the 2 systems and see the result is negligible.
+Which means both systems are actually solving the same exact system.  We can plot the numerical difference between the 2 systems and see the result is negligible (much less than the tolerance of 1e-9).
 
 ```@example connections
 plot(title = "numerical difference: vel. vs. pos. domain", xlabel = "time [s]",
     ylabel = "solv[bv.v] .- solp[bp.v]")
 time = 0:0.1:10
 plot!(time, (solv(time)[bv.v] .- solp(time)[bp.v]), label = "")
-Plots.ylims!(-1e-15, 1e-15)
 ```

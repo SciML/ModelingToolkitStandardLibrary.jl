@@ -65,9 +65,9 @@ Sliding mass with inertia
     @named flange = MechanicalPort()
 
     vars = @variables begin
-        s(t)
-        v(t)
-        f(t)
+        s(t), [guess = 0]
+        v(t), [guess = 0]
+        f(t), [guess = 0]
     end
 
     eqs = [flange.v ~ v
@@ -98,22 +98,21 @@ Linear 1D translational spring
   - `flange_a`: 1-dim. translational flange on one side of spring
   - `flange_b`: 1-dim. translational flange on opposite side of spring
 """
-@component function Spring(; name, k, delta_s = 0.0, flange_a__v = 0.0, flange_b__v = 0.0)
-    Spring(REL; name, k, delta_s, flange_a__v, flange_b__v)
+@component function Spring(; name, k)
+    Spring(REL; name, k)
 end # default
 
-@component function Spring(::Val{:relative}; name, k, delta_s = 0.0, flange_a__v = 0.0,
-        flange_b__v = 0.0)
+@component function Spring(::Val{:relative}; name, k)
     pars = @parameters begin
         k = k
     end
     vars = @variables begin
-        delta_s(t) = delta_s
-        f(t)
+        delta_s(t), [guess = 0]
+        f(t), [guess = 0]
     end
 
-    @named flange_a = MechanicalPort(; v = flange_a__v)
-    @named flange_b = MechanicalPort(; v = flange_b__v)
+    @named flange_a = MechanicalPort()
+    @named flange_b = MechanicalPort()
 
     eqs = [D(delta_s) ~ flange_a.v - flange_b.v
            f ~ k * delta_s
@@ -125,20 +124,19 @@ end # default
 end
 
 const ABS = Val(:absolute)
-@component function Spring(::Val{:absolute}; name, k, sa = 0, sb = 0, flange_a__v = 0.0,
-        flange_b__v = 0.0, l = 0)
+@component function Spring(::Val{:absolute}; name, k, l = 0)
     pars = @parameters begin
         k = k
         l = l
     end
     vars = @variables begin
-        sa(t) = sa
-        sb(t) = sb
-        f(t)
+        sa(t), [guess = 0]
+        sb(t), [guess = 0]
+        f(t), [guess = 0]
     end
 
-    @named flange_a = MechanicalPort(; v = flange_a__v)
-    @named flange_b = MechanicalPort(; v = flange_b__v)
+    @named flange_a = MechanicalPort()
+    @named flange_b = MechanicalPort()
 
     eqs = [D(sa) ~ flange_a.v
            D(sb) ~ flange_b.v
@@ -169,8 +167,8 @@ Linear 1D translational damper
         d
     end
     @variables begin
-        v(t)
-        f(t)
+        v(t), [guess = 0]
+        f(t), [guess = 0]
     end
 
     @components begin

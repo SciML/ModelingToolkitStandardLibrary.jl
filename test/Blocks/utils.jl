@@ -1,5 +1,7 @@
 using ModelingToolkitStandardLibrary.Blocks
 using ModelingToolkit
+using OrdinaryDiffEq
+using ModelingToolkit: t_nounits as t, D_nounits as D
 
 @testset "Array Guesses" begin
     for (block, guess) in [
@@ -21,6 +23,22 @@ end
         guesses = ModelingToolkit.guesses(block)
         @test guesses[@nonamespace block.u[1]] == guess[1]
     end
+end
+
+@testset "SISO Check" begin
+    k, w, d = 1.0, 1.0, 0.5
+    @named c = Constant(; k = 1)
+    @named so = SecondOrder(; k = k, w = w, d = d, xd = 1)
+    @named iosys = ODESystem(connect(c.output, so.input), t, systems = [so, c])
+    sys = structural_simplify(iosys)
+
+    initsys = ModelingToolkit.generate_initializesystem(sys)
+    initsys = structural_simplify(initsys)
+    initprob = NonlinearProblem(initsys, [t => 0])
+    initsol = solve(initprob)
+
+    @test initsol[sys.so.xd] == 1.0
+    @test initsol[sys.so.u] == 1.0
 end
 
 @test_deprecated RealInput(; name = :a, u_start = 1.0)
