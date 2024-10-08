@@ -942,3 +942,49 @@ Actuator made of two DynamicVolumes connected in opposite direction with body ma
 
     ODESystem(eqs, t, vars, pars; name, systems)
 end
+
+"""
+    Orifice()
+
+A valve in fixed position, with parameters for area and the discharge coefficient (fitting the form Effective Area = A / sqrt(C))  
+
+```
+     ┌ 
+     │                   
+         ▲
+dm ────►  effective area
+         ▼
+     │           
+     └
+```
+
+# Features:
+- 
+
+# Parameters:
+## volume
+- `Aₒ`: [m^2] moving wall area
+- `Cₒ`: [+/-1] applies the direction conversion from the `flange` to `x`
+
+# Connectors:
+- `port₁`: hydraulic port
+- `port₂`: hydraulic port
+"""
+
+@mtkmodel Orifice begin
+    @parameters begin
+        Aₒ=0.00094
+        Cₒ=2.7 # Presumably this fits the form Co = 1 / Cd^2 where Cd ~ 0.6
+    end
+    @components begin
+        area = Constant(k=Aₒ)
+        valve = Valve(Cd=Cₒ)
+        port₁ = HydraulicPort()
+        port₂ = HydraulicPort()
+    end
+    @equations begin
+        connect(valve.area, area.output)
+        connect(valve.port_a, port₁)
+        connect(valve.port_b, port₂)
+    end
+end
