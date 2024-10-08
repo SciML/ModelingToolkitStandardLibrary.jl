@@ -963,7 +963,7 @@ dm ────►  effective area
 
 # Parameters:
 ## volume
-- `area`: [m^2] moving wall area
+- `area`: [m^2] physical area
 - `cd`: [unitless] discharge coefficient
 
 # Connectors:
