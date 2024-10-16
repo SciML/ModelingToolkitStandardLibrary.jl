@@ -805,11 +805,9 @@ function (f::CachedInterpolation{T})(u, x, args) where {T}
     interp = @inbounds if (u, x) ≠ (get_tmp(prev_u, u), get_tmp(prev_x, x))
         get_tmp(prev_u, u) .= u
         get_tmp(prev_x, x) .= x
-        # @info "cache miss"
         cache.bufs[(u, x)] = interpolation_type(
             get_tmp(prev_u, u), get_tmp(prev_x, x), args...)
     else
-        # @info "cache hit"
         cache[(u, x)]
     end
 
