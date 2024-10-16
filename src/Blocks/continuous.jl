@@ -258,13 +258,21 @@ See also [`LimPID`](@ref)
     with_D = !isequal(Td, false)
     @named err_input = RealInput() # control error
     @named ctr_output = RealOutput() # control signal
-    !isequal(Ti, false) &&
-        (Ti ≥ 0 || throw(ArgumentError("Ti out of bounds, got $(Ti) but expected Ti ≥ 0")))
-    !isequal(Td, false) &&
-        (Td ≥ 0 || throw(ArgumentError("Td out of bounds, got $(Td) but expected Td ≥ 0")))
-    Nd > 0 || throw(ArgumentError("Nd out of bounds, got $(Nd) but expected Nd > 0"))
+    @symcheck Ti ≥ 0 ||
+              throw(ArgumentError("Ti out of bounds, got $(Ti) but expected Ti ≥ 0"))
+    @symcheck Td ≥ 0 ||
+              throw(ArgumentError("Td out of bounds, got $(Td) but expected Td ≥ 0"))
+    @symcheck Nd > 0 ||
+              throw(ArgumentError("Nd out of bounds, got $(Nd) but expected Nd > 0"))
 
-    @named gainPID = Gain(k)
+    pars = @parameters begin
+        k = k, [description = "Proportional gain"]
+        Ti = Ti, [description = "Integrator time constant"]
+        Td = Td, [description = "Derivative time constant"]
+        Nd = Nd, [description = "Derivative limit"]
+    end
+
+    @named gainPID = Gain(; k)
     @named addPID = Add3()
     if with_I
         @named int = Integrator(k = 1 / Ti, x = int__x)
@@ -304,7 +312,7 @@ See also [`LimPID`](@ref)
     else
         push!(eqs, connect(Dzero.output, addPID.input3))
     end
-    ODESystem(eqs, t, [], []; name = name, systems = sys)
+    ODESystem(eqs, t, [], pars; name = name, systems = sys)
 end
 
 """
@@ -334,15 +342,22 @@ The simplified expression above is given without the anti-windup protection.
               throw(ArgumentError("Time constant `Ta` has to be strictly positive"))
     @symcheck T > 0 || throw(ArgumentError("Time constant `T` has to be strictly positive"))
     @symcheck u_max ≥ u_min || throw(ArgumentError("u_min must be smaller than u_max"))
+    pars = @parameters begin
+        k = k, [description = "Proportional gain"]
+        T = T, [description = "Integrator time constant"]
+        Ta = Ta, [description = "Tracking time constant"]
+        u_max = u_max, [description = "Upper saturation limit"]
+        u_min = u_min, [description = "Lower saturation limit"]
+    end
     @named err_input = RealInput() # control error
     @named ctr_output = RealOutput() # control signal
-    @named gainPI = Gain(k)
+    @named gainPI = Gain(; k)
     @named addPI = Add()
     @named addTrack = Add()
     @named int = Integrator(k = 1 / T, x = int__x)
     @named limiter = Limiter(y_max = u_max, y_min = u_min)
     @named addSat = Add(k1 = 1, k2 = -1)
-    @named gainTrack = Gain(1 / Ta)
+    @named gainTrack = Gain(k = 1 / Ta)
     sys = [err_input, ctr_output, gainPI, addPI, int, addTrack, limiter, addSat, gainTrack]
     eqs = [
         connect(err_input, addPI.input1),
@@ -357,7 +372,7 @@ The simplified expression above is given without the anti-windup protection.
         connect(addTrack.output, int.input),
         connect(int.output, addPI.input2)
     ]
-    ODESystem(eqs, t, [], []; name = name, systems = sys)
+    ODESystem(eqs, t, [], pars; name = name, systems = sys)
 end
 
 """
@@ -408,18 +423,25 @@ where the transfer function for the derivative includes additional filtering, se
         Ti = k / Ti
         Td = Td / k
     end
-    0 ≤ wp ≤ 1 ||
-        throw(ArgumentError("wp out of bounds, got $(wp) but expected wp ∈ [0, 1]"))
-    0 ≤ wd ≤ 1 ||
-        throw(ArgumentError("wd out of bounds, got $(wd) but expected wd ∈ [0, 1]"))
-    !isequal(Ti, false) &&
-        (Ti ≥ 0 || throw(ArgumentError("Ti out of bounds, got $(Ti) but expected Ti ≥ 0")))
-    !isequal(Td, false) &&
-        (Td ≥ 0 || throw(ArgumentError("Td out of bounds, got $(Td) but expected Td ≥ 0")))
+    @symcheck Ti ≥ 0 ||
+              throw(ArgumentError("Ti out of bounds, got $(Ti) but expected Ti ≥ 0"))
+    @symcheck Td ≥ 0 ||
+              throw(ArgumentError("Td out of bounds, got $(Td) but expected Td ≥ 0"))
     @symcheck u_max ≥ u_min || throw(ArgumentError("u_min must be smaller than u_max"))
     @symcheck Nd > 0 ||
               throw(ArgumentError("Nd out of bounds, got $(Nd) but expected Nd > 0"))
 
+    pars = @parameters begin
+        k = k, [description = "Proportional gain"]
+        Ti = Ti, [description = "Integrator time constant"]
+        Td = Td, [description = "Derivative time constant"]
+        wp = wp, [description = "Set-point weighting in the proportional part"]
+        wd = wd, [description = "Set-point weighting in the derivative part"]
+        Ni = Ni, [description = "Anti-windup tracking gain"]
+        Nd = Nd, [description = "Derivative limit"]
+        u_max = u_max, [description = "Upper saturation limit"]
+        u_min = u_min, [description = "Lower saturation limit"]
+    end
     @named reference = RealInput()
     @named measurement = RealInput()
     @named ctr_output = RealOutput() # control signal
@@ -431,7 +453,7 @@ where the transfer function for the derivative includes additional filtering, se
         if with_AWM
             @named addI = Add3(k1 = 1, k2 = -1, k3 = 1)
             @named addSat = Add(k1 = 1, k2 = -1)
-            @named gainTrack = Gain(1 / (k * Ni))
+            @named gainTrack = Gain(k = 1 / (k * Ni))
         else
             @named addI = Add(k1 = 1, k2 = -1)
         end
@@ -492,7 +514,7 @@ where the transfer function for the derivative includes additional filtering, se
         push!(eqs, connect(Dzero.output, addPID.input2))
     end
 
-    ODESystem(eqs, t, [], []; name = name, systems = sys)
+    ODESystem(eqs, t, [], pars; name = name, systems = sys)
 end
 
 """
