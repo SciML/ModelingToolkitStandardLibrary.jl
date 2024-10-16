@@ -633,13 +633,13 @@ See also [`StateSpace`](@ref) which handles MIMO systems, as well as [ControlSys
             description = "Denominator coefficients of transfer function (e.g., `s² + 2ωs + ω^2` is specified as [1, 2ω, ω^2])"
         ]
         bb[1:(nbb + nb)] = [zeros(nbb); b]
-        d = bb[1] / a[1], [description = "Direct feedthrough gain"]
     end
+    d = bb[1] / a[1]# , [description = "Direct feedthrough gain"]
 
     a = collect(a)
-    @parameters a_end = ifelse(a[end] > 100 * symbolic_eps(sqrt(a' * a)), a[end], 1.0)
+    a_end = ifelse(a[end] > 100 * symbolic_eps(sqrt(a' * a)), a[end], 1.0)
 
-    pars = [collect(b); a; collect(bb); d; a_end]
+    pars = [collect(b); a; collect(bb)]
     @variables begin
         x(t)[1:nx] = zeros(nx),
         [description = "State of transfer function on controller canonical form"]

@@ -430,7 +430,7 @@ end
         @named pt1 = TransferFunction(b = [1.2], a = [3.14, 1])
         @named iosys = ODESystem(connect(c.output, pt1.input), t, systems = [pt1, c])
         sys = structural_simplify(iosys)
-        prob = ODEProblem(sys, Pair[pt1.a_end => 1], (0.0, 100.0))
+        prob = ODEProblem(sys, Pair[], (0.0, 100.0))
         sol = solve(prob, Rodas4())
         @test sol.retcode == Success
         @test sol[pt1.output.u]≈pt1_func.(sol.t, 1.2, 3.14) atol=1e-3
@@ -440,7 +440,7 @@ end
         @named pt1 = TransferFunction(b = [1.2], a = [3.14, 0])
         @named iosys = ODESystem(connect(c.output, pt1.input), t, systems = [pt1, c])
         sys = structural_simplify(iosys)
-        prob = ODEProblem(sys, Pair[pt1.a_end => 1], (0.0, 100.0))
+        prob = ODEProblem(sys, Pair[], (0.0, 100.0))
         sol = solve(prob, Rodas4())
         @test sol.retcode == Success
         @test sol[pt1.output.u] ≈ sol.t .* (1.2 / 3.14)
@@ -464,7 +464,7 @@ end
         @named pt1 = TransferFunction(b = [w^2], a = [1, 2d * w, w^2])
         @named iosys = ODESystem(connect(c.output, pt1.input), t, systems = [pt1, c])
         sys = structural_simplify(iosys)
-        prob = ODEProblem(sys, Pair[pt1.a_end => 1], (0.0, 100.0))
+        prob = ODEProblem(sys, Pair[], (0.0, 100.0))
         sol = solve(prob, Rodas4())
         @test sol.retcode == Success
         @test sol[pt1.output.u]≈pt2_func.(sol.t, k, w, d) atol=1e-3
@@ -474,7 +474,7 @@ end
         @named pt1 = TransferFunction(b = [1, 0], a = [1, 1])
         @named iosys = ODESystem(connect(c.output, pt1.input), t, systems = [pt1, c])
         sys = structural_simplify(iosys)
-        prob = ODEProblem(sys, Pair[pt1.a_end => 1], (0.0, 100.0))
+        prob = ODEProblem(sys, Pair[], (0.0, 100.0))
         sol = solve(prob, Rodas4())
         @test sol.retcode == Success
         @test sol[pt1.output.u]≈1 .- pt1_func.(sol.t, 1, 1) atol=1e-3
@@ -484,7 +484,7 @@ end
         @named pt1 = TransferFunction(b = [2.7], a = [pi])
         @named iosys = ODESystem(connect(c.output, pt1.input), t, systems = [pt1, c])
         sys = structural_simplify(iosys)
-        prob = ODEProblem(sys, Pair[pt1.a_end => 1], (0.0, 100.0))
+        prob = ODEProblem(sys, Pair[], (0.0, 100.0))
         sol = solve(prob, Rodas4())
         @test sol.retcode == Success
         @test all(==(2.7 / pi), sol[pt1.output.u])
