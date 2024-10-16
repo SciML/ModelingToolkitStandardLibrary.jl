@@ -105,5 +105,5 @@ end
     prob = ODEProblem(sys, [], (0, 2pi))
     sol = solve(prob, Rodas4())
     tv = 0:0.1:(2pi)
-    @test sol(tv, idxs = sys.mass.s)≈@.(2sin(2pi * tv * 3)) atol=1e-2
+    @test sol(tv, idxs = sys.mass.s).u ≈ @.(2sin(2pi * tv * 3)) atol=1e-2
 end
