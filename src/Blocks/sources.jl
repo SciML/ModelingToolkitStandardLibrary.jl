@@ -746,7 +746,7 @@ these would be any of [the available interpolations](https://github.com/SciML/Da
 such as `LinearInterpolation`, `ConstantInterpolation` or `CubicSpline`.
   - `u`: the data used for interpolation. For `DataInterpolations` this will be an `AbstractVector`
   - `x`: the values that each data points correspond to, usually the times corresponding to each value in `u`.
-  - `args`: any other arguments beeded to build the interpolation
+  - `args`: any other arguments needed to build the interpolation
 # Keyword arguments:
   - `name`: the name of the component
 
