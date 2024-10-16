@@ -751,7 +751,7 @@ such as `LinearInterpolation`, `ConstantInterpolation` or `CubicSpline`.
   - `name`: the name of the component
 
 # Parameters:
-  - `interpolator`: the symbolic
+  - `interpolator`: the symbolic representation of the interpolation object, callable as `interpolator(t)`
 
 # Connectors:
   - `input`: a [`RealInput`](@ref) connector corresponding to the independent variable
