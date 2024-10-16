@@ -39,8 +39,8 @@ end</code></pre><pre class="documenter-example-output"><code class="nohighlight 
 end
 @mtkbuild sys = System()
 full_equations(sys)</code></pre><p class="math-container">\[ \begin{align}
-\frac{\mathrm{d} mass_{+}s\left( t \right)}{\mathrm{d}t} &amp;= mass_{+}v\left( t \right) \\
-\frac{\mathrm{d} mass_{+}v\left( t \right)}{\mathrm{d}t} &amp;= mass_{+}g + \frac{force_{+}f}{mass_{+}m}
+\frac{\mathrm{d} mass.s\left( t \right)}{\mathrm{d}t} &amp;= mass.v\left( t \right) \\
+\frac{\mathrm{d} mass.v\left( t \right)}{\mathrm{d}t} &amp;= mass.g + \frac{force.f}{mass.m}
 \end{align}
  \]</p><h2 id="Electrical"><a class="docs-heading-anchor" href="#Electrical">Electrical</a><a id="Electrical-1"></a><a class="docs-heading-anchor-permalink" href="#Electrical" title="Permalink"></a></h2><p>The flow variable (i.e. current) input component for the <code>Electrical</code> domain is</p><pre><code class="language-julia hljs">using ModelingToolkitStandardLibrary.Electrical
 
@@ -69,7 +69,7 @@ end</code></pre><pre class="documenter-example-output"><code class="nohighlight 
 end
 @mtkbuild sys = System()
 full_equations(sys)</code></pre><p class="math-container">\[ \begin{align}
-\frac{\mathrm{d} capacitor_{+}v\left( t \right)}{\mathrm{d}t} &amp;= \frac{current_{+}i}{capacitor_{+}C}
+\frac{\mathrm{d} capacitor.v\left( t \right)}{\mathrm{d}t} &amp;= \frac{current.i}{capacitor.C}
 \end{align}
  \]</p><p>Reversing the pins gives the same result</p><pre><code class="language-julia hljs">@mtkmodel System begin
     @components begin
@@ -84,7 +84,7 @@ full_equations(sys)</code></pre><p class="math-container">\[ \begin{align}
 end
 @mtkbuild sys = System()
 full_equations(sys)</code></pre><p class="math-container">\[ \begin{align}
-\frac{\mathrm{d} capacitor_{+}v\left( t \right)}{\mathrm{d}t} &amp;= \frac{current_{+}i}{capacitor_{+}C}
+\frac{\mathrm{d} capacitor.v\left( t \right)}{\mathrm{d}t} &amp;= \frac{current.i}{capacitor.C}
 \end{align}
  \]</p><h2 id="Hydraulic"><a class="docs-heading-anchor" href="#Hydraulic">Hydraulic</a><a id="Hydraulic-1"></a><a class="docs-heading-anchor-permalink" href="#Hydraulic" title="Permalink"></a></h2><p>The flow variable (i.e. mass flow) input component for the <code>Hydraulic</code> domain is</p><pre><code class="language-julia hljs">using ModelingToolkitStandardLibrary.Hydraulic.IsothermalCompressible
 
@@ -111,6 +111,6 @@ end</code></pre><pre class="documenter-example-output"><code class="nohighlight 
 end
 @mtkbuild sys = System()
 full_equations(sys) |&gt; first</code></pre><p class="math-container">\[ \begin{equation}
-\frac{\mathrm{d} volume_{+}rho\left( t \right)}{\mathrm{d}t} = \frac{flow_{+}dm}{volume_{+}vol}
+\frac{\mathrm{d} volume.rho\left( t \right)}{\mathrm{d}t} = \frac{flow.dm}{volume.vol}
 \end{equation}
- \]</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../connections/">« Theory</a><a class="docs-footer-nextpage" href="../../API/blocks/">Basic Blocks »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.7.0 on <span class="colophon-date" title="Wednesday 16 October 2024 10:08">Wednesday 16 October 2024</span>. Using Julia version 1.11.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+ \]</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../connections/">« Theory</a><a class="docs-footer-nextpage" href="../../API/blocks/">Basic Blocks »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.7.0 on <span class="colophon-date" title="Wednesday 16 October 2024 10:38">Wednesday 16 October 2024</span>. Using Julia version 1.11.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
