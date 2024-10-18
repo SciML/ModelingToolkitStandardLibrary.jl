@@ -46,7 +46,7 @@ using ModelingToolkitStandardLibrary.Blocks
     sol = solve(prob)
 
     # plot(sol; vars=[T_winding.T, T_core.T])
-    @test sol.retcode == Success
+    @test SciMLBase.successful_retcode(sol)
     @test sol[motor.T_winding.T] == sol[motor.winding.T]
     @test sol[motor.T_core.T] == sol[motor.core.T]
     @test sol[-motor.core.port.Q_flow] ≈

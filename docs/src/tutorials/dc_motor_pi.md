@@ -92,8 +92,8 @@ plot(p1, p2, layout = (2, 1))
 When implementing and tuning a control system in simulation, it is a good practice to analyze the closed-loop properties and verify robustness of the closed-loop with respect to, e.g., modeling errors. To facilitate this, we added two analysis points to the set of connections above, more specifically, we added the analysis points named `:y` and `:u` to the connections (for more details on analysis points, see [Linear Analysis](@ref))
 
 ```julia
-connect(sys.speed_sensor.w, :y, feedback.input2)
-connect(sys.pi_controller.ctr_output, :u, source.V)
+connect(sys.speed_sensor.w, :y, sys.feedback.input2)
+connect(sys.pi_controller.ctr_output, :u, sys.source.V)
 ```
 
 one at the plant output (`:y`) and one at the plant input (`:u`). We may use these analysis points to calculate, e.g., sensitivity functions, illustrated below. Here, we calculate the sensitivity function $S(s)$ and the complimentary sensitivity function $T(s) = I - S(s)$, defined as
