@@ -25,7 +25,7 @@ end
 
 @testset "TimeVaryingFunction" begin
     f(t) = t^2 + 1
-    vars = @variables y(t)=1 dy(t)=0 ddy(t)=0
+    vars = @variables y(t) dy(t) ddy(t)
     @named src = TimeVaryingFunction(f)
     @named int = Integrator()
     @named iosys = ODESystem(

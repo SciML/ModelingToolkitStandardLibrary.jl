@@ -22,8 +22,7 @@ using OrdinaryDiffEq: ReturnCode.Success
     @named h1 = ODESystem(eqs, t, systems = [mass1, reltem_sensor, tem_src, th_conductor])
     sys = structural_simplify(h1)
 
-    u0 = [mass1.T => 2.0
-          mass1.der_T => 1.0]
+    u0 = [mass1.T => 2]
     prob = ODEProblem(sys, u0, (0, 2.0))
     sol = solve(prob, Tsit5())
 
@@ -42,10 +41,7 @@ using OrdinaryDiffEq: ReturnCode.Success
     sys = structural_simplify(h2)
 
     u0 = [mass1.T => 1.0
-          mass2.T => 10.0
-          final_T => 12
-          mass1.der_T => 1.0
-          mass2.der_T => 1.0]
+          mass2.T => 10.0]
     prob = ODEProblem(sys, u0, (0, 3.0))
     sol = solve(prob, Tsit5())
 
@@ -79,9 +75,7 @@ end
             th_resistor, flow_src, th_ground, th_conductor])
     sys = structural_simplify(h2)
 
-    u0 = [mass1.T => 10.0
-          th_resistor.Q_flow => 1.0
-          mass1.der_T => 1.0]
+    u0 = [mass1.T => 10.0]
     prob = ODEProblem(sys, u0, (0, 3.0))
     sol = solve(prob, Tsit5())
 
@@ -121,9 +115,7 @@ end
         ])
     sys = structural_simplify(rad)
 
-    u0 = [base.Q_flow => 10
-          dissipator.Q_flow => 10
-          mass.T => T_gas]
+    u0 = [mass.T => T_gas]
     prob = ODEProblem(sys, u0, (0, 3.0))
     sol = solve(prob, Rodas4())
 
@@ -152,7 +144,6 @@ end
     sys = structural_simplify(coll)
 
     u0 = [
-        th_resistor.Q_flow => 1.0,
         mass.T => 0.0
     ]
     prob = ODEProblem(sys, u0, (0, 3.0))

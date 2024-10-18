@@ -33,9 +33,7 @@ using ModelingToolkitStandardLibrary.Blocks
 
     @mtkbuild piston = Piston()
 
-    u0 = [piston.coolant.dT => 5.0
-          piston.wall.Q_flow => 10.0]
-    prob = ODEProblem(piston, u0, (0, 3.0))
+    prob = ODEProblem(piston, [], (0, 3.0))
     sol = solve(prob)
 
     # Heat-flow-rate is equal in magnitude
