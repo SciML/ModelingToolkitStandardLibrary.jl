@@ -814,9 +814,6 @@ function (f::CachedInterpolation{T})(u, x, args) where {T}
     return interp
 end
 
-# function Symbolics.derivative(::typeof(CachedInterpolation), args::NTuple{2, Any}, ::Val{2})
-#     Symbolics.derivative(args[1], (args[2],), Val(1))
-# end
 
 Base.nameof(::CachedInterpolation) = :CachedInterpolation
 
