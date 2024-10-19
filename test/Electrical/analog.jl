@@ -48,7 +48,7 @@ using OrdinaryDiffEq: ReturnCode.Success
     # Plots.plot(sol; vars=[capacitor.v, voltage_sensor.v])
     # Plots.plot(sol; vars=[power_sensor.power, capacitor.i * capacitor.v])
     # Plots.plot(sol; vars=[resistor.i, current_sensor.i])
-    @test sol.retcode == Success
+    @test SciMLBase.successful_retcode(sol)
     @test sol[capacitor.v]≈sol[voltage_sensor.v] atol=1e-3
     @test sol[power_sensor.power]≈sol[capacitor.i * capacitor.v] atol=1e-3
     @test sol[resistor.i]≈sol[current_sensor.i] atol=1e-3
@@ -75,7 +75,7 @@ end
     sys = structural_simplify(model)
     prob = ODEProblem(sys, Pair[R2.i => 0.0], (0, 2.0))
     sol = solve(prob, Rodas4()) # has no state; does not work with Tsit5
-    @test sol.retcode == Success
+    @test SciMLBase.successful_retcode(sol)
     @test sol[short.v] == sol[R0.v] == zeros(length(sol.t))
     @test sol[R0.i] == zeros(length(sol.t))
     @test sol[R1.p.v][end]≈10 atol=1e-3
@@ -103,7 +103,7 @@ end
     sol = solve(prob, Tsit5())
 
     # Plots.plot(sol; vars=[source.v, capacitor.v])
-    @test sol.retcode == Success
+    @test SciMLBase.successful_retcode(sol)
     @test sol[capacitor.v][end]≈10 atol=1e-3
 end
 
@@ -127,7 +127,7 @@ end
     sol = solve(prob, Tsit5())
 
     # Plots.plot(sol; vars=[inductor.i, inductor.i])
-    @test sol.retcode == Success
+    @test SciMLBase.successful_retcode(sol)
     @test sol[inductor.i][end]≈10 atol=1e-3
 end
 
@@ -160,9 +160,9 @@ end
         sys = structural_simplify(model)
         prob = ODEProblem(sys, Pair[], (0.0, 10.0))
         sol = solve(prob, Tsit5())
-        @test sol.retcode == Success
+        @test SciMLBase.successful_retcode(sol)
         sol = solve(prob, Rodas4())
-        @test sol.retcode == Success
+        @test SciMLBase.successful_retcode(sol)
 
         # Plots.plot(sol; vars=[voltage.v, capacitor.v])
     end
@@ -188,7 +188,7 @@ end
     prob = ODEProblem(sys, Pair[], (0.0, 10.0))
     sol = solve(prob, Tsit5())
     y(x, st) = (x .> st) .* abs.(collect(x) .- st)
-    @test sol.retcode == Success
+    @test SciMLBase.successful_retcode(sol)
     @test sum(reduce(vcat, sol[capacitor.v]) .- y(sol.t, start_time))≈0 atol=1e-2
 end
 
@@ -228,7 +228,7 @@ end
           R1.v => 0.0]
     prob = ODEProblem(sys, u0, (0, 100.0))
     sol = solve(prob, Rodas4())
-    @test sol.retcode == Success
+    @test SciMLBase.successful_retcode(sol)
     @test sol[opamp.v2] == sol[C1.v] # Not a great one however. Rely on the plot
     @test sol[opamp.p2.v] == sol[sensor.v]
 
@@ -298,7 +298,7 @@ _damped_sine_wave(x, f, A, st, ϕ, d) = exp((st - x) * d) * A * sin(2 * π * f *
         prob = ODEProblem(vsys, u0, (0, 10.0))
         sol = solve(prob, dt = 0.1, Tsit5())
 
-        @test sol.retcode == Success
+        @test SciMLBase.successful_retcode(sol)
         @test sol[voltage.V.u]≈waveforms(i, sol.t) atol=1e-1
         @test sol[voltage.p.v] ≈ sol[voltage.V.u]
         # For visual inspection
@@ -364,7 +364,7 @@ end
         prob = ODEProblem(isys, u0, (0, 10.0))
         sol = solve(prob, dt = 0.1, Tsit5())
 
-        @test sol.retcode == Success
+        @test SciMLBase.successful_retcode(sol)
         @test sol[current.I.u]≈waveforms(i, sol.t) atol=1e-1
         @test sol[current.I.u]≈sol[current.p.i] atol=1e-1
         # For visual inspection

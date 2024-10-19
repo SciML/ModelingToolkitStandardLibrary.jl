@@ -22,14 +22,13 @@ using OrdinaryDiffEq: ReturnCode.Success
     @named h1 = ODESystem(eqs, t, systems = [mass1, reltem_sensor, tem_src, th_conductor])
     sys = structural_simplify(h1)
 
-    u0 = [mass1.T => 2.0
-          mass1.der_T => 1.0]
+    u0 = [mass1.T => 2]
     prob = ODEProblem(sys, u0, (0, 2.0))
     sol = solve(prob, Tsit5())
 
     # Check if Relative temperature sensor reads the temperature of heat capacitor
     # when connected to a thermal conductor and a fixed temperature source
-    @test sol.retcode == Success
+    @test SciMLBase.successful_retcode(sol)
     @test sol[reltem_sensor.T] + sol[tem_src.port.T] == sol[mass1.T] + sol[th_conductor.dT]
 
     @info "Building a two-body system..."
@@ -42,14 +41,11 @@ using OrdinaryDiffEq: ReturnCode.Success
     sys = structural_simplify(h2)
 
     u0 = [mass1.T => 1.0
-          mass2.T => 10.0
-          final_T => 12
-          mass1.der_T => 1.0
-          mass2.der_T => 1.0]
+          mass2.T => 10.0]
     prob = ODEProblem(sys, u0, (0, 3.0))
     sol = solve(prob, Tsit5())
 
-    @test sol.retcode == Success
+    @test SciMLBase.successful_retcode(sol)
     m1, m2 = sol.u[end]
     @test m1≈m2 atol=1e-1
     mass_T = reduce(hcat, sol.u)
@@ -79,13 +75,11 @@ end
             th_resistor, flow_src, th_ground, th_conductor])
     sys = structural_simplify(h2)
 
-    u0 = [mass1.T => 10.0
-          th_resistor.Q_flow => 1.0
-          mass1.der_T => 1.0]
+    u0 = [mass1.T => 10.0]
     prob = ODEProblem(sys, u0, (0, 3.0))
     sol = solve(prob, Tsit5())
 
-    @test sol.retcode == Success
+    @test SciMLBase.successful_retcode(sol)
     @test sol[th_conductor.dT] .* G == sol[th_conductor.Q_flow]
     @test sol[th_conductor.Q_flow] ≈ sol[hf_sensor1.Q_flow] + sol[flow_src.port.Q_flow]
 
@@ -121,13 +115,11 @@ end
         ])
     sys = structural_simplify(rad)
 
-    u0 = [base.Q_flow => 10
-          dissipator.Q_flow => 10
-          mass.T => T_gas]
+    u0 = [mass.T => T_gas]
     prob = ODEProblem(sys, u0, (0, 3.0))
     sol = solve(prob, Rodas4())
 
-    @test sol.retcode == Success
+    @test SciMLBase.successful_retcode(sol)
     @test sol[dissipator.dT] == sol[radiator.port_a.T] - sol[radiator.port_b.T]
     rad_Q_flow = G * σ * (T_gas^4 - T_coolant^4)
     @test sol[radiator.Q_flow] == fill(rad_Q_flow, length(sol[radiator.Q_flow]))
@@ -152,13 +144,12 @@ end
     sys = structural_simplify(coll)
 
     u0 = [
-        th_resistor.Q_flow => 1.0,
         mass.T => 0.0
     ]
     prob = ODEProblem(sys, u0, (0, 3.0))
     sol = solve(prob, Rodas4())
 
-    @test sol.retcode == Success
+    @test SciMLBase.successful_retcode(sol)
     @test sol[collector.port_b.Q_flow] + sol[collector.port_a1.Q_flow] +
           sol[collector.port_a2.Q_flow] ==
           zeros(length(sol[collector.port_b.Q_flow]))
