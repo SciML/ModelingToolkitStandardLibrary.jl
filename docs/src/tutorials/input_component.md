@@ -1,4 +1,4 @@
-# Running Models with Discrete Data
+# Building Models with Discrete Data, Interpolations, and Lookup Tables
 
 There are 4 ways to include data as part of a model.
 
