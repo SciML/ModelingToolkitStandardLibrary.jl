@@ -1,5 +1,6 @@
 using DiffEqBase
 import ChainRulesCore
+using PreallocationTools
 
 # Define and register smooth functions
 # These are "smooth" aka differentiable and avoid Gibbs effect
@@ -729,4 +730,145 @@ function SampledData(buffer::Vector{<:Real},
 end
 function SampledData(; name, buffer, sample_time, circular_buffer)
     SampledData(SampledDataType.vector_based; name, buffer, sample_time, circular_buffer)
+end
+
+"""
+    Interpolation(interp_type, u, x, args...; name)
+
+Represent function interpolation symbolically as a block component.
+By default interpolation types from [`DataInterpolations.jl`](https://github.com/SciML/DataInterpolations.jl) are supported,
+but in general any callable type that builds the interpolation object via `itp = interpolation_type(u, x, args...)` and calls
+the interpolation with `itp(t)` should work. This does not need to represent an interpolation, it can be any type that satisfies
+the interface, such as lookup tables.
+# Arguments:
+  - `interp_type`: the type of the interpolation. For `DataInterpolations`,
+these would be any of [the available interpolations](https://github.com/SciML/DataInterpolations.jl?tab=readme-ov-file#available-interpolations),
+such as `LinearInterpolation`, `ConstantInterpolation` or `CubicSpline`.
+  - `u`: the data used for interpolation. For `DataInterpolations` this will be an `AbstractVector`
+  - `x`: the values that each data points correspond to, usually the times corresponding to each value in `u`.
+  - `args`: any other arguments needed to build the interpolation
+# Keyword arguments:
+  - `name`: the name of the component
+
+# Parameters:
+  - `interpolator`: the symbolic representation of the interpolation object, callable as `interpolator(t)`
+
+# Connectors:
+  - `input`: a [`RealInput`](@ref) connector corresponding to the input variable
+  - `output`: a [`RealOutput`](@ref) connector corresponding to the interpolated value
+"""
+function Interpolation(interp_type, u, x, args...; name)
+    itp = interp_type(u, x, args...)
+    Interpolation(itp; name)
+end
+
+function Interpolation(itp; name)
+    @parameters (interpolator::typeof(itp))(..) = itp
+    @named input = RealInput()
+    @named output = RealOutput()
+
+    eqs = [output.u ~ interpolator(input.u)]
+
+    ODESystem(
+        eqs, t, [], [interpolator]; name, systems = [input, output])
+end
+
+"""
+    CachedInterpolation
+
+This callable struct caches the calls to an interpolation object via PreallocationTools.
+"""
+struct CachedInterpolation{T, I, U, X, C}
+    interpolation_type::I
+    prev_u::U
+    prev_x::X
+    cache::C
+
+    function CachedInterpolation(interpolation_type, u, x, args)
+        # we need to copy the inputs to avoid aliasing
+        prev_u = DiffCache(copy(u))
+        # Interpolation points can be a range, but we want to be able
+        # to update the cache if needed (and setindex! is not defined on ranges)
+        # with a view from MTKParameters, so we collect to get a vector
+        prev_x = DiffCache(collect(copy(x)))
+        cache = GeneralLazyBufferCache() do (u, x)
+            interpolation_type(get_tmp(prev_u, u), get_tmp(prev_x, x), args...)
+        end
+        T = typeof(cache[(get_tmp(prev_u, u), get_tmp(prev_x, x))])
+        I = typeof(interpolation_type)
+        U = typeof(prev_u)
+        X = typeof(prev_x)
+        C = typeof(cache)
+
+        new{T, I, U, X, C}(interpolation_type, prev_u, prev_x, cache)
+    end
+end
+
+function (f::CachedInterpolation{T})(u, x, args) where {T}
+    (; prev_u, prev_x, cache, interpolation_type) = f
+
+    interp = @inbounds if (u, x) ≠ (get_tmp(prev_u, u), get_tmp(prev_x, x))
+        get_tmp(prev_u, u) .= u
+        get_tmp(prev_x, x) .= x
+        cache.bufs[(u, x)] = interpolation_type(
+            get_tmp(prev_u, u), get_tmp(prev_x, x), args...)
+    else
+        cache[(u, x)]
+    end
+
+    return interp
+end
+
+Base.nameof(::CachedInterpolation) = :CachedInterpolation
+
+@register_symbolic (f::CachedInterpolation)(u::AbstractArray, x::AbstractArray, args::Tuple)
+
+"""
+    ParametrizedInterpolation(interp_type, u, x, args...; name, t = ModelingToolkit.t_nounits)
+
+Represent function interpolation symbolically as a block component, with the interpolation data represented parametrically.
+By default interpolation types from [`DataInterpolations.jl`](https://github.com/SciML/DataInterpolations.jl) are supported,
+but in general any callable type that builds the interpolation object via `itp = interpolation_type(u, x, args...)` and calls
+the interpolation with `itp(t)` should work. This does not need to represent an interpolation, it can be any type that satisfies
+the interface, such as lookup tables.
+# Arguments:
+  - `interp_type`: the type of the interpolation. For `DataInterpolations`,
+these would be any of [the available interpolations](https://github.com/SciML/DataInterpolations.jl?tab=readme-ov-file#available-interpolations),
+such as `LinearInterpolation`, `ConstantInterpolation` or `CubicSpline`.
+  - `u`: the data used for interpolation. For `DataInterpolations` this will be an `AbstractVector`
+  - `x`: the values that each data points correspond to, usually the times corresponding to each value in `u`.
+  - `args`: any other arguments beeded to build the interpolation
+# Keyword arguments:
+  - `name`: the name of the component
+
+# Parameters:
+  - `data`: the symbolic representation of the data passed at construction time via `u`.
+  - `ts`: the symbolic representation of times corresponding to the data passed at construction time via `x`.
+
+# Connectors:
+  - `input`: a [`RealInput`](@ref) connector corresponding to the independent variable
+  - `output`: a [`RealOutput`](@ref) connector corresponding to the interpolated value
+"""
+function ParametrizedInterpolation(
+        interp_type::T, u::AbstractVector, x::AbstractVector, args...;
+        name) where {T}
+    build_interpolation = CachedInterpolation(interp_type, u, x, args)
+
+    @parameters data[1:length(x)] = u
+    @parameters ts[1:length(x)] = x
+    @parameters interpolation_type::T=interp_type [tunable = false]
+    @parameters (interpolator::interp_type)(..)::eltype(u)
+
+    @named input = RealInput()
+    @named output = RealOutput()
+
+    eqs = [output.u ~ interpolator(input.u)]
+
+    ODESystem(eqs, ModelingToolkit.t_nounits, [],
+        [data, ts, interpolation_type, interpolator];
+        parameter_dependencies = [
+            interpolator ~ build_interpolation(data, ts, args)
+        ],
+        systems = [input, output],
+        name)
 end
