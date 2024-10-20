@@ -157,8 +157,15 @@ plot(sol2)
 The below code shows how to include data using a `Ref` and registered `get_sampled_data` function.  This example uses a very basic function which requires non-adaptive solving and sampled data.  As can be seen, the data can easily be set and changed before solving.
 
 ```@example custom_component_external_data
+using ModelingToolkit
+using ModelingToolkit: t_nounits as t, D_nounits as D
+using ModelingToolkitStandardLibrary.Blocks
+using OrdinaryDiffEq
+
 const rdata = Ref{Vector{Float64}}()
 
+dt = 4e-4
+time = 0:dt:0.1
 # Data Sets
 data1 = sin.(2 * pi * time * 100)
 data2 = cos.(2 * pi * time * 50)
@@ -211,6 +218,11 @@ Additional code could be added to resolve this issue, for example by using a `Re
 To resolve the issues presented above, the `ModelingToolkitStandardLibrary.Blocks.SampledData` component can be used which allows for a resusable `ODESystem` and self contained data which ensures a solution which remains valid for it's lifetime.  Now it's possible to also parallelize the call to `solve()`.
 
 ```@example sampled_data_component
+using ModelingToolkit
+using ModelingToolkit: t_nounits as t, D_nounits as D
+using ModelingToolkitStandardLibrary.Blocks
+using OrdinaryDiffEq
+
 function System(; name)
     src = SampledData(Float64, name=:src)
 
@@ -228,6 +240,12 @@ end
 @named system = System()
 sys = structural_simplify(system, split=false)
 s = complete(system)
+
+dt = 4e-4
+time = 0:dt:0.1
+data1 = sin.(2 * pi * time * 100)
+data2 = cos.(2 * pi * time * 50)
+
 prob = ODEProblem(sys, [], (0, time[end]); tofloat = false, use_union=true)
 defs = ModelingToolkit.defaults(sys)
 
