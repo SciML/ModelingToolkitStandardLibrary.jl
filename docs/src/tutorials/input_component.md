@@ -212,7 +212,7 @@ To resolve the issues presented above, the `ModelingToolkitStandardLibrary.Block
 
 ```@example sampled_data_component
 function System(; name)
-    @named src = SampledData(Float64)
+    src = SampledData(Float64, name=:src)
 
     vars = @variables f(t)=0 x(t)=0 dx(t)=0 ddx(t)=0
     pars = @parameters m=10 k=1000 d=1
