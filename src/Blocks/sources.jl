@@ -754,7 +754,7 @@ such as `LinearInterpolation`, `ConstantInterpolation` or `CubicSpline`.
   - `interpolator`: the symbolic representation of the interpolation object, callable as `interpolator(t)`
 
 # Connectors:
-  - `input`: a [`RealInput`](@ref) connector corresponding to the independent variable
+  - `input`: a [`RealInput`](@ref) connector corresponding to the input variable
   - `output`: a [`RealOutput`](@ref) connector corresponding to the interpolated value
 """
 function Interpolation(interp_type, u, x, args...; name)
