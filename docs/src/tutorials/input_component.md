@@ -44,7 +44,7 @@ function MassSpringDamper(; name)
            D(x) ~ dx
            D(dx) ~ ddx]
 
-    ODESystem(eqs, t, [], []; name, systems = [input])
+    ODESystem(eqs, t; name, systems = [input])
 end
 
 function MassSpringDamperSystem(data, time; name)
@@ -122,7 +122,7 @@ function MassSpringDamperSystem(data, time; name)
         connect(src.input, clk.output)
     ]
 
-    ODESystem(eqs, t, [], []; name, systems = [src, clk, model])
+    ODESystem(eqs, t; name, systems = [src, clk, model])
 end
 
 function generate_data()
@@ -217,7 +217,7 @@ Additional code could be added to resolve this issue, for example by using a `Re
 
 To resolve the issues presented above, the `ModelingToolkitStandardLibrary.Blocks.SampledData` component can be used which allows for a resusable `ODESystem` and self contained data which ensures a solution which remains valid for it's lifetime.  Now it's possible to also parallelize the call to `solve()`.
 
-```@example sampled_data_component
+```julia
 using ModelingToolkit
 using ModelingToolkit: t_nounits as t, D_nounits as D
 using ModelingToolkitStandardLibrary.Blocks
@@ -246,14 +246,14 @@ time = 0:dt:0.1
 data1 = sin.(2 * pi * time * 100)
 data2 = cos.(2 * pi * time * 50)
 
-prob = ODEProblem(sys, [], (0, time[end]); tofloat = false, use_union=true)
+prob = ODEProblem(sys, [], (0, time[end]); split=false, tofloat = false, use_union=true)
 defs = ModelingToolkit.defaults(sys)
 
 function get_prob(data)
     defs[s.src.buffer] = Parameter(data, dt)
     # ensure p is a uniform type of Vector{Parameter{Float64}} (converting from Vector{Any})
     p = Parameter.(ModelingToolkit.varmap_to_vars(defs, parameters(sys); tofloat = false))
-    remake(prob; p)
+    remake(prob; p, build_initializeprob=false)
 end
 
 prob1 = get_prob(data1)
