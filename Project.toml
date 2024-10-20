@@ -1,7 +1,7 @@
 name = "ModelingToolkitStandardLibrary"
 uuid = "16a59e39-deab-5bd0-87e4-056b12336739"
 authors = ["Chris Rackauckas and Julia Computing"]
-version = "2.15.1"
+version = "2.16.0"
 
 [deps]
 ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
@@ -16,12 +16,11 @@ Symbolics = "0c5d862f-8b57-4792-8d23-62f2024744c7"
 Aqua = "0.8"
 ChainRulesCore = "1.24"
 ControlSystemsBase = "1.4"
-DataInterpolations = "4.6, 5, 6"
+DataInterpolations = "6"
 DiffEqBase = "6.152"
 IfElse = "0.1"
 LinearAlgebra = "1.10"
-ModelingToolkit = "9.46"
-Optimization = "3.27"
+ModelingToolkit = "9.46.1"
 OrdinaryDiffEq = "6.87"
 OrdinaryDiffEqDefault = "1.1"
 PreallocationTools = "0.4.23"

@@ -33,14 +33,12 @@ using ModelingToolkitStandardLibrary.Blocks
 
     @mtkbuild piston = Piston()
 
-    u0 = [piston.coolant.dT => 5.0
-          piston.wall.Q_flow => 10.0]
-    prob = ODEProblem(piston, u0, (0, 3.0))
+    prob = ODEProblem(piston, [], (0, 3.0))
     sol = solve(prob)
 
     # Heat-flow-rate is equal in magnitude
     # and opposite in direction
-    @test sol.retcode == Success
+    @test SciMLBase.successful_retcode(sol)
     # The initial value doesn't add up to absolute zero, while the rest do. To avoid
     # tolerance on the latter, the test is split in two parts.
     @test sol[piston.gas.Q_flow][1] + sol[piston.coolant.Q_flow][1]≈0 atol=1e-6

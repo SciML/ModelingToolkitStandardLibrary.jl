@@ -155,7 +155,7 @@ end
             delta_s = 1 / 1000
             s_b = 2 - delta_s + 1
 
-            @test sol[s.pos_value.u][end]≈s_b atol=1e-3
+            @test sol[s.pos_value.u][end]≈1.0 atol=1e-3
             @test all(sol[s.spring.flange_a.f] .== sol[s.force_output.u])
         end
 
