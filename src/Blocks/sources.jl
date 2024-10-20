@@ -773,6 +773,11 @@ function Interpolation(itp; name)
         eqs, t, [], [interpolator]; name, systems = [input, output])
 end
 
+"""
+    CachedInterpolation
+
+This callable struct caches the calls to an interpolation object via PreallocationTools.
+"""
 struct CachedInterpolation{T, I, U, X, C}
     interpolation_type::I
     prev_u::U
@@ -813,7 +818,6 @@ function (f::CachedInterpolation{T})(u, x, args) where {T}
 
     return interp
 end
-
 
 Base.nameof(::CachedInterpolation) = :CachedInterpolation
 
