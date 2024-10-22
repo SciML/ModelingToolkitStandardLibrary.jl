@@ -100,7 +100,7 @@ using Plots
 
 function MassSpringDamper(; name)
     @named input = RealInput()
-    vars = @variables f(t)=0 x(t)=0 dx(t)=0 ddx(t)=0
+    vars = @variables f(t) x(t)=0 dx(t) [guess=0] ddx(t)
     pars = @parameters m=10 k=1000 d=1
 
     eqs = [
@@ -144,7 +144,7 @@ plot(sol)
 
 If we want to run a new data set, this requires only remaking the problem and solving again
 ```@example parametrized_interpolation
-prob2 = remake(prob, p = [sys.src.data => ones(length(data))])
+prob2 = remake(prob, p = [sys.src.data => ones(length(df.data))])
 sol2 = solve(prob2)
 plot(sol2)
 ```
