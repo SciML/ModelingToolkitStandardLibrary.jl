@@ -946,7 +946,7 @@ end
 """
     Orifice()
 
-A valve in fixed position, with parameters for area and the discharge coefficient (fitting the form Effective Area = A / sqrt(C))  
+A valve in fixed position, with parameters for area and the discharge coefficient (fitting the form Effective Area = area x Cd)  
 
 ```
      ┌ 
@@ -963,28 +963,30 @@ dm ────►  effective area
 
 # Parameters:
 ## volume
-- `Aₒ`: [m^2] moving wall area
-- `Cₒ`: [+/-1] applies the direction conversion from the `flange` to `x`
+- `area`: [m^2] physical area
+- `cd`: [unitless] discharge coefficient
 
 # Connectors:
-- `port₁`: hydraulic port
-- `port₂`: hydraulic port
+- `port_a`: hydraulic port
+- `port_b`: hydraulic port
 """
 
 @mtkmodel Orifice begin
     @parameters begin
-        Aₒ=0.00094
-        Cₒ=2.7 # Presumably this fits the form Co = 1 / Cd^2 where Cd ~ 0.6
+        area=0.00094
+        Cd=0.6 # TODO Cd here is defined differently from Valve(). 
+        # Here it follows the form Effective Orifice Area = Cd x Physical Orifice Area
+        # The Valve component should be updated too.
     end
     @components begin
         area = Constant(k=Aₒ)
-        valve = Valve(Cd=Cₒ)
+        valve = Valve(Cd= 1 / (Cd * Cd))
         port₁ = HydraulicPort()
         port₂ = HydraulicPort()
     end
     @equations begin
         connect(valve.area, area.output)
-        connect(valve.port_a, port₁)
-        connect(valve.port_b, port₂)
+        connect(valve.port_a, port_a)
+        connect(valve.port_b, port_b)
     end
 end
