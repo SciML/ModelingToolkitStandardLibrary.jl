@@ -566,4 +566,52 @@ end
 
         @test SciMLBase.successful_retcode(sol)
     end
+
+    @testset "Initialization" begin
+        function MassSpringDamper(; name)
+            @named input = RealInput()
+            vars = @variables f(t) x(t)=0 dx(t) [guess = 0] ddx(t)
+            pars = @parameters m=10 k=1000 d=1
+
+            eqs = [f ~ input.u
+                   ddx * 10 ~ k * x + d * dx + f
+                   D(x) ~ dx
+                   D(dx) ~ ddx]
+
+            ODESystem(eqs, t, vars, pars; name, systems = [input])
+        end
+
+        function MassSpringDamperSystem(data, time; name)
+            @named src = ParametrizedInterpolation(LinearInterpolation, data, time)
+            @named clk = ContinuousClock()
+            @named model = MassSpringDamper()
+
+            eqs = [connect(model.input, src.output)
+                   connect(src.input, clk.output)]
+
+            ODESystem(eqs, t; name, systems = [src, clk, model])
+        end
+
+        function generate_data()
+            dt = 4e-4
+            time = 0:dt:0.1
+            data = sin.(2 * pi * time * 100)
+
+            return DataFrame(; time, data)
+        end
+
+        df = generate_data() # example data
+
+        @named system = MassSpringDamperSystem(df.data, df.time)
+        sys = structural_simplify(system)
+        prob = ODEProblem(sys, [], (0, df.time[end]))
+        sol = solve(prob)
+
+        @test SciMLBase.successful_retcode(sol)
+
+        prob2 = remake(prob, p = [sys.src.data => ones(length(df.data))])
+        sol2 = solve(prob2)
+
+        @test SciMLBase.successful_retcode(sol2)
+    end
 end
