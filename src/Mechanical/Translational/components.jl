@@ -65,9 +65,9 @@ Sliding mass with inertia
     @named flange = MechanicalPort()
 
     vars = @variables begin
-        s(t)
-        v(t)
-        f(t)
+        s(t), [guess=0]
+        v(t), [guess=0]
+        f(t), [guess=0]
     end
 
     eqs = [flange.v ~ v

@@ -281,8 +281,8 @@ end
     end
 
     vars = @variables begin
-        area(t)
-        y(t)
+        area(t), [guess=0]
+        y(t), [guess=0]
     end
 
     # let
@@ -473,13 +473,13 @@ See also [`FixedVolume`](@ref), [`DynamicVolume`](@ref)
     end
 
     vars = @variables begin
-        x(t)
-        dx(t)
-        p(t)
-        f(t)
-        rho(t)
-        drho(t)
-        dm(t)
+        x(t), [guess=0]
+        dx(t), [guess=0]
+        p(t), [guess=0]
+        f(t), [guess=0]
+        rho(t), [guess=0]
+        drho(t), [guess=0]
+        dm(t), [guess=0]
     end
 
     systems = @named begin
