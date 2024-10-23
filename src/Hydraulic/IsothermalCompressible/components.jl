@@ -973,16 +973,16 @@ dm ────►  effective area
 
 @mtkmodel Orifice begin
     @parameters begin
-        area=0.00094
+        orifice_area=0.00094
         Cd=0.6 # TODO Cd here is defined differently from Valve(). 
         # Here it follows the form Effective Orifice Area = Cd x Physical Orifice Area
         # The Valve component should be updated too.
     end
     @components begin
-        area = Constant(k=Aₒ)
+        area = Constant(k=orifice_area)
         valve = Valve(Cd= 1 / (Cd * Cd))
-        port₁ = HydraulicPort()
-        port₂ = HydraulicPort()
+        port_a = HydraulicPort()
+        port_b = HydraulicPort()
     end
     @equations begin
         connect(valve.area, area.output)
