@@ -5,6 +5,12 @@ using ModelingToolkitStandardLibrary.Blocks: smooth_sin, smooth_cos, smooth_damp
                                              smooth_square, smooth_step, smooth_ramp,
                                              smooth_triangular, triangular, square
 using OrdinaryDiffEq: ReturnCode.Success
+using DataInterpolations
+using DataFrames
+using SymbolicIndexingInterface
+using SciMLStructures: SciMLStructures, Tunable
+using Optimization
+using ForwardDiff
 
 @testset "Constant" begin
     @named src = Constant(k = 2)
@@ -412,8 +418,6 @@ end
 end
 
 @testset "SampledData" begin
-    using DataInterpolations
-
     dt = 4e-4
     t_end = 10.0
     time = 0:dt:t_end
@@ -476,5 +480,139 @@ end
         @test sol[int.output.u][end]≈1 / 3 * 10^3 + 10.0 atol=1e-3 # closed-form solution to integral
         @test sol[dy][end]≈2 * time[end] atol=1e-3
         @test sol[ddy][end]≈2 atol=1e-3
+    end
+end
+
+@testset "Interpolation" begin
+    @variables y(t) = 0
+    u = rand(15)
+    x = 0:14.0
+
+    @named i = Interpolation(LinearInterpolation, u, x)
+    eqs = [i.input.u ~ t, D(y) ~ i.output.u]
+
+    @named model = ODESystem(eqs, t, systems = [i])
+    sys = structural_simplify(model)
+
+    prob = ODEProblem{true, SciMLBase.FullSpecialize}(sys, [], (0.0, 4))
+    sol = solve(prob, Tsit5())
+
+    @test SciMLBase.successful_retcode(sol)
+end
+
+@testset "ParametrizedInterpolation" begin
+    @variables y(t) = 0
+    u = rand(15)
+    x = 0:14.0
+
+    @testset "LinearInterpolation" begin
+        @named i = ParametrizedInterpolation(LinearInterpolation, u, x)
+        eqs = [i.input.u ~ t, D(y) ~ i.output.u]
+
+        @named model = ODESystem(eqs, t, systems = [i])
+        sys = structural_simplify(model)
+
+        prob = ODEProblem{true, SciMLBase.FullSpecialize}(sys, [], (0.0, 4))
+        sol = solve(prob, Tsit5())
+
+        @test SciMLBase.successful_retcode(sol)
+
+        prob2 = remake(prob, p = [i.data => ones(15)])
+        sol2 = solve(prob2)
+
+        @test SciMLBase.successful_retcode(sol2)
+        @test all(only.(sol2.u) .≈ sol2.t) # the solution for y' = 1 is y(t) = t
+
+        set_data! = setp(prob2, i.data)
+        set_data!(prob2, zeros(15))
+        sol3 = solve(prob2)
+        @test SciMLBase.successful_retcode(sol3)
+        @test iszero(sol3)
+
+        function loss(x, p)
+            prob0, set_data! = p
+            ps = parameter_values(prob0)
+            arr, repack, alias = SciMLStructures.canonicalize(Tunable(), ps)
+            T = promote_type(eltype(x), eltype(arr))
+            promoted_ps = SciMLStructures.replace(Tunable(), ps, T.(arr))
+            prob = remake(prob0; p = promoted_ps)
+
+            set_data!(prob, x)
+            sol = solve(prob)
+            sum(abs2.(only.(sol.u) .- sol.t))
+        end
+
+        set_data! = setp(prob, i.data)
+        of = OptimizationFunction(loss, AutoForwardDiff())
+        op = OptimizationProblem(
+            of, u, (prob, set_data!), lb = zeros(15), ub = fill(2.0, 15))
+
+        # check that type changing works
+        @test length(ForwardDiff.gradient(x -> of(x, (prob, set_data!)), u)) == 15
+
+        r = solve(op, Optimization.LBFGS(), maxiters = 1000)
+        @test of(r.u, (prob, set_data!)) < of(u, (prob, set_data!))
+    end
+
+    @testset "BSplineInterpolation" begin
+        @named i = ParametrizedInterpolation(
+            BSplineInterpolation, u, x, 3, :Uniform, :Uniform)
+        eqs = [i.input.u ~ t, D(y) ~ i.output.u]
+
+        @named model = ODESystem(eqs, t, systems = [i])
+        sys = structural_simplify(model)
+
+        prob = ODEProblem(sys, [], (0.0, 4))
+        sol = solve(prob)
+
+        @test SciMLBase.successful_retcode(sol)
+    end
+
+    @testset "Initialization" begin
+        function MassSpringDamper(; name)
+            @named input = RealInput()
+            vars = @variables f(t) x(t)=0 dx(t) [guess = 0] ddx(t)
+            pars = @parameters m=10 k=1000 d=1
+
+            eqs = [f ~ input.u
+                   ddx * 10 ~ k * x + d * dx + f
+                   D(x) ~ dx
+                   D(dx) ~ ddx]
+
+            ODESystem(eqs, t, vars, pars; name, systems = [input])
+        end
+
+        function MassSpringDamperSystem(data, time; name)
+            @named src = ParametrizedInterpolation(LinearInterpolation, data, time)
+            @named clk = ContinuousClock()
+            @named model = MassSpringDamper()
+
+            eqs = [connect(model.input, src.output)
+                   connect(src.input, clk.output)]
+
+            ODESystem(eqs, t; name, systems = [src, clk, model])
+        end
+
+        function generate_data()
+            dt = 4e-4
+            time = 0:dt:0.1
+            data = sin.(2 * pi * time * 100)
+
+            return DataFrame(; time, data)
+        end
+
+        df = generate_data() # example data
+
+        @named system = MassSpringDamperSystem(df.data, df.time)
+        sys = structural_simplify(system)
+        prob = ODEProblem(sys, [], (0, df.time[end]))
+        sol = solve(prob)
+
+        @test SciMLBase.successful_retcode(sol)
+
+        prob2 = remake(prob, p = [sys.src.data => ones(length(df.data))])
+        sol2 = solve(prob2)
+
+        @test SciMLBase.successful_retcode(sol2)
     end
 end

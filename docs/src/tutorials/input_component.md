@@ -1,59 +1,171 @@
-# Running Models with Discrete Data
+# Building Models with Discrete Data, Interpolations, and Lookup Tables
 
-There are 3 ways to include data as part of a model.
+There are 4 ways to include data as part of a model.
 
- 1. using `ModelingToolkitStandardLibrary.Blocks.TimeVaryingFunction`
- 2. using a custom component with external data
- 3. using `ModelingToolkitStandardLibrary.Blocks.SampledData`
+ 1. using `ModelingToolkitStandardLibrary.Blocks.Interpolation`
+ 2. using `ModelingToolkitStandardLibrary.Blocks.ParametrizedInterpolation`
+ 3. using a custom component with external data (not recommended)
+ 4. using `ModelingToolkitStandardLibrary.Blocks.SampledData` (legacy)
 
 This tutorial demonstrate each case and explain the pros and cons of each.
 
-## `TimeVaryingFunction` Component
+## `Interpolation` Block
 
-The `ModelingToolkitStandardLibrary.Blocks.TimeVaryingFunction` component is easy to use and is performant.  However the data is locked to the `ODESystem` and can only be changed by building a new `ODESystem`.  Therefore, running a batch of data would not be efficient.  Below is an example of how to use the `TimeVaryingFunction` with `DataInterpolations` to build the function from sampled discrete data.
+The `ModelingToolkitStandardLibrary.Blocks.Interpolation` component is easy to use and is performant.
+It is similar to using callable parameters, but it provides a block interface with `RealInput` and `RealOutput` connectors.
+The `Interpolation` is compatible with interpolation types from `DataInterpolation`.
 
-```julia
+```@docs
+ModelingToolkitStandardLibrary.Blocks.Interpolation
+```
+
+Here is an example on how to use it. Let's consider a mass-spring-damper system, where
+we have an external force as an input. We then generate some example data in a `DataFrame`
+that would represent a measurement of the input. In a more realistic case, this `DataFrame`
+would be read from a file.
+
+```@example interpolation_block
 using ModelingToolkit
 using ModelingToolkit: t_nounits as t, D_nounits as D
 using ModelingToolkitStandardLibrary.Blocks
 using DataInterpolations
 using OrdinaryDiffEq
+using DataFrames
+using Plots
 
-function System(f; name)
-    src = TimeVaryingFunction(f)
+function MassSpringDamper(; name)
+    @named input = RealInput()
+    @variables f(t)=0 x(t)=0 dx(t)=0 ddx(t)=0
+    @parameters m=10 k=1000 d=1
 
-    vars = @variables f(t)=0 x(t)=0 dx(t)=0 ddx(t)=0
-    pars = @parameters m=10 k=1000 d=1
-
-    eqs = [f ~ src.output.u
+    eqs = [
+           f ~ input.u
            ddx * 10 ~ k * x + d * dx + f
            D(x) ~ dx
            D(dx) ~ ddx]
 
-    ODESystem(eqs, t, vars, pars; systems = [src], name)
+    ODESystem(eqs, t; name, systems = [input])
 end
 
-dt = 4e-4
-time = 0:dt:0.1
-data = sin.(2 * pi * time * 100) # example data
+function MassSpringDamperSystem(data, time; name)
+    @named src = Interpolation(LinearInterpolation, data, time)
+    @named clk = ContinuousClock()
+    @named model = MassSpringDamper()
 
-f = LinearInterpolation(data, time)
+    eqs = [
+        connect(src.input, clk.output)
+        connect(src.output, model.input)
+    ]
 
-@named system = System(f)
+    ODESystem(eqs, t, [], []; name, systems = [src, clk, model])
+end
+
+function generate_data()
+    dt = 4e-4
+    time = 0:dt:0.1
+    data = sin.(2 * pi * time * 100)
+
+    return DataFrame(; time, data)
+end
+
+df = generate_data() # example data
+
+@named system = MassSpringDamperSystem(df.data, df.time)
 sys = structural_simplify(system)
-prob = ODEProblem(sys, [], (0, time[end]))
-sol = solve(prob, ImplicitEuler())
+prob = ODEProblem(sys, [], (0, df.time[end]))
+sol = solve(prob)
+plot(sol)
 ```
 
-If we want to run a new data set, this requires building a new `LinearInterpolation` and `ODESystem` followed by running `structural_simplify`, all of which takes time.  Therefore, to run several pieces of data it's better to re-use an `ODESystem`.  The next couple methods will demonstrate how to do this.
+## `ParametrizedInterpolation` Block
+
+The `ModelingToolkitStandardLibrary.Blocks.ParametrizedInterpolation` component is similar to `Interpolation`, but as the name suggests, it is parametrized by the data, allowing one to change the underlying data without rebuilding the model as the data is represented via vector parameters.
+The main advantage of this block over the [`Interpolation`](@ref) one is that one can use it for optimization problems. Currently, this supports forward mode AD via ForwardDiff, but due to the increased flexibility of the types in the component, this is not as fast as the `Interpolation` block,
+so it is recommended to use only when the added flexibility is required.
+
+```@docs
+ModelingToolkitStandardLibrary.Blocks.ParametrizedInterpolation
+```
+
+Here is an example on how to use it
+
+```@example parametrized_interpolation
+using ModelingToolkit
+using ModelingToolkit: t_nounits as t, D_nounits as D
+using ModelingToolkitStandardLibrary.Blocks
+using DataInterpolations
+using OrdinaryDiffEq
+using DataFrames
+using Plots
+
+function MassSpringDamper(; name)
+    @named input = RealInput()
+    vars = @variables f(t) x(t)=0 dx(t) [guess=0] ddx(t)
+    pars = @parameters m=10 k=1000 d=1
+
+    eqs = [
+           f ~ input.u
+           ddx * 10 ~ k * x + d * dx + f
+           D(x) ~ dx
+           D(dx) ~ ddx]
+
+    ODESystem(eqs, t, vars, pars; name, systems = [input])
+end
+
+function MassSpringDamperSystem(data, time; name)
+    @named src = ParametrizedInterpolation(LinearInterpolation, data, time)
+    @named clk = ContinuousClock()
+    @named model = MassSpringDamper()
+
+    eqs = [
+        connect(model.input, src.output)
+        connect(src.input, clk.output)
+    ]
+
+    ODESystem(eqs, t; name, systems = [src, clk, model])
+end
+
+function generate_data()
+    dt = 4e-4
+    time = 0:dt:0.1
+    data = sin.(2 * pi * time * 100)
+
+    return DataFrame(; time, data)
+end
+
+df = generate_data() # example data
+
+@named system = MassSpringDamperSystem(df.data, df.time)
+sys = structural_simplify(system)
+prob = ODEProblem(sys, [], (0, df.time[end]))
+sol = solve(prob)
+plot(sol)
+```
+
+If we want to run a new data set, this requires only remaking the problem and solving again
+```@example parametrized_interpolation
+prob2 = remake(prob, p = [sys.src.data => ones(length(df.data))])
+sol2 = solve(prob2)
+plot(sol2)
+```
+
+!!! note
+    Note that when changing the data, the length of the new data must be the same as the length of the original data.
 
 ## Custom Component with External Data
 
 The below code shows how to include data using a `Ref` and registered `get_sampled_data` function.  This example uses a very basic function which requires non-adaptive solving and sampled data.  As can be seen, the data can easily be set and changed before solving.
 
-```julia
+```@example custom_component_external_data
+using ModelingToolkit
+using ModelingToolkit: t_nounits as t, D_nounits as D
+using ModelingToolkitStandardLibrary.Blocks
+using OrdinaryDiffEq
+
 const rdata = Ref{Vector{Float64}}()
 
+dt = 4e-4
+time = 0:dt:0.1
 # Data Sets
 data1 = sin.(2 * pi * time * 100)
 data2 = cos.(2 * pi * time * 50)
@@ -106,8 +218,13 @@ Additional code could be added to resolve this issue, for example by using a `Re
 To resolve the issues presented above, the `ModelingToolkitStandardLibrary.Blocks.SampledData` component can be used which allows for a resusable `ODESystem` and self contained data which ensures a solution which remains valid for it's lifetime.  Now it's possible to also parallelize the call to `solve()`.
 
 ```julia
+using ModelingToolkit
+using ModelingToolkit: t_nounits as t, D_nounits as D
+using ModelingToolkitStandardLibrary.Blocks
+using OrdinaryDiffEq
+
 function System(; name)
-    src = SampledData(Float64)
+    src = SampledData(Float64, name=:src)
 
     vars = @variables f(t)=0 x(t)=0 dx(t)=0 ddx(t)=0
     pars = @parameters m=10 k=1000 d=1
@@ -121,16 +238,22 @@ function System(; name)
 end
 
 @named system = System()
-sys = structural_simplify(system)
+sys = structural_simplify(system, split=false)
 s = complete(system)
-prob = ODEProblem(sys, [], (0, time[end]); tofloat = false)
+
+dt = 4e-4
+time = 0:dt:0.1
+data1 = sin.(2 * pi * time * 100)
+data2 = cos.(2 * pi * time * 50)
+
+prob = ODEProblem(sys, [], (0, time[end]); split=false, tofloat = false, use_union=true)
 defs = ModelingToolkit.defaults(sys)
 
 function get_prob(data)
     defs[s.src.buffer] = Parameter(data, dt)
     # ensure p is a uniform type of Vector{Parameter{Float64}} (converting from Vector{Any})
     p = Parameter.(ModelingToolkit.varmap_to_vars(defs, parameters(sys); tofloat = false))
-    remake(prob; p)
+    remake(prob; p, build_initializeprob=false)
 end
 
 prob1 = get_prob(data1)
