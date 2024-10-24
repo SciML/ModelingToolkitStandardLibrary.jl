@@ -6,6 +6,7 @@ using ModelingToolkitStandardLibrary.Blocks: smooth_sin, smooth_cos, smooth_damp
                                              smooth_triangular, triangular, square
 using OrdinaryDiffEq: ReturnCode.Success
 using DataInterpolations
+using DataFrames
 using SymbolicIndexingInterface
 using SciMLStructures: SciMLStructures, Tunable
 using Optimization
