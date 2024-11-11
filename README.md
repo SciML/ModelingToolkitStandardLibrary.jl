@@ -55,7 +55,7 @@ V = 1.0
 @variables t
 systems = @named begin
     resistor = Resistor(R = R)
-    capacitor = Capacitor(C = C)
+    capacitor = Capacitor(C = C, v = 0.0)
     source = Voltage()
     constant = Constant(k = V)
     ground = Ground()
