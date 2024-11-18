@@ -264,7 +264,7 @@ Electromotoric force (electric/mechanic transformer)
 end
 
 """
-        Diode(; name, Is = 1e-6, n = 1)
+        Diode(; name, Is = 1e-6, n = 1, T = 300.15)
 
 Ideal diode based on the Shockley diode equation.
 
@@ -281,6 +281,7 @@ Ideal diode based on the Shockley diode equation.
      
     - `Is`: [`A`] Saturation current
     - `n`: Ideality factor
+    - `T`: [K] Ambient temperature
 """
 @mtkmodel Diode begin
     begin
