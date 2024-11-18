@@ -372,3 +372,52 @@ end
         # savefig(plt, "test_current_$(source.name)")
     end
 end
+
+@testset "Diode component test" begin
+    # Parameter values 
+    R = 1.0
+    C = 1.0
+    V = 10.0
+    n = 1.0
+    Is = 1e-3
+    f = 1.0
+
+    # Components
+    @named resistor = Resistor(R = R)
+    @named capacitor = Capacitor(C = C, v = 0.0)
+    @named source = Voltage()
+    @named diode = Diode(n = n, Is = Is)
+    @named ac = Sine(frequency = f, amplitude = V)
+    @named ground = Ground()
+
+    # Connections
+    connections = [connect(ac.output, source.V)
+                   connect(source.p, diode.p)
+                   connect(diode.n, resistor.p)
+                   connect(resistor.n, capacitor.p)
+                   connect(capacitor.n, source.n, ground.g)]
+
+    # Model
+    @named model = ODESystem(connections, t;
+        systems = [resistor, capacitor, source, diode, ac, ground])
+    sys = structural_simplify(model)
+    prob = ODEProblem(sys, Pair[], (0.0, 10.0))
+    sol = solve(prob)
+
+    # Extract solutions for testing
+    diode_voltage = sol[diode.v]
+    diode_current = sol[diode.i]
+    resistor_current = sol[resistor.i]
+    capacitor_voltage = sol[capacitor.v]
+
+    # Tests
+    @test all(diode_current .>= -Is)
+    @test capacitor_voltage[end].≈V rtol=3e-1
+
+    # For visual inspection
+    # plt = plot(sol; vars = [diode.i, resistor.i, capacitor.v],
+    #     size = (800, 600), dpi = 300,
+    #     labels = ["Diode Current" "Resistor Current" "Capacitor Voltage"],
+    #     title = "Diode Test")
+    # savefig(plt, "diode_test")
+end
