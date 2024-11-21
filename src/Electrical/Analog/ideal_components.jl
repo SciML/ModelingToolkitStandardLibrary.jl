@@ -301,43 +301,6 @@ Ideal diode based on the Shockley diode equation.
 end
 
 """
-        Diode(; name, Is = 1e-6, n = 1, T = 300.15)
-
-Ideal diode based on the Shockley diode equation.
-
-# States
-
-    - See [OnePort](@ref)
-
-# Connectors
-    
-    - `p` Positive pin
-    - `n` Negative pin
-
-# Parameters
-     
-    - `Is`: [`A`] Saturation current
-    - `n`: Ideality factor
-    - `T`: [K] Ambient temperature
-"""
-@mtkmodel Diode begin
-    begin
-        k = 1.380649e-23 # Boltzmann constant (J/K)
-        q = 1.602176634e-19 # Elementary charge (C)
-    end
-
-    @extend v, i = oneport = OnePort(; v = 0.0)
-    @parameters begin
-        Is = 1e-6, [description = "Saturation current (A)"]
-        n = 1, [description = "Ideality factor"]
-        T = 300.15, [description = "Ambient temperature"]
-    end
-    @equations begin
-        i ~ Is * (exp(v * q / (n * k * T)) - 1)
-    end
-end
-
-"""
     HeatingDiode(; name, Is = 1e-6, n = 1)
 
 Temperature dependent diode based on the Shockley diode equation.
