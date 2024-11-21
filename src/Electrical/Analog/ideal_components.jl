@@ -218,6 +218,7 @@ Temperature dependent electrical resistor
         v ~ i * R
     end
 end
+
 """
     EMF(; name, k)
 
@@ -259,5 +260,49 @@ Electromotoric force (electric/mechanic transformer)
         D(phi) ~ w
         k * w ~ v
         flange.tau ~ -k * i
+    end
+end
+
+"""
+    HeatingDiode(; name, Is = 1e-6, n = 1)
+
+Temperature dependent diode based on the Shockley diode equation.
+
+# States
+
+    - See [OnePort](@ref)
+
+# Connectors
+    
+    - `p` Positive pin
+    - `n` Negative pin
+    - `port` [HeatPort](@ref) Heat port to model the temperature dependency
+
+# Parameters:
+    
+    - `Is`: [`A`] Saturation current
+    - `n`: Ideality factor
+"""
+@mtkmodel HeatingDiode begin
+    begin
+        k = 1.380649e-23 # Boltzmann constant (J/K)
+        q = 1.602176634e-19 # Elementary charge (C)
+    end
+
+    @extend v, i = oneport = OnePort(; v = 0.0)
+    @components begin
+        port = HeatPort()
+    end
+    @parameters begin
+        Is = 1e-6, [description = "Saturation current (A)"]
+        n = 1, [description = "Ideality factor"]
+    end
+    @variables begin
+        Vt(t), [description = "Thermal voltage"]
+    end
+    @equations begin
+        Vt ~ k * port.T / q  # Thermal voltage equation
+        i ~ Is * (exp(v / (n * Vt)) - 1)  # Shockley diode equation
+        port.Q_flow ~ -v * i  # -LossPower
     end
 end

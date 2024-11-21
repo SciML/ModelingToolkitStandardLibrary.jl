@@ -31,6 +31,7 @@ Conductor
 Capacitor
 Inductor
 IdealOpAmp
+HeatingDiode
 ```
 
 ## Analog Sensors
