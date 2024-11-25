@@ -33,6 +33,7 @@ Inductor
 IdealOpAmp
 Diode
 HeatingDiode
+VariableResistor
 ```
 
 ## Analog Sensors

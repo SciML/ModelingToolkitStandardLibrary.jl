@@ -486,3 +486,57 @@ end
     @test SciMLBase.successful_retcode(sol)
     @test sol[capacitor.v][end] < capacitor_voltage[end]
 end
+
+@testset "VariableResistor with Temperature Dependency" begin
+    R_ref = 2.0
+    R_const = 1.0
+
+    # Define the RC model as described
+    @mtkmodel RC begin
+        @parameters begin
+            R = R_ref  # Variable resistance reference value
+            C = 1.0   # Capacitance
+            k = 10.0  # Voltage source scaling factor
+            f = 0.2   # Frequency of sine input
+            T = 300.0 # Ambient temperature in Kelvin
+        end
+        @components begin
+            res_input = Sine(frequency = f, amplitude = 1.0, offset = 0.0)
+            volt_input = Constant(k = 1.0)
+            resistor = VariableResistor(R_ref = R_ref, R_const = R_const, T_dep = true)
+            capacitor = Capacitor(C = C, v = 0.0)
+            source = Voltage()
+            temp = FixedTemperature(T = T)
+            ground = Ground()
+        end
+        @equations begin
+            connect(temp.port, resistor.port)
+            connect(res_input.output, resistor.position)
+            connect(volt_input.output, source.V)
+            connect(source.p, resistor.p)
+            connect(resistor.n, capacitor.p)
+            connect(capacitor.n, source.n, ground.g)
+        end
+    end
+
+    # Build and solve the system
+    @mtkbuild sys = RC()
+    prob = ODEProblem(sys, [0.0, 0.0], (0.0, 10.0)) # No state variables initially
+    sol = solve(prob)
+
+    # Perform Tests
+    resistor_resistance = sol[sys.resistor.R]
+    capacitor_voltage = sol[sys.capacitor.v]
+
+    @test SciMLBase.successful_retcode(sol) # Ensure the simulation is successful
+    @test all(resistor_resistance .>= R_const) # Resistance should be >= constant value
+    @test maximum(resistor_resistance) ≤ R_const + R_ref # Maximum resistance when pos=1 (R_const + R_ref)
+    @test all(capacitor_voltage .>= 0.0) # Capacitor voltage should not be negative
+
+    # For visual inspection
+    # plt = plot(sol; vars = [sys.resistor.R, sys.capacitor.v],
+    #     size = (800, 600), dpi = 300,
+    #     labels = ["Variable Resistor Resistance" "Capacitor Voltage"],
+    #     title = "RC Circuit Test with VariableResistor")
+    # savefig(plt, "rc_circuit_test_variable_resistor")
+end

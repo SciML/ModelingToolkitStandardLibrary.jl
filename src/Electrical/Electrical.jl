@@ -15,7 +15,7 @@ include("utils.jl")
 
 export Capacitor,
        Ground, Inductor, Resistor, Conductor, Short, IdealOpAmp, EMF,
-       HeatingResistor, Diode, HeatingDiode
+       HeatingResistor, Diode, HeatingDiode, VariableResistor
 include("Analog/ideal_components.jl")
 
 export CurrentSensor, PotentialSensor, VoltageSensor, PowerSensor, MultiSensor
