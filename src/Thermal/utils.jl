@@ -1,15 +1,25 @@
-@connector HeatPort begin
-    T(t), [guess = 273.15 + 20.0]
-    Q_flow(t), [guess = 0.0, connect = Flow]
+@connector function HeatPort(; T = nothing, T_guess = 273.15 + 20, Q_flow = nothing, Q_flow_guess = 0.0, name)
+    pars = @parameters begin
+        T_guess = T_guess
+        Q_flow_guess = Q_flow_guess
+    end
+    vars = @variables begin
+        T(t) = T, [guess = T_guess]
+        Q_flow(t) = Q_flow, [guess = Q_flow_guess, connect = Flow]
+    end
+    return ODESystem(Equation[], t, vars, pars; name)
 end
 Base.@doc """
-    HeatPort(; name, T = 273.15 + 20.0, Q_flow = 0.0)
+    HeatPort(; T = nothing, T_guess = 273.15 + 20, Q_flow = nothing, Q_flow_guess = 0.0, name)
 
 Port for a thermal system.
+# Parameters: 
+- `T_guess`: [K] Initial guess for the temperature of the port (set to 273.15 + 20).
+- `Q_flow_guess`: [W] Initial guess for the heat flow rate at the port (set to 0.0).
 
 # States:
-- `T`: [K] Temperature of the port. It accepts an initial value, which defaults to 273.15 + 20.
-- `Q_flow`: [W] Heat flow rate at the port. It accepts an initial value, which defaults to 0.0.
+- `T`: [K] Temperature of the port. Guess set to `T_guess`. Passing a value for `T` will set its default.
+- `Q_flow`: [W] Heat flow rate at the port. Guess set to `Q_flow_guess`. Passing a value for `Q_flow` will set its default.
 """ HeatPort
 
 """
