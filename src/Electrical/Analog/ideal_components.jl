@@ -347,7 +347,7 @@ end
 """
     VariableResistor(; name, R_ref = 1.0, T_ref = 300.15, R_const = 1e-3, T_dep = false)
 
-Variable resistor with optinal temperature dependency.
+Variable resistor with optional temperature dependency.
 
 The total resistance R ∈ [R_const, R_const + R_ref], where pos is the 
 position of the wiper and R_ref is the variable resistance between p and n. 
