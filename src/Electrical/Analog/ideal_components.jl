@@ -343,3 +343,90 @@ Temperature dependent diode based on the Shockley diode equation.
         port.Q_flow ~ -v * i  # -LossPower
     end
 end
+
+"""
+    VariableResistor(; name, R_ref = 1.0, T_ref = 300.15, R_const = 1e-3, T_dep = false)
+
+Variable resistor with optional temperature dependency.
+
+The total resistance R ∈ [R_const, R_const + R_ref], where pos is the 
+position of the wiper and R_ref is the variable resistance between p and n. 
+The total resistance is then:
+
+R = R_const + pos * R_ref
+
+If T_dep is true, then R also depends on the temperature of the heat port with 
+temperature coefficient alpha. The total resistance is then:
+
+R = R_const + pos * R_ref * (1 + alpha * (port.T - T_ref))
+
+# States
+
+    - See [OnePort](@ref)
+    - `pos(t)`: Position of the wiper (normally 0-1)
+    - `R(t)`: Resistance
+
+# Connectors
+        
+        - `p` Positive pin
+        - `n` Negative pin
+        - `position` RealInput to set the position of the wiper
+        - `port` [HeatPort](@ref) Heat port to model the temperature dependency
+
+# Parameters
+    
+        - `R_ref`: [`Ω`] Resistance at temperature T_ref when fully closed (pos=1.0)
+        - `T_ref`: [K] Reference temperature
+        - `R_const`: [`Ω`] Constant resistance between p and n
+        - `T_dep`: Temperature dependency
+        - `alpha`: [K⁻¹] Temperature coefficient of resistance
+        - `enforce_bounds`: Enforce bounds for the position of the wiper (0-1)
+"""
+@mtkmodel VariableResistor begin
+    @extend v, i = oneport = OnePort()
+
+    @structural_parameters begin
+        T_dep = false
+        enforce_bounds = true
+    end
+
+    @parameters begin
+        R_ref = 1.0,
+        [description = "Resistance at temperature T_ref when fully closed (pos=1.0)",
+            unit = "Ω"]
+        T_ref = 300.15, [description = "Reference temperature", unit = "K"]
+        R_const = 1e-3, [description = "Constant resistance between p and n", unit = "Ω"]
+    end
+
+    @components begin
+        position = RealInput()
+    end
+
+    @variables begin
+        pos(t), [description = "Position of the wiper (normally 0-1)"]
+        R(t), [description = "Resistance", unit = "Ω"]
+    end
+
+    if T_dep
+        @parameters begin
+            alpha = 1e-3,
+            [description = "Temperature coefficient of resistance", unit = "K^-1"]
+        end
+        @components begin
+            port = HeatPort()
+        end
+        @equations begin
+            port.Q_flow ~ -v * i  # -LossPower
+            R ~ R_const + pos * R_ref * (1 + alpha * (port.T - T_ref))
+        end
+    else
+        @equations begin
+            R ~ R_const + pos * R_ref
+        end
+    end
+
+    @equations begin
+        pos ~ (enforce_bounds ? clamp(position.u, 0, 1) : position.u)
+        v ~ i * R
+    end
+end
