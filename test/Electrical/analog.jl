@@ -416,14 +416,14 @@ end
     @test capacitor_voltage[end].≈V rtol=3e-1
 
     # For visual inspection
-    # plt = plot(sol; vars = [diode.i, resistor.i, capacitor.v],
+    # plt = plot(sol; idxs = [diode.i, resistor.i, capacitor.v],
     #     size = (800, 600), dpi = 300,
     #     labels = ["Diode Current" "Resistor Current" "Capacitor Voltage"],
     #     title = "Diode Test")
     # savefig(plt, "diode_test")
 end
 
-@testset "HeatingDiode component test" begin
+@testset "Diode with temperature dependency component test" begin
     # Parameter values
     R = 1.0
     C = 1.0
@@ -437,7 +437,7 @@ end
     @named resistor = Resistor(R = R)
     @named capacitor = Capacitor(C = C, v = 0.0)
     @named source = Voltage()
-    @named heating_diode = HeatingDiode(n = n, Is = Is)
+    @named heating_diode = Diode(n = n, Is = Is, T_dep = true)
     @named ac = Sine(frequency = f, amplitude = V)
     @named ground = Ground()
     @named temp = FixedTemperature(T = T)
@@ -473,10 +473,10 @@ end
     @test capacitor_voltage[end]≈V rtol=3e-1 # Final capacitor voltage close to input voltage
 
     # For visual inspection
-    # plt = plot(sol; vars = [heating_diode.i, resistor.i, capacitor.v],
+    # plt = plot(sol; idxs = [heating_diode.i, resistor.i, capacitor.v],
     #     size = (800, 600), dpi = 300,
-    #     labels = ["HeatingDiode Current" "Resistor Current" "Capacitor Voltage"],
-    #     title = "HeatingDiode Test")
+    #     labels = ["Diode Current" "Resistor Current" "Capacitor Voltage"],
+    #     title = "Diode Test")
     # savefig(plt, "heating_diode_test")
 
     # Remake model with higher amb. temperature, final capacitor voltage should be lower
