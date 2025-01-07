@@ -53,7 +53,7 @@ Provides an "open" boundary condition for a hydraulic port such that mass flow `
 end
 
 """
-    TubeBase(add_inertia = true; area, length_int, head_factor = 1, perimeter = 2 * sqrt(area * pi), shape_factor = 64, name)
+    TubeBase(add_inertia = true, variable_length = true; area, length_int, head_factor = 1, perimeter = 2 * sqrt(area * pi), shape_factor = 64, name)
 
 Variable length internal flow model of the fully developed incompressible flow friction.  Includes optional inertia term when `add_inertia = true` to model wave propagation.  Hydraulic ports have equal flow but variable pressure.  Density is averaged over the pressures, used to calculated average flow velocity and flow friction.
 
@@ -89,7 +89,7 @@ Variable length internal flow model of the fully developed incompressible flow f
 
     @variables begin
         x(t), [guess = length_int]
-        ddm(t), [guess = 0]
+        ddm(t) = 0
     end
 
     vars = []
@@ -119,7 +119,7 @@ Variable length internal flow model of the fully developed incompressible flow f
     f = friction_factor(dm, area, d_h, μ, shape_factor)
     u = dm / (ρ * area)
 
-    shear = (1 / 2) * ρ * u * abs(u) * f * head_factor * (c / d_h)
+    shear = (1 / 2) * ρ * regPow(u, 2) * f * head_factor * (c / d_h)
     inertia = if add_inertia
         (c / area) * ddm
     else
@@ -164,17 +164,6 @@ Constant length internal flow model discretized by `N` (`FixedVolume`: `N`, `Tub
     @assert(N>0,
         "the Tube component must be defined with at least 1 segment (i.e. N>0), found N=$N")
 
-    if N == 1
-        return TubeBase(add_inertia,
-            false;
-            shape_factor,
-            area,
-            length_int = length,
-            head_factor,
-            perimeter,
-            name)
-    end
-
     #TODO: How to set an assert effective_length >= length ??
     pars = @parameters begin
         area = area
@@ -192,33 +181,29 @@ Constant length internal flow model discretized by `N` (`FixedVolume`: `N`, `Tub
     end
 
     pipe_bases = []
-    for i in 1:(N - 1)
-        x = TubeBase(add_inertia; name = Symbol("p$i"),
+    for i in 1:N
+        x = TubeBase(add_inertia, false; name = Symbol("p$i"),
             shape_factor = ParentScope(shape_factor),
             area = ParentScope(area),
-            length_int = ParentScope(length) / (N - 1),
+            length_int = N > 1 ? ParentScope(length) / (N - 1) : ParentScope(length),
             head_factor = ParentScope(head_factor),
             perimeter = ParentScope(perimeter))
         push!(pipe_bases, x)
     end
 
+    
+    eqs = [
+        connect(pipe_bases[1].port_a, port_a)
+        connect(pipe_bases[end].port_b, port_b)
+    ]
+
     volumes = []
-    for i in 1:N
+    for i in 1:(N-1)
         x = FixedVolume(; name = Symbol("v$i"),
-            vol = ParentScope(area) * ParentScope(length) / N)
+            vol = ParentScope(area) * ParentScope(length) / (N-1) )
         push!(volumes, x)
-    end
-
-    eqs = [connect(volumes[1].port, pipe_bases[1].port_a, port_a)
-           connect(volumes[end].port, pipe_bases[end].port_b, port_b)]
-
-    for i in 2:(N - 1)
         push!(eqs,
-            connect(volumes[i].port, pipe_bases[i - 1].port_b, pipe_bases[i].port_a))
-    end
-
-    for i in 1:(N - 1)
-        push!(eqs, pipe_bases[i].x ~ length / (N - 1))
+            connect(x.port, pipe_bases[i].port_b, pipe_bases[i+1].port_a))
     end
 
     return ODESystem(eqs, t, vars, pars; name, systems = [ports; pipe_bases; volumes])
@@ -383,7 +368,8 @@ end
     eqs = [vol ~ dead_volume + area * x
            D(x) ~ dx
            D(rho) ~ drho
-           rho ~ full_density(port, p)
+           #rho ~ full_density(port, p)
+           p ~ full_pressure(port, rho) # see https://github.com/SciML/OrdinaryDiffEq.jl/issues/2561
            dm ~ drho * vol * Χ1 + rho * area * dx * Χ2]
 
     ODESystem(eqs, t, vars, pars; name, systems)
@@ -411,7 +397,7 @@ Fixed fluid volume.
 
     vars = @variables begin
         rho(t), [guess = liquid_density(port)]
-        drho(t), [guess = 0]
+        drho(t) = 0
     end
 
     # let
@@ -419,7 +405,8 @@ Fixed fluid volume.
     p = port.p
 
     eqs = [D(rho) ~ drho
-           rho ~ full_density(port, p)
+           # rho ~ full_density(port, p)
+           p ~ full_pressure(port, rho) # see https://github.com/SciML/OrdinaryDiffEq.jl/issues/2561
            dm ~ drho * vol]
 
     ODESystem(eqs, t, vars, pars; name, systems)

@@ -9,7 +9,6 @@ using ModelingToolkitStandardLibrary.Blocks: Parameter
 NEWTON = NLNewton(
     check_div = false, always_new = true, max_iter = 100, relax = 9 // 10, κ = 1e-6)
 
-#TODO: add initialization test for N=5
 @testset "Fluid Domain and Tube" begin
     function System(N; bulk_modulus, name)
         pars = @parameters begin
@@ -18,50 +17,51 @@ NEWTON = NLNewton(
 
         systems = @named begin
             fluid = IC.HydraulicFluid(; bulk_modulus)
-            stp = B.Step(; height = 10e5, offset = 0, start_time = 0.005, duration = Inf,
-                smooth = true)
-            src = IC.Pressure(;)
+            stp = B.Step(; height = 10e5, offset = 0, start_time = 0.005, duration = Inf, smooth = true)
+            src = IC.Pressure()
             vol = IC.FixedVolume(; vol = 10.0)
             res = IC.Tube(N; area = 0.01, length = 50.0)
         end
 
-        eqs = [connect(stp.output, src.p)
+        eqs = [
+               connect(stp.output, src.p)
                connect(fluid, src.port)
+            
                connect(src.port, res.port_a)
-               connect(res.port_b, vol.port)]
+               connect(res.port_b, vol.port)
+               
+               ]
 
         ODESystem(eqs, t, [], pars; name, systems)
     end
 
-    @named sys1_2 = System(1; bulk_modulus = 1e9)
-    @named sys1_1 = System(1; bulk_modulus = 1e7)
-    @named sys5_1 = System(5; bulk_modulus = 1e9)
+    @mtkbuild s1_1 = System(1; bulk_modulus = 1e9)
+    @mtkbuild s1_2 = System(1; bulk_modulus = 2e9)
+    @mtkbuild s5_1 = System(5; bulk_modulus = 1e9)
+    
+    p1_1 = ODEProblem(s1_1, [], (0, 0.05))
+    p1_2 = ODEProblem(s1_2, [], (0, 0.05))
+    p5_1 = ODEProblem(s5_1, [], (0, 0.05))
 
-    syss = structural_simplify.([sys1_2, sys1_1]) #removed sys5_1 for now
-    probs = [ODEProblem(sys, [], (0, 0.05);
-                 initialization_eqs = [sys.vol.port.p ~ 0, sys.res.port_a.dm ~ 0])
-             for sys in syss] #
-    sols = [solve(prob, Rodas5P())
-            for prob in probs]
-
-    s1_2 = complete(sys1_2)
-    s1_1 = complete(sys1_1)
-    s5_1 = complete(sys5_1)
-
-    # higher stiffness should compress more quickly and give a higher pressure
-    @test sols[1][s1_2.vol.port.p][end] > sols[2][s1_1.vol.port.p][end]
-
-    #TODO: bring back after implementing N=5
-    # N=5 pipe is compressible, will pressurize more slowly
-    # @test sols[2][s1_1.vol.port.p][end] > sols[3][s5_1.vol.port.p][end]
+    sol1_1 = solve(p1_1, Rodas5P())
+    sol1_2 = solve(p1_2, Rodas5P())
+    sol5_1 = solve(p5_1, Rodas5P())
 
     # fig = Figure()
+    # tm = 0:0.001:0.05 |> collect
     # ax = Axis(fig[1,1])
-    # # hlines!(ax, 10e5)
-    # lines!(ax, sols[1][s1_2.vol.port.p])
-    # lines!(ax, sols[2][s1_1.vol.port.p])
-    # # lines!(ax, sols[3][s5_1.vol.port.p])
+    # lines!(ax, tm, sol1_1.(tm; idxs=s1_2.vol.port.p)); fig
+    # lines!(ax, tm, sol1_2.(tm; idxs=s1_1.vol.port.p)); fig
+    # lines!(ax, tm, sol5_1.(tm; idxs=s5_1.vol.port.p)); fig
     # fig
+    
+    # higher stiffness should compress more quickly and give a higher pressure
+    @test sol1_2[s1_2.vol.port.p][end] > sol1_1[s1_1.vol.port.p][end]
+
+    # N=5 pipe is compressible, will pressurize more slowly
+    @test sol1_1[s1_1.vol.port.p][end] > sol5_1[s5_1.vol.port.p][end]
+
+    
 end
 
 @testset "Valve" begin
