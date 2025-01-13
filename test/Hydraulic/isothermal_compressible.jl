@@ -219,7 +219,7 @@ end
 
         systems = @named begin
             src = IC.FixedPressure(; p = p_s)
-            valve = IC.SpoolValve2Way(; g, m = m_f, d, Cd, x_int = 0, dx_int = 0)
+            valve = IC.SpoolValve2Way(; g, m = m_f, d, Cd, x_int = 0)
             piston = IC.Actuator(;
                 length_a_int = l_1,
                 length_b_int = l_2,
@@ -345,7 +345,7 @@ end
     prob2 = ODEProblem(sys, [], (0, 0.05), [sys.let_gas => 0])
 
     # @time sol1 = solve(prob1, Rodas5P(); abstol=1e-9, reltol=1e-9) #BUG: Using BigFloat gives... ERROR: MethodError: no method matching getindex(::Missing, ::Int64)
-    @time sol1 = solve(prob1, Rodas5P(); adaptive = false, dt = 1e-6) #TODO: fix BigFloat to implment abstol=1e-9, reltol=1e-9
+    @time sol1 = solve(prob1, Rodas5P(); adaptive = false, dt = 1e-6) #TODO: fix BigFloat to implement abstol=1e-9, reltol=1e-9
     @time sol2 = solve(prob2, Rodas5P())
 
     # case 1: no negative pressure will only have gravity pulling mass back down
