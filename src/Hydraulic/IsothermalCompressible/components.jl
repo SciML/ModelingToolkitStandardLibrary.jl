@@ -143,11 +143,12 @@ Variable length internal flow model of the fully developed incompressible flow f
 end
 
 """
-    Tube(N, add_inertia=true; area, length, head_factor=1, perimeter = 2 * sqrt(area * pi), shape_factor = 64, name)
+    Tube(N, add_inertia=true; p_int, area, length, head_factor=1, perimeter = 2 * sqrt(area * pi), shape_factor = 64, name)
 
 Constant length internal flow model discretized by `N` (`FixedVolume`: `N`, `TubeBase`:`N-1`) which models the fully developed flow friction, compressibility (when `N>1`), and inertia effects when `add_inertia = true`.  See `TubeBase` and `FixedVolume` for more information.
 
 # Parameters:
+- `p_int`: [Pa] initial pressure
 - `area`: [m^2] tube cross sectional area
 - `length`: [m] real length of the tube
 - `perimeter`: [m] perimeter of the pipe cross section (needed only for non-circular pipes)
@@ -378,11 +379,12 @@ end
 end
 
 """
-    FixedVolume(; vol, name)
+    FixedVolume(; p_int, vol, name)
 
 Fixed fluid volume.
 
 # Parameters:
+- `p_int`: [Pa] initial pressure
 - `vol`: [m^3] fixed volume
 
 # Connectors:
@@ -527,6 +529,7 @@ dm ────►               │  │ area
 
 # Parameters:
 ## volume
+- `p_int`: [Pa] initial pressure
 - `area`: [m^2] moving wall area
 - `x_max`: [m] max wall position, needed for volume discretization to apply the correct volume sizing as a function of `x`
 - `x_min`: [m] wall position that shuts off flow and prevents negative volume.
@@ -634,13 +637,11 @@ dm ────►               │  │ area
 end
 
 """
-    SpoolValve(reversible = false; p_a_int, p_b_int, x_int, Cd, d, name)
+    SpoolValve(reversible = false; x_int, Cd, d, name)
 
 Spool valve with `x` valve opening input as mechanical flange port and `d` diameter of orifice. See `Valve` for more information.
 
 # Parameters:
-- `p_a_int`: [Pa] initial pressure for `port_a`
-- `p_b_int`: [Pa] initial pressure for `port_b`
 - `x_int`: [m] initial valve opening
 - `d`: [m] orifice diameter
 - `Cd`: discharge coefficient flowing from `a → b`
@@ -682,15 +683,11 @@ See [`Valve`](@ref) for more information.
 end
 
 """
-    SpoolValve2Way(reversible = false; p_s_int, p_a_int, p_b_int, p_r_int, m, g, x_int, Cd, d, name)
+    SpoolValve2Way(reversible = false; m, g, x_int, Cd, d, name)
 
 2-ways spool valve with 4 ports and spool mass. Fluid flow direction S → A and B → R when `x` is positive and S → B and A → R when `x` is negative. 
 
 # Parameters:
-- `p_s_int`: [Pa] initial pressure for `port_s`
-- `p_a_int`: [Pa] initial pressure for `port_a`
-- `p_b_int`: [Pa] initial pressure for `port_b`
-- `p_r_int`: [Pa] initial pressure for `port_r`
 - `m`: [kg] mass of the  spool
 - `g`: [m/s²] gravity field acting on the spool, positive value acts in the positive direction
 - `x_int`: [m] initial valve opening
@@ -706,7 +703,7 @@ end
 
 See [`SpoolValve`](@ref) for more information.
 """
-@component function SpoolValve2Way(reversible = false; m, g, Cd, d, x_int, dx_int, name)
+@component function SpoolValve2Way(reversible = false; m, g, Cd, d, x_int, name)
     pars = @parameters begin
         m = m
         g = g
@@ -716,7 +713,7 @@ See [`SpoolValve`](@ref) for more information.
         Cd = Cd
 
         x_int = x_int
-        dx_int = dx_int
+        # dx_int = dx_int
     end
 
     vars = []
@@ -772,6 +769,8 @@ end
         damping_volume_b = minimum_volume_b,
         Cd = 1e4,
         Cd_reverse = Cd,
+        p_a_int,
+        p_b_int,
         name)
         
 Actuator made of two DynamicVolumes connected in opposite direction with body mass attached.
