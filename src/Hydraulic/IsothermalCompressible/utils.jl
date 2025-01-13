@@ -1,5 +1,7 @@
 # regPow(x, a, delta = 0.01) = x * (x * x + delta * delta)^((a - 1) / 2);
-regPow(x, a, delta = 0.01) = ifelse(abs(x/delta) >= 1, sign(x)*abs(x/delta)^a * delta^a, (delta^a*x)/delta)
+function regPow(x, a, delta = 0.01)
+    ifelse(abs(x / delta) >= 1, sign(x) * abs(x / delta)^a * delta^a, (delta^a * x) / delta)
+end
 regRoot(x, delta = 0.01) = regPow(x, 0.5, delta)
 
 """
@@ -73,7 +75,6 @@ Fluid parameter setter for isothermal compressible fluid domain.  Defaults given
     ODESystem(eqs, t, vars, pars; name)
 end
 
-
 function transition(x1, x2, y1, y2, x)
     u = (x - x1) / (x2 - x1)
     blend = u^2 * (3 - 2 * u)
@@ -142,11 +143,8 @@ liquid_density(port) = liquid_density(port, port.p)
 # (p/beta + 1)*rho_0 = rho
 
 function liquid_pressure(port, rho)
-
-    (rho/density_ref(port) - 1)*bulk_modulus(port)
-
+    (rho / density_ref(port) - 1) * bulk_modulus(port)
 end
-
 
 function gas_density(port, p)
     slope = (density_ref(port) - gas_density_ref(port)) / (0 - gas_pressure_ref(port))
@@ -156,8 +154,7 @@ function gas_density(port, p)
 end
 
 function gas_pressure(port, rho)
-
-    slope =  (0 - gas_pressure_ref(port)) / (density_ref(port) - gas_density_ref(port))
+    slope = (0 - gas_pressure_ref(port)) / (density_ref(port) - gas_density_ref(port))
     b = 0
 
     return b + rho * slope
@@ -172,7 +169,8 @@ full_density(port) = full_density(port, port.p)
 
 function full_pressure(port, rho)
     ifelse(port.let_gas == 1,
-        ifelse( rho >= density_ref(port), liquid_pressure(port, rho), gas_pressure(port, rho)),
+        ifelse(
+            rho >= density_ref(port), liquid_pressure(port, rho), gas_pressure(port, rho)),
         liquid_pressure(port, rho)
     )
 end

@@ -192,20 +192,17 @@ Constant length internal flow model discretized by `N` (`FixedVolume`: `N`, `Tub
         push!(pipe_bases, x)
     end
 
-    
-    eqs = [
-        connect(pipe_bases[1].port_a, port_a)
-        connect(pipe_bases[end].port_b, port_b)
-    ]
+    eqs = [connect(pipe_bases[1].port_a, port_a)
+           connect(pipe_bases[end].port_b, port_b)]
 
     volumes = []
-    for i in 1:(N-1)
+    for i in 1:(N - 1)
         x = FixedVolume(; name = Symbol("v$i"),
-            vol = ParentScope(area) * ParentScope(length) / (N-1),
-            p_int = ParentScope(p_int) )
+            vol = ParentScope(area) * ParentScope(length) / (N - 1),
+            p_int = ParentScope(p_int))
         push!(volumes, x)
         push!(eqs,
-            connect(x.port, pipe_bases[i].port_b, pipe_bases[i+1].port_a))
+            connect(x.port, pipe_bases[i].port_b, pipe_bases[i + 1].port_a))
     end
 
     return ODESystem(eqs, t, vars, pars; name, systems = [ports; pipe_bases; volumes])
@@ -268,8 +265,8 @@ end
     end
 
     vars = @variables begin
-        area(t), [guess=0]
-        y(t), [guess=0]
+        area(t), [guess = 0]
+        y(t), [guess = 0]
     end
 
     # let
@@ -361,7 +358,7 @@ end
         dx(t), [guess = 0]
         rho(t), [guess = liquid_density(port)]
         m(t), [guess = 0]
-        vol(t) 
+        vol(t)
     end
 
     # let
@@ -403,16 +400,15 @@ Fixed fluid volume.
 
     vars = @variables begin
         rho(t), [guess = liquid_density(port)]
-        m(t), [guess=vol*liquid_density(port)]
-        p(t)=p_int
+        m(t), [guess = vol * liquid_density(port)]
+        p(t) = p_int
     end
 
     # let
     dm = port.dm
-    
 
     eqs = [D(m) ~ dm
-        #    rho ~ full_density(port, p)
+           #    rho ~ full_density(port, p)
            p ~ full_pressure(port, rho) # see https://github.com/SciML/OrdinaryDiffEq.jl/issues/2561
            p ~ port.p
            m ~ rho * vol]
@@ -464,21 +460,20 @@ See also [`FixedVolume`](@ref), [`DynamicVolume`](@ref)
         area,
         direction = +1,
         x_int,
-         name)
-
+        name)
     pars = @parameters begin
         area = area
         x_int = x_int
     end
 
     vars = @variables begin
-        x(t)=x_int
-        dx(t), [guess=0]
-        p(t), [guess=0]
-        f(t), [guess=0]
-        rho(t), [guess=0]
-        m(t), [guess=0]
-        dm(t), [guess=0]
+        x(t) = x_int
+        dx(t), [guess = 0]
+        p(t), [guess = 0]
+        f(t), [guess = 0]
+        rho(t), [guess = 0]
+        m(t), [guess = 0]
+        dm(t), [guess = 0]
     end
 
     systems = @named begin
@@ -504,7 +499,6 @@ See also [`FixedVolume`](@ref), [`DynamicVolume`](@ref)
            # physics
            # rho ~ full_density(port, p)
            p ~ full_pressure(port, rho) # see https://github.com/SciML/OrdinaryDiffEq.jl/issues/2561
-
            f ~ p * area
            m ~ rho * x * area]
 
@@ -574,10 +568,7 @@ dm ────►               │  │ area
         minimum_area = 0,
 
         # Damping
-        d = 0,
-
-        name)
-
+        d = 0, name)
     @assert (direction == +1)||(direction == -1) "direction argument must be +/-1, found $direction"
 
     #TODO: How to set an assert effective_length >= length ??
@@ -602,9 +593,9 @@ dm ────►               │  │ area
     end
 
     vars = @variables begin
-        x(t)=x_int 
-        vol(t), [guess=x_int * area]
-    end 
+        x(t) = x_int
+        vol(t), [guess = x_int * area]
+    end
 
     systems = @named begin
         port = HydraulicPort(;)
@@ -617,7 +608,7 @@ dm ────►               │  │ area
             area,
             dead_volume = area * x_int,
             p_int,
-            x_int=0) 
+            x_int = 0)
     end
 
     ratio = (x - x_min) / (x_damp - x_min)
@@ -637,9 +628,7 @@ dm ────►               │  │ area
            connect(port, damper.port_b)
            connect(moving_volume.port, damper.port_a)
            dx ~ flange.v * direction
-           p * area - dx*d ~ -flange.f * direction
-           ]
-
+           p * area - dx * d ~ -flange.f * direction]
 
     return ODESystem(eqs, t, vars, pars; name, systems)
 end
@@ -678,8 +667,8 @@ See [`Valve`](@ref) for more information.
     end
 
     vars = @variables begin
-        x(t)=x_int
-        dx(t), [guess=0]
+        x(t) = x_int
+        dx(t), [guess = 0]
     end
 
     eqs = [D(x) ~ dx
@@ -751,10 +740,10 @@ See [`SpoolValve`](@ref) for more information.
            connect(vBR.port_a, port_b)
            connect(vBR.port_b, port_r)
            connect(vSA.flange, vBR.flange, mass.flange, flange)]
-    
+
     initialization_eqs = [
         mass.s ~ x_int
-        # mass.v ~ dx_int
+    # mass.v ~ dx_int
     ]
 
     ODESystem(eqs, t, vars, pars; name, systems, initialization_eqs)
@@ -848,7 +837,7 @@ Actuator made of two DynamicVolumes connected in opposite direction with body ma
         damping_volume_b = minimum_volume_b,
         Cd = 1e4,
         Cd_reverse = Cd,
-        d=0,
+        d = 0,
         p_a_int,
         p_b_int,
         name)
@@ -963,14 +952,14 @@ dm ────►  effective area
 
 @mtkmodel Orifice begin
     @parameters begin
-        orifice_area=0.00094
-        Cd=0.6 # TODO Cd here is defined differently from Valve(). 
+        orifice_area = 0.00094
+        Cd = 0.6 # TODO Cd here is defined differently from Valve(). 
         # Here it follows the form Effective Orifice Area = Cd x Physical Orifice Area
         # The Valve component should be updated too.
     end
     @components begin
-        area = Constant(k=orifice_area)
-        valve = Valve(Cd= 1 / (Cd * Cd))
+        area = Constant(k = orifice_area)
+        valve = Valve(Cd = 1 / (Cd * Cd))
         port_a = HydraulicPort()
         port_b = HydraulicPort()
     end
