@@ -36,6 +36,7 @@ Add
 Add3
 Product
 Division
+UnaryMinus
 Power
 Modulo
 StaticNonLinearity
