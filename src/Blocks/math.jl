@@ -209,6 +209,28 @@ Output first input divided by second input.
 end
 
 """
+    Modulo(; name)
+
+Output the remainder when the first input is divided by second input.
+
+# Connectors:
+
+  - `input1`
+  - `input2`
+  - `output`
+"""
+@mtkmodel Modulo begin
+    @components begin
+        input1 = RealInput()
+        input2 = RealInput(guess = 1.0) # denominator can not be zero
+        output = RealOutput()
+    end
+    @equations begin
+        output.u ~ input1.u % input2.u
+    end
+end
+
+"""
     StaticNonLinearity(func; name)
 
 Applies the given function to the input.
