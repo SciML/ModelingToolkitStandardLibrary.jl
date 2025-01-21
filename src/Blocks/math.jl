@@ -252,6 +252,26 @@ Output the remainder when the first input is divided by second input.
     end
 end
 
+"""
+    UnaryMinus(; name)
+
+Output the product of -1 and the input.
+
+# Connectors:
+
+  - `input`
+  - `output`
+"""
+@mtkmodel UnaryMinus begin
+    @components begin
+        input = RealInput()
+        output = RealOutput()
+    end
+    @equations begin
+        output.u ~ -(input.u)
+    end
+end
+
 ## Rounding functions add after the symbolic functions are registered
 # """
 #     Floor(; name)
