@@ -36,6 +36,8 @@ Add
 Add3
 Product
 Division
+Power
+Modulo
 StaticNonLinearity
 Abs
 Sign

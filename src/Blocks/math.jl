@@ -209,6 +209,28 @@ Output first input divided by second input.
 end
 
 """
+    Power(; name)
+
+Output the exponential with base as the first input and exponent as second input i.e u1^u2
+
+# Connectors:
+
+  - `input1`
+  - `input2`
+  - `output`
+"""
+@mtkmodel Power begin
+    @components begin
+        input1 = RealInput()
+        input2 = RealInput() # denominator can not be zero
+        output = RealOutput()
+    end
+    @equations begin
+        output.u ~ input1.u ^ input2.u
+    end
+end
+
+"""
     Modulo(; name)
 
 Output the remainder when the first input is divided by second input.
