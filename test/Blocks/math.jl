@@ -157,6 +157,25 @@ end
     @test sol[prod.output.u] ≈ 2 * sin.(2 * pi * sol.t)
 end
 
+@testset "Power" begin
+    @named c1 = Constant(; k = 2)
+    @named c2 = Constant(; k = 2)
+    @named pow = Power(;)
+    @named model = ODESystem(
+        [
+            connect(c1.output, pow.input1),
+            connect(c2.output, pow.input2)
+        ],
+        t,
+        systems = [pow, c1, c2])
+    sys = structural_simplify(model)
+    prob = ODEProblem(sys, [], (0.0, 1.0))
+    sol = solve(prob, Rodas4())
+    @test isequal(unbound_inputs(sys), [])
+    @test sol.retcode == Success
+    @test sol[pow.output.u] ≈ 4
+end
+
 @testset "Division" begin
     @named c1 = Sine(; frequency = 1)
     @named c2 = Constant(; k = 2)
