@@ -150,8 +150,9 @@ end
 
     @mtkbuild sys = System()
     prob = ODEProblem(sys, [], (0, 5))
+    @show prob.u0
     sol = solve(prob, Rodas5P(); abstol = 1e-6, reltol = 1e-9)
-
+    @show sol[1]
     # begin
     #     fig = Figure()
 
