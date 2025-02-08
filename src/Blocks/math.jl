@@ -248,7 +248,7 @@ Output the remainder when the first input is divided by second input.
         output = RealOutput()
     end
     @equations begin
-        output.u ~ input1.u % input2.u
+        output.u ~ mod(input1.u, input2.u)
     end
 end
 
