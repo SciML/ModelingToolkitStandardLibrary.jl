@@ -424,7 +424,7 @@ end
     x = @. time^2 + 1.0
 
     @testset "using Parameter type" begin
-        vars = @variables y(t)=1 dy(t)=0 ddy(t)=0
+        vars = @variables y(t) dy(t) ddy(t)
         @named src = SampledData(Float64)
         @named int = Integrator()
         @named iosys = ODESystem(
@@ -443,7 +443,7 @@ end
             tofloat = false)
         # prob = remake(prob; p = Parameter.(prob.p)) #<-- no longer needed with ModelingToolkit.jl PR #2231
 
-        sol = solve(prob, Rodas4(); initializealg = NoInit())
+        sol = solve(prob, Rodas4())
         @test sol.retcode == Success
         @test sol[src.output.u][1] == 1.0 #check correct initial condition
 
@@ -454,7 +454,7 @@ end
     end
 
     @testset "using Vector Based" begin
-        vars = @variables y(t)=1 dy(t)=0 ddy(t)=0
+        vars = @variables y(t) dy(t) ddy(t)
         @named src = SampledData(dt)
         @named int = Integrator()
         @named iosys = ODESystem(
@@ -472,7 +472,7 @@ end
             [s.src.buffer => x, s.src.sample_time => dt];
             tofloat = false)
 
-        sol = solve(prob, Rodas4(); initializealg = NoInit())
+        sol = solve(prob, Rodas4())
         @test sol.retcode == Success
         @test sol[src.output.u][1] == 1.0 #check correct initial condition
 
