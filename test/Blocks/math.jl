@@ -216,6 +216,44 @@ end
     @test sol[minu.output.u] ≈ - sin.(2 * pi * sol.t)
 end
 
+@testset "Floor" begin
+    @named c1 = Sine(; frequency = 1)
+    @named flr = Floor(;)
+    @named int = Integrator(; k = 1)
+    @named model = ODESystem(
+        [
+            connect(c1.output, flr.input),
+            connect(flr.output, int.input)
+        ],
+        t,
+        systems = [int, flr, c1])
+    sys = structural_simplify(model)
+    prob = ODEProblem(sys, Pair[int.x => 0.0], (0.0, 1.0))
+    sol = solve(prob, Rodas4())
+    @test isequal(unbound_inputs(sys), [])
+    @test sol.retcode == Success
+    @test sol[flr.output.u] ≈ floor.(sin.(2 * pi * sol.t))
+end
+
+@testset "Ceil" begin
+    @named c1 = Sine(; frequency = 1)
+    @named cel = Ceil(;)
+    @named int = Integrator(; k = 1)
+    @named model = ODESystem(
+        [
+            connect(c1.output, cel.input),
+            connect(cel.output, int.input)
+        ],
+        t,
+        systems = [int, cel, c1])
+    sys = structural_simplify(model)
+    prob = ODEProblem(sys, Pair[int.x => 0.0], (0.0, 1.0))
+    sol = solve(prob, Rodas4())
+    @test isequal(unbound_inputs(sys), [])
+    @test sol.retcode == Success
+    @test sol[cel.output.u] ≈ ceil.(sin.(2 * pi * sol.t))
+end
+
 @testset "Division" begin
     @named c1 = Sine(; frequency = 1)
     @named c2 = Constant(; k = 2)

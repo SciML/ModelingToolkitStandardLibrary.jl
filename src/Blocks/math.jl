@@ -273,85 +273,46 @@ Output the product of -1 and the input.
 end
 
 ## Rounding functions add after the symbolic functions are registered
-# """
-#     Floor(; name)
+"""
+    Floor(; name)
 
-# Output the floor rounding of the input.
+Output the floor rounding of the input.
 
-# # Connectors:
+# Connectors:
 
-#   - `input`
-#   - `output`
-# """
-# @mtkmodel Floor begin
-#     @components begin
-#         input = RealInput()
-#         output = RealOutput()
-#     end
-#     @equations begin
-#         output.u ~ floor(input.u)
-#     end
-# end
+  - `input`
+  - `output`
+"""
+@mtkmodel Floor begin
+    @components begin
+        input = RealInput()
+        output = RealOutput()
+    end
+    @equations begin
+        output.u ~ floor(input.u)
+    end
+end
 
-# """
-#     Ceil(; name)
+"""
+    Ceil(; name)
 
-# Output the ceiling rounding of the input.
+Output the ceiling rounding of the input.
 
-# # Connectors:
+# Connectors:
 
-#   - `input`
-#   - `output`
-# """
-# @mtkmodel Ceil begin
-#     @components begin
-#         input = RealInput()
-#         output = RealOutput()
-#     end
-#     @equations begin
-#         output.u ~ ceil(input.u)
-#     end
-# end
+  - `input`
+  - `output`
+"""
+@mtkmodel Ceil begin
+    @components begin
+        input = RealInput()
+        output = RealOutput()
+    end
+    @equations begin
+        output.u ~ ceil(input.u)
+    end
+end
 
-# """
-#     Round(; name)
-
-# Output the rounding to the nearest integer of the input.
-
-# # Connectors:
-
-#   - `input`
-#   - `output`
-# """
-# @mtkmodel Round begin
-#     @components begin
-#         input = RealInput()
-#         output = RealOutput()
-#     end
-#     @equations begin
-#         output.u ~ round(input.u)
-#     end
-# end
-
-# """
-#     Trunc(; name)
-
-# Output the truncation rounding of the input.
-
-# # Connectors:
-
-#   - `input`
-#   - `output`
-# """
-# @mtkmodel Trunc begin
-#     @components begin
-#         input = RealInput()
-#         output = RealOutput()
-#     end
-#     @equations begin
-#         output.u ~ trunc(input.u)
-#     end
-# end
 
 """
     StaticNonLinearity(func; name)
