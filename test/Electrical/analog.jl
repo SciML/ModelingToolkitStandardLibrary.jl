@@ -72,9 +72,9 @@ end
                    connect(R2.n, voltage.n, ground.g)]
 
     @named model = ODESystem(connections, t,
-        systems = [R0, R1, R2, source, short, voltage, ground])
+        systems = [R0, R1, R2, source, short, voltage, ground]; guesses = [R2.v => 0.0])
     sys = structural_simplify(model)
-    prob = ODEProblem(sys, Pair[R2.i => 0.0], (0, 2.0))
+    prob = ODEProblem(sys, [], (0, 2.0))
     sol = solve(prob, Rodas4()) # has no state; does not work with Tsit5
     @test SciMLBase.successful_retcode(sol)
     @test sol[short.v] == sol[R0.v] == zeros(length(sol.t))
@@ -521,7 +521,7 @@ end
 
     # Build and solve the system
     @mtkbuild sys = RC()
-    prob = ODEProblem(sys, [0.0, 0.0], (0.0, 10.0)) # No state variables initially
+    prob = ODEProblem(sys, [], (0.0, 10.0); guesses = [sys.resistor.i => 0.0]) # No state variables initially
     sol = solve(prob)
 
     # Perform Tests
