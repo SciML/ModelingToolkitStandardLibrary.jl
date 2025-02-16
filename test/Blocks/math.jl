@@ -164,8 +164,8 @@ end
     @named int = Integrator(; k = 1)
     @named model = ODESystem(
         [
-            connect(c1.output, pow.input1),
-            connect(c2.output, pow.input2),
+            connect(c1.output, pow.base),
+            connect(c2.output, pow.exponent),
             connect(pow.output, int.input)
         ],
         t,
@@ -184,8 +184,8 @@ end
     @named modl = Modulo(;)
     @named model = ODESystem(
         [
-            connect(c1.output, modl.input1),
-            connect(c2.output, modl.input2)
+            connect(c1.output, modl.dividend),
+            connect(c2.output, modl.divisor)
         ],
         t,
         systems = [modl, c1, c2])
@@ -194,7 +194,7 @@ end
     sol = solve(prob, Rodas4())
     @test isequal(unbound_inputs(sys), [])
     @test sol.retcode == Success
-    @test sol[modl.output.u] ≈ mod.(2 * sol.t,1)
+    @test sol[modl.remainder.u] ≈ mod.(2 * sol.t,1)
 end
 
 @testset "UnaryMinus" begin

@@ -215,18 +215,18 @@ Output the exponential with base as the first input and exponent as second input
 
 # Connectors:
 
-  - `input1`
-  - `input2`
+  - `base`
+  - `exponent`
   - `output`
 """
 @mtkmodel Power begin
     @components begin
-        input1 = RealInput()
-        input2 = RealInput() # denominator can not be zero
+        base = RealInput()
+        exponent = RealInput()
         output = RealOutput()
     end
     @equations begin
-        output.u ~ input1.u ^ input2.u
+        output.u ~ base.u ^ exponent.u
     end
 end
 
@@ -237,18 +237,18 @@ Output the remainder when the first input is divided by second input.
 
 # Connectors:
 
-  - `input1`
-  - `input2`
-  - `output`
+  - `dividend`
+  - `divisor`
+  - `remainder`
 """
 @mtkmodel Modulo begin
     @components begin
-        input1 = RealInput()
-        input2 = RealInput(guess = 1.0) # denominator can not be zero
-        output = RealOutput()
+        dividend = RealInput()
+        divisor = RealInput(guess = 1.0) # denominator can not be zero
+        remainder = RealOutput()
     end
     @equations begin
-        output.u ~ mod(input1.u, input2.u)
+        remainder.u ~ mod(dividend.u, divisor.u)
     end
 end
 
@@ -272,7 +272,6 @@ Output the product of -1 and the input.
     end
 end
 
-## Rounding functions add after the symbolic functions are registered
 """
     Floor(; name)
 
@@ -312,7 +311,6 @@ Output the ceiling rounding of the input.
         output.u ~ ceil(input.u)
     end
 end
-
 
 """
     StaticNonLinearity(func; name)
