@@ -72,8 +72,7 @@ L = P*C
 =#
 
 # Open loop
-open_sys = Blocks.open_loop(sys, :plant_input)
-@unpack u, y = open_sys
+open_sys, (u, y) = Blocks.open_loop(sys, :plant_input)
 
 # Linearizing the open-loop system should yield the same system as get_looptransfer
 matrices, _ = linearize(open_sys, [u], [y])
