@@ -50,30 +50,34 @@ using ModelingToolkitStandardLibrary.Electrical
 using ModelingToolkitStandardLibrary.Blocks: Constant
 using ModelingToolkit: t_nounits as t
 
-R = 1.0
-C = 1.0
-V = 1.0
-systems = @named begin
-    resistor = Resistor(R = R)
-    capacitor = Capacitor(C = C, v = 0.0)
-    source = Voltage()
-    constant = Constant(k = V)
-    ground = Ground()
+@mtkmodel RC begin
+    @parameters begin
+        R = 1.0
+        C = 1.0
+        V = 1.0
+    end
+    @components begin
+        resistor = Resistor(R = R)
+        capacitor = Capacitor(C = C, v = 0.0)
+        source = Voltage()
+        constant = Constant(k = V)
+        ground = Ground()
+    end
+    @equations begin
+        connect(constant.output, source.V)
+        connect(source.p, resistor.p)
+        connect(resistor.n, capacitor.p)
+        connect(capacitor.n, source.n, ground.g)
+    end
 end
 
-rc_eqs = [connect(constant.output, source.V)
-          connect(source.p, resistor.p)
-          connect(resistor.n, capacitor.p)
-          connect(capacitor.n, source.n, ground.g)]
-
-@named rc_model = ODESystem(rc_eqs, t; systems)
-sys = structural_simplify(rc_model)
+@mtkbuild sys = RC()
 prob = ODEProblem(sys, Pair[], (0, 10.0))
-sol = solve(prob, Tsit5())
-plot(sol, idxs = [capacitor.v, resistor.i],
+sol = solve(prob)
+
+plot(sol, idxs = [sys.capacitor.v, sys.resistor.i],
     title = "RC Circuit Demonstration",
     labels = ["Capacitor Voltage" "Resistor Current"])
-savefig("plot.png")
 ```
 
 ![](https://user-images.githubusercontent.com/1814174/164912983-c3f73628-0e19-4e42-b085-4f62ba6f23d1.png)
