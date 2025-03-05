@@ -248,33 +248,33 @@ Reduces the flow from `port_a` to `port_b` by `n`.  Useful for modeling parallel
 - `port_a`: full flow hydraulic port
 - `port_b`: part flow hydraulic port
 """
-@component function FlowDivider(; n, name)
+@mtkmodel FlowDivider begin
 
     #TODO: assert n >= 1
 
-    pars = @parameters begin
+    @parameters begin
         n = n
     end
 
-    vars = @variables begin
+    @variables begin
         dm_a(t), [guess = 0]
         dm_b(t), [guess = 0]
     end
 
-    systems = @named begin
+    @components begin
         port_a = HydraulicPort()
         port_b = HydraulicPort()
         open = Open()
     end
 
-    eqs = [connect(port_a, port_b, open.port)
-           dm_a ~ port_a.dm
-           dm_b ~ dm_a / n
-           open.dm ~ dm_a - dm_b # extra flow dumps into an open port
-           # port_b.dm ~ dm_b # divided flow goes to port_b
-           ]
+    @equations begin
+        connect(port_a, port_b, open.port)
+        dm_a ~ port_a.dm
+        dm_b ~ dm_a / n
+        open.dm ~ dm_a - dm_b # extra flow dumps into an open port
+        # port_b.dm ~ dm_b # divided flow goes to port_b
+    end
 
-    ODESystem(eqs, t, vars, pars; name, systems)
 end
 
 @component function ValveBase(
@@ -367,18 +367,16 @@ Valve with `area` input and discharge coefficient `Cd` defined by https://en.wik
     ODESystem(eqs, t, vars, pars; name, systems)
 end
 
-@component function VolumeBase(; area, dead_volume = 0, Χ1 = 1, Χ2 = 1,
-        name)
-    pars = @parameters begin
+@mtkmodel VolumeBase begin
+
+    @parameters begin
         area = area
         dead_volume = dead_volume
+        x1 = 1
+        x2 = 1
     end
 
-    systems = @named begin
-        port = HydraulicPort()
-    end
-
-    vars = @variables begin
+    @variables begin
         x(t)
         dx(t), [guess = 0]
         rho(t), [guess = liquid_density(port)]
@@ -386,17 +384,20 @@ end
         vol(t)
     end
 
-    # let
-    dm = port.dm
-    p = port.p
+    @components begin
+        port = HydraulicPort()
+    end
 
-    eqs = [vol ~ dead_volume + area * x
-           D(x) ~ dx
-           D(rho) ~ drho
-           rho ~ full_density(port, p)
-           dm ~ drho * vol * Χ1 + rho * area * dx * Χ2]
+    @equations begin
+        dm = port.dm
+        p = port.p
+        vol ~ dead_volume + area * x
+        D(x) ~ dx
+        D(rho) ~ drho
+        rho ~ full_density(port, p)
+        dm ~ drho * vol * Χ1 + rho * area * dx * Χ2
+    end
 
-    ODESystem(eqs, t, vars, pars; name, systems)
 end
 
 """
@@ -410,29 +411,29 @@ Fixed fluid volume.
 # Connectors:
 - `port`: hydraulic port
 """
-@component function FixedVolume(; vol, name)
-    pars = @parameters begin
-        vol = vol
+@mtkmodel FixedVolume begin
+
+    @parameters begin
+        Volume
     end
 
-    systems = @named begin
-        port = HydraulicPort(;)
-    end
-
-    vars = @variables begin
+    @variables begin
         rho(t), [guess = liquid_density(port)]
         drho(t), [guess = 0]
     end
 
-    # let
-    dm = port.dm
-    p = port.p
+    @components begin
+        port = HydraulicPort()
+    end
 
-    eqs = [D(rho) ~ drho
-           rho ~ full_density(port, p)
-           dm ~ drho * vol]
+    @equations begin
+        dm = port.dm
+        p = port.p
+        D(rho) ~ drho
+        rho ~ full_density(port, p)
+        dm ~ drho * vol
+    end
 
-    ODESystem(eqs, t, vars, pars; name, systems)
 end
 
 """
@@ -473,16 +474,14 @@ dm ────►               │  │ area
 
 See also [`FixedVolume`](@ref), [`DynamicVolume`](@ref)
 """
-@component function Volume(;
+@mtkmodel Volume begin
 
-        #parameters
-        area,
-        direction = +1, name)
-    pars = @parameters begin
-        area = area
+    @parameters begin
+        area
+        direction = +1
     end
 
-    vars = @variables begin
+    @variables begin
         x(t)
         dx(t)
         p(t)
@@ -492,28 +491,29 @@ See also [`FixedVolume`](@ref), [`DynamicVolume`](@ref)
         dm(t)
     end
 
-    systems = @named begin
+    @components begin
         port = HydraulicPort()
         flange = MechanicalPort()
     end
 
-    eqs = [
-           # connectors
-           port.p ~ p
-           port.dm ~ dm
-           flange.v * direction ~ dx
-           flange.f * direction ~ -f
+    @equations begin
+        # connectors
+        port.p ~ p
+        port.dm ~ dm
+        flange.v * direction ~ dx
+        flange.f * direction ~ -f
 
-           # differentials
-           D(x) ~ dx
-           D(rho) ~ drho
+        # differentials
+        D(x) ~ dx
+        D(rho) ~ drho
 
-           # physics
-           rho ~ liquid_density(port, p)
-           f ~ p * area
-           dm ~ drho * x * area + rho * dx * area]
+        # physics
+        rho ~ liquid_density(port, p)
+        f ~ p * area
+        dm ~ drho * x * area + rho * dx * area
+    end
 
-    ODESystem(eqs, t, vars, pars; name, systems, defaults = [rho => liquid_density(port)])
+
 end
 
 """
