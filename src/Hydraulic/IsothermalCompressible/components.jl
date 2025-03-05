@@ -10,17 +10,24 @@ Caps a hydraulic port to prevent mass flow in or out.
 # Connectors:
 - `port`: hydraulic port
 """
-@component function Cap(; name)
-    vars = @variables p(t), [guess = 0]
+@mtkmodel Cap begin
 
-    systems = @named begin
+    @parameters begin
+    end
+
+    @variables begin
+        p(t), [guess = 0]
+    end 
+
+    @components begin
         port = HydraulicPort()
     end
 
-    eqs = [port.p ~ p
-           port.dm ~ 0]
+    @equations begin
+        port.p ~ p
+        port.dm ~ 0
+    end
 
-    ODESystem(eqs, t, vars, []; name, systems)
 end
 
 """
@@ -34,22 +41,25 @@ Provides an "open" boundary condition for a hydraulic port such that mass flow `
 # Connectors:
 - `port`: hydraulic port
 """
-@component function Open(; name)
-    pars = []
+@mtkmodel Open begin
+    
+    @parameters begin
+    end
 
-    vars = @variables begin
+    @variables begin
         p(t), [guess = 0]
         dm(t), [guess = 0]
     end
 
-    systems = @named begin
+    @components begin
         port = HydraulicPort()
     end
 
-    eqs = [port.p ~ p
-           port.dm ~ dm]
+    @equations begin
+        port.p ~ p
+        port.dm ~ dm
+    end
 
-    ODESystem(eqs, t, vars, pars; name, systems)
 end
 
 """
