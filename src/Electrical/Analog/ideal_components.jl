@@ -391,9 +391,11 @@ R = R_const + pos * R_ref * (1 + alpha * (port.T - T_ref))
     end
 
     @parameters begin
-        R_ref = 1.0, [description = "Resistance at temperature T_ref when fully closed (pos=1.0) (Ω)"]
-        T_ref = 300.15, [description = "Reference temperature (K)"]
-        R_const = 1e-3, [description = "Constant resistance between p and n (Ω)"]
+        R_ref = 1.0,
+        [description = "Resistance at temperature T_ref when fully closed (pos=1.0)",
+            unit = "Ω"]
+        T_ref = 300.15, [description = "Reference temperature", unit = "K"]
+        R_const = 1e-3, [description = "Constant resistance between p and n", unit = "Ω"]
     end
 
     @components begin
@@ -402,13 +404,13 @@ R = R_const + pos * R_ref * (1 + alpha * (port.T - T_ref))
 
     @variables begin
         pos(t), [description = "Position of the wiper (normally 0-1)"]
-        R(t), [description = "Resistance (Ω)"]
+        R(t), [description = "Resistance", unit = "Ω"]
     end
 
     if T_dep
         @parameters begin
             alpha = 1e-3,
-            [description = "Temperature coefficient of resistance (K^-1)"]
+            [description = "Temperature coefficient of resistance", unit = "K^-1"]
         end
         @components begin
             port = HeatPort()
