@@ -210,7 +210,7 @@ Temperature dependent electrical resistor
         alpha = 0, [description = "Temperature coefficient of resistance"]
     end
     @variables begin
-        R(t) = R_ref
+        R(t), [guess = R_ref]
     end
     @equations begin
         R ~ R_ref * (1 + alpha * (heat_port.T - T_ref))
