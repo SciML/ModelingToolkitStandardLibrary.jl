@@ -1,8 +1,11 @@
 
 """
-    Cap(; name)
+    Cap(; p_int, name)
 
 Caps a hydraulic port to prevent mass flow in or out.
+
+# Parameters:
+- `p_int`: [Pa] initial pressure (set by `p_int` argument)
 
 # Connectors:
 - `port`: hydraulic port
@@ -25,9 +28,12 @@ Caps a hydraulic port to prevent mass flow in or out.
 end
 
 """
-    Open(; name)
+    Open(; p_int, name)
 
 Provides an "open" boundary condition for a hydraulic port such that mass flow `dm` is non-zero.  This is opposite from an un-connected hydraulic port or the `Cap` boundary component which sets the mass flow `dm` to zero.  
+
+# Parameters:
+- `p_int`: [Pa] initial pressure (set by `p_int` argument)
 
 # Connectors:
 - `port`: hydraulic port
@@ -224,11 +230,12 @@ end
 @deprecate Pipe Tube
 
 """
-    FlowDivider(; n, name)
+    FlowDivider(;p_int, n, name)
 
 Reduces the flow from `port_a` to `port_b` by `n`.  Useful for modeling parallel tubes efficiently by placing a `FlowDivider` on each end of a tube.
 
 # Parameters:
+- `p_int`: [Pa] initial pressure
 - `n`: divide flow from `port_a` to `port_b` by `n`
 
 # Connectors:
@@ -310,11 +317,14 @@ end
 end
 
 """
-    Valve(reversible = false; Cd, Cd_reverse = Cd, minimum_area = 0, name)
+    Valve(reversible = false; p_a_int, p_b_int, area_int, Cd, Cd_reverse = Cd, minimum_area = 0, name)
 
 Valve with `area` input and discharge coefficient `Cd` defined by https://en.wikipedia.org/wiki/Discharge_coefficient.  The `Cd_reverse` parameter allows for directional flow restriction, making it possible to define a check valve.
 
 # Parameters:
+- `p_a_int`: [Pa] initial pressure for `port_a`
+- `p_b_int`: [Pa] initial pressure for `port_b`
+- `area_int`: [m^2] initial valve opening
 - `Cd`: discharge coefficient flowing from `a → b`
 - `Cd_reverse`: discharge coefficient flowing from `b → a`
 - `minimum_area`: when `reversible = false` applies a forced minimum area
@@ -513,7 +523,7 @@ See also [`FixedVolume`](@ref), [`DynamicVolume`](@ref)
 end
 
 """
-DynamicVolume(N, add_inertia=true, reversible=false; area, x_int = 0, x_max, x_min = 0, x_damp = x_min, direction = +1, perimeter = 2 * sqrt(area * pi), shape_factor = 64, head_factor = 1, Cd = 1e2, Cd_reverse = Cd, name)    
+    DynamicVolume(N, add_inertia=true, reversible=false; area, x_int = 0, x_max, x_min = 0, x_damp = x_min, direction = +1, perimeter = 2 * sqrt(area * pi), shape_factor = 64, head_factor = 1, Cd = 1e2, Cd_reverse = Cd, name)
 
 Volume with moving wall with `flange` connector for converting hydraulic energy to 1D mechanical.  The `direction` argument aligns the mechanical port with the hydraulic port, useful when connecting two dynamic volumes together in oppsing directions to create an actuator.
 
@@ -686,11 +696,14 @@ dm ────►               │  │ area
 end
 
 """
-    SpoolValve(reversible = false; Cd, d, name)
+    SpoolValve(reversible = false; p_a_int, p_b_int, x_int, Cd, d, name)
 
 Spool valve with `x` valve opening input as mechanical flange port and `d` diameter of orifice. See `Valve` for more information.
 
 # Parameters:
+- `p_a_int`: [Pa] initial pressure for `port_a`
+- `p_b_int`: [Pa] initial pressure for `port_b`
+- `x_int`: [m] initial valve opening
 - `d`: [m] orifice diameter
 - `Cd`: discharge coefficient flowing from `a → b`
 
@@ -730,13 +743,18 @@ See [`Valve`](@ref) for more information.
 end
 
 """
-    SpoolValve2Way(reversible = false; m, g, Cd, d, name)
+    SpoolValve2Way(reversible = false; p_s_int, p_a_int, p_b_int, p_r_int, m, g, x_int, Cd, d, name)
 
 2-ways spool valve with 4 ports and spool mass. Fluid flow direction S → A and B → R when `x` is positive and S → B and A → R when `x` is negative. 
 
 # Parameters:
+- `p_s_int`: [Pa] initial pressure for `port_s`
+- `p_a_int`: [Pa] initial pressure for `port_a`
+- `p_b_int`: [Pa] initial pressure for `port_b`
+- `p_r_int`: [Pa] initial pressure for `port_r`
 - `m`: [kg] mass of the  spool
 - `g`: [m/s²] gravity field acting on the spool, positive value acts in the positive direction
+- `x_int`: [m] initial valve opening
 - `d`: [m] orifice diameter
 - `Cd`: discharge coefficient flowing from `s → a` and `b → r`
 
@@ -786,6 +804,8 @@ end
 
 """
     Actuator(N, add_inertia = true, reversible = false;
+        p_a_int,
+        p_b_int,
         area_a,
         area_b,
         perimeter_a = 2 * sqrt(area_a * pi),
@@ -815,6 +835,8 @@ Actuator made of two DynamicVolumes connected in opposite direction with body ma
 
 # Parameters:
 ## volume
+- `p_a_int`: [Pa] initial pressure for `port_a`
+- `p_b_int`: [Pa] initial pressure for `port_b`
 - `area_a`: [m^2] moving wall area of volume `A`
 - `area_b`: [m^2] moving wall area of volume `B`
 - `length_a_int`: [m] initial wall position for `A`

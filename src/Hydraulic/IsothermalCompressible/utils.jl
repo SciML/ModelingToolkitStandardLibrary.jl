@@ -4,9 +4,13 @@ regPow(x, a, delta = 0.01) = x * (x * x + delta * delta)^((a - 1) / 2);
 regRoot(x, delta = 0.01) = regPow(x, 0.5, delta)
 
 """
-    HydraulicPort(; name)
+    HydraulicPort(;p_int, name)
 
 Connector port for hydraulic components.
+
+# Arguments:
+
+- `p_int`: [Pa] initial gauge pressure
 
 # States:
 - `p`: [Pa] gauge total pressure

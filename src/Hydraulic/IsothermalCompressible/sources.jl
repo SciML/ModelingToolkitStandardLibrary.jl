@@ -1,5 +1,5 @@
 """
-    MassFlow(; name)
+    MassFlow(; name, p_int)
 
 Hydraulic mass flow input source
 
