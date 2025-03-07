@@ -423,15 +423,10 @@ Fixed fluid volume.
         port = HydraulicPort()
     end
 
-    begin
-        dm = port.dm
-        p = port.p
-    end
-
     @equations begin
         D(rho) ~ drho
-        rho ~ full_density(port, p)
-        dm ~ drho * vol
+        rho ~ full_density(port, port.p)
+        port.dm ~ drho * vol
     end
 
 end
