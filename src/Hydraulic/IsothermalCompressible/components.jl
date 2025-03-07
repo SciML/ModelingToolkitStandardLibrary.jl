@@ -9,9 +9,6 @@ Caps a hydraulic port to prevent mass flow in or out.
 """
 @mtkmodel Cap begin
 
-    @parameters begin
-    end
-
     @variables begin
         p(t), [guess = 0]
     end 
@@ -36,9 +33,6 @@ Provides an "open" boundary condition for a hydraulic port such that mass flow `
 - `port`: hydraulic port
 """
 @mtkmodel Open begin
-    
-    @parameters begin
-    end
 
     @variables begin
         p(t), [guess = 0]
@@ -359,11 +353,14 @@ end
 
 @mtkmodel VolumeBase begin
 
+    @structural_parameters begin
+        x1 = 1
+        x2 = 1
+    end
+
     @parameters begin
         area = area
         dead_volume = dead_volume
-        x1 = 1
-        x2 = 1
     end
 
     @variables begin
@@ -404,7 +401,7 @@ Fixed fluid volume.
 @mtkmodel FixedVolume begin
 
     @parameters begin
-        Volume
+        vol
     end
 
     @variables begin
@@ -416,9 +413,12 @@ Fixed fluid volume.
         port = HydraulicPort()
     end
 
-    @equations begin
+    begin
         dm = port.dm
         p = port.p
+    end
+
+    @equations begin
         D(rho) ~ drho
         rho ~ full_density(port, p)
         dm ~ drho * vol
@@ -427,7 +427,7 @@ Fixed fluid volume.
 end
 
 """
-    Volume(; x, dx=0, p, drho=0, dm=0, area, direction = +1, name)
+    Volume(; x, dx=0, p, drho=0, dm=0, area, direction = 1, name)
 
 Volume with moving wall with `flange` connector for converting hydraulic energy to 1D mechanical.  The `direction` argument aligns the mechanical port with the hydraulic port, useful when connecting two dynamic volumes together in oppsing directions to create an actuator.
 
@@ -466,9 +466,12 @@ See also [`FixedVolume`](@ref), [`DynamicVolume`](@ref)
 """
 @mtkmodel Volume begin
 
+    @structural_parameters begin
+        direction = 1
+    end
+
     @parameters begin
         area
-        direction = +1
     end
 
     @variables begin
@@ -503,6 +506,9 @@ See also [`FixedVolume`](@ref), [`DynamicVolume`](@ref)
         dm ~ drho * x * area + rho * dx * area
     end
 
+    @defaults begin
+        rho => liquid_density(port)
+    end
 
 end
 
