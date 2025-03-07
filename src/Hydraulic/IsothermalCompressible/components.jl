@@ -364,8 +364,8 @@ end
 @mtkmodel VolumeBase begin
 
     @structural_parameters begin
-        X1 = 1
-        X2 = 1
+        Χ1 = 1
+        Χ2 = 1
     end
 
     @parameters begin
