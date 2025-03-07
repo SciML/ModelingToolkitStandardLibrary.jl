@@ -28,9 +28,9 @@ the component FixedHeatFlow is connected, if parameter `Q_flow` is positive.
     end
 
     @equations begin
-        port.Q_flow ~ IfElse.ifelse(alpha == 0.0, 
+        port.Q_flow ~ ifelse(alpha == 0.0, 
                                    -Q_flow,  # Simplified equation when alpha is 0
-                                   -Q_flow * (1 + alpha * (port.T - T_ref)))  # Temperature-dependent equation
+                                   -Q_flow * (1 + alpha * (port.T - T_ref)))
     end
 end
 
