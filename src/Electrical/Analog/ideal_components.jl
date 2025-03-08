@@ -48,9 +48,9 @@ Generic resistor with optional temperature dependency.
     end
 
     @parameters begin
-        R = 1.0, [description = "Reference resistance", unit = "Ω"]
-        T_ref = 300.15, [description = "Reference temperature", unit = "K"]
-        alpha = 0.0, [description = "Temperature coefficient of resistance", unit = "K⁻¹"]
+        R = 1.0, [description = "Reference resistance"]
+        T_ref = 300.15, [description = "Reference temperature"]
+        alpha = 0.0, [description = "Temperature coefficient of resistance"]
     end
 
     if T_dep
@@ -58,7 +58,7 @@ Generic resistor with optional temperature dependency.
             heat_port = HeatPort()
         end
         @variables begin
-            R_T(t), [description = "Temperature-dependent resistance", unit = "Ω"]
+            R_T(t), [description = "Temperature-dependent resistance"]
         end
         @equations begin
             R_T ~ R * (1 + alpha * (heat_port.T - T_ref))  # Temperature-dependent resistance
