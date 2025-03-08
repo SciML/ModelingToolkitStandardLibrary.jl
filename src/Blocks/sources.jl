@@ -672,10 +672,7 @@ data input component.
     eqs = [
         output.u ~ get_sampled_data(t, p)
     ]
-    return ODESystem(eqs, t, vars, [pars; p]; name, systems,
-        defaults = [
-            output.u => get_sampled_data(0.0, p)
-        ])
+    return ODESystem(eqs, t, vars, [pars; p]; name, systems)
 end
 
 """
@@ -701,8 +698,7 @@ data input component.
     eqs = [
         output.u ~ get_sampled_data(t, buffer)
     ]
-    return ODESystem(eqs, t, vars, pars; name, systems,
-        defaults = [output.u => get_sampled_data(0.0, buffer)])
+    return ODESystem(eqs, t, vars, pars; name, systems)
 end
 
 SampledData(x::SampledDataType.Option; kwargs...) = SampledData(Val(x); kwargs...)

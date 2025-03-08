@@ -157,6 +157,103 @@ end
     @test sol[prod.output.u] ≈ 2 * sin.(2 * pi * sol.t)
 end
 
+@testset "Power" begin
+    @named c1 = Sine(; frequency = 1)
+    @named c2 = Constant(; k = 2)
+    @named pow = Power(;)
+    @named int = Integrator(; k = 1)
+    @named model = ODESystem(
+        [
+            connect(c1.output, pow.base),
+            connect(c2.output, pow.exponent),
+            connect(pow.output, int.input)
+        ],
+        t,
+        systems = [int, pow, c1, c2])
+    sys = structural_simplify(model)
+    prob = ODEProblem(sys, Pair[int.x => 0.0], (0.0, 1.0))
+    sol = solve(prob, Rodas4())
+    @test isequal(unbound_inputs(sys), [])
+    @test sol.retcode == Success
+    @test sol[pow.output.u] ≈ sin.(2 * pi * sol.t) .^ 2
+end
+
+@testset "Modulo" begin
+    @named c1 = Ramp(height = 2, duration = 1, offset = 1, start_time = 0, smooth = false)
+    @named c2 = Constant(; k = 1) 
+    @named modl = Modulo(;)
+    @named model = ODESystem(
+        [
+            connect(c1.output, modl.dividend),
+            connect(c2.output, modl.divisor)
+        ],
+        t,
+        systems = [modl, c1, c2])
+    sys = structural_simplify(model)
+    prob = ODEProblem(sys, [], (0.0, 1.0))
+    sol = solve(prob, Rodas4())
+    @test isequal(unbound_inputs(sys), [])
+    @test sol.retcode == Success
+    @test sol[modl.remainder.u] ≈ mod.(2 * sol.t,1)
+end
+
+@testset "UnaryMinus" begin
+    @named c1 = Sine(; frequency = 1)
+    @named minu = UnaryMinus(;)
+    @named int = Integrator(; k = 1)
+    @named model = ODESystem(
+        [
+            connect(c1.output, minu.input),
+            connect(minu.output, int.input)
+        ],
+        t,
+        systems = [int, minu, c1])
+    sys = structural_simplify(model)
+    prob = ODEProblem(sys, Pair[int.x => 0.0], (0.0, 1.0))
+    sol = solve(prob, Rodas4())
+    @test isequal(unbound_inputs(sys), [])
+    @test sol.retcode == Success
+    @test sol[minu.output.u] ≈ - sin.(2 * pi * sol.t)
+end
+
+@testset "Floor" begin
+    @named c1 = Sine(; frequency = 1)
+    @named flr = Floor(;)
+    @named int = Integrator(; k = 1)
+    @named model = ODESystem(
+        [
+            connect(c1.output, flr.input),
+            connect(flr.output, int.input)
+        ],
+        t,
+        systems = [int, flr, c1])
+    sys = structural_simplify(model)
+    prob = ODEProblem(sys, Pair[int.x => 0.0], (0.0, 1.0))
+    sol = solve(prob, Rodas4())
+    @test isequal(unbound_inputs(sys), [])
+    @test sol.retcode == Success
+    @test sol[flr.output.u] ≈ floor.(sin.(2 * pi * sol.t))
+end
+
+@testset "Ceil" begin
+    @named c1 = Sine(; frequency = 1)
+    @named cel = Ceil(;)
+    @named int = Integrator(; k = 1)
+    @named model = ODESystem(
+        [
+            connect(c1.output, cel.input),
+            connect(cel.output, int.input)
+        ],
+        t,
+        systems = [int, cel, c1])
+    sys = structural_simplify(model)
+    prob = ODEProblem(sys, Pair[int.x => 0.0], (0.0, 1.0))
+    sol = solve(prob, Rodas4())
+    @test isequal(unbound_inputs(sys), [])
+    @test sol.retcode == Success
+    @test sol[cel.output.u] ≈ ceil.(sin.(2 * pi * sol.t))
+end
+
 @testset "Division" begin
     @named c1 = Sine(; frequency = 1)
     @named c2 = Constant(; k = 2)
