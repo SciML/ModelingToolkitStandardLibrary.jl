@@ -196,7 +196,7 @@ end
 
     @mtkbuild sys = ElHeatingCircuit()
 
-    prob = ODEProblem(sys, unknowns(sys) .=> 0.0, (0, 6.0))
+    prob = ODEProblem(sys, [], (0, 6.0); guesses = [sys.heating_resistor.i => 0.0])
     sol = solve(prob, Rodas4())
     @test sol.retcode == Success
     @test sol[sys.source.v * sys.source.i] == -sol[sys.env.port.Q_flow]
