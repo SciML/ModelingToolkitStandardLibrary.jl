@@ -93,7 +93,7 @@ end
     # fig = Figure()
     # tm = 0:0.01:1 |> collect
     # ax = Axis(fig[1,1])
-    # lines!(ax, tm, sol.(tm; idxs=sys.vol.port.p)); 
+    # lines!(ax, tm, sol.(tm; idxs=sys.vol.port.p));  
     # fig
 end
 
@@ -148,11 +148,10 @@ end
         ODESystem(eqs, t, [], pars; name, systems, initialization_eqs)
     end
 
-    @mtkbuild sys = System()
+    @named sys = System()
+    sys = structural_simplify(sys; allow_symbolic = true)
     prob = ODEProblem(sys, [], (0, 5))
-    @show prob.u0
-    sol = solve(prob, Rodas5P(linsolve = OrdinaryDiffEq.OrdinaryDiffEqNonlinearSolve.LinearSolve.QRFactorization(OrdinaryDiffEq.OrdinaryDiffEqNonlinearSolve.LinearSolve.ColumnNorm())); abstol = 1e-6, reltol = 1e-9)
-    @show sol[1]
+    sol = solve(prob, Rodas5P(); abstol = 1e-6, reltol = 1e-9)
     # begin
     #     fig = Figure()
 
