@@ -111,7 +111,7 @@ matrices_S, simplified_sys = Blocks.get_sensitivity(
     model, :y, op = Dict(unknowns(sys) .=> 0.0))
 So = ss(matrices_S...) |> minreal # The output-sensitivity function as a StateSpace system
 matrices_T, simplified_sys = Blocks.get_comp_sensitivity(
-    model, :y, op = Dict(sys.inertia.phi => 0.0, sys.inertia.w => 0.0))
+    model, :y, op = Dict(unknowns(sys) .=> 0.0))
 To = ss(matrices_T...)# The output complementary sensitivity function as a StateSpace system
 bodeplot([So, To], label = ["S" "T"], plot_title = "Sensitivity functions",
     plotphase = false)
