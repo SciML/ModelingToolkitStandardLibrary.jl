@@ -369,8 +369,12 @@ end
     end
 
     @parameters begin
-        area = area
-        dead_volume = dead_volume
+        area
+        dead_volume
+    end
+
+    @components begin
+        port = HydraulicPort()
     end
 
     @variables begin
@@ -381,18 +385,12 @@ end
         vol(t)
     end
 
-    @components begin
-        port = HydraulicPort()
-    end
-
     @equations begin
-        dm = port.dm
-        p = port.p
         vol ~ dead_volume + area * x
         D(x) ~ dx
         D(rho) ~ drho
-        rho ~ full_density(port, p)
-        dm ~ drho * vol * Χ1 + rho * area * dx * Χ2
+        rho ~ full_density(port, port.p)
+        port.dm ~ drho * vol * Χ1 + rho * area * dx * Χ2
     end
 
 end
@@ -414,13 +412,13 @@ Fixed fluid volume.
         vol
     end
 
+    @components begin
+        port = HydraulicPort(;)
+    end
+
     @variables begin
         rho(t), [guess = liquid_density(port)]
         drho(t), [guess = 0]
-    end
-
-    @components begin
-        port = HydraulicPort()
     end
 
     @equations begin
