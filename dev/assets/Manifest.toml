@@ -130,9 +130,9 @@ version = "1.11.0"
 
 [[deps.BandedMatrices]]
 deps = ["ArrayLayouts", "FillArrays", "LinearAlgebra", "PrecompileTools"]
-git-tree-sha1 = "4a591da886b61415e2c0dea130d28da1e9077cfb"
+git-tree-sha1 = "614c6aba1d562191d9832df2af24f594aa7ebf61"
 uuid = "aae01518-5342-5314-be14-df237901396f"
-version = "1.9.2"
+version = "1.9.3"
 weakdeps = ["SparseArrays"]
 
     [deps.BandedMatrices.extensions]
@@ -631,9 +631,9 @@ version = "1.11.0"
 
 [[deps.Distributions]]
 deps = ["AliasTables", "FillArrays", "LinearAlgebra", "PDMats", "Printf", "QuadGK", "Random", "SpecialFunctions", "Statistics", "StatsAPI", "StatsBase", "StatsFuns"]
-git-tree-sha1 = "03aa5d44647eaec98e1920635cdfed5d5560a8b9"
+git-tree-sha1 = "0b4190661e8a4e51a842070e7dd4fae440ddb7f4"
 uuid = "31c24e10-a181-5473-b8eb-7969acd0382f"
-version = "0.25.117"
+version = "0.25.118"
 
     [deps.Distributions.extensions]
     DistributionsChainRulesCoreExt = "ChainRulesCore"
@@ -1959,9 +1959,9 @@ version = "1.4.3"
 
 [[deps.Plots]]
 deps = ["Base64", "Contour", "Dates", "Downloads", "FFMPEG", "FixedPointNumbers", "GR", "JLFzf", "JSON", "LaTeXStrings", "Latexify", "LinearAlgebra", "Measures", "NaNMath", "Pkg", "PlotThemes", "PlotUtils", "PrecompileTools", "Printf", "REPL", "Random", "RecipesBase", "RecipesPipeline", "Reexport", "RelocatableFolders", "Requires", "Scratch", "Showoff", "SparseArrays", "Statistics", "StatsBase", "TOML", "UUIDs", "UnicodeFun", "UnitfulLatexify", "Unzip"]
-git-tree-sha1 = "dae01f8c2e069a683d3a6e17bbae5070ab94786f"
+git-tree-sha1 = "564b477ae5fbfb3e23e63fc337d5f4e65e039ca4"
 uuid = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
-version = "1.40.9"
+version = "1.40.10"
 
     [deps.Plots.extensions]
     FileIOExt = "FileIO"
@@ -2367,9 +2367,9 @@ version = "1.11.0"
 
 [[deps.SparseConnectivityTracer]]
 deps = ["ADTypes", "DocStringExtensions", "FillArrays", "LinearAlgebra", "Random", "SparseArrays"]
-git-tree-sha1 = "6651f4663027f3b30a31429d257185f56a571184"
+git-tree-sha1 = "e60ba2f27bf0c85cc20ac326a158182630032bb6"
 uuid = "9f842d2f-2579-4b1d-911e-f412cf18a3f5"
-version = "0.6.13"
+version = "0.6.14"
 
     [deps.SparseConnectivityTracer.extensions]
     SparseConnectivityTracerDataInterpolationsExt = "DataInterpolations"
@@ -2433,9 +2433,9 @@ version = "1.0.2"
 
 [[deps.Static]]
 deps = ["CommonWorldInvalidations", "IfElse", "PrecompileTools"]
-git-tree-sha1 = "87d51a3ee9a4b0d2fe054bdd3fc2436258db2603"
+git-tree-sha1 = "f737d444cb0ad07e61b3c1bef8eb91203c321eff"
 uuid = "aedffcd0-7271-4cad-89d0-dc628f76c6d3"
-version = "1.1.1"
+version = "1.2.0"
 
 [[deps.StaticArrayInterface]]
 deps = ["ArrayInterface", "Compat", "IfElse", "LinearAlgebra", "PrecompileTools", "Static"]
@@ -2560,9 +2560,9 @@ version = "0.2.2"
 
 [[deps.SymbolicUtils]]
 deps = ["AbstractTrees", "ArrayInterface", "Bijections", "ChainRulesCore", "Combinatorics", "ConstructionBase", "DataStructures", "DocStringExtensions", "DynamicPolynomials", "ExproniconLite", "LinearAlgebra", "MultivariatePolynomials", "NaNMath", "Setfield", "SparseArrays", "SpecialFunctions", "StaticArrays", "SymbolicIndexingInterface", "TaskLocalValues", "TermInterface", "TimerOutputs", "Unityper", "WeakValueDicts"]
-git-tree-sha1 = "e3a430bead8cfc69d951e721cb10330bb7ac1fce"
+git-tree-sha1 = "e7d86b836f25d3728b7c1d0c0ace732d8cc9c1c7"
 uuid = "d1185830-fcd6-423d-90d6-eec64667417b"
-version = "3.17.1"
+version = "3.18.0"
 
     [deps.SymbolicUtils.extensions]
     SymbolicUtilsLabelledArraysExt = "LabelledArrays"
@@ -2574,9 +2574,9 @@ version = "3.17.1"
 
 [[deps.Symbolics]]
 deps = ["ADTypes", "ArrayInterface", "Bijections", "CommonWorldInvalidations", "ConstructionBase", "DataStructures", "DiffRules", "Distributions", "DocStringExtensions", "DomainSets", "DynamicPolynomials", "LaTeXStrings", "Latexify", "Libdl", "LinearAlgebra", "LogExpFunctions", "MacroTools", "Markdown", "NaNMath", "OffsetArrays", "PrecompileTools", "Primes", "RecipesBase", "Reexport", "RuntimeGeneratedFunctions", "SciMLBase", "Setfield", "SparseArrays", "SpecialFunctions", "StaticArraysCore", "SymbolicIndexingInterface", "SymbolicLimits", "SymbolicUtils", "TermInterface"]
-git-tree-sha1 = "b587aa93817acfa302f12a03d6d8d4ff5d1eac2b"
+git-tree-sha1 = "326982e1f8a8214ff83cc427484acc858f975c74"
 uuid = "0c5d862f-8b57-4792-8d23-62f2024744c7"
-version = "6.30.0"
+version = "6.29.2"
 
     [deps.Symbolics.extensions]
     SymbolicsForwardDiffExt = "ForwardDiff"
