@@ -8,20 +8,16 @@ Hydraulic mass flow input source
   - `port`: hydraulic port
   - `dm`: real input 
 """
-@component function MassFlow(; name)
-    pars = []
+@mtkmodel MassFlow begin
 
-    systems = @named begin
+    @components begin
         port = HydraulicPort()
         dm = RealInput()
     end
 
-    vars = []
-    eqs = [
+    @equations begin
         port.dm ~ -dm.u
-    ]
-
-    ODESystem(eqs, t, vars, pars; name, systems)
+    end
 end
 
 """
@@ -35,22 +31,20 @@ Fixed pressure source
 # Connectors:
 - `port`: hydraulic port
 """
-@component function FixedPressure(; p, name)
-    pars = @parameters begin
-        p = p
+@mtkmodel FixedPressure begin
+
+    @parameters begin
+        p
     end
 
-    vars = []
-
-    systems = @named begin
+    @components begin
         port = HydraulicPort()
     end
 
-    eqs = [
+    @equations begin
         port.p ~ p
-    ]
+    end
 
-    ODESystem(eqs, t, vars, pars; name, systems)
 end
 @deprecate Source FixedPressure
 
@@ -63,19 +57,16 @@ input pressure source
 - `port`: hydraulic port
 - `p`: real input 
 """
-@component function Pressure(; name)
-    pars = []
-    vars = []
+@mtkmodel Pressure begin
 
-    systems = @named begin
+    @components begin
         port = HydraulicPort()
         p = RealInput()
     end
 
-    eqs = [
+    @equations begin
         port.p ~ p.u
-    ]
+    end
 
-    ODESystem(eqs, t, vars, pars; name, systems)
 end
 @deprecate InputSource Pressure
