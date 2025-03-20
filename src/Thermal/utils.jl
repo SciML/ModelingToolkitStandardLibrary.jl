@@ -1,4 +1,5 @@
-@connector function HeatPort(; T = nothing, T_guess = 273.15 + 20, Q_flow = nothing, Q_flow_guess = 0.0, name)
+@connector function HeatPort(;
+        T = nothing, T_guess = 273.15 + 20, Q_flow = nothing, Q_flow_guess = 0.0, name)
     pars = @parameters begin
         T_guess = T_guess
         Q_flow_guess = Q_flow_guess

@@ -38,8 +38,7 @@ function MassSpringDamper(; name)
     @variables f(t)=0 x(t)=0 dx(t)=0 ddx(t)=0
     @parameters m=10 k=1000 d=1
 
-    eqs = [
-           f ~ input.u
+    eqs = [f ~ input.u
            ddx * 10 ~ k * x + d * dx + f
            D(x) ~ dx
            D(dx) ~ ddx]
@@ -52,10 +51,8 @@ function MassSpringDamperSystem(data, time; name)
     @named clk = ContinuousClock()
     @named model = MassSpringDamper()
 
-    eqs = [
-        connect(src.input, clk.output)
-        connect(src.output, model.input)
-    ]
+    eqs = [connect(src.input, clk.output)
+           connect(src.output, model.input)]
 
     ODESystem(eqs, t, [], []; name, systems = [src, clk, model])
 end
@@ -100,11 +97,10 @@ using Plots
 
 function MassSpringDamper(; name)
     @named input = RealInput()
-    vars = @variables f(t) x(t)=0 dx(t) [guess=0] ddx(t)
+    vars = @variables f(t) x(t)=0 dx(t) [guess = 0] ddx(t)
     pars = @parameters m=10 k=1000 d=1
 
-    eqs = [
-           f ~ input.u
+    eqs = [f ~ input.u
            ddx * 10 ~ k * x + d * dx + f
            D(x) ~ dx
            D(dx) ~ ddx]
@@ -117,10 +113,8 @@ function MassSpringDamperSystem(data, time; name)
     @named clk = ContinuousClock()
     @named model = MassSpringDamper()
 
-    eqs = [
-        connect(model.input, src.output)
-        connect(src.input, clk.output)
-    ]
+    eqs = [connect(model.input, src.output)
+           connect(src.input, clk.output)]
 
     ODESystem(eqs, t; name, systems = [src, clk, model])
 end
@@ -143,6 +137,7 @@ plot(sol)
 ```
 
 If we want to run a new data set, this requires only remaking the problem and solving again
+
 ```@example parametrized_interpolation
 prob2 = remake(prob, p = [sys.src.data => ones(length(df.data))])
 sol2 = solve(prob2)
@@ -150,6 +145,7 @@ plot(sol2)
 ```
 
 !!! note
+    
     Note that when changing the data, the length of the new data must be the same as the length of the original data.
 
 ## Custom Component with External Data
@@ -224,7 +220,7 @@ using ModelingToolkitStandardLibrary.Blocks
 using OrdinaryDiffEq
 
 function System(; name)
-    src = SampledData(Float64, name=:src)
+    src = SampledData(Float64, name = :src)
 
     vars = @variables f(t)=0 x(t)=0 dx(t)=0 ddx(t)=0
     pars = @parameters m=10 k=1000 d=1
@@ -238,7 +234,7 @@ function System(; name)
 end
 
 @named system = System()
-sys = structural_simplify(system, split=false)
+sys = structural_simplify(system, split = false)
 s = complete(system)
 
 dt = 4e-4
@@ -246,14 +242,14 @@ time = 0:dt:0.1
 data1 = sin.(2 * pi * time * 100)
 data2 = cos.(2 * pi * time * 50)
 
-prob = ODEProblem(sys, [], (0, time[end]); split=false, tofloat = false, use_union=true)
+prob = ODEProblem(sys, [], (0, time[end]); split = false, tofloat = false, use_union = true)
 defs = ModelingToolkit.defaults(sys)
 
 function get_prob(data)
     defs[s.src.buffer] = Parameter(data, dt)
     # ensure p is a uniform type of Vector{Parameter{Float64}} (converting from Vector{Any})
     p = Parameter.(ModelingToolkit.varmap_to_vars(defs, parameters(sys); tofloat = false))
-    remake(prob; p, build_initializeprob=false)
+    remake(prob; p, build_initializeprob = false)
 end
 
 prob1 = get_prob(data1)

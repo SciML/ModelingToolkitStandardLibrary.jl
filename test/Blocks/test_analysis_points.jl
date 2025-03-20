@@ -266,7 +266,8 @@ Sinner = sminreal(ss(get_sensitivity(sys_inner, :u)[1]...))
 
 Souter = sminreal(ss(get_sensitivity(sys_outer, sys_outer.sys_inner.u)[1]...))
 
-Sinner2 = sminreal(ss(get_sensitivity(sys_outer, sys_outer.sys_inner.u, loop_openings = [:y2])[1]...))
+Sinner2 = sminreal(ss(get_sensitivity(
+    sys_outer, sys_outer.sys_inner.u, loop_openings = [:y2])[1]...))
 
 @test Sinner.nx == 1
 @test Sinner == Sinner2
@@ -332,7 +333,8 @@ eqs = [connect(r.output, F.input)
        connect(F.output, sys_inner.add.input1)]
 sys_outer = ODESystem(eqs, t, systems = [F, sys_inner, r], name = :outer)
 
-matrices, _ = get_sensitivity(sys_outer, [sys_outer.inner.plant_input, sys_outer.inner.plant_output])
+matrices, _ = get_sensitivity(
+    sys_outer, [sys_outer.inner.plant_input, sys_outer.inner.plant_output])
 
 Ps = tf(1, [1, 1]) |> ss
 Cs = tf(1) |> ss
@@ -346,7 +348,8 @@ So = CS.feedback(1, Ps * Cs)
 @test tf(G[1, 2]) ≈ tf(-CS.feedback(Cs, Ps))
 @test tf(G[2, 1]) ≈ tf(CS.feedback(Ps, Cs))
 
-matrices, _ = get_comp_sensitivity(sys_outer, [sys_outer.inner.plant_input, sys_outer.inner.plant_output])
+matrices, _ = get_comp_sensitivity(
+    sys_outer, [sys_outer.inner.plant_input, sys_outer.inner.plant_output])
 
 G = CS.ss(matrices...) |> sminreal
 Ti = CS.feedback(Cs * Ps)
@@ -369,13 +372,15 @@ L = CS.ss(matrices...) |> sminreal
 @test tf(L[1, 1]) ≈ -tf(Ps * Cs)
 
 # Calling looptransfer like below is not the intended way, but we can work out what it should return if we did so it remains a valid test
-matrices, _ = get_looptransfer(sys_outer, [sys_outer.inner.plant_input, sys_outer.inner.plant_output])
+matrices, _ = get_looptransfer(
+    sys_outer, [sys_outer.inner.plant_input, sys_outer.inner.plant_output])
 L = CS.ss(matrices...) |> sminreal
 @test tf(L[1, 1]) ≈ tf(0)
 @test tf(L[2, 2]) ≈ tf(0)
 @test sminreal(L[1, 2]) ≈ ss(-1)
 @test tf(L[2, 1]) ≈ tf(Ps)
 
-matrices, _ = linearize(sys_outer, [sys_outer.inner.plant_input], [sys_outer.inner.plant_output])
+matrices, _ = linearize(
+    sys_outer, [sys_outer.inner.plant_input], [sys_outer.inner.plant_output])
 G = CS.ss(matrices...) |> sminreal
 @test tf(G) ≈ tf(CS.feedback(Ps, Cs))

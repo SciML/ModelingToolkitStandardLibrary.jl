@@ -9,7 +9,6 @@ Hydraulic mass flow input source
   - `dm`: real input
 """
 @mtkmodel MassFlow begin
-
     @components begin
         port = HydraulicPort()
         dm = RealInput()
@@ -32,7 +31,6 @@ Fixed pressure source
 - `port`: hydraulic port
 """
 @mtkmodel FixedPressure begin
-
     @parameters begin
         p
     end
@@ -44,7 +42,6 @@ Fixed pressure source
     @equations begin
         port.p ~ p
     end
-
 end
 @deprecate Source FixedPressure
 
@@ -58,7 +55,6 @@ input pressure source
 - `p`: real input
 """
 @mtkmodel Pressure begin
-
     @components begin
         port = HydraulicPort()
         p = RealInput()
@@ -67,6 +63,5 @@ input pressure source
     @equations begin
         port.p ~ p.u
     end
-
 end
 @deprecate InputSource Pressure

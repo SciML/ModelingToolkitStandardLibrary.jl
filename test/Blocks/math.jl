@@ -180,7 +180,7 @@ end
 
 @testset "Modulo" begin
     @named c1 = Ramp(height = 2, duration = 1, offset = 1, start_time = 0, smooth = false)
-    @named c2 = Constant(; k = 1) 
+    @named c2 = Constant(; k = 1)
     @named modl = Modulo(;)
     @named model = ODESystem(
         [
@@ -194,7 +194,7 @@ end
     sol = solve(prob, Rodas4())
     @test isequal(unbound_inputs(sys), [])
     @test sol.retcode == Success
-    @test sol[modl.remainder.u] ≈ mod.(2 * sol.t,1)
+    @test sol[modl.remainder.u] ≈ mod.(2 * sol.t, 1)
 end
 
 @testset "UnaryMinus" begin
@@ -213,7 +213,7 @@ end
     sol = solve(prob, Rodas4())
     @test isequal(unbound_inputs(sys), [])
     @test sol.retcode == Success
-    @test sol[minu.output.u] ≈ - sin.(2 * pi * sol.t)
+    @test sol[minu.output.u] ≈ -sin.(2 * pi * sol.t)
 end
 
 @testset "Floor" begin

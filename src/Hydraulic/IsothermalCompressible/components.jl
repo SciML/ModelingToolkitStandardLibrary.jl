@@ -8,7 +8,6 @@ Caps a hydraulic port to prevent mass flow in or out.
 - `port`: hydraulic port
 """
 @mtkmodel Cap begin
-
     @variables begin
         p(t), [guess = 0]
     end
@@ -21,7 +20,6 @@ Caps a hydraulic port to prevent mass flow in or out.
         port.p ~ p
         port.dm ~ 0
     end
-
 end
 
 """
@@ -33,7 +31,6 @@ Provides an "open" boundary condition for a hydraulic port such that mass flow `
 - `port`: hydraulic port
 """
 @mtkmodel Open begin
-
     @variables begin
         p(t), [guess = 0]
         dm(t), [guess = 0]
@@ -47,7 +44,6 @@ Provides an "open" boundary condition for a hydraulic port such that mass flow `
         port.p ~ p
         port.dm ~ dm
     end
-
 end
 
 """
@@ -261,7 +257,6 @@ Reduces the flow from `port_a` to `port_b` by `n`.  Useful for modeling parallel
         open.dm ~ dm_a - dm_b # extra flow dumps into an open port
         # port_b.dm ~ dm_b # divided flow goes to port_b
     end
-
 end
 
 @component function ValveBase(
@@ -355,7 +350,6 @@ Valve with `area` input and discharge coefficient `Cd` defined by https://en.wik
 end
 
 @mtkmodel VolumeBase begin
-
     @structural_parameters begin
         Χ1 = 1
         Χ2 = 1
@@ -385,7 +379,6 @@ end
         rho ~ full_density(port, port.p)
         port.dm ~ drho * vol * Χ1 + rho * area * dx * Χ2
     end
-
 end
 
 """
@@ -400,7 +393,6 @@ Fixed fluid volume.
 - `port`: hydraulic port
 """
 @mtkmodel FixedVolume begin
-
     @parameters begin
         vol
     end
@@ -419,7 +411,6 @@ Fixed fluid volume.
         rho ~ full_density(port, port.p)
         port.dm ~ drho * vol
     end
-
 end
 
 """
@@ -461,7 +452,6 @@ dm ────►               │  │ area
 See also [`FixedVolume`](@ref), [`DynamicVolume`](@ref)
 """
 @mtkmodel Volume begin
-
     @structural_parameters begin
         direction = 1
     end
@@ -505,7 +495,6 @@ See also [`FixedVolume`](@ref), [`DynamicVolume`](@ref)
     @defaults begin
         rho => liquid_density(port)
     end
-
 end
 
 """
