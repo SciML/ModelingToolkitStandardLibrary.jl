@@ -1,12 +1,12 @@
 """
-    MassFlow(; name, p_int)
+    MassFlow(; name)
 
 Hydraulic mass flow input source
 
 # Connectors:
 
   - `port`: hydraulic port
-  - `dm`: real input 
+  - `dm`: real input
 """
 @mtkmodel MassFlow begin
 
@@ -55,7 +55,7 @@ input pressure source
 
 # Connectors:
 - `port`: hydraulic port
-- `p`: real input 
+- `p`: real input
 """
 @mtkmodel Pressure begin
 
