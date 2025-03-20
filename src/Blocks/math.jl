@@ -226,7 +226,7 @@ Output the exponential with base as the first input and exponent as second input
         output = RealOutput()
     end
     @equations begin
-        output.u ~ base.u ^ exponent.u
+        output.u ~ base.u^exponent.u
     end
 end
 

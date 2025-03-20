@@ -10,7 +10,8 @@ using ModelingToolkit: getdefault, t_nounits as t, D_nounits as D
 export RealInput, RealInputArray, RealOutput, RealOutputArray, SISO
 include("utils.jl")
 
-export Gain, Sum, MatrixGain, Feedback, Add, Add3, Product, Division, Power, Modulo, UnaryMinus, Floor, Ceil
+export Gain, Sum, MatrixGain, Feedback, Add, Add3, Product, Division, Power, Modulo,
+       UnaryMinus, Floor, Ceil
 export Abs, Sign, Sqrt, Sin, Cos, Tan, Asin, Acos, Atan, Atan2, Sinh, Cosh, Tanh, Exp
 export Log, Log10
 include("math.jl")

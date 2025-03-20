@@ -1,20 +1,16 @@
 
 """
-    Cap(; p_int, name)
+    Cap(; name)
 
 Caps a hydraulic port to prevent mass flow in or out.
-
-# Parameters:
-- `p_int`: [Pa] initial pressure (set by `p_int` argument)
 
 # Connectors:
 - `port`: hydraulic port
 """
 @mtkmodel Cap begin
-
     @variables begin
         p(t), [guess = 0]
-    end 
+    end
 
     @components begin
         port = HydraulicPort()
@@ -24,22 +20,17 @@ Caps a hydraulic port to prevent mass flow in or out.
         port.p ~ p
         port.dm ~ 0
     end
-
 end
 
 """
-    Open(; p_int, name)
+    Open(; name)
 
-Provides an "open" boundary condition for a hydraulic port such that mass flow `dm` is non-zero.  This is opposite from an un-connected hydraulic port or the `Cap` boundary component which sets the mass flow `dm` to zero.  
-
-# Parameters:
-- `p_int`: [Pa] initial pressure (set by `p_int` argument)
+Provides an "open" boundary condition for a hydraulic port such that mass flow `dm` is non-zero.  This is opposite from an un-connected hydraulic port or the `Cap` boundary component which sets the mass flow `dm` to zero.
 
 # Connectors:
 - `port`: hydraulic port
 """
 @mtkmodel Open begin
-
     @variables begin
         p(t), [guess = 0]
         dm(t), [guess = 0]
@@ -53,7 +44,6 @@ Provides an "open" boundary condition for a hydraulic port such that mass flow `
         port.p ~ p
         port.dm ~ dm
     end
-
 end
 
 """
@@ -230,12 +220,11 @@ end
 @deprecate Pipe Tube
 
 """
-    FlowDivider(;p_int, n, name)
+    FlowDivider(; n, name)
 
 Reduces the flow from `port_a` to `port_b` by `n`.  Useful for modeling parallel tubes efficiently by placing a `FlowDivider` on each end of a tube.
 
 # Parameters:
-- `p_int`: [Pa] initial pressure
 - `n`: divide flow from `port_a` to `port_b` by `n`
 
 # Connectors:
@@ -268,7 +257,6 @@ Reduces the flow from `port_a` to `port_b` by `n`.  Useful for modeling parallel
         open.dm ~ dm_a - dm_b # extra flow dumps into an open port
         # port_b.dm ~ dm_b # divided flow goes to port_b
     end
-
 end
 
 @component function ValveBase(
@@ -362,7 +350,6 @@ Valve with `area` input and discharge coefficient `Cd` defined by https://en.wik
 end
 
 @mtkmodel VolumeBase begin
-
     @structural_parameters begin
         Χ1 = 1
         Χ2 = 1
@@ -392,7 +379,6 @@ end
         rho ~ full_density(port, port.p)
         port.dm ~ drho * vol * Χ1 + rho * area * dx * Χ2
     end
-
 end
 
 """
@@ -407,7 +393,6 @@ Fixed fluid volume.
 - `port`: hydraulic port
 """
 @mtkmodel FixedVolume begin
-
     @parameters begin
         vol
     end
@@ -426,7 +411,6 @@ Fixed fluid volume.
         rho ~ full_density(port, port.p)
         port.dm ~ drho * vol
     end
-
 end
 
 """
@@ -468,7 +452,6 @@ dm ────►               │  │ area
 See also [`FixedVolume`](@ref), [`DynamicVolume`](@ref)
 """
 @mtkmodel Volume begin
-
     @structural_parameters begin
         direction = 1
     end
@@ -512,7 +495,6 @@ See also [`FixedVolume`](@ref), [`DynamicVolume`](@ref)
     @defaults begin
         rho => liquid_density(port)
     end
-
 end
 
 """
@@ -738,7 +720,7 @@ end
 """
     SpoolValve2Way(reversible = false; p_s_int, p_a_int, p_b_int, p_r_int, m, g, x_int, Cd, d, name)
 
-2-ways spool valve with 4 ports and spool mass. Fluid flow direction S → A and B → R when `x` is positive and S → B and A → R when `x` is negative. 
+2-ways spool valve with 4 ports and spool mass. Fluid flow direction S → A and B → R when `x` is positive and S → B and A → R when `x` is negative.
 
 # Parameters:
 - `p_s_int`: [Pa] initial pressure for `port_s`
@@ -819,7 +801,7 @@ end
         Cd = 1e4,
         Cd_reverse = Cd,
         name)
-        
+
 Actuator made of two DynamicVolumes connected in opposite direction with body mass attached.
 
 # Features:

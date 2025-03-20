@@ -158,20 +158,18 @@ end
 
 @testset "FixedHeatFlow with alpha=0.0 test" begin
     @mtkmodel TestModel begin
-    
         @components begin
-            temp = FixedTemperature(T=300)
-            heatflow = FixedHeatFlow(Q_flow=-1.0)
-            wall = ThermalResistor(R=1)
+            temp = FixedTemperature(T = 300)
+            heatflow = FixedHeatFlow(Q_flow = -1.0)
+            wall = ThermalResistor(R = 1)
         end
-    
+
         @equations begin
             connect(temp.port, wall.port_a)
             connect(wall.port_b, heatflow.port)
         end
-    
     end
-    
+
     @info "Building a FixedHeatFlow with alpha=0.0"
     @mtkbuild test_model = TestModel()
     prob = ODEProblem(test_model, Pair[], (0, 10.0))
@@ -180,5 +178,5 @@ end
     heat_flow = sol[test_model.heatflow.port.Q_flow]
 
     @test SciMLBase.successful_retcode(sol) # Ensure the simulation is successful
-    @test all(isapprox.(heat_flow, 1.0, rtol=1e-6)) # Heat flow value should be equal to the fixed value defined
+    @test all(isapprox.(heat_flow, 1.0, rtol = 1e-6)) # Heat flow value should be equal to the fixed value defined
 end
