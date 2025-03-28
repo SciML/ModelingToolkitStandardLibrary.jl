@@ -540,6 +540,213 @@ end
     #     title = "RC Circuit Test with VariableResistor")
     # savefig(plt, "rc_circuit_test_variable_resistor")
 end
+@testset "NMOS Transistor" begin
+
+    @mtkmodel SimpleNMOSCircuit begin
+        @components begin
+            Q1 = NMOS()
+            Vcc = Voltage()
+            Vb = Voltage()
+            ground = Ground()
+
+            Vcc_const = Constant(k=V_cc)
+            Vb_const = Constant(k=V_b)
+        end
+
+        @parameters begin
+            V_cc = 5.0
+            V_b = 3.5
+        end
+        @equations begin
+            #voltage sources
+            connect(Vcc_const.output, Vcc.V)
+            connect(Vb_const.output, Vb.V)
+
+            #ground connections
+            connect(Vcc.n, Vb.n, ground.g, Q1.s)
+
+            #other stuff
+            connect(Vcc.p, Q1.d)
+            connect(Vb.p, Q1.g)
+        end
+    end
+
+    @mtkbuild sys = SimpleNMOSCircuit(V_cc = 5.0, V_b = 3.5)
+
+    prob = ODEProblem(sys, Pair[], (0.0, 10.0))
+    sol = solve(prob)
+    @test sol[sys.Q1.d.i][1] ≈ 0.0874
+    @test sol[sys.Q1.s.i][1] ≈ -0.0874
+    @test sol[sys.Q1.g.i][1] == 0.0
+    @test sol[sys.Q1.d.v][1] == 5.0
+    @test sol[sys.Q1.s.v] < sol[sys.Q1.d.v]
+
+    # test device symmetry
+    @mtkmodel FlippedNMOSCircuit begin
+        @components begin
+            Q1 = NMOS()
+            Vcc = Voltage()
+            Vb = Voltage()
+            ground = Ground()
+
+            Vcc_const = Constant(k=V_cc)
+            Vb_const = Constant(k=V_b)
+        end
+
+        @parameters begin
+            V_cc = 5.0
+            V_b = 3.5
+        end
+        @equations begin
+            #voltage sources
+            connect(Vcc_const.output, Vcc.V)
+            connect(Vb_const.output, Vb.V)
+
+            #ground connections
+            connect(Vcc.n, Vb.n, ground.g, Q1.d)
+
+            #other stuff
+            connect(Vcc.p, Q1.s)
+            connect(Vb.p, Q1.g)
+        end
+    end
+
+    @mtkbuild flipped_sys = FlippedNMOSCircuit(V_cc=5.0, V_b=3.5)
+
+    flipped_prob = ODEProblem(flipped_sys, Pair[], (0.0, 10.0))
+    flipped_sol = solve(flipped_prob)
+    @test flipped_sol[flipped_sys.Q1.d.i][1] ≈ -0.0874
+    @test flipped_sol[flipped_sys.Q1.s.i][1] ≈ 0.0874
+    @test flipped_sol[flipped_sys.Q1.s.v] > flipped_sol[flipped_sys.Q1.d.v]
+
+    # channel length modulation
+    @mtkmodel SimpleNMOSCircuit begin
+            @components begin
+                Q1 = NMOS(use_channel_length_modulation = false)
+                Vcc = Voltage()
+                Vb = Voltage()
+                ground = Ground()
+
+                Vcc_const = Constant(k=V_cc)
+                Vb_const = Constant(k=V_b)
+            end
+
+            @parameters begin
+                V_cc = 5.0
+                V_b = 3.5
+            end
+            @equations begin
+                #voltage sources
+                connect(Vcc_const.output, Vcc.V)
+                connect(Vb_const.output, Vb.V)
+
+                #ground connections
+                connect(Vcc.n, Vb.n, ground.g, Q1.s)
+
+                #other stuff
+                connect(Vcc.p, Q1.d)
+                connect(Vb.p, Q1.g)
+            end
+    end
+
+        @mtkbuild sys = SimpleNMOSCircuit(V_cc = 5.0, V_b = 3.5)
+
+        prob = ODEProblem(sys, Pair[], (0.0, 10.0))
+        sol = solve(prob)
+        @test sol[sys.Q1.d.i][1] ≈ 0.0729
+        @test sol[sys.Q1.s.i][1] ≈ -0.0729
+end
+
+
+@testset "PMOS Transistor" begin
+
+    @mtkmodel SimplePMOSCircuit begin
+        @components begin
+            Q1 = SimplePMOS(use_channel_length_modulation = false)
+            Vs = Voltage()
+            Vb = Voltage()
+            Vd = Voltage()
+            ground = Ground()
+
+            Vs_const = Constant(k=V_s)
+            Vb_const = Constant(k=V_b)
+            Vd_const = Constant(k=V_d)
+        end
+
+        @parameters begin
+            V_s = 5.0
+            V_b = 3.5
+            V_d = 0.0
+        end
+        @equations begin
+            #voltage sources
+            connect(Vs_const.output, Vs.V)
+            connect(Vb_const.output, Vb.V)
+            connect(Vd_const.output, Vd.V )
+
+            #ground connections
+            connect(Vs.n, Vb.n, ground.g, Vd.n)
+
+            connect(Vd.p, Q1.d)
+            #other stuff
+            connect(Vs.p, Q1.s)
+            connect(Vb.p, Q1.g)
+        end
+    end
+
+    @mtkbuild sys = SimplePMOSCircuit(V_s=5.0, V_b=2.5, V_d = 3)
+
+    prob = ODEProblem(sys, Pair[], (0.0, 10.0))
+    sol = solve(prob)
+
+    @test sol[sys.Q1.d.i][1] ≈ -0.0091998
+    @test sol[sys.Q1.s.i][1] ≈ 0.0091998
+
+    # device symmetry
+    @mtkmodel FlippedPMOSCircuit begin
+        @components begin
+            Q1 = PMOS()
+            Vs = Voltage()
+            Vb = Voltage()
+            Vd = Voltage()
+            ground = Ground()
+
+            Vs_const = Constant(k=V_s)
+            Vb_const = Constant(k=V_b)
+            Vd_const = Constant(k=V_d)
+        end
+
+        @parameters begin
+            V_s = 5.0
+            V_b = 3.5
+            V_d = 0.0
+        end
+        @equations begin
+            #voltage sources
+            connect(Vs_const.output, Vs.V)
+            connect(Vb_const.output, Vb.V)
+            connect(Vd_const.output, Vd.V )
+
+            #ground connections
+            connect(Vs.n, Vb.n, ground.g, Vd.n)
+
+            connect(Vd.p, Q1.s)
+            #other stuff
+            connect(Vs.p, Q1.d)
+            connect(Vb.p, Q1.g)
+        end
+    end
+
+    @mtkbuild flipped_sys = FlippedPMOSCircuit(V_s=5.0, V_b=2.5, V_d = 3)
+
+    flipped_prob = ODEProblem(flipped_sys, Pair[], (0.0, 10.0))
+    flipped_sol = solve(flipped_prob)
+
+    flipped_sol[flipped_sys.Q1.d.i][1] ≈ 0.0091998
+    flipped_sol[flipped_sys.Q1.s.i][1] ≈ -0.0091998
+
+
+end
 
 @testset "NPN Tests" begin
     @mtkmodel SimpleNPNCircuit begin
