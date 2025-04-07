@@ -201,13 +201,19 @@ This is a model to collect the heat flows from `m` heatports to one single heatp
 
   - `m`: Number of heat ports (e.g. m=2: `port_a1`, `port_a2`)
 """
-@component function ThermalCollector(; name, m::Integer = 1)
-    port_a = [HeatPort(name = Symbol(:port_a, i)) for i in 1:m]
-    @named port_b = HeatPort()
-    eqs = [port_b.Q_flow + sum(k -> k.Q_flow, port_a) ~ 0
-           port_b.T ~ port_a[1].T]
-    for i in 1:(m - 1)
-        push!(eqs, port_a[i].T ~ port_a[i + 1].T)
+@mtkmodel ThermalCollector begin
+    @structural_parameters begin
+        m::Integer = 1
     end
-    ODESystem(eqs, t, [], []; systems = [port_a..., port_b], name = name)
+
+    @components begin
+        port_a = [HeatPort(name = Symbol(:port_a, i)) for i in 1:m]
+        port_b = HeatPort()
+    end
+
+    @equations begin
+        port_b.Q_flow + sum(k -> k.Q_flow, port_a) ~ 0
+        port_b.T ~ port_a[1].T
+        [port_a[i].T ~ port_a[i + 1].T for i in 1:(m - 1)]
+    end
 end
