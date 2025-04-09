@@ -108,6 +108,28 @@ end
     @test sol[capacitor.v][end]≈10 atol=1e-3
 end
 
+# simple RC with constant voltage source
+@testset "RC with constant voltage source" begin
+    @named voltage = ConstantVoltage(V = 10)
+    @named resistor = Resistor(R = 1)
+    @named capacitor = Capacitor(C = 1, v = 0.0)
+    @named ground = Ground()
+
+    connections = [connect(voltage.p, resistor.p)
+                   connect(resistor.n, capacitor.p)
+                   connect(capacitor.n, voltage.n, ground.g)]
+
+    @named model = ODESystem(connections, t;
+        systems = [resistor, capacitor, voltage, ground])
+    sys = structural_simplify(model)
+    prob = ODEProblem(sys, Pair[], (0.0, 10.0))
+    sol = solve(prob, Tsit5())
+
+    # Plots.plot(sol; vars=[source.v, capacitor.v])
+    @test SciMLBase.successful_retcode(sol)
+    @test sol[capacitor.v][end]≈10 atol=1e-3
+end
+
 # simple RL
 @testset "RL" begin
     @named source = Constant(k = 10)
