@@ -21,7 +21,7 @@ include("Analog/ideal_components.jl")
 export CurrentSensor, PotentialSensor, VoltageSensor, PowerSensor, MultiSensor
 include("Analog/sensors.jl")
 
-export Voltage, ConstantVoltage, Current
+export Voltage, ConstantVoltage, Current, ConstantCurrent
 include("Analog/sources.jl")
 
 # include("Digital/gates.jl")

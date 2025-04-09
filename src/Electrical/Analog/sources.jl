@@ -24,7 +24,7 @@ See [OnePort](@ref)
 end
 
 """
-    ConstantVoltage(; name)
+    ConstantVoltage(; name, V)
 
 Acts as an ideal constant voltage source with no internal resistance.
 
@@ -73,5 +73,33 @@ See [OnePort](@ref)
     end
     @equations begin
         i ~ I.u
+    end
+end
+
+"""
+    ConstantCurrent(; name, I)
+
+Acts as an ideal constant current source with no internal resistance.
+
+# States:
+
+See [OnePort](@ref)
+
+# Connectors:
+
+  - `p` Positive pin
+  - `n` Negative pin
+
+# Parameters:
+
+  - `I`: [`A`] Constant current value
+"""
+@mtkmodel ConstantCurrent begin
+    @extend v, i = oneport = OnePort()
+    @parameters begin
+        I, [description = "Constant current value"]
+    end
+    @equations begin
+        i ~ I
     end
 end

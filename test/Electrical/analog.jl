@@ -215,6 +215,27 @@ end
     @test sum(reduce(vcat, sol[capacitor.v]) .- y(sol.t, start_time))≈0 atol=1e-2
 end
 
+# RC with constant current source
+@testset "RC with constant current source" begin
+    @named current = ConstantCurrent(I = 1)
+    @named resistor = Resistor(R = 1)
+    @named capacitor = Capacitor(C = 1, v = 0.0)
+    @named ground = Ground()
+
+    connections = [connect(current.p, resistor.n)
+                   connect(capacitor.n, resistor.p)
+                   connect(capacitor.p, current.n, ground.g)]
+
+    @named model = ODESystem(connections, t;
+        systems = [ground, resistor, current, capacitor])
+    sys = structural_simplify(model)
+    prob = ODEProblem(sys, Pair[], (0.0, 10.0))
+    sol = solve(prob, Tsit5())
+    y(x, st) = (x .> st) .* abs.(collect(x) .- st)
+    @test SciMLBase.successful_retcode(sol)
+    @test sum(reduce(vcat, sol[capacitor.v]) .- y(sol.t, 0.0))≈0 atol=1e-2
+end
+
 @testset "Integrator" begin
     R = 1e3
     f = 1
