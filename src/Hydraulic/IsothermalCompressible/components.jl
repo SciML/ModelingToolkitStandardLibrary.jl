@@ -493,6 +493,12 @@ See also [`FixedVolume`](@ref), [`DynamicVolume`](@ref)
             minimum_area)
     end
 
+    eqs = [
+            # connectors
+            port.p ~ p
+            port.dm ~ dm
+            flange.v * direction ~ dx
+            flange.f * direction ~ -f
            # differentials
            D(x) ~ dx
            D(m) ~ dm
