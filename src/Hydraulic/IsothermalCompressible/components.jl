@@ -392,7 +392,7 @@ Fixed fluid volume.
         port = HydraulicPort(;)
     end
 
-    @variables begin
+    vars = @variables begin
         rho(t), [guess = liquid_density(port)]
         m(t), [guess = vol * liquid_density(port)]
         p(t) = p_int
