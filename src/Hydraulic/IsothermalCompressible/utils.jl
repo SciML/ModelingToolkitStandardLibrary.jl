@@ -1,6 +1,7 @@
-import ChainRulesCore
-
-regPow(x, a, delta = 0.01) = x * (x * x + delta * delta)^((a - 1) / 2);
+# regPow(x, a, delta = 0.01) = x * (x * x + delta * delta)^((a - 1) / 2);
+function regPow(x, a, delta = 0.01)
+    ifelse(abs(x / delta) >= 1, sign(x) * abs(x / delta)^a * delta^a, (delta^a * x) / delta)
+end
 regRoot(x, delta = 0.01) = regPow(x, 0.5, delta)
 
 """
@@ -70,6 +71,12 @@ Fluid parameter setter for isothermal compressible fluid domain.  Defaults given
     ODESystem(eqs, t, vars, pars; name)
 end
 
+function transition(x1, x2, y1, y2, x)
+    u = (x - x1) / (x2 - x1)
+    blend = u^2 * (3 - 2 * u)
+    return (1 - blend) * y1 + blend * y2
+end
+
 f_laminar(shape_factor, Re) = shape_factor * regPow(Re, -1, 0.1) #regPow used to avoid dividing by 0, min value is 0.1
 f_turbulent(shape_factor, Re) = (shape_factor / 64) / (0.79 * log(Re) - 1.64)^2
 
@@ -114,15 +121,6 @@ end
 @register_symbolic friction_factor(dm, area, d_h, viscosity, shape_factor)
 Symbolics.derivative(::typeof(friction_factor), args, ::Val{1}) = 0
 Symbolics.derivative(::typeof(friction_factor), args, ::Val{4}) = 0
-function ChainRulesCore.frule(_, ::typeof(friction_factor), args...)
-    (friction_factor(args...), ChainRulesCore.ZeroTangent())
-end
-
-function transition(x1, x2, y1, y2, x)
-    u = (x - x1) / (x2 - x1)
-    blend = u^2 * (3 - 2 * u)
-    return (1 - blend) * y1 + blend * y2
-end
 
 density_ref(port) = port.ρ
 density_exp(port) = port.n
@@ -137,8 +135,11 @@ function liquid_density(port, p)
 end #Tait-Murnaghan equation of state
 liquid_density(port) = liquid_density(port, port.p)
 
-function liquid_density_differential(port, dp)
-    density_ref(port) * dp / bulk_modulus(port)
+# p = beta*(rho/rho_0 - 1)
+# (p/beta + 1)*rho_0 = rho
+
+function liquid_pressure(port, rho)
+    (rho / density_ref(port) - 1) * bulk_modulus(port)
 end
 
 function gas_density(port, p)
@@ -147,9 +148,25 @@ function gas_density(port, p)
 
     return b + p * slope
 end
+
+function gas_pressure(port, rho)
+    slope = (0 - gas_pressure_ref(port)) / (density_ref(port) - gas_density_ref(port))
+    b = 0
+
+    return b + rho * slope
+end
+
 function full_density(port, p)
     ifelse(port.let_gas == 1,
-        ifelse(p > 0, liquid_density(port, p), gas_density(port, p)),
+        ifelse(p >= 0, liquid_density(port, p), gas_density(port, p)),
         liquid_density(port, p))
 end
 full_density(port) = full_density(port, port.p)
+
+function full_pressure(port, rho)
+    ifelse(port.let_gas == 1,
+        ifelse(
+            rho >= density_ref(port), liquid_pressure(port, rho), gas_pressure(port, rho)),
+        liquid_pressure(port, rho)
+    )
+end
