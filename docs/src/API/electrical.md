@@ -34,6 +34,8 @@ IdealOpAmp
 Diode
 HeatingDiode
 VariableResistor
+NMOS
+PMOS
 PNP
 NPN
 ```
