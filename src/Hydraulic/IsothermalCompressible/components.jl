@@ -388,7 +388,7 @@ Fixed fluid volume.
         p_int = p_int
     end
 
-    @components begin
+    systems = @named begin
         port = HydraulicPort(;)
     end
 
@@ -470,7 +470,7 @@ See also [`FixedVolume`](@ref), [`DynamicVolume`](@ref)
         dm(t), [guess = 0]
     end
 
-    @components begin
+    systems = @named begin
         port = HydraulicPort()
         flange = MechanicalPort()
         damper = ValveBase(reversible;
