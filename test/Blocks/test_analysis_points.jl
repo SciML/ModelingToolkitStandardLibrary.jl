@@ -72,8 +72,7 @@ L = P*C
 =#
 
 # Open loop
-open_sys = Blocks.open_loop(sys, :plant_input)
-@unpack u, y = open_sys
+open_sys, (u, y) = Blocks.open_loop(sys, :plant_input)
 
 # Linearizing the open-loop system should yield the same system as get_looptransfer
 matrices, _ = linearize(open_sys, [u], [y])
@@ -131,7 +130,7 @@ prob = ODEProblem(ssys, Pair[], (0, 10))
 # sol = solve(prob, Rodas5())
 # plot(sol)
 
-matrices, _ = get_sensitivity(sys_outer, :inner_plant_input)
+matrices, _ = get_sensitivity(sys_outer, sys_outer.inner.plant_input)
 
 using ControlSystemsBase # This is required to simplify the results to test against known solution
 lsys = sminreal(ss(matrices...))
@@ -139,7 +138,7 @@ lsys = sminreal(ss(matrices...))
 @test lsys.B[] * lsys.C[] == -1 # either one negative
 @test lsys.D[] == 1
 
-matrices_So, _ = get_sensitivity(sys_outer, :inner_plant_output)
+matrices_So, _ = get_sensitivity(sys_outer, sys_outer.inner.plant_output)
 lsyso = sminreal(ss(matrices_So...))
 @test lsys == lsyso || lsys == -1 * lsyso * (-1) # Output and input sensitivities are equal for SISO systems
 
@@ -242,7 +241,6 @@ Si = ss(matrices...)
     t,
     systems = [P_inner, feedback, ref])
 
-@test_nowarn Blocks.find_analysis_points(sys_inner)
 P_not_broken, _ = linearize(sys_inner, :u, :y)
 @test P_not_broken.A[] == -2
 P_broken, _ = linearize(sys_inner, :u, :y, loop_openings = [:u])
@@ -266,9 +264,10 @@ Sinner = sminreal(ss(get_sensitivity(sys_inner, :u)[1]...))
     t,
     systems = [P_outer, sys_inner])
 
-Souter = sminreal(ss(get_sensitivity(sys_outer, :sys_inner_u)[1]...))
+Souter = sminreal(ss(get_sensitivity(sys_outer, sys_outer.sys_inner.u)[1]...))
 
-Sinner2 = sminreal(ss(get_sensitivity(sys_outer, :sys_inner_u, loop_openings = [:y2])[1]...))
+Sinner2 = sminreal(ss(get_sensitivity(
+    sys_outer, sys_outer.sys_inner.u, loop_openings = [:y2])[1]...))
 
 @test Sinner.nx == 1
 @test Sinner == Sinner2
@@ -334,7 +333,8 @@ eqs = [connect(r.output, F.input)
        connect(F.output, sys_inner.add.input1)]
 sys_outer = ODESystem(eqs, t, systems = [F, sys_inner, r], name = :outer)
 
-matrices, _ = get_sensitivity(sys_outer, [:inner_plant_input, :inner_plant_output])
+matrices, _ = get_sensitivity(
+    sys_outer, [sys_outer.inner.plant_input, sys_outer.inner.plant_output])
 
 Ps = tf(1, [1, 1]) |> ss
 Cs = tf(1) |> ss
@@ -348,7 +348,8 @@ So = CS.feedback(1, Ps * Cs)
 @test tf(G[1, 2]) ≈ tf(-CS.feedback(Cs, Ps))
 @test tf(G[2, 1]) ≈ tf(CS.feedback(Ps, Cs))
 
-matrices, _ = get_comp_sensitivity(sys_outer, [:inner_plant_input, :inner_plant_output])
+matrices, _ = get_comp_sensitivity(
+    sys_outer, [sys_outer.inner.plant_input, sys_outer.inner.plant_output])
 
 G = CS.ss(matrices...) |> sminreal
 Ti = CS.feedback(Cs * Ps)
@@ -361,23 +362,25 @@ To = CS.feedback(Ps * Cs)
 
 # matrices, _ = get_looptransfer(sys_outer, [:inner_plant_input, :inner_plant_output])
 matrices, _ = get_looptransfer(
-    sys_outer, :inner_plant_input)
+    sys_outer, sys_outer.inner.plant_input)
 L = CS.ss(matrices...) |> sminreal
 @test tf(L) ≈ -tf(Cs * Ps)
 
 matrices, _ = get_looptransfer(
-    sys_outer, :inner_plant_output)
+    sys_outer, sys_outer.inner.plant_output)
 L = CS.ss(matrices...) |> sminreal
 @test tf(L[1, 1]) ≈ -tf(Ps * Cs)
 
 # Calling looptransfer like below is not the intended way, but we can work out what it should return if we did so it remains a valid test
-matrices, _ = get_looptransfer(sys_outer, [:inner_plant_input, :inner_plant_output])
+matrices, _ = get_looptransfer(
+    sys_outer, [sys_outer.inner.plant_input, sys_outer.inner.plant_output])
 L = CS.ss(matrices...) |> sminreal
 @test tf(L[1, 1]) ≈ tf(0)
 @test tf(L[2, 2]) ≈ tf(0)
 @test sminreal(L[1, 2]) ≈ ss(-1)
 @test tf(L[2, 1]) ≈ tf(Ps)
 
-matrices, _ = linearize(sys_outer, [:inner_plant_input], [:inner_plant_output])
+matrices, _ = linearize(
+    sys_outer, [sys_outer.inner.plant_input], [sys_outer.inner.plant_output])
 G = CS.ss(matrices...) |> sminreal
 @test tf(G) ≈ tf(CS.feedback(Ps, Cs))

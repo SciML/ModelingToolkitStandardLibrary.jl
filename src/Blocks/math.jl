@@ -209,6 +209,110 @@ Output first input divided by second input.
 end
 
 """
+    Power(; name)
+
+Output the exponential with base as the first input and exponent as second input i.e u1^u2
+
+# Connectors:
+
+  - `base`
+  - `exponent`
+  - `output`
+"""
+@mtkmodel Power begin
+    @components begin
+        base = RealInput()
+        exponent = RealInput()
+        output = RealOutput()
+    end
+    @equations begin
+        output.u ~ base.u^exponent.u
+    end
+end
+
+"""
+    Modulo(; name)
+
+Output the remainder when the first input is divided by second input.
+
+# Connectors:
+
+  - `dividend`
+  - `divisor`
+  - `remainder`
+"""
+@mtkmodel Modulo begin
+    @components begin
+        dividend = RealInput()
+        divisor = RealInput(guess = 1.0) # denominator can not be zero
+        remainder = RealOutput()
+    end
+    @equations begin
+        remainder.u ~ mod(dividend.u, divisor.u)
+    end
+end
+
+"""
+    UnaryMinus(; name)
+
+Output the product of -1 and the input.
+
+# Connectors:
+
+  - `input`
+  - `output`
+"""
+@mtkmodel UnaryMinus begin
+    @components begin
+        input = RealInput()
+        output = RealOutput()
+    end
+    @equations begin
+        output.u ~ -(input.u)
+    end
+end
+
+"""
+    Floor(; name)
+
+Output the floor rounding of the input.
+
+# Connectors:
+
+  - `input`
+  - `output`
+"""
+@mtkmodel Floor begin
+    @components begin
+        input = RealInput()
+        output = RealOutput()
+    end
+    @equations begin
+        output.u ~ floor(input.u)
+    end
+end
+
+"""
+    Ceil(; name)
+
+Output the ceiling rounding of the input.
+
+# Connectors:
+
+  - `input`
+  - `output`
+"""
+@mtkmodel Ceil begin
+    @components begin
+        input = RealInput()
+        output = RealOutput()
+    end
+    @equations begin
+        output.u ~ ceil(input.u)
+    end
+end
+
+"""
     StaticNonLinearity(func; name)
 
 Applies the given function to the input.

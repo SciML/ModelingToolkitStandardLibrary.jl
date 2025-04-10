@@ -1,55 +1,49 @@
 
 """
-    Cap(; p_int, name)
+    Cap(; name)
 
 Caps a hydraulic port to prevent mass flow in or out.
 
-# Parameters:
-- `p_int`: [Pa] initial pressure (set by `p_int` argument)
-
 # Connectors:
 - `port`: hydraulic port
 """
-@component function Cap(; name)
-    vars = @variables p(t), [guess = 0]
+@mtkmodel Cap begin
+    @variables begin
+        p(t), [guess = 0]
+    end
 
-    systems = @named begin
+    @components begin
         port = HydraulicPort()
     end
 
-    eqs = [port.p ~ p
-           port.dm ~ 0]
-
-    ODESystem(eqs, t, vars, []; name, systems)
+    @equations begin
+        port.p ~ p
+        port.dm ~ 0
+    end
 end
 
 """
-    Open(; p_int, name)
+    Open(; name)
 
-Provides an "open" boundary condition for a hydraulic port such that mass flow `dm` is non-zero.  This is opposite from an un-connected hydraulic port or the `Cap` boundary component which sets the mass flow `dm` to zero.  
-
-# Parameters:
-- `p_int`: [Pa] initial pressure (set by `p_int` argument)
+Provides an "open" boundary condition for a hydraulic port such that mass flow `dm` is non-zero.  This is opposite from an un-connected hydraulic port or the `Cap` boundary component which sets the mass flow `dm` to zero.
 
 # Connectors:
 - `port`: hydraulic port
 """
-@component function Open(; name)
-    pars = []
-
-    vars = @variables begin
+@mtkmodel Open begin
+    @variables begin
         p(t), [guess = 0]
         dm(t), [guess = 0]
     end
 
-    systems = @named begin
+    @components begin
         port = HydraulicPort()
     end
 
-    eqs = [port.p ~ p
-           port.dm ~ dm]
-
-    ODESystem(eqs, t, vars, pars; name, systems)
+    @equations begin
+        port.p ~ p
+        port.dm ~ dm
+    end
 end
 
 """
@@ -211,45 +205,43 @@ end
 @deprecate Pipe Tube
 
 """
-    FlowDivider(;p_int, n, name)
+    FlowDivider(; n, name)
 
 Reduces the flow from `port_a` to `port_b` by `n`.  Useful for modeling parallel tubes efficiently by placing a `FlowDivider` on each end of a tube.
 
 # Parameters:
-- `p_int`: [Pa] initial pressure
 - `n`: divide flow from `port_a` to `port_b` by `n`
 
 # Connectors:
 - `port_a`: full flow hydraulic port
 - `port_b`: part flow hydraulic port
 """
-@component function FlowDivider(; n, name)
+@mtkmodel FlowDivider begin
 
     #TODO: assert n >= 1
 
-    pars = @parameters begin
+    @parameters begin
         n = n
     end
 
-    vars = @variables begin
+    @variables begin
         dm_a(t), [guess = 0]
         dm_b(t), [guess = 0]
     end
 
-    systems = @named begin
+    @components begin
         port_a = HydraulicPort()
         port_b = HydraulicPort()
         open = Open()
     end
 
-    eqs = [connect(port_a, port_b, open.port)
-           dm_a ~ port_a.dm
-           dm_b ~ dm_a / n
-           open.dm ~ dm_a - dm_b # extra flow dumps into an open port
-           # port_b.dm ~ dm_b # divided flow goes to port_b
-           ]
-
-    ODESystem(eqs, t, vars, pars; name, systems)
+    @equations begin
+        connect(port_a, port_b, open.port)
+        dm_a ~ port_a.dm
+        dm_b ~ dm_a / n
+        open.dm ~ dm_a - dm_b # extra flow dumps into an open port
+        # port_b.dm ~ dm_b # divided flow goes to port_b
+    end
 end
 
 @component function ValveBase(
@@ -350,7 +342,12 @@ end
         p_int = p_int
     end
 
-    systems = @named begin
+    @parameters begin
+        area
+        dead_volume
+    end
+
+    @components begin
         port = HydraulicPort()
     end
 
@@ -362,7 +359,7 @@ end
         vol(t)
     end
 
-    # let
+  # let
     dm = port.dm
     p = port.p
 
@@ -396,11 +393,11 @@ Fixed fluid volume.
         p_int = p_int
     end
 
-    systems = @named begin
+    @components begin
         port = HydraulicPort(;)
     end
 
-    vars = @variables begin
+    @variables begin
         rho(t), [guess = liquid_density(port)]
         m(t), [guess = vol * liquid_density(port)]
         p(t) = p_int
@@ -419,7 +416,7 @@ Fixed fluid volume.
 end
 
 """
-    Volume(; x, dx=0, p, drho=0, dm=0, area, direction = +1, name)
+    Volume(; x, dx=0, p, drho=0, dm=0, area, direction = 1, name)
 
 Volume with moving wall with `flange` connector for converting hydraulic energy to 1D mechanical.  The `direction` argument aligns the mechanical port with the hydraulic port, useful when connecting two dynamic volumes together in oppsing directions to create an actuator.
 
@@ -457,12 +454,12 @@ dm ────►               │  │ area
 See also [`FixedVolume`](@ref), [`DynamicVolume`](@ref)
 """
 @component function Volume(;
-
         #parameters
         area,
         direction = +1,
         x_int,
         name)
+
     pars = @parameters begin
         area = area
         x_int = x_int
@@ -478,7 +475,7 @@ See also [`FixedVolume`](@ref), [`DynamicVolume`](@ref)
         dm(t), [guess = 0]
     end
 
-    systems = @named begin
+    @components begin
         port = HydraulicPort()
         flange = MechanicalPort()
         damper = ValveBase(reversible;
@@ -487,12 +484,14 @@ See also [`FixedVolume`](@ref), [`DynamicVolume`](@ref)
             minimum_area)
     end
 
-    eqs = [
-           # connectors
-           port.p ~ p
-           port.dm ~ dm
-           flange.v * direction ~ dx
-           flange.f * direction ~ -f
+    systems = @named begin
+        port = HydraulicPort()
+        flange = MechanicalPort()
+        damper = ValveBase(reversible;
+            Cd,
+            Cd_reverse,
+            minimum_area)
+    end
 
            # differentials
            D(x) ~ dx
@@ -685,7 +684,7 @@ end
 """
     SpoolValve2Way(reversible = false; m, g, x_int, Cd, d, name)
 
-2-ways spool valve with 4 ports and spool mass. Fluid flow direction S → A and B → R when `x` is positive and S → B and A → R when `x` is negative. 
+2-ways spool valve with 4 ports and spool mass. Fluid flow direction S → A and B → R when `x` is positive and S → B and A → R when `x` is negative.
 
 # Parameters:
 - `m`: [kg] mass of the  spool
@@ -772,7 +771,7 @@ end
         p_a_int,
         p_b_int,
         name)
-        
+
 Actuator made of two DynamicVolumes connected in opposite direction with body mass attached.
 
 # Features:

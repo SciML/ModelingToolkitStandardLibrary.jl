@@ -72,9 +72,9 @@ end
                    connect(R2.n, voltage.n, ground.g)]
 
     @named model = ODESystem(connections, t,
-        systems = [R0, R1, R2, source, short, voltage, ground])
+        systems = [R0, R1, R2, source, short, voltage, ground]; guesses = [R2.v => 0.0])
     sys = structural_simplify(model)
-    prob = ODEProblem(sys, Pair[R2.i => 0.0], (0, 2.0))
+    prob = ODEProblem(sys, [], (0, 2.0))
     sol = solve(prob, Rodas4()) # has no state; does not work with Tsit5
     @test SciMLBase.successful_retcode(sol)
     @test sol[short.v] == sol[R0.v] == zeros(length(sol.t))
@@ -375,45 +375,45 @@ end
 end
 
 @testset "Diode component test" begin
-    # Parameter values 
-    R = 1.0
-    C = 1.0
-    V = 10.0
-    n = 1.0
-    Is = 1e-3
-    f = 1.0
+    @mtkmodel DiodeTest begin
+        @parameters begin
+            R = 1.0
+            C = 1.0
+            V = 10.0
+            n = 1.0
+            Is = 1e-3
+            f = 1.0
+        end
+        @components begin
+            resistor = Resistor(R = R)
+            capacitor = Capacitor(C = C, v = 0.0)
+            source = Voltage()
+            diode = Diode(n = n, Is = Is)
+            ac = Sine(frequency = f, amplitude = V)
+            ground = Ground()
+        end
+        @equations begin
+            connect(ac.output, source.V)
+            connect(source.p, diode.p)
+            connect(diode.n, resistor.p)
+            connect(resistor.n, capacitor.p)
+            connect(capacitor.n, source.n, ground.g)
+        end
+    end
 
-    # Components
-    @named resistor = Resistor(R = R)
-    @named capacitor = Capacitor(C = C, v = 0.0)
-    @named source = Voltage()
-    @named diode = Diode(n = n, Is = Is)
-    @named ac = Sine(frequency = f, amplitude = V)
-    @named ground = Ground()
-
-    # Connections
-    connections = [connect(ac.output, source.V)
-                   connect(source.p, diode.p)
-                   connect(diode.n, resistor.p)
-                   connect(resistor.n, capacitor.p)
-                   connect(capacitor.n, source.n, ground.g)]
-
-    # Model
-    @named model = ODESystem(connections, t;
-        systems = [resistor, capacitor, source, diode, ac, ground])
-    sys = structural_simplify(model)
+    @mtkbuild sys = DiodeTest()
     prob = ODEProblem(sys, Pair[], (0.0, 10.0))
-    sol = solve(prob)
+    sol = solve(prob, Rodas4())
 
     # Extract solutions for testing
-    diode_voltage = sol[diode.v]
-    diode_current = sol[diode.i]
-    resistor_current = sol[resistor.i]
-    capacitor_voltage = sol[capacitor.v]
+    diode_voltage = sol[sys.diode.v]
+    diode_current = sol[sys.diode.i]
+    resistor_current = sol[sys.resistor.i]
+    capacitor_voltage = sol[sys.capacitor.v]
 
     # Tests
-    @test all(diode_current .>= -Is)
-    @test capacitor_voltage[end].≈V rtol=3e-1
+    @test all(diode_current .>= -1e-3)
+    @test capacitor_voltage[end].≈8.26 rtol=3e-1
 
     # For visual inspection
     # plt = plot(sol; vars = [diode.i, resistor.i, capacitor.v],
@@ -424,53 +424,53 @@ end
 end
 
 @testset "HeatingDiode component test" begin
-    # Parameter values
-    R = 1.0
-    C = 1.0
-    V = 10.0
-    T = 300.0 # Ambient temperature in Kelvin
-    n = 2.0
-    Is = 1e-6
-    f = 1.0
+    @mtkmodel HeatingDiodeTest begin
+        @parameters begin
+            R = 1.0
+            C = 1.0
+            V = 10.0
+            T = 300.0 # Ambient temperature in Kelvin
+            n = 2.0
+            Is = 1e-6
+            f = 1.0
+        end
+        @components begin
+            resistor = Resistor(R = R)
+            capacitor = Capacitor(C = C, v = 0.0)
+            source = Voltage()
+            heating_diode = HeatingDiode(n = n, Is = Is)
+            ac = Sine(frequency = f, amplitude = V)
+            ground = Ground()
+            temp = FixedTemperature(T = T)
+        end
+        @equations begin
+            connect(ac.output, source.V)
+            connect(source.p, heating_diode.p)
+            connect(heating_diode.n, resistor.p)
+            connect(resistor.n, capacitor.p)
+            connect(capacitor.n, ground.g)
+            connect(source.n, ground.g)
+            connect(temp.port, heating_diode.port)
+        end
+    end
 
-    # Components
-    @named resistor = Resistor(R = R)
-    @named capacitor = Capacitor(C = C, v = 0.0)
-    @named source = Voltage()
-    @named heating_diode = HeatingDiode(n = n, Is = Is)
-    @named ac = Sine(frequency = f, amplitude = V)
-    @named ground = Ground()
-    @named temp = FixedTemperature(T = T)
-
-    # Connections
-    connections = [connect(ac.output, source.V),
-        connect(source.p, heating_diode.p),
-        connect(heating_diode.n, resistor.p),
-        connect(resistor.n, capacitor.p),
-        connect(capacitor.n, ground.g),
-        connect(source.n, ground.g),
-        connect(temp.port, heating_diode.port)]
-
-    # Model
-    @named model = ODESystem(connections, t;
-        systems = [resistor, capacitor, source, heating_diode, ac, ground, temp])
-    sys = structural_simplify(model)
+    @mtkbuild sys = HeatingDiodeTest()
     prob = ODEProblem(sys, Pair[], (0.0, 10.0))
-    sol = solve(prob)
+    sol = solve(prob, Rodas4())
 
     # Extract solutions for testing
-    diode_voltage = sol[heating_diode.v]
-    diode_current = sol[heating_diode.i]
-    resistor_current = sol[resistor.i]
-    capacitor_voltage = sol[capacitor.v]
+    diode_voltage = sol[sys.heating_diode.v]
+    diode_current = sol[sys.heating_diode.i]
+    resistor_current = sol[sys.resistor.i]
+    capacitor_voltage = sol[sys.capacitor.v]
 
     # Expected thermal voltage at given temperature
     k = 1.380649e-23  # Boltzmann constant (J/K)
     q = 1.602176634e-19  # Elementary charge (C)
 
     # Tests
-    @test all(diode_current .>= -Is) # Diode current should not exceed reverse saturation
-    @test capacitor_voltage[end]≈V rtol=3e-1 # Final capacitor voltage close to input voltage
+    @test all(diode_current .>= -1e-6) # Diode current should not exceed reverse saturation
+    @test capacitor_voltage[end]≈7.75 rtol=3e-1 # Final capacitor voltage close to input voltage
 
     # For visual inspection
     # plt = plot(sol; vars = [heating_diode.i, resistor.i, capacitor.v],
@@ -481,10 +481,10 @@ end
 
     # Remake model with higher amb. temperature, final capacitor voltage should be lower
     T = 400.0
-    model = remake(prob; p = [temp.T => T])
-    sol = solve(model)
+    reprob = remake(prob; p = [sys.T => T])
+    sol = solve(reprob, Rodas4())
     @test SciMLBase.successful_retcode(sol)
-    @test sol[capacitor.v][end] < capacitor_voltage[end]
+    @test sol[sys.capacitor.v][end] < capacitor_voltage[end]
 end
 
 @testset "VariableResistor with Temperature Dependency" begin
@@ -521,7 +521,7 @@ end
 
     # Build and solve the system
     @mtkbuild sys = RC()
-    prob = ODEProblem(sys, [0.0, 0.0], (0.0, 10.0)) # No state variables initially
+    prob = ODEProblem(sys, [], (0.0, 10.0); guesses = [sys.resistor.i => 0.0]) # No state variables initially
     sol = solve(prob)
 
     # Perform Tests

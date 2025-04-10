@@ -1,13 +1,13 @@
-@connector function HeatPort(; T = nothing, T_guess = 273.15 + 20, Q_flow = nothing, Q_flow_guess = 0.0, name)
-    pars = @parameters begin
-        T_guess = T_guess
-        Q_flow_guess = Q_flow_guess
+@connector HeatPort begin
+    @parameters begin
+        T_guess = 273.15 + 20
+        Q_flow_guess = 0.0
     end
-    vars = @variables begin
-        T(t) = T, [guess = T_guess]
-        Q_flow(t) = Q_flow, [guess = Q_flow_guess, connect = Flow]
+
+    @variables begin
+        T(t), [guess = T_guess]
+        Q_flow(t), [guess = Q_flow_guess, connect = Flow]
     end
-    return ODESystem(Equation[], t, vars, pars; name)
 end
 Base.@doc """
     HeatPort(; T = nothing, T_guess = 273.15 + 20, Q_flow = nothing, Q_flow_guess = 0.0, name)

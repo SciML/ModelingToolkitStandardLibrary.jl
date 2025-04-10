@@ -210,7 +210,7 @@ Temperature dependent electrical resistor
         alpha = 0, [description = "Temperature coefficient of resistance"]
     end
     @variables begin
-        R(t) = R_ref
+        R(t), [guess = R_ref]
     end
     @equations begin
         R ~ R_ref * (1 + alpha * (heat_port.T - T_ref))
@@ -273,22 +273,21 @@ Ideal diode based on the Shockley diode equation.
     - See [OnePort](@ref)
 
 # Connectors
-    
+
     - `p` Positive pin
     - `n` Negative pin
 
 # Parameters
-     
+
     - `Is`: [`A`] Saturation current
     - `n`: Ideality factor
     - `T`: [K] Ambient temperature
 """
 @mtkmodel Diode begin
-    begin
+    @constants begin
         k = 1.380649e-23 # Boltzmann constant (J/K)
         q = 1.602176634e-19 # Elementary charge (C)
     end
-
     @extend v, i = oneport = OnePort(; v = 0.0)
     @parameters begin
         Is = 1e-6, [description = "Saturation current (A)"]
@@ -310,13 +309,13 @@ Temperature dependent diode based on the Shockley diode equation.
     - See [OnePort](@ref)
 
 # Connectors
-    
+
     - `p` Positive pin
     - `n` Negative pin
     - `port` [HeatPort](@ref) Heat port to model the temperature dependency
 
 # Parameters:
-    
+
     - `Is`: [`A`] Saturation current
     - `n`: Ideality factor
 """
@@ -349,13 +348,13 @@ end
 
 Variable resistor with optional temperature dependency.
 
-The total resistance R ∈ [R_const, R_const + R_ref], where pos is the 
-position of the wiper and R_ref is the variable resistance between p and n. 
+The total resistance R ∈ [R_const, R_const + R_ref], where pos is the
+position of the wiper and R_ref is the variable resistance between p and n.
 The total resistance is then:
 
 R = R_const + pos * R_ref
 
-If T_dep is true, then R also depends on the temperature of the heat port with 
+If T_dep is true, then R also depends on the temperature of the heat port with
 temperature coefficient alpha. The total resistance is then:
 
 R = R_const + pos * R_ref * (1 + alpha * (port.T - T_ref))
@@ -367,14 +366,14 @@ R = R_const + pos * R_ref * (1 + alpha * (port.T - T_ref))
     - `R(t)`: Resistance
 
 # Connectors
-        
+
         - `p` Positive pin
         - `n` Negative pin
         - `position` RealInput to set the position of the wiper
         - `port` [HeatPort](@ref) Heat port to model the temperature dependency
 
 # Parameters
-    
+
         - `R_ref`: [`Ω`] Resistance at temperature T_ref when fully closed (pos=1.0)
         - `T_ref`: [K] Reference temperature
         - `R_const`: [`Ω`] Constant resistance between p and n
@@ -392,10 +391,9 @@ R = R_const + pos * R_ref * (1 + alpha * (port.T - T_ref))
 
     @parameters begin
         R_ref = 1.0,
-        [description = "Resistance at temperature T_ref when fully closed (pos=1.0)",
-            unit = "Ω"]
-        T_ref = 300.15, [description = "Reference temperature", unit = "K"]
-        R_const = 1e-3, [description = "Constant resistance between p and n", unit = "Ω"]
+        [description = "Resistance at temperature T_ref when fully closed (pos=1.0) (Ω)"]
+        T_ref = 300.15, [description = "Reference temperature (K)"]
+        R_const = 1e-3, [description = "Constant resistance between p and n (Ω)"]
     end
 
     @components begin
@@ -404,13 +402,12 @@ R = R_const + pos * R_ref * (1 + alpha * (port.T - T_ref))
 
     @variables begin
         pos(t), [description = "Position of the wiper (normally 0-1)"]
-        R(t), [description = "Resistance", unit = "Ω"]
+        R(t), [description = "Resistance (Ω)"]
     end
 
     if T_dep
         @parameters begin
-            alpha = 1e-3,
-            [description = "Temperature coefficient of resistance", unit = "K^-1"]
+            alpha = 1e-3, [description = "Temperature coefficient of resistance (K^-1)"]
         end
         @components begin
             port = HeatPort()
