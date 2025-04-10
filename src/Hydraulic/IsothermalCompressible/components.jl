@@ -342,12 +342,7 @@ end
         p_int = p_int
     end
 
-    @parameters begin
-        area
-        dead_volume
-    end
-
-    @components begin
+    systems = @named begin
         port = HydraulicPort()
     end
 
