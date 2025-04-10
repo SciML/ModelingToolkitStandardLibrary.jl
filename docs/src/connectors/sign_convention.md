@@ -175,7 +175,7 @@ A positive input mass flow leads to an increasing pressure (in this case we get 
 ```@example sign_convention
 @mtkmodel System begin
     @components begin
-        volume = FixedVolume(; vol = 10.0)
+        volume = FixedVolume(; vol = 10.0, p_int = 1e5)
         flow = ConstantMassFlow(; dm = 1)
         fluid = HydraulicFluid()
     end
