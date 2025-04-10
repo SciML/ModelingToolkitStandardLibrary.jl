@@ -416,7 +416,7 @@ end
     @test capacitor_voltage[end].≈8.26 rtol=3e-1
 
     # For visual inspection
-    # plt = plot(sol; vars = [diode.i, resistor.i, capacitor.v],
+    # plt = plot(sol; idxs = [diode.i, resistor.i, capacitor.v],
     #     size = (800, 600), dpi = 300,
     #     labels = ["Diode Current" "Resistor Current" "Capacitor Voltage"],
     #     title = "Diode Test")
@@ -438,7 +438,7 @@ end
             resistor = Resistor(R = R)
             capacitor = Capacitor(C = C, v = 0.0)
             source = Voltage()
-            heating_diode = HeatingDiode(n = n, Is = Is)
+            heating_diode = Diode(n = n, Is = Is, T_dep = true)
             ac = Sine(frequency = f, amplitude = V)
             ground = Ground()
             temp = FixedTemperature(T = T)

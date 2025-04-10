@@ -18,30 +18,57 @@ node.
 end
 
 """
-    Resistor(; name, R)
+    Resistor(; name, R = 1.0, T_ref = 300.15, alpha = 0, T_dep = false)
 
-Creates an ideal Resistor following Ohm's Law.
+Generic resistor with optional temperature dependency.
 
 # States:
 
-See [OnePort](@ref)
+  - See [OnePort](@ref)
+  - `R(t)`: [`Ω`] Resistance (temperature dependent if `T_dep = true`)
 
 # Connectors:
 
   - `p` Positive pin
   - `n` Negative pin
+  - `heat_port` [HeatPort](@ref) (only if `T_dep = true`) Heat port to model the temperature dependency
 
 # Parameters:
 
-  - `R`: [`Ohm`] Resistance
+  - `R`: [`Ω`] Reference resistance
+  - `T_ref`: [K] Reference temperature
+  - `alpha`: [K⁻¹] Temperature coefficient of resistance
+  - `T_dep`: [bool] Temperature dependency
 """
 @mtkmodel Resistor begin
     @extend v, i = oneport = OnePort()
-    @parameters begin
-        R, [description = "Resistance"]
+
+    @structural_parameters begin
+        T_dep = false
     end
-    @equations begin
-        v ~ i * R
+
+    @parameters begin
+        R = 1.0, [description = "Reference resistance"]
+        T_ref = 300.15, [description = "Reference temperature"]
+        alpha = 0.0, [description = "Temperature coefficient of resistance"]
+    end
+
+    if T_dep
+        @components begin
+            heat_port = HeatPort()
+        end
+        @variables begin
+            R_T(t), [description = "Temperature-dependent resistance"]
+        end
+        @equations begin
+            R_T ~ R * (1 + alpha * (heat_port.T - T_ref))  # Temperature-dependent resistance
+            heat_port.Q_flow ~ -v * i  # -LossPower
+            v ~ i * R_T  # Ohm's Law
+        end
+    else
+        @equations begin
+            v ~ i * R  # Ohm's Law for constant resistance
+        end
     end
 end
 
@@ -179,47 +206,6 @@ See [OnePort](@ref)
 end
 
 """
-    HeatingResistor(; name, R_ref = 1.0, T_ref = 300.15, alpha = 0)
-
-Temperature dependent electrical resistor
-
-# States
-
-  - See [OnePort](@ref)
-  - `R(t)`: [`Ohm`] Temperature dependent resistance `R ~ R_ref*(1 + alpha*(heat_port.T(t) - T_ref))`
-
-# Connectors
-
-  - `p` Positive pin
-  - `n` Negative pin
-
-# Parameters:
-
-  - `R_ref`: [`Ω`] Reference resistance
-  - `T_ref`: [K] Reference temperature
-  - `alpha`: [K⁻¹] Temperature coefficient of resistance
-"""
-@mtkmodel HeatingResistor begin
-    @extend v, i = oneport = OnePort()
-    @components begin
-        heat_port = HeatPort()
-    end
-    @parameters begin
-        R_ref = 1.0, [description = "Reference resistance"]
-        T_ref = 300.15, [description = "Reference temperature"]
-        alpha = 0, [description = "Temperature coefficient of resistance"]
-    end
-    @variables begin
-        R(t), [guess = R_ref]
-    end
-    @equations begin
-        R ~ R_ref * (1 + alpha * (heat_port.T - T_ref))
-        heat_port.Q_flow ~ -v * i # -LossPower
-        v ~ i * R
-    end
-end
-
-"""
     EMF(; name, k)
 
 Electromotoric force (electric/mechanic transformer)
@@ -264,9 +250,9 @@ Electromotoric force (electric/mechanic transformer)
 end
 
 """
-        Diode(; name, Is = 1e-6, n = 1, T = 300.15)
+    Diode(; name, Is = 1e-6, n = 1, T = 300.15, T_dep = false)
 
-Ideal diode based on the Shockley diode equation.
+Generic diode with optional temperature dependency.
 
 # States
 
@@ -276,12 +262,14 @@ Ideal diode based on the Shockley diode equation.
 
     - `p` Positive pin
     - `n` Negative pin
+    - `port` [HeatPort](@ref) (only if `T_dep = true`) Heat port to model variable temperature dependency
 
-# Parameters
-
+# Parameters:
+    
     - `Is`: [`A`] Saturation current
     - `n`: Ideality factor
-    - `T`: [K] Ambient temperature
+    - `T`: [K] Constant ambient temperature - only used if T_dep=false
+    - `T_dep`: [bool] Temperature dependency
 """
 @mtkmodel Diode begin
     @constants begin
@@ -289,57 +277,33 @@ Ideal diode based on the Shockley diode equation.
         q = 1.602176634e-19 # Elementary charge (C)
     end
     @extend v, i = oneport = OnePort(; v = 0.0)
+
+    @structural_parameters begin
+        T_dep = false
+    end
+
     @parameters begin
         Is = 1e-6, [description = "Saturation current (A)"]
         n = 1, [description = "Ideality factor"]
         T = 300.15, [description = "Ambient temperature"]
     end
-    @equations begin
-        i ~ Is * (exp(v * q / (n * k * T)) - 1)
-    end
-end
 
-"""
-    HeatingDiode(; name, Is = 1e-6, n = 1)
-
-Temperature dependent diode based on the Shockley diode equation.
-
-# States
-
-    - See [OnePort](@ref)
-
-# Connectors
-
-    - `p` Positive pin
-    - `n` Negative pin
-    - `port` [HeatPort](@ref) Heat port to model the temperature dependency
-
-# Parameters:
-
-    - `Is`: [`A`] Saturation current
-    - `n`: Ideality factor
-"""
-@mtkmodel HeatingDiode begin
-    begin
-        k = 1.380649e-23 # Boltzmann constant (J/K)
-        q = 1.602176634e-19 # Elementary charge (C)
-    end
-
-    @extend v, i = oneport = OnePort(; v = 0.0)
-    @components begin
-        port = HeatPort()
-    end
-    @parameters begin
-        Is = 1e-6, [description = "Saturation current (A)"]
-        n = 1, [description = "Ideality factor"]
-    end
-    @variables begin
-        Vt(t), [description = "Thermal voltage"]
-    end
-    @equations begin
-        Vt ~ k * port.T / q  # Thermal voltage equation
-        i ~ Is * (exp(v / (n * Vt)) - 1)  # Shockley diode equation
-        port.Q_flow ~ -v * i  # -LossPower
+    if T_dep
+        @components begin
+            port = HeatPort()
+        end
+        @variables begin
+            Vt(t), [description = "Thermal voltage"]
+        end
+        @equations begin
+            Vt ~ k * port.T / q  # Thermal voltage equation
+            i ~ Is * (exp(v / (n * Vt)) - 1)  # Shockley diode equation with temperature dependence
+            port.Q_flow ~ -v * i  # -LossPower
+        end
+    else
+        @equations begin
+            i ~ Is * (exp(v * q / (n * k * T)) - 1)  # Shockley diode equation
+        end
     end
 end
 

@@ -175,13 +175,14 @@ end
     end
 end
 
-@testset "El. Heating Circuit" begin
+@testset "Electrical Heating Circuit" begin
     @mtkmodel ElHeatingCircuit begin
         @components begin
             ground = Ground()
             source = Voltage()
             voltage_sine = Blocks.Sine(amplitude = 220, frequency = 1)
-            heating_resistor = HeatingResistor(R_ref = 100, alpha = 1e-3, T_ref = 293.15)
+            heating_resistor = Resistor(R = 100, alpha = 1e-3,
+                T_ref = 293.15, T_dep = true)
             thermal_conductor = ThermalConductor(G = 50)
             env = FixedTemperature(T = 273.15 + 20)
         end
