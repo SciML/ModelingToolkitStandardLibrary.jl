@@ -175,7 +175,7 @@ end
     end
 end
 
-@testset "El. Heating Circuit" begin
+@testset "Electrical Heating Circuit" begin
     @mtkmodel ElHeatingCircuit begin
         @components begin
             ground = Ground()

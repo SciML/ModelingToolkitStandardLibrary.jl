@@ -18,7 +18,7 @@ node.
 end
 
 """
-    Resistor(; name, R_ref = 1.0, T_ref = 300.15, alpha = 0, T_dep = false)
+    Resistor(; name, R = 1.0, T_ref = 300.15, alpha = 0, T_dep = false)
 
 Generic resistor with optional temperature dependency.
 
@@ -206,47 +206,6 @@ See [OnePort](@ref)
 end
 
 """
-    HeatingResistor(; name, R_ref = 1.0, T_ref = 300.15, alpha = 0)
-
-Temperature dependent electrical resistor
-
-# States
-
-  - See [OnePort](@ref)
-  - `R(t)`: [`Ohm`] Temperature dependent resistance `R ~ R_ref*(1 + alpha*(heat_port.T(t) - T_ref))`
-
-# Connectors
-
-  - `p` Positive pin
-  - `n` Negative pin
-
-# Parameters:
-
-  - `R_ref`: [`Ω`] Reference resistance
-  - `T_ref`: [K] Reference temperature
-  - `alpha`: [K⁻¹] Temperature coefficient of resistance
-"""
-@mtkmodel HeatingResistor begin
-    @extend v, i = oneport = OnePort()
-    @components begin
-        heat_port = HeatPort()
-    end
-    @parameters begin
-        R_ref = 1.0, [description = "Reference resistance"]
-        T_ref = 300.15, [description = "Reference temperature"]
-        alpha = 0, [description = "Temperature coefficient of resistance"]
-    end
-    @variables begin
-        R(t), [guess = R_ref]
-    end
-    @equations begin
-        R ~ R_ref * (1 + alpha * (heat_port.T - T_ref))
-        heat_port.Q_flow ~ -v * i # -LossPower
-        v ~ i * R
-    end
-end
-
-"""
     EMF(; name, k)
 
 Electromotoric force (electric/mechanic transformer)
@@ -291,7 +250,7 @@ Electromotoric force (electric/mechanic transformer)
 end
 
 """
-    Diode(; name, Is = 1e-6, n = 1, T_ref = 300.15, T_dep = false)
+    Diode(; name, Is = 1e-6, n = 1, T = 300.15, T_dep = false)
 
 Generic diode with optional temperature dependency.
 
@@ -303,13 +262,13 @@ Generic diode with optional temperature dependency.
 
     - `p` Positive pin
     - `n` Negative pin
-    - `port` [HeatPort](@ref) (only if `T_dep = true`) Heat port to model the temperature dependency
+    - `port` [HeatPort](@ref) (only if `T_dep = true`) Heat port to model variable temperature dependency
 
 # Parameters:
     
     - `Is`: [`A`] Saturation current
     - `n`: Ideality factor
-    - `T_ref`: [K] Reference temperature
+    - `T`: [K] Constant ambient temperature - only used if T_dep=false
     - `T_dep`: [bool] Temperature dependency
 """
 @mtkmodel Diode begin
@@ -326,8 +285,7 @@ Generic diode with optional temperature dependency.
     @parameters begin
         Is = 1e-6, [description = "Saturation current (A)"]
         n = 1, [description = "Ideality factor"]
-        T_ref = 300.15, [description = "Reference temperature (K)"]
-        Vt_const = k * T_ref / q, [description = "Constant thermal voltage"]
+        T = 300.15, [description = "Ambient temperature"]
     end
 
     if T_dep
@@ -344,7 +302,7 @@ Generic diode with optional temperature dependency.
         end
     else
         @equations begin
-            i ~ Is * (exp(v / (n * Vt_const)) - 1)  # Shockley diode equation
+            i ~ Is * (exp(v * q / (n * k * T)) - 1)  # Shockley diode equation
         end
     end
 end
@@ -372,20 +330,20 @@ R = R_const + pos * R_ref * (1 + alpha * (port.T - T_ref))
     - `R(t)`: Resistance
 
 # Connectors
-        
-    - `p` Positive pin
-    - `n` Negative pin
-    - `position` RealInput to set the position of the wiper
-    - `port` [HeatPort](@ref) Heat port to model the temperature dependency
+
+        - `p` Positive pin
+        - `n` Negative pin
+        - `position` RealInput to set the position of the wiper
+        - `port` [HeatPort](@ref) Heat port to model the temperature dependency
 
 # Parameters
-    
-    - `R_ref`: [`Ω`] Resistance at temperature T_ref when fully closed (pos=1.0)
-    - `T_ref`: [K] Reference temperature
-    - `R_const`: [`Ω`] Constant resistance between p and n
-    - `T_dep`: [bool] Temperature dependency
-    - `alpha`: [K⁻¹] Temperature coefficient of resistance
-    - `enforce_bounds`: Enforce bounds for the position of the wiper (0-1)
+
+        - `R_ref`: [`Ω`] Resistance at temperature T_ref when fully closed (pos=1.0)
+        - `T_ref`: [K] Reference temperature
+        - `R_const`: [`Ω`] Constant resistance between p and n
+        - `T_dep`: Temperature dependency
+        - `alpha`: [K⁻¹] Temperature coefficient of resistance
+        - `enforce_bounds`: Enforce bounds for the position of the wiper (0-1)
 """
 @mtkmodel VariableResistor begin
     @extend v, i = oneport = OnePort()
