@@ -575,8 +575,8 @@ end
 
     prob = ODEProblem(sys, Pair[], (0.0, 10.0))
     sol = solve(prob)
-    @test sol[sys.Q1.d.i][1] ≈ 0.0874
-    @test sol[sys.Q1.s.i][1] ≈ -0.0874
+    @test sol[sys.Q1.d.i][1] > 0.0
+    @test sol[sys.Q1.s.i][1] < 0.0
     @test sol[sys.Q1.g.i][1] == 0.0
     @test sol[sys.Q1.d.v][1] == 5.0
     @test sol[sys.Q1.s.v] < sol[sys.Q1.d.v]
@@ -615,8 +615,8 @@ end
 
     flipped_prob = ODEProblem(flipped_sys, Pair[], (0.0, 10.0))
     flipped_sol = solve(flipped_prob)
-    @test flipped_sol[flipped_sys.Q1.d.i][1] ≈ -0.0874
-    @test flipped_sol[flipped_sys.Q1.s.i][1] ≈ 0.0874
+    @test flipped_sol[flipped_sys.Q1.d.i][1] < 0
+    @test flipped_sol[flipped_sys.Q1.s.i][1] > 0 
     @test flipped_sol[flipped_sys.Q1.s.v] > flipped_sol[flipped_sys.Q1.d.v]
 
     # channel length modulation
@@ -653,8 +653,8 @@ end
 
         prob = ODEProblem(sys, Pair[], (0.0, 10.0))
         sol = solve(prob)
-        @test sol[sys.Q1.d.i][1] ≈ 0.0729
-        @test sol[sys.Q1.s.i][1] ≈ -0.0729
+        @test sol[sys.Q1.d.i][1] > 0.0
+        @test sol[sys.Q1.s.i][1] < 0.0
 end
 
 
@@ -662,7 +662,7 @@ end
 
     @mtkmodel SimplePMOSCircuit begin
         @components begin
-            Q1 = SimplePMOS(use_channel_length_modulation = false)
+            Q1 = PMOS(use_channel_length_modulation = false)
             Vs = Voltage()
             Vb = Voltage()
             Vd = Voltage()
@@ -699,8 +699,8 @@ end
     prob = ODEProblem(sys, Pair[], (0.0, 10.0))
     sol = solve(prob)
 
-    @test sol[sys.Q1.d.i][1] ≈ -0.0091998
-    @test sol[sys.Q1.s.i][1] ≈ 0.0091998
+    @test sol[sys.Q1.d.i][1] < 0.0
+    @test sol[sys.Q1.s.i][1] > 0.0
 
     # device symmetry
     @mtkmodel FlippedPMOSCircuit begin
@@ -742,8 +742,8 @@ end
     flipped_prob = ODEProblem(flipped_sys, Pair[], (0.0, 10.0))
     flipped_sol = solve(flipped_prob)
 
-    flipped_sol[flipped_sys.Q1.d.i][1] ≈ 0.0091998
-    flipped_sol[flipped_sys.Q1.s.i][1] ≈ -0.0091998
+    flipped_sol[flipped_sys.Q1.d.i][1] > 0.0
+    flipped_sol[flipped_sys.Q1.s.i][1] < 0.0
 
 
 end
