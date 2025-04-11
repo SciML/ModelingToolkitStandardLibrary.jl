@@ -6,6 +6,7 @@ First of all, we construct a circuit using the NMOS transistor. We'll need to im
 using ModelingToolkit
 using ModelingToolkit: t_nounits as t
 using ModelingToolkitStandardLibrary.Electrical
+using ModelingToolkitStandardLibrary.Blocks: Constant
 using OrdinaryDiffEq
 using Plots
 ```
