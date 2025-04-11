@@ -540,3 +540,174 @@ end
     #     title = "RC Circuit Test with VariableResistor")
     # savefig(plt, "rc_circuit_test_variable_resistor")
 end
+
+
+@testset "NPN Tests" begin
+
+    @mtkmodel SimpleNPNCircuit begin
+        @components begin
+            Q1 = NPN()
+            Vcc = Voltage()
+            Vb = Voltage()
+            ground = Ground()
+
+            Vcc_const = Constant(k = V_cc)
+            Vb_const = Constant(k = V_b)
+        end
+
+        @parameters begin
+            V_cc = 0.0
+            V_b = 0.0
+        end
+        @equations begin
+            #voltage sources
+            connect(Vcc_const.output, Vcc.V)
+            connect(Vb_const.output, Vb.V)
+
+            #ground connections
+            connect(Vcc.n, Vb.n, ground.g, Q1.e)
+
+            #other stuff
+            connect(Vcc.p, Q1.c)
+            connect(Vb.p, Q1.b)
+        end
+    end
+
+    @mtkbuild sys = SimpleNPNCircuit(V_cc = 3.0, V_b = 0.70)
+
+    prob = ODEProblem(sys, Pair[], (0.0, 10.0))
+    sol = solve(prob)
+
+    # make sure KCL is true
+    @test sol[sys.Q1.b.i][1] + sol[sys.Q1.e.i][1] + sol[sys.Q1.c.i][1] ≈ 0.0
+
+    # test NPN with substrate
+    @mtkmodel SimpleNPNCircuitSubstrate begin
+        @components begin
+            Q1 = NPN(use_substrate = true)
+            Vcc = Voltage()
+            Vb = Voltage()
+            ground = Ground()
+            R1 = Resistor(R = 1000)
+
+            Vcc_sine = Sine(frequency = 0.5)
+            Vb_const = Constant(k = V_b)
+        end
+
+        @parameters begin
+            V_cc = 0.0
+            V_b = 0.0
+        end
+        @equations begin
+            #voltage sources
+            connect(Vcc_sine.output, Vcc.V)
+            connect(Vb_const.output, Vb.V)
+
+            #ground connections
+            connect(Vcc.n, Vb.n, ground.g, Q1.e, Q1.s)
+
+            #other stuff
+            connect(Vcc.p, R1.p)
+            connect(R1.n, Q1.c)
+            connect(Vb.p, Q1.b)
+        end
+    end
+
+    @mtkbuild sys = SimpleNPNCircuitSubstrate(V_b = 0.70)
+
+    prob = ODEProblem(sys, [sys.Q1.c.i => 0.0], (0.0, 10.0))
+    sol = solve(prob)
+
+    @test isapprox(
+        sol[sys.Q1.b.i][15] +
+        sol[sys.Q1.e.i][15] +
+        sol[sys.Q1.c.i][15] +
+        sol[sys.Q1.s.i][15],
+        0.0, atol = 1e-16)
+
+end
+
+
+@testset "PNP Tests" begin
+    @mtkmodel SimplePNPCircuit begin
+        @components begin
+            Q1 = PNP()
+            Vcc = Voltage()
+            Vb = Voltage()
+            ground = Ground()
+
+            Vcc_const = Constant(k = V_cc)
+            Vb_const = Constant(k = V_b)
+        end
+
+        @parameters begin
+            V_cc = 0.0
+            V_b = 0.0
+        end
+        @equations begin
+            #voltage sources
+            connect(Vcc_const.output, Vcc.V)
+            connect(Vb_const.output, Vb.V)
+
+            #ground connections
+            connect(Vcc.n, Vb.n, ground.g, Q1.e)
+
+            #other stuff
+            connect(Vcc.p, Q1.c)
+            connect(Vb.p, Q1.b)
+        end
+    end
+
+    @mtkbuild sys = SimplePNPCircuit(V_cc = 3.0, V_b = 0.70)
+
+    prob = ODEProblem(sys, Pair[], (0.0, 10.0))
+    sol = solve(prob)
+
+    # make sure KCL is true
+    @test sol[sys.Q1.b.i][1] + sol[sys.Q1.e.i][1] + sol[sys.Q1.c.i][1] ≈ 0.0
+
+    # test PNP with substrate
+    @mtkmodel SimplePNPCircuitSubstrate begin
+        @components begin
+            Q1 = PNP(use_substrate = true)
+            Vcc = Voltage()
+            Vb = Voltage()
+            ground = Ground()
+            R1 = Resistor(R = 1000)
+
+            Vcc_sine = Sine(frequency = 0.5)
+            Vb_const = Constant(k = V_b)
+        end
+
+        @parameters begin
+            V_cc = 0.0
+            V_b = 0.0
+        end
+        @equations begin
+            #voltage sources
+            connect(Vcc_sine.output, Vcc.V)
+            connect(Vb_const.output, Vb.V)
+
+            #ground connections
+            connect(Vcc.n, Vb.n, ground.g, Q1.e, Q1.s)
+
+            #other stuff
+            connect(Vcc.p, R1.p)
+            connect(R1.n, Q1.c)
+            connect(Vb.p, Q1.b)
+        end
+    end
+
+    @mtkbuild sys = SimplePNPCircuitSubstrate(V_b = 0.70)
+
+    prob = ODEProblem(sys, [sys.Q1.c.i => 0.0], (0.0, 10.0))
+    sol = solve(prob)
+
+    @test isapprox(
+        sol[sys.Q1.b.i][15] +
+        sol[sys.Q1.e.i][15] +
+        sol[sys.Q1.c.i][15] +
+        sol[sys.Q1.s.i][15],
+        0.0,
+        atol = 1e-16)
+end

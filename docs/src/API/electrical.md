@@ -34,6 +34,8 @@ IdealOpAmp
 Diode
 HeatingDiode
 VariableResistor
+PNP
+NPN
 ```
 
 ## Analog Sensors
