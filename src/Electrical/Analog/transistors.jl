@@ -69,9 +69,9 @@ Early voltage effect.
     end
 
     @components begin
-        b = Pin(), [description = "Base pin"]
-        e = Pin(), [description = "Emitter pin"]
-        c = Pin(), [description = "Collector pin"]
+        b = Pin()
+        e = Pin()
+        c = Pin()
 
         if use_substrate
             s = Pin(), [description = "Substrate pin"]
