@@ -42,9 +42,6 @@ Early voltage effect.
         - `NF`: Forward emission coefficient
         - `NR`: Reverse emission coefficient
 """
-
-
-
 @mtkmodel NPN begin
     @variables begin
         V_BE(t)
