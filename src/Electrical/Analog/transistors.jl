@@ -74,7 +74,7 @@ Early voltage effect.
         c = Pin()
 
         if use_substrate
-            s = Pin(), [description = "Substrate pin"]
+            s = Pin()
         end
     end
 
