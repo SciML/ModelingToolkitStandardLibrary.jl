@@ -620,7 +620,7 @@ end
     @test flipped_sol[flipped_sys.Q1.s.v] > flipped_sol[flipped_sys.Q1.d.v]
 
     # channel length modulation
-    @mtkmodel SimpleNMOSCircuit begin
+    @mtkmodel SimpleNMOSCircuitChannel begin
             @components begin
                 Q1 = NMOS(use_channel_length_modulation = false)
                 Vcc = Voltage()
@@ -649,7 +649,7 @@ end
             end
     end
 
-        @mtkbuild sys = SimpleNMOSCircuit(V_cc = 5.0, V_b = 3.5)
+        @mtkbuild sys = SimpleNMOSCircuitChannel(V_cc = 5.0, V_b = 3.5)
 
         prob = ODEProblem(sys, Pair[], (0.0, 10.0))
         sol = solve(prob)
