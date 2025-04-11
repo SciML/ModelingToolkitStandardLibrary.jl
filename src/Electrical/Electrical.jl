@@ -24,6 +24,9 @@ include("Analog/sensors.jl")
 export Voltage, Current
 include("Analog/sources.jl")
 
+export NMOS, PMOS
+include("Analog/mosfets.jl")
+
 export NPN, PNP
 include("Analog/transistors.jl")
 
