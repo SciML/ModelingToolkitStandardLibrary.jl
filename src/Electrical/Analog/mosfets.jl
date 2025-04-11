@@ -32,9 +32,9 @@ Based on the MOSFET models in (Sedra, A. S., Smith, K. C., Carusone, T. C., & Ga
     end
 
     @components begin
-        d = Pin(), [description = "Drain pin"]
-        g = Pin(), [description = "Gate pin"]
-        s = Pin(), [description = "Source pin"]
+        d = Pin()
+        g = Pin()
+        s = Pin()
     end
 
     @parameters begin
@@ -123,9 +123,9 @@ Based on the MOSFET models in (Sedra, A. S., Smith, K. C., Carusone, T. C., & Ga
     end
 
     @components begin
-        d = Pin(), [description = "Drain pin"]
-        g = Pin(), [description = "Gate pin"]
-        s = Pin(), [description = "Source pin"]
+        d = Pin()
+        g = Pin()
+        s = Pin()
     end
 
     @parameters begin
