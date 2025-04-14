@@ -51,7 +51,7 @@ function MassSpringDamperSystem(data, time; name)
     @named clk = ContinuousClock()
     @named model = MassSpringDamper()
 
-    eqs = [connect(src.input, clk.output)
+    eqs = [connect(clk.output, src.input)
            connect(src.output, model.input)]
 
     ODESystem(eqs, t, [], []; name, systems = [src, clk, model])
