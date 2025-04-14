@@ -658,7 +658,7 @@ end
 end
 
 
-@testset "PMOS Transistor" begin begin
+@testset "PMOS Transistor" begin
 
     @mtkmodel SimplePMOSCircuit begin
         @components begin
