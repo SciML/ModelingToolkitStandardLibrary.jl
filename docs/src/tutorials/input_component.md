@@ -114,7 +114,7 @@ function MassSpringDamperSystem(data, time; name)
     @named model = MassSpringDamper()
 
     eqs = [connect(model.input, src.output)
-           connect(src.input, clk.output)]
+           connect(clk.output, src.input)]
 
     ODESystem(eqs, t; name, systems = [src, clk, model])
 end
