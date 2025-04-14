@@ -541,7 +541,7 @@ end
     # savefig(plt, "rc_circuit_test_variable_resistor")
 end
 
-@testset "NMOS Transistor" begin  begin
+@testset "NMOS Transistor" begin
 
     @mtkmodel SimpleNMOSCircuit begin
         @components begin
@@ -659,7 +659,7 @@ end
 end
 
 
-@testset "PMOS Transistor" begin begin
+@testset "PMOS Transistor" begin
 
     @mtkmodel SimplePMOSCircuit begin
         @components begin
@@ -917,4 +917,3 @@ end
         sol[sys.Q1.s.i][15],
         0.0,
         atol = 1e-16)
-end
