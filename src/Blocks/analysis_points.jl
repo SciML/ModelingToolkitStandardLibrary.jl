@@ -247,8 +247,9 @@ function _check_and_sort!(ap_names, aps, namespaces, multiplicities)
         if ind === nothing
             @error "Could not find analysis point $apn"
             happy = false
+        else
+            push!(permutation, ind)
         end
-        push!(permutation, ind)
     end
     happy || error("Failed to find all analysis points. I found these: $(nameof.(aps))")
     aps .= aps[permutation]
@@ -484,6 +485,48 @@ function ModelingToolkit.linearization_function(sys::ModelingToolkit.AbstractSys
     end
     ModelingToolkit.linearization_function(system_modifier(sys), un, yn; kwargs...)
 end
+
+
+function ModelingToolkit.generate_control_function(
+        sys::ModelingToolkit.AbstractODESystem, input_ap_name::SymOrVec, dist_ap_name::SymOrVec; system_modifier = identity,
+        kwargs...)
+
+    all_ap_names = [input_ap_name; dist_ap_name]
+    find = namespaced_ap_match(all_ap_names, [])
+    t = get_iv(sys)
+    aps = []
+    multiplicities = Int[]
+    namespaces = []
+    u = []
+    d = []
+    replace = function (ap, ns)
+        if namespaced_ap_match(ap, ns, input_ap_name, nothing)
+            push!(aps, ap)
+            push!(multiplicities, length(ap_var(ap.in))) # ap may be vector-valued
+            push!(namespaces, ns)
+            push!(u, ap_var(ap.out))
+            (0 ~ 0), nothing
+        elseif namespaced_ap_match(ap, ns, dist_ap_name, nothing)
+            push!(aps, ap)
+            push!(multiplicities, length(ap_var(ap.in))) # ap may be vector-valued
+            push!(namespaces, ns)
+            push!(d, ap_var(ap.out))
+            (0 ~ 0), nothing
+        else
+            error("This should not have happened")
+        end
+    end
+    sys = expand_connections(sys, find, replace)
+    permutation = _check_and_sort!(all_ap_names, aps, namespaces, multiplicities)
+    uinds = 1:length(u)
+    dinds = length(u) .+ (1:length(d))
+    un = ModelingToolkit.renamespace.(namespaces[uinds], u[permutation[uinds]])
+    dn = ModelingToolkit.renamespace.(namespaces[dinds], d[permutation[dinds] .- length(u)])
+    sys = system_modifier(sys)
+
+    ModelingToolkit.generate_control_function(sys, un, dn; kwargs...)
+end
+
 
 # Add a method to get_sensitivity that accepts the name of an AnalysisPoint
 for f in [:get_sensitivity, :get_comp_sensitivity, :get_looptransfer, :open_loop]
