@@ -354,7 +354,7 @@ end
         vol(t)
     end
 
-  # let
+    # let
     dm = port.dm
     p = port.p
 
@@ -454,7 +454,6 @@ See also [`FixedVolume`](@ref), [`DynamicVolume`](@ref)
         direction = +1,
         x_int,
         name)
-
     pars = @parameters begin
         area = area
         x_int = x_int
@@ -489,11 +488,11 @@ See also [`FixedVolume`](@ref), [`DynamicVolume`](@ref)
     end
 
     eqs = [
-            # connectors
-            port.p ~ p
-            port.dm ~ dm
-            flange.v * direction ~ dx
-            flange.f * direction ~ -f
+           # connectors
+           port.p ~ p
+           port.dm ~ dm
+           flange.v * direction ~ dx
+           flange.f * direction ~ -f
            # differentials
            D(x) ~ dx
            D(m) ~ dm

@@ -541,9 +541,7 @@ end
     # savefig(plt, "rc_circuit_test_variable_resistor")
 end
 
-
 @testset "NPN Tests" begin
-
     @mtkmodel SimpleNPNCircuit begin
         @components begin
             Q1 = NPN()
@@ -624,9 +622,7 @@ end
         sol[sys.Q1.c.i][15] +
         sol[sys.Q1.s.i][15],
         0.0, atol = 1e-16)
-
 end
-
 
 @testset "PNP Tests" begin
     @mtkmodel SimplePNPCircuit begin
