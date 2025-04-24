@@ -7,23 +7,18 @@ This is an ideal absolute temperature sensor which returns the temperature of th
 signal. The sensor itself has no thermal interaction with whatever it is connected to. Furthermore, no thermocouple-like
 lags are associated with this sensor model.
 
-# States:
-
-  - `T(t)`: [`K`] Absolute temperature
-
 # Connectors:
 
-  - `port`
+  - `port`: [HeatPort](@ref) Thermal port from which sensor information shall be measured
+  - `T`: [RealOutput](@ref) [K] Absolute temperature of port
 """
 @mtkmodel TemperatureSensor begin
     @components begin
         port = HeatPort()
-    end
-    @variables begin
-        T(t)
+        T = RealOutput()
     end
     @equations begin
-        T ~ port.T
+        T.u ~ port.T
         port.Q_flow ~ 0
     end
 end
@@ -36,25 +31,20 @@ Relative Temperature sensor.
 The relative temperature `port_a.T - port_b.T` is determined between the two ports of this component and is provided as
 output signal in kelvin.
 
-# States:
-
-  - `T(t)`: [`K`] Relative temperature `a.T - b.T`
-
 # Connectors:
 
-  - `port_a`
-  - `port_b`
+  - `port_a`: [HeatPort](@ref) Thermal port from which sensor information shall be measured
+  - `port_b`: [HeatPort](@ref) Thermal port from which sensor information shall be measured
+  - `T`: [RealOutput](@ref) [K] Relative temperature `a.T - b.T`
 """
 @mtkmodel RelativeTemperatureSensor begin
     @components begin
         port_a = HeatPort()
         port_b = HeatPort()
-    end
-    @variables begin
-        T(t)
+        T = RealOutput()
     end
     @equations begin
-        T ~ port_a.T - port_b.T
+        T.u ~ port_a.T - port_b.T
         port_a.Q_flow ~ 0
         port_b.Q_flow ~ 0
     end
@@ -70,26 +60,21 @@ is the amount that passes through this sensor while keeping the temperature drop
 model, so it does not absorb any energy, and it has no direct effect on the thermal response of a system it is included in.
 The output signal is positive, if the heat flows from `port_a` to `port_b`.
 
-# States:
-
-  - `Q_flow(t)`: [`W`] Heat flow from `port_a` to `port_b`
-
 # Connectors:
 
-  - `port_a`
-  - `port_b`
+  - `port_a`: [HeatPort](@ref) Thermal port from which sensor information shall be measured
+  - `port_b`: [HeatPort](@ref) Thermal port from which sensor information shall be measured
+  - `Q_flow`: [RealOutput](@ref) [W] Heat flow from `port_a` to `port_b` 
 """
 @mtkmodel HeatFlowSensor begin
     @components begin
         port_a = HeatPort()
         port_b = HeatPort()
-    end
-    @variables begin
-        Q_flow(t)
+        Q_flow = RealOutput()
     end
     @equations begin
         port_a.T ~ port_b.T
         port_a.Q_flow + port_b.Q_flow ~ 0
-        Q_flow ~ port_a.Q_flow
+        Q_flow.u ~ port_a.Q_flow
     end
 end
