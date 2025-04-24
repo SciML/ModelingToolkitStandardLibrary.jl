@@ -41,8 +41,6 @@ using ModelingToolkitStandardLibrary.Blocks
     @test SciMLBase.successful_retcode(sol)
     # The initial value doesn't add up to absolute zero, while the rest do. To avoid
     # tolerance on the latter, the test is split in two parts.
-    @test sol[piston.gas.Q_flow][1] + sol[piston.coolant.Q_flow][1]≈0 atol=1e-6
-    @test sol[piston.gas.Q_flow][2:end] +
-          sol[piston.coolant.Q_flow][2:end]≈
-    zeros(length(sol) - 1) atol=1e-6
+    @test sol[piston.gas.Q_flow][1]≈-sol[piston.coolant.Q_flow][1] rtol=1e-6
+    @test sol[piston.gas.Q_flow][2:end]≈-sol[piston.coolant.Q_flow][2:end] rtol=1e-6
 end
