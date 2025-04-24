@@ -164,7 +164,6 @@ Early voltage effect.
     end
 end
 
-
 """
     PNP(;name, B_F, B_R, Is, V_T, V_A, phi_C, phi_E, Z_C, Z_E, Tau_f, Tau_r, C_jC0, C_jE0, C_CS, gamma_C, gamma_E, NF, NR)
 
