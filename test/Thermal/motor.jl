@@ -1,4 +1,4 @@
-using ModelingToolkit, OrdinaryDiffEqDefault, Test
+using ModelingToolkit, Test
 using ModelingToolkitStandardLibrary.Thermal
 using ModelingToolkitStandardLibrary.Blocks
 
@@ -47,10 +47,10 @@ using ModelingToolkitStandardLibrary.Blocks
 
     # plot(sol; vars=[T_winding.T, T_core.T])
     @test SciMLBase.successful_retcode(sol)
-    @test sol[motor.T_winding.T] == sol[motor.winding.T]
-    @test sol[motor.T_core.T] == sol[motor.core.T]
+    @test sol[motor.T_winding.T.u] == sol[motor.winding.T]
+    @test sol[motor.T_core.T.u] == sol[motor.core.T]
     @test sol[-motor.core.port.Q_flow] ≈
           sol[motor.coreLosses.port.Q_flow + motor.convection.solid.Q_flow + motor.winding2core.port_b.Q_flow]
-    @test sol[motor.T_winding.T][end] >= 500 # not good but better than nothing
-    @test sol[motor.T_core.T] <= sol[motor.T_winding.T]
+    @test sol[motor.T_winding.T.u][end] >= 500 # not good but better than nothing
+    @test sol[motor.T_core.T.u] <= sol[motor.T_winding.T.u]
 end

@@ -1,4 +1,4 @@
-using ModelingToolkit, OrdinaryDiffEqDefault, Test
+using ModelingToolkit, Test
 using ModelingToolkitStandardLibrary.Thermal
 using ModelingToolkitStandardLibrary.Blocks
 
