@@ -133,7 +133,7 @@ Variable length internal flow model of the fully developed incompressible flow f
         push!(eqs, D(dm) ~ ddm)
     end
 
-    ODESystem(eqs, t, vars, pars; name, systems)
+    System(eqs, t, vars, pars; name, systems)
 end
 
 """
@@ -200,7 +200,7 @@ Constant length internal flow model discretized by `N` (`FixedVolume`: `N`, `Tub
             connect(x.port, pipe_bases[i].port_b, pipe_bases[i + 1].port_a))
     end
 
-    return ODESystem(eqs, t, vars, pars; name, systems = [ports; pipe_bases; volumes])
+    return System(eqs, t, vars, pars; name, systems = [ports; pipe_bases; volumes])
 end
 @deprecate Pipe Tube
 
@@ -286,7 +286,7 @@ end
            dm ~ regRoot(2 * Δp * ρ / c) * x # I think this should be reformulated as: regRoot(2 DP rho) c x
            y ~ x]
 
-    ODESystem(eqs, t, vars, pars; name, systems)
+    System(eqs, t, vars, pars; name, systems)
 end
 
 """
@@ -331,7 +331,7 @@ Valve with `area` input and discharge coefficient `Cd` defined by https://en.wik
            connect(base.port_b, port_b)
            base.area ~ area.u]
 
-    ODESystem(eqs, t, vars, pars; name, systems)
+    System(eqs, t, vars, pars; name, systems)
 end
 
 @component function VolumeBase(; area, dead_volume = 0, p_int, x_int,
@@ -367,7 +367,7 @@ end
 
     initialization_eqs = [p ~ p_int]
 
-    ODESystem(eqs, t, vars, pars; name, systems, initialization_eqs)
+    System(eqs, t, vars, pars; name, systems, initialization_eqs)
 end
 
 """
@@ -407,7 +407,7 @@ Fixed fluid volume.
            p ~ port.p
            m ~ rho * vol]
 
-    ODESystem(eqs, t, vars, pars; name, systems)
+    System(eqs, t, vars, pars; name, systems)
 end
 
 """
@@ -503,7 +503,7 @@ See also [`FixedVolume`](@ref), [`DynamicVolume`](@ref)
            f ~ p * area
            m ~ rho * x * area]
 
-    ODESystem(eqs, t, vars, pars; name, systems)
+    System(eqs, t, vars, pars; name, systems)
 end
 
 """
@@ -632,7 +632,7 @@ dm ────►               │  │ area
            dx ~ flange.v * direction
            p * area - dx * d ~ -flange.f * direction]
 
-    return ODESystem(eqs, t, vars, pars; name, systems)
+    return System(eqs, t, vars, pars; name, systems)
 end
 
 """
@@ -678,7 +678,7 @@ See [`Valve`](@ref) for more information.
            connect(valve.port_b, port_b)
            valve.area ~ x * 2π * d]
 
-    ODESystem(eqs, t, vars, pars; name, systems)
+    System(eqs, t, vars, pars; name, systems)
 end
 
 """
@@ -742,7 +742,7 @@ See [`SpoolValve`](@ref) for more information.
     # mass.v ~ dx_int
     ]
 
-    ODESystem(eqs, t, vars, pars; name, systems, initialization_eqs)
+    System(eqs, t, vars, pars; name, systems, initialization_eqs)
 end
 
 """
@@ -917,7 +917,7 @@ Actuator made of two DynamicVolumes connected in opposite direction with body ma
         mass.s ~ x_int
     ]
 
-    ODESystem(eqs, t, vars, pars; name, systems, initialization_eqs)
+    System(eqs, t, vars, pars; name, systems, initialization_eqs)
 end
 
 """

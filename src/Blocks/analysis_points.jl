@@ -81,7 +81,7 @@ using ModelingToolkitStandardLibrary.Blocks
 t = ModelingToolkit.get_iv(P)
 eqs = [connect(P.output, C.input)
        connect(C.output, :plant_input, P.input)]
-sys = ODESystem(eqs, t, systems = [P, C], name = :feedback_system)
+sys = System(eqs, t, systems = [P, C], name = :feedback_system)
 
 matrices_S, _ = get_sensitivity(sys, :plant_input) # Compute the matrices of a state-space representation of the (input) sensitivity function.
 matrices_T, _ = get_comp_sensitivity(sys, :plant_input)
@@ -131,8 +131,8 @@ function Base.show(io::IO, ::MIME"text/plain", ap::AnalysisPoint)
     end
 end
 
-_isinput(x) = x isa ODESystem && endswith(string(nameof(x)), "input")
-_isoutput(x) = x isa ODESystem && endswith(string(nameof(x)), "output")
+_isinput(x) = x isa System && endswith(string(nameof(x)), "input")
+_isoutput(x) = x isa System && endswith(string(nameof(x)), "output")
 function ap_warning(n)
     @warn "The $(n == 1 ? "first" : "third") argument to a connection with an analysis point was a $(n == 1 ? "RealInput" : "RealOutput"). This is supported in order to handle inverse models, but may not be what you intended. If you are building a forward model (causal), you may want to swap the first and the third arguments to connect. Learn more about the causality of analysis points in the docstring for AnalysisPoint. Silence this message by connect(out, :name, in; verbose = false)"
 end

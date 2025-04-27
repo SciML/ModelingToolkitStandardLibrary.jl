@@ -116,7 +116,7 @@ Partial model for a component with one translational 1-dim. shaft flange and a s
     else
         eqs = [s_support ~ 0]
     end
-    return compose(ODESystem(eqs, t, [s_support], []; name = name), sys)
+    return compose(System(eqs, t, [s_support], []; name = name), sys)
 end
 
 """
@@ -145,5 +145,5 @@ Partial model for a component with two translational 1-dim. flanges and a suppor
     else
         eqs = [s_support ~ 0]
     end
-    return compose(ODESystem(eqs, t, [s_support], []; name = name), sys)
+    return compose(System(eqs, t, [s_support], []; name = name), sys)
 end

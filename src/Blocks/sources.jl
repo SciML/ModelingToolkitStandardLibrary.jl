@@ -151,7 +151,7 @@ Generate sine signal.
         output.u ~ equation
     ]
 
-    compose(ODESystem(eqs, t, [], pars; name = name), [output])
+    compose(System(eqs, t, [], pars; name = name), [output])
 end
 
 """
@@ -192,7 +192,7 @@ Generate cosine signal.
         output.u ~ equation
     ]
 
-    compose(ODESystem(eqs, t, [], pars; name = name), [output])
+    compose(System(eqs, t, [], pars; name = name), [output])
 end
 
 """
@@ -216,7 +216,7 @@ Generate current time signal.
         output.u ~ offset + ifelse(t < start_time, zero(t), t - start_time)
     ]
 
-    compose(ODESystem(eqs, t, [], pars; name = name), [output])
+    compose(System(eqs, t, [], pars; name = name), [output])
 end
 
 """
@@ -258,7 +258,7 @@ Generate ramp signal.
         output.u ~ equation
     ]
 
-    compose(ODESystem(eqs, t, [], pars; name = name), [output])
+    compose(System(eqs, t, [], pars; name = name), [output])
 end
 
 """
@@ -300,7 +300,7 @@ Generate smooth square signal.
         output.u ~ equation
     ]
 
-    compose(ODESystem(eqs, t, [], pars; name = name), [output])
+    compose(System(eqs, t, [], pars; name = name), [output])
 end
 
 """
@@ -344,7 +344,7 @@ Generate step signal.
         output.u ~ equation
     ]
 
-    compose(ODESystem(eqs, t, [], pars; name = name), [output])
+    compose(System(eqs, t, [], pars; name = name), [output])
 end
 
 """
@@ -392,7 +392,7 @@ Exponentially damped sine signal.
         output.u ~ equation
     ]
 
-    compose(ODESystem(eqs, t, [], pars; name = name), [output])
+    compose(System(eqs, t, [], pars; name = name), [output])
 end
 
 """
@@ -435,7 +435,7 @@ Generate smooth triangular signal for frequencies less than or equal to 25 Hz
         output.u ~ equation
     ]
 
-    compose(ODESystem(eqs, t, [], pars; name = name), [output])
+    compose(System(eqs, t, [], pars; name = name), [output])
 end
 
 # TODO:
@@ -672,7 +672,7 @@ data input component.
     eqs = [
         output.u ~ get_sampled_data(t, p)
     ]
-    return ODESystem(eqs, t, vars, [pars; p]; name, systems)
+    return System(eqs, t, vars, [pars; p]; name, systems)
 end
 
 """
@@ -698,7 +698,7 @@ data input component.
     eqs = [
         output.u ~ get_sampled_data(t, buffer)
     ]
-    return ODESystem(eqs, t, vars, pars; name, systems)
+    return System(eqs, t, vars, pars; name, systems)
 end
 
 SampledData(x::SampledDataType.Option; kwargs...) = SampledData(Val(x); kwargs...)
@@ -767,7 +767,7 @@ function Interpolation(; itp, name)
 
     eqs = [output.u ~ interpolator(input.u)]
 
-    ODESystem(
+    System(
         eqs, t, [], [interpolator]; name, systems = [input, output])
 end
 
@@ -862,7 +862,7 @@ function ParametrizedInterpolation(
 
     eqs = [output.u ~ interpolator(input.u)]
 
-    ODESystem(eqs, ModelingToolkit.t_nounits, [],
+    System(eqs, ModelingToolkit.t_nounits, [],
         [data, ts, interpolation_type, interpolator];
         parameter_dependencies = [
             interpolator ~ build_interpolation(data, ts, args)
