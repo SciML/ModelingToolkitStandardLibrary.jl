@@ -21,7 +21,7 @@ function PulseDiff(; name, Val = 1, dt = 0.1)
     eqs = [D(val) ~ Val
            val ~ d.val]
 
-    ODESystem(eqs, t, [val], [], systems = [d], defaults = Dict(Val => 0), name = name)
+    System(eqs, t, [val], [], systems = [d], defaults = Dict(Val => 0), name = name)
 end
 
 """
@@ -42,7 +42,7 @@ function Set(; name)
     eqs = [
         d.val ~ 1
     ]
-    ODESystem(eqs, t, [], [], systems = [d], name = name)
+    System(eqs, t, [], [], systems = [d], name = name)
 end
 
 """
@@ -63,7 +63,7 @@ function Reset(; name)
     eqs = [
         d.val ~ 0
     ]
-    ODESystem(eqs, t, [], [], systems = [d], name = name)
+    System(eqs, t, [], [], systems = [d], name = name)
 end
 
 """
@@ -84,5 +84,5 @@ function Pulse(; name, duty_cycle = 0.5, T = 1.0)
     eqs = [
         d.val ~ IfElse.ifelse(t % T > duty_cycle * T, 1, 0)
     ]
-    ODESystem(eqs, t, [], [], systems = [d], name = name)
+    System(eqs, t, [], [], systems = [d], name = name)
 end
