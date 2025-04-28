@@ -416,7 +416,6 @@ An electrical switch that is controlled by a boolean input.
     - `Gon`: [`S`] Conductance when switch is closed.
     - `τ`: Parameter for filtered delay.
 """
-
 @mtkmodel Switch begin
     @extend v, i = oneport = OnePort()
 
