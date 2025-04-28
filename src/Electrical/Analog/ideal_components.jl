@@ -421,9 +421,10 @@ An electrical switch that is controlled by a boolean input.
     @extend v, i = oneport = OnePort()
 
     @parameters begin
-        state_init = false
-        Gon = 1e5
-        τ = 1e-3
+        state_init = false,
+        [description = "Initial switch state of type Bool. false: switch is open. true: switch is closed."]
+        Gon = 1e5, [description = "Conductance when switch is closed"]
+        τ = 1e-3, [description = "Parameter for filtered delay"]
     end
 
     @components begin
