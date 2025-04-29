@@ -755,10 +755,10 @@ such as `LinearInterpolation`, `ConstantInterpolation` or `CubicSpline`.
 """
 function Interpolation(interp_type, u, x, args...; name)
     itp = interp_type(u, x, args...)
-    Interpolation(itp; name)
+    Interpolation(; itp, name)
 end
 
-function Interpolation(itp; name)
+function Interpolation(; itp, name)
     @parameters (interpolator::typeof(itp))(..) = itp
     @named input = RealInput()
     @named output = RealOutput()
