@@ -719,7 +719,7 @@ end
         end
 
         @components begin
-            step = Step(start_time = 10.0, height = true, smooth = false)
+            step = Step(start_time = 10.0, height = true, smooth = 1e-5)
             switch = Switch()
             voltage = Voltage()
             resistor = Resistor(R = R)

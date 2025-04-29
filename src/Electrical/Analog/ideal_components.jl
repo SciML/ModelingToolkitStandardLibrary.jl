@@ -393,15 +393,21 @@ R = R_const + pos * R_ref * (1 + alpha * (port.T - T_ref))
 end
 
 """
-    Switch(; state_init = false, Gon = 1e5, τ = 1e-3)
+    Switch(; Gon = 1e5, state_init = false)
 
 An electrical switch that is controlled by a boolean input.
+
+The switch is modelled as follows:
+- i = G*v
+- G = state*G_on
+- state: boolean input
+
+G will therefore be 0 when the input is false [0] and G_on when the input is true [1].
 
 # States
 
     - See [OnePort](@ref)
     - `state(t)`: Boolean input
-    - `state_filtered(t)`: Filtered delay of state(t)
     - `G(t)`: Conductance
 
 # Connectors
@@ -412,18 +418,13 @@ An electrical switch that is controlled by a boolean input.
 
 # Parameters:
     
-    - `state_init`: Initial switch state of type Bool. false: switch is open. true: switch is closed.
-    - `Gon`: [`S`] Conductance when switch is closed.
-    - `τ`: Parameter for filtered delay.
+    - `Gon`: [`S`] Conductance when switch is closed. Value should be finite to avoid a singularity.
 """
 @mtkmodel Switch begin
     @extend v, i = oneport = OnePort()
 
     @parameters begin
-        state_init = false,
-        [description = "Initial switch state of type Bool. false: switch is open. true: switch is closed."]
         Gon = 1e5, [description = "Conductance when switch is closed"]
-        τ = 1e-3, [description = "Parameter for filtered delay"]
     end
 
     @components begin
@@ -432,14 +433,12 @@ An electrical switch that is controlled by a boolean input.
 
     @variables begin
         state(t)::Bool
-        state_filtered(t) = Real(state_init)
         G(t)
     end
 
     @equations begin
         state ~ input.u
-        D(state_filtered) ~ (state - state_filtered)/τ
-        G ~ state_filtered*Gon
+        G ~ state*Gon
         i ~ G*v
     end
 end
