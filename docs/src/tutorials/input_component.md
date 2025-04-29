@@ -35,7 +35,7 @@ using Plots
 
 function MassSpringDamper(; name)
     @named input = RealInput()
-    @variables f(t)=0 x(t)=0 dx(t)=0 ddx(t)=0
+    @variables f(t) x(t)=0 dx(t)=0 ddx(t)
     @parameters m=10 k=1000 d=1
 
     eqs = [f ~ input.u
@@ -145,7 +145,7 @@ plot(sol2)
 ```
 
 !!! note
-    
+
     Note that when changing the data, the length of the new data must be the same as the length of the original data.
 
 ## Custom Component with External Data
