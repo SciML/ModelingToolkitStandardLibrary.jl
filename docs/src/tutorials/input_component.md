@@ -74,6 +74,35 @@ sol = solve(prob)
 plot(sol)
 ```
 
+Note that in the case of the `Interpolation` block, the `data` and the `time` act like
+structural parameters.
+
+As such, we can also build the interpolation object outside of the model
+
+```@example interpolation_block
+my_interpolation = LinearInterpolation(df.data, df.time)
+
+@mtkmodel MassSpringDamperSystem2 begin
+    @components begin
+        src = Interpolation(itp=my_interpolation)
+        clk = ContinuousClock()
+        model = MassSpringDamper()
+    end
+    @equations begin
+        connect(src.input, clk.output)
+        connect(src.output, model.input)
+    end
+end;
+@mtkbuild sys = MassSpringDamperSystem2()
+
+prob = ODEProblem(sys, [], (0, df.time[end]))
+sol = solve(prob, Tsit5())
+plot(sol)
+```
+
+Note that the interpolation is constructed outside of the model, so we cannot use `remake` to change the
+data. For that usecase, see the `ParametrizedInterpolation`.
+
 ## `ParametrizedInterpolation` Block
 
 The `ModelingToolkitStandardLibrary.Blocks.ParametrizedInterpolation` component is similar to `Interpolation`, but as the name suggests, it is parametrized by the data, allowing one to change the underlying data without rebuilding the model as the data is represented via vector parameters.
