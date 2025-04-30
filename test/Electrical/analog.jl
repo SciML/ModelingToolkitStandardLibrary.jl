@@ -723,7 +723,7 @@ end
             switch = Switch()
             voltage = Voltage()
             resistor = Resistor(R = R)
-            capacitor = Capacitor(C = C, v = 0.0)
+            capacitor = Capacitor(C = C)
             ground = Ground()
         end
 
@@ -738,7 +738,7 @@ end
     end
 
     @mtkbuild sys = SwitchTest()
-    prob = ODEProblem(sys, [], (0.0, 25.0))
+    prob = ODEProblem(sys, [sys.capacitor.v => 0.0], (0.0, 25.0))
     sol = solve(prob, Rodas4())
 
     @test SciMLBase.successful_retcode(sol)

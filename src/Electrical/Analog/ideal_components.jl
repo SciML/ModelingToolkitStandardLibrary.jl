@@ -419,12 +419,14 @@ G will therefore be 0 when the input is false [0] and G_on when the input is tru
 # Parameters:
     
     - `Gon`: [`S`] Conductance when switch is closed. Value should be finite to avoid a singularity.
+    - `state_init`: Initial guess for the state of the switch.
 """
 @mtkmodel Switch begin
     @extend v, i = oneport = OnePort()
 
     @parameters begin
         Gon = 1e5, [description = "Conductance when switch is closed"]
+        state_init = false, [description = "Initial guess for the state of the switch"]
     end
 
     @components begin
@@ -432,7 +434,7 @@ G will therefore be 0 when the input is false [0] and G_on when the input is tru
     end
 
     @variables begin
-        state(t)::Bool
+        state(t)::Bool, [guess = state_init]
         G(t)
     end
 
