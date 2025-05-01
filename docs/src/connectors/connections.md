@@ -89,7 +89,7 @@ We can generate the above relationship with ModelingToolkit and the ModelingTool
 As can be seen, this will give a 1 equation model matching our energy dissipation relationship
 
 ```@example connections
-using ModelingToolkitStandardLibrary.Electrical, ModelingToolkit, DifferentialEquations
+using ModelingToolkitStandardLibrary.Electrical, ModelingToolkit, OrdinaryDiffEq
 using ModelingToolkit: t_nounits as t
 using Plots
 
