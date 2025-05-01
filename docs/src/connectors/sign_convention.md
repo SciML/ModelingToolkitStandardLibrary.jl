@@ -79,7 +79,7 @@ end
 Here we can see that a positive input force results in an increasing velocity.
 
 ```@example sign_convention
-@mtkmodel System begin
+@mtkmodel Model begin
     @components begin
         mass = Mass(; m = 10)
         force = ConstantForce(; f = 1)
@@ -88,7 +88,7 @@ Here we can see that a positive input force results in an increasing velocity.
         connect(mass.flange, force.flange)
     end
 end
-@mtkbuild sys = System()
+@mtkbuild sys = Model()
 full_equations(sys)
 ```
 
@@ -117,7 +117,7 @@ end
 Here we can see that a positive input current results in an increasing voltage. Note that the electrical domain uses pins `p` and `n` at each side of the source and energy storage components.  The direction of connection is not important here, only that a positive connector `p` connects with a negative connector `n`.
 
 ```@example sign_convention
-@mtkmodel System begin
+@mtkmodel Model begin
     @components begin
         capacitor = Capacitor(; C = 10)
         current = ConstantCurrent(; i = 1)
@@ -128,14 +128,14 @@ Here we can see that a positive input current results in an increasing voltage. 
         connect(capacitor.n, current.p, ground.g)
     end
 end
-@mtkbuild sys = System()
+@mtkbuild sys = Model()
 full_equations(sys)
 ```
 
 Reversing the pins gives the same result
 
 ```@example sign_convention
-@mtkmodel System begin
+@mtkmodel Model begin
     @components begin
         capacitor = Capacitor(; C = 10)
         current = ConstantCurrent(; i = 1)
@@ -146,7 +146,7 @@ Reversing the pins gives the same result
         connect(capacitor.p, current.n, ground.g)
     end
 end
-@mtkbuild sys = System()
+@mtkbuild sys = Model()
 full_equations(sys)
 ```
 
@@ -173,7 +173,7 @@ end
 A positive input mass flow leads to an increasing pressure (in this case we get increasing density (`rho`), which is directly related to an increasing pressure).
 
 ```@example sign_convention
-@mtkmodel System begin
+@mtkmodel Model begin
     @components begin
         volume = FixedVolume(; vol = 10.0, p_int = 1e5)
         flow = ConstantMassFlow(; dm = 1)
@@ -184,6 +184,6 @@ A positive input mass flow leads to an increasing pressure (in this case we get 
         connect(fluid, flow.port)
     end
 end
-@mtkbuild sys = System()
+@mtkbuild sys = Model()
 full_equations(sys) |> first
 ```
