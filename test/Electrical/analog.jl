@@ -738,7 +738,11 @@ end
     end
 
     @mtkbuild sys = SwitchTest()
-    prob = ODEProblem(sys, [sys.capacitor.v => 0.0], (0.0, 25.0))
+    u0 = [
+        sys.capacitor.v => 0.0,
+        sys.capacitor.i => 0.0
+    ]
+    prob = ODEProblem(sys, u0, (0.0, 25.0))
     sol = solve(prob, Rodas4())
 
     @test SciMLBase.successful_retcode(sol)
