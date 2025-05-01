@@ -413,7 +413,7 @@ end
 
     # Tests
     @test all(diode_current .>= -1e-3)
-    @test capacitor_voltage[end] .≈ 8.26 rtol=3e-1
+    @test capacitor_voltage[end].≈8.26 rtol=3e-1
 
     # For visual inspection
     # plt = plot(sol; idxs = [diode.i, resistor.i, capacitor.v],

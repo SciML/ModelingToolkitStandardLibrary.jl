@@ -440,7 +440,7 @@ G will therefore be 0 when the input is false [0] and G_on when the input is tru
 
     @equations begin
         state ~ input.u
-        G ~ state*Gon
-        i ~ G*v
+        G ~ state * Gon
+        i ~ G * v
     end
 end
