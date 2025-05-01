@@ -1389,7 +1389,7 @@ version = "9.76.0"
 deps = ["ChainRulesCore", "DiffEqBase", "IfElse", "LinearAlgebra", "ModelingToolkit", "PreallocationTools", "Symbolics"]
 path = "/home/runner/work/ModelingToolkitStandardLibrary.jl/ModelingToolkitStandardLibrary.jl"
 uuid = "16a59e39-deab-5bd0-87e4-056b12336739"
-version = "2.19.1"
+version = "2.20.0"
 
 [[deps.Moshi]]
 deps = ["ExproniconLite", "Jieko"]
