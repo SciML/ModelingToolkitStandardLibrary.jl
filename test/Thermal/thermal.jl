@@ -29,7 +29,8 @@ using OrdinaryDiffEq: ReturnCode.Success
     # Check if Relative temperature sensor reads the temperature of heat capacitor
     # when connected to a thermal conductor and a fixed temperature source
     @test SciMLBase.successful_retcode(sol)
-    @test sol[reltem_sensor.T.u] + sol[tem_src.port.T] == sol[mass1.T] + sol[th_conductor.dT]
+    @test sol[reltem_sensor.T.u] + sol[tem_src.port.T] ==
+          sol[mass1.T] + sol[th_conductor.dT]
 
     @info "Building a two-body system..."
     eqs = [connect(T_sensor1.port, mass1.port, th_conductor.port_a)
