@@ -28,7 +28,7 @@ using ModelingToolkit: t_nounits as t
         # connectors
         flange.f ~ -f
     end
-end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ModelingToolkit.Model{typeof(Main.__ConstantForce__), Dict{Symbol, Any}}(Main.__ConstantForce__, Dict{Symbol, Any}(:components =&gt; Any[Union{Expr, Symbol}[:flange, :MechanicalPort]], :kwargs =&gt; Dict{Symbol, Dict}(:f =&gt; Dict{Symbol, Union{Nothing, DataType}}(:value =&gt; nothing, :type =&gt; Real)), :independent_variable =&gt; t, :parameters =&gt; Dict{Symbol, Dict{Symbol, Any}}(:f =&gt; Dict(:type =&gt; Real)), :equations =&gt; Any[&quot;flange.f ~ -f&quot;]), false)</code></pre><p>Here we can see that a positive input force results in an increasing velocity.</p><pre><code class="language-julia hljs">@mtkmodel System begin
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ModelingToolkit.Model{typeof(Main.__ConstantForce__), Dict{Symbol, Any}}(Main.__ConstantForce__, Dict{Symbol, Any}(:components =&gt; Any[Union{Expr, Symbol}[:flange, :MechanicalPort]], :kwargs =&gt; Dict{Symbol, Dict}(:f =&gt; Dict{Symbol, Union{Nothing, DataType}}(:value =&gt; nothing, :type =&gt; Real)), :independent_variable =&gt; t, :parameters =&gt; Dict{Symbol, Dict{Symbol, Any}}(:f =&gt; Dict(:type =&gt; Real)), :equations =&gt; Any[&quot;flange.f ~ -f&quot;]), false)</code></pre><p>Here we can see that a positive input force results in an increasing velocity.</p><pre><code class="language-julia hljs">@mtkmodel Model begin
     @components begin
         mass = Mass(; m = 10)
         force = ConstantForce(; f = 1)
@@ -37,7 +37,7 @@ end</code></pre><pre class="documenter-example-output"><code class="nohighlight 
         connect(mass.flange, force.flange)
     end
 end
-@mtkbuild sys = System()
+@mtkbuild sys = Model()
 full_equations(sys)</code></pre><p class="math-container">\[ \begin{align}
 \frac{\mathrm{d} \mathtt{mass.s}\left( t \right)}{\mathrm{d}t} &amp;= \mathtt{mass.v}\left( t \right) \\
 \frac{\mathrm{d} \mathtt{mass.v}\left( t \right)}{\mathrm{d}t} &amp;= \mathtt{mass.g} + \frac{\mathtt{force.f}}{\mathtt{mass.m}}
@@ -56,7 +56,7 @@ full_equations(sys)</code></pre><p class="math-container">\[ \begin{align}
         0 ~ p.i + n.i
         i ~ -n.i # can also be written as i ~ p.i
     end
-end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ModelingToolkit.Model{typeof(Main.__ConstantCurrent__), Dict{Symbol, Any}}(Main.__ConstantCurrent__, Dict{Symbol, Any}(:components =&gt; Any[Union{Expr, Symbol}[:p, :Pin], Union{Expr, Symbol}[:n, :Pin]], :kwargs =&gt; Dict{Symbol, Dict}(:i =&gt; Dict{Symbol, Union{Nothing, DataType}}(:value =&gt; nothing, :type =&gt; Real)), :independent_variable =&gt; t, :parameters =&gt; Dict{Symbol, Dict{Symbol, Any}}(:i =&gt; Dict(:type =&gt; Real)), :equations =&gt; Any[&quot;0 ~ p.i + n.i&quot;, &quot;0 ~ p.i + n.i&quot;, &quot;i ~ -(n.i)&quot;]), false)</code></pre><p>Here we can see that a positive input current results in an increasing voltage. Note that the electrical domain uses pins <code>p</code> and <code>n</code> at each side of the source and energy storage components.  The direction of connection is not important here, only that a positive connector <code>p</code> connects with a negative connector <code>n</code>.</p><pre><code class="language-julia hljs">@mtkmodel System begin
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ModelingToolkit.Model{typeof(Main.__ConstantCurrent__), Dict{Symbol, Any}}(Main.__ConstantCurrent__, Dict{Symbol, Any}(:components =&gt; Any[Union{Expr, Symbol}[:p, :Pin], Union{Expr, Symbol}[:n, :Pin]], :kwargs =&gt; Dict{Symbol, Dict}(:i =&gt; Dict{Symbol, Union{Nothing, DataType}}(:value =&gt; nothing, :type =&gt; Real)), :independent_variable =&gt; t, :parameters =&gt; Dict{Symbol, Dict{Symbol, Any}}(:i =&gt; Dict(:type =&gt; Real)), :equations =&gt; Any[&quot;0 ~ p.i + n.i&quot;, &quot;0 ~ p.i + n.i&quot;, &quot;i ~ -(n.i)&quot;]), false)</code></pre><p>Here we can see that a positive input current results in an increasing voltage. Note that the electrical domain uses pins <code>p</code> and <code>n</code> at each side of the source and energy storage components.  The direction of connection is not important here, only that a positive connector <code>p</code> connects with a negative connector <code>n</code>.</p><pre><code class="language-julia hljs">@mtkmodel Model begin
     @components begin
         capacitor = Capacitor(; C = 10)
         current = ConstantCurrent(; i = 1)
@@ -67,11 +67,11 @@ end</code></pre><pre class="documenter-example-output"><code class="nohighlight 
         connect(capacitor.n, current.p, ground.g)
     end
 end
-@mtkbuild sys = System()
+@mtkbuild sys = Model()
 full_equations(sys)</code></pre><p class="math-container">\[ \begin{align}
 \frac{\mathrm{d} \mathtt{capacitor.v}\left( t \right)}{\mathrm{d}t} &amp;= \frac{\mathtt{current.i}}{\mathtt{capacitor.C}}
 \end{align}
- \]</p><p>Reversing the pins gives the same result</p><pre><code class="language-julia hljs">@mtkmodel System begin
+ \]</p><p>Reversing the pins gives the same result</p><pre><code class="language-julia hljs">@mtkmodel Model begin
     @components begin
         capacitor = Capacitor(; C = 10)
         current = ConstantCurrent(; i = 1)
@@ -82,7 +82,7 @@ full_equations(sys)</code></pre><p class="math-container">\[ \begin{align}
         connect(capacitor.p, current.n, ground.g)
     end
 end
-@mtkbuild sys = System()
+@mtkbuild sys = Model()
 full_equations(sys)</code></pre><p class="math-container">\[ \begin{align}
 \frac{\mathrm{d} \mathtt{capacitor.v}\left( t \right)}{\mathrm{d}t} &amp;= \frac{\mathtt{current.i}}{\mathtt{capacitor.C}}
 \end{align}
@@ -98,7 +98,7 @@ full_equations(sys)</code></pre><p class="math-container">\[ \begin{align}
     @equations begin
         port.dm ~ -dm
     end
-end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ModelingToolkit.Model{typeof(Main.__ConstantMassFlow__), Dict{Symbol, Any}}(Main.__ConstantMassFlow__, Dict{Symbol, Any}(:components =&gt; Any[Union{Expr, Symbol}[:port, :HydraulicPort]], :kwargs =&gt; Dict{Symbol, Dict}(:dm =&gt; Dict{Symbol, Union{Nothing, DataType}}(:value =&gt; nothing, :type =&gt; Real)), :independent_variable =&gt; t, :parameters =&gt; Dict{Symbol, Dict{Symbol, Any}}(:dm =&gt; Dict(:type =&gt; Real)), :equations =&gt; Any[&quot;port.dm ~ -dm&quot;]), false)</code></pre><p>A positive input mass flow leads to an increasing pressure (in this case we get increasing density (<code>rho</code>), which is directly related to an increasing pressure).</p><pre><code class="language-julia hljs">@mtkmodel System begin
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ModelingToolkit.Model{typeof(Main.__ConstantMassFlow__), Dict{Symbol, Any}}(Main.__ConstantMassFlow__, Dict{Symbol, Any}(:components =&gt; Any[Union{Expr, Symbol}[:port, :HydraulicPort]], :kwargs =&gt; Dict{Symbol, Dict}(:dm =&gt; Dict{Symbol, Union{Nothing, DataType}}(:value =&gt; nothing, :type =&gt; Real)), :independent_variable =&gt; t, :parameters =&gt; Dict{Symbol, Dict{Symbol, Any}}(:dm =&gt; Dict(:type =&gt; Real)), :equations =&gt; Any[&quot;port.dm ~ -dm&quot;]), false)</code></pre><p>A positive input mass flow leads to an increasing pressure (in this case we get increasing density (<code>rho</code>), which is directly related to an increasing pressure).</p><pre><code class="language-julia hljs">@mtkmodel Model begin
     @components begin
         volume = FixedVolume(; vol = 10.0, p_int = 1e5)
         flow = ConstantMassFlow(; dm = 1)
@@ -109,8 +109,8 @@ end</code></pre><pre class="documenter-example-output"><code class="nohighlight 
         connect(fluid, flow.port)
     end
 end
-@mtkbuild sys = System()
+@mtkbuild sys = Model()
 full_equations(sys) |&gt; first</code></pre><p class="math-container">\[ \begin{equation}
 \frac{\mathrm{d} \mathtt{volume.m}\left( t \right)}{\mathrm{d}t} = \mathtt{flow.dm}
 \end{equation}
- \]</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../connections/">« Theory</a><a class="docs-footer-nextpage" href="../../API/blocks/">Basic Blocks »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.10.1 on <span class="colophon-date" title="Monday 14 April 2025 14:15">Monday 14 April 2025</span>. Using Julia version 1.11.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+ \]</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../connections/">« Theory</a><a class="docs-footer-nextpage" href="../../API/blocks/">Basic Blocks »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.10.2 on <span class="colophon-date" title="Monday 5 May 2025 06:23">Monday 5 May 2025</span>. Using Julia version 1.11.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
