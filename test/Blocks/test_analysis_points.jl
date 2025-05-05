@@ -384,3 +384,27 @@ matrices, _ = linearize(
     sys_outer, [sys_outer.inner.plant_input], [sys_outer.inner.plant_output])
 G = CS.ss(matrices...) |> sminreal
 @test tf(G) ≈ tf(CS.feedback(Ps, Cs))
+
+## unit test
+@mtkmodel SingleIntegrator begin
+    @parameters begin
+        to_mps = 1, [unit = u"m/s"]
+    end
+    @variables begin
+        (x(t) = 0), [unit = u"m", description = "Position"]
+        control(t), [unit = u"m/s", description = "Control Velocity"]
+    end
+    @components begin
+        uIn = RealInput()
+        c1 = Blocks.Constant(k = 1)
+    end
+    @equations begin
+        control ~ (uIn.u) * to_mps
+        D(x) ~ control
+        connect(c1.output, :test_point, uIn)
+    end
+end
+@mtkbuild single_integrator = SingleIntegrator()
+prob = ODEProblem(single_integrator, [], (0, 10))
+sol = solve(prob, Tsit5())
+@test sol(10)[] ≈ 10
