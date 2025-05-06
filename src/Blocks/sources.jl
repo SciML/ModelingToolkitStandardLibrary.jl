@@ -758,6 +758,8 @@ function Interpolation(interp_type, u, x, args...; name)
     Interpolation(; itp, name)
 end
 
+@deprecate Interpolation(itp; name) Interpolation(; itp, name)
+
 function Interpolation(; itp, name)
     @parameters (interpolator::typeof(itp))(..) = itp
     @named input = RealInput()
