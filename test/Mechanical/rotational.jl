@@ -289,10 +289,7 @@ end
         end
     end
     @mtkbuild sys = TestPosition()
-    prob = ODEProblem(sys, [
-            sys.inertia.phi => 0,
-            sys.inertia.w => 0
-        ], (0, 10.0))
+    prob = ODEProblem(sys, [], (0, 10.0))
     sol = solve(prob, Tsit5())
     @test SciMLBase.successful_retcode(sol)
     tv = 0:0.01:10
