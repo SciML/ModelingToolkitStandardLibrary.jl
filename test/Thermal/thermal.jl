@@ -144,10 +144,7 @@ end
             collector, th_resistor, mass])
     sys = structural_simplify(coll)
 
-    u0 = [
-        mass.T => 0.0
-    ]
-    prob = ODEProblem(sys, u0, (0, 3.0))
+    prob = ODEProblem(sys, [], (0, 3.0))
     sol = solve(prob, Rodas4())
 
     @test SciMLBase.successful_retcode(sol)
