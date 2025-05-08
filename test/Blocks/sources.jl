@@ -500,6 +500,44 @@ end
     @test SciMLBase.successful_retcode(sol)
 end
 
+@testset "Interpolation in model macro" begin
+
+    function MassSpringDamper(; name)
+        @named input = RealInput()
+        @variables f(t) x(t)=0 dx(t)=0 ddx(t)
+        @parameters m=10 k=1000 d=1
+
+        eqs = [f ~ input.u
+               ddx * 10 ~ k * x + d * dx + f
+               D(x) ~ dx
+               D(dx) ~ ddx]
+
+        ODESystem(eqs, t; name, systems = [input])
+    end
+
+    table_data = [1.0, 2.0, 3.0]
+    table_bkp = [0.0, 0.5, 1.0]
+    itp = LinearInterpolation(table_data, table_bkp)
+
+    @mtkmodel model_with_lut begin
+        @components begin
+            src = Interpolation(itp)
+            clk = ContinuousClock()
+            model = MassSpringDamper()
+        end
+        @equations begin
+            connect(src.input, clk.output)
+            connect(src.output, model.input)
+        end
+    end;
+    @mtkbuild sys = model_with_lut()
+
+    prob = ODEProblem(sys, [], (0.0, 1))
+    sol = solve(prob, Tsit5())
+
+    @test SciMLBase.successful_retcode(sol)
+end
+
 @testset "ParametrizedInterpolation" begin
     @variables y(t) = 0
     u = rand(15)
