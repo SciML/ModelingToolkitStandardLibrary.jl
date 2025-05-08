@@ -36,7 +36,7 @@ end
 #     # tau(t), [connect = Flow, description = "Cut torque in support $name"],)
 #     equations = [flange.tau ~ tau
 #                  flange.phi ~ phi]
-#     ODESystem(equations, t, [phi], [], name = name, systems = [flange]) # NOTE: tau not included since it belongs elsewhere
+#     System(equations, t, [phi], [], name = name, systems = [flange]) # NOTE: tau not included since it belongs elsewhere
 # end
 
 Base.@doc """
@@ -149,7 +149,7 @@ Partial model for a component with one rotational 1-dim. shaft flange and a supp
     else
         eqs = [phi_support ~ 0]
     end
-    return compose(ODESystem(eqs, t, [phi_support], []; name = name), sys)
+    return compose(System(eqs, t, [phi_support], []; name = name), sys)
 end
 
 """
@@ -185,5 +185,5 @@ Partial model for a component with two rotational 1-dim. shaft flanges and a sup
     else
         eqs = [phi_support ~ 0]
     end
-    return compose(ODESystem(eqs, t, [phi_support], []; name = name), sys)
+    return compose(System(eqs, t, [phi_support], []; name = name), sys)
 end

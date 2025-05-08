@@ -43,7 +43,7 @@ Linear 1D position input source.  Set `solves_force=false` to force input force 
 
     !solves_force && push!(eqs, 0 ~ flange.f)
 
-    ODESystem(eqs, t, vars, [];
+    System(eqs, t, vars, [];
         name, systems)
 end
 
@@ -69,7 +69,7 @@ Linear 1D position input source.  Set `solves_force=false` to force input force 
 
     !solves_force && push!(eqs, 0 ~ flange.f)
 
-    ODESystem(eqs, t, [], []; name, systems)
+    System(eqs, t, [], []; name, systems)
 end
 
 """
@@ -95,5 +95,5 @@ Linear 1D position input source.  Set `solves_force=false` to force input force 
 
     !solves_force && push!(eqs, 0 ~ flange.f)
 
-    ODESystem(eqs, t, vars, []; name, systems)
+    System(eqs, t, vars, []; name, systems)
 end

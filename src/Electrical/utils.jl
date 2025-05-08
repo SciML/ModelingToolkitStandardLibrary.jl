@@ -91,7 +91,7 @@ end
         val ~ IfElse.ifelse((0.0 <= v) & (v <= 0.8) | (2.0 <= v) & (v <= 5.0),
         IfElse.ifelse(v > 2.0, 1, 0), X)
     ]
-    ODESystem(Equation[], t, [val, v, i], [], guesses = Dict(val => 0, i => 0),
+    System(Equation[], t, [val, v, i], [], guesses = Dict(val => 0, i => 0),
         name = name)
 end
 @doc """
