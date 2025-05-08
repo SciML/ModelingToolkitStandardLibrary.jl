@@ -391,3 +391,56 @@ R = R_const + pos * R_ref * (1 + alpha * (port.T - T_ref))
         v ~ i * R
     end
 end
+
+"""
+    Switch(; Gon = 1e5, state_init = false)
+
+An electrical switch that is controlled by a boolean input.
+
+The switch is modelled as follows:
+- i = G*v
+- G = state*G_on
+- state: boolean input
+
+G will therefore be 0 when the input is false [0] and G_on when the input is true [1].
+
+# States
+
+    - See [OnePort](@ref)
+    - `state(t)`: Boolean input
+    - `G(t)`: Conductance
+
+# Connectors
+
+    - `p` Positive pin
+    - `n` Negative pin
+    - `input` [RealInput](@ref) Input of type Bool. false: switch is open. true: switch is closed.
+
+# Parameters:
+    
+    - `Gon`: [`S`] Conductance when switch is closed. Value should be finite to avoid a singularity.
+    - `state_init`: Initial guess for the state of the switch.
+"""
+@mtkmodel Switch begin
+    @extend v, i = oneport = OnePort()
+
+    @parameters begin
+        Gon = 1e5, [description = "Conductance when switch is closed"]
+        state_init = false, [description = "Initial guess for the state of the switch"]
+    end
+
+    @components begin
+        input = RealInput()
+    end
+
+    @variables begin
+        state(t)::Bool, [guess = state_init]
+        G(t)
+    end
+
+    @equations begin
+        state ~ input.u
+        G ~ state * Gon
+        i ~ G * v
+    end
+end
