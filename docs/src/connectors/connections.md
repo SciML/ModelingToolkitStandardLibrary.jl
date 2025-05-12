@@ -172,7 +172,7 @@ Now, let's consider the position-based approach.  We can build the same model wi
 const TP = ModelingToolkitStandardLibrary.Mechanical.TranslationalPosition
 
 systems = @named begin
-    damping = TP.Damper(d = 1, va = 1, vb = 0.0)
+    damping = TP.Damper(d = 1)
     body = TP.Mass(m = 1, v = 1)
     ground = TP.Fixed(s_0 = 0)
 end
@@ -191,7 +191,7 @@ nothing # hide
 As can be seen, we get exactly the same result.  The only difference here is that we are solving an extra equation, which allows us to plot the body position as well.
 
 ```@example connections
-prob = ODEProblem(sys, [], (0, 10.0), [])
+prob = ODEProblem(sys, [], (0, 10.0), [], fully_determined=true)
 sol_p = solve(prob)
 
 p1 = plot(sol_p, idxs = [body.v])
@@ -226,21 +226,21 @@ In this problem, we have a mass, spring, and damper which are connected to a fix
 
 #### Damper
 
-The damper will connect the flange/flange 1 (`flange_a`) to the mass, and flange/flange 2 (`flange_b`) to the fixed point.  For both position- and velocity-based domains, we set the damping constant `d=1` and `va=1` and leave the default for `v_b_0` at 0.  For the position domain, we also need to set the initial positions for `flange_a` and `flange_b`.
+The damper will connect the flange/flange 1 (`flange_a`) to the mass, and flange/flange 2 (`flange_b`) to the fixed point.  For both position- and velocity-based domains, we set the damping constant `d=1` and `va=1` and leave the default for `v_b_0` at 0.
 
 ```@example connections
 @named dv = TV.Damper(d = 1)
-@named dp = TP.Damper(d = 1, va = 1, vb = 0.0, flange_a__s = 3, flange_b__s = 1)
+@named dp = TP.Damper(d = 1)
 nothing # hide
 ```
 
 #### Spring
 
-The spring will connect the flange/flange 1 (`flange_a`) to the mass, and flange/flange 2 (`flange_b`) to the fixed point.  For both position- and velocity-based domains, we set the spring constant `k=1`.  The velocity domain then requires the initial velocity `va` and initial spring stretch `delta_s`.  The position domain instead needs the initial positions for `flange_a` and `flange_b` and the natural spring length `l`.
+The spring will connect the flange/flange 1 (`flange_a`) to the mass, and flange/flange 2 (`flange_b`) to the fixed point.  For both position- and velocity-based domains, we set the spring constant `k=1`.  The velocity domain then requires the initial velocity `va` and initial spring stretch `delta_s`. The position domain instead needs the natural spring length `l`.
 
 ```@example connections
 @named sv = TV.Spring(k = 1)
-@named sp = TP.Spring(k = 1, flange_a__s = 3, flange_b__s = 1, l = 1)
+@named sp = TP.Spring(k = 1, l = 1)
 nothing # hide
 ```
 
@@ -281,7 +281,7 @@ function simplify_and_solve(damping, spring, body, ground; initialization_eqs = 
 
     println.(full_equations(sys))
 
-    prob = ODEProblem(sys, [], (0, 10.0), []; initialization_eqs)
+    prob = ODEProblem(sys, [], (0, 10.0), []; initialization_eqs, fully_determined=true)
     sol = solve(prob; abstol = 1e-9, reltol = 1e-9)
 
     return sol
