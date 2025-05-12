@@ -16,7 +16,7 @@ Flange fixed in housing at a given position.
         s_0 = 0
     end
     @components begin
-        flange = Flange(; s = s_0)
+        flange = Flange()
     end
     @equations begin
         flange.s ~ s_0
@@ -53,7 +53,7 @@ Sliding mass with inertia
         f(t)
     end
     @components begin
-        flange = Flange(; s = s)
+        flange = Flange()
     end
     @equations begin
         flange.s ~ s
@@ -65,7 +65,7 @@ end
 
 const REL = Val(:relative)
 @component function Spring(::Val{:relative}; name, k, va = 0.0, vb = 0.0,
-        delta_s = 0, flange_a__s = 0, flange_b__s = 0)
+        delta_s = 0)
     pars = @parameters begin
         k = k
     end
@@ -87,13 +87,7 @@ const REL = Val(:relative)
            flange_b.f ~ -f]
 
     return compose(
-        ODESystem(eqs, t, vars, pars; name = name,
-            defaults = [
-                flange_a.s => flange_a__s,
-                flange_b.s => flange_b__s,
-                flange_a.f => +delta_s * k,
-                flange_b.f => -delta_s * k
-            ]),
+        ODESystem(eqs, t, vars, pars; name = name),
         flange_a,
         flange_b)
 end
@@ -101,7 +95,7 @@ end
 const ABS = Val(:absolute)
 
 """
-    Spring(; name, k, flange_a__s = 0, flange_b__s = 0, l=0)
+    Spring(; name, k, l=0)
 
 Linear 1D translational spring
 
@@ -109,34 +103,31 @@ Linear 1D translational spring
 
   - `k`: [N/m] Spring constant
   - `l`: Unstretched spring length
-  - `flange_a__s`: [m] Initial value of absolute position of flange_a
-  - `flange_b__s`: [m] Initial value of absolute position of flange_b
 
 # Connectors:
 
   - `flange_a: 1-dim. translational flange on one side of spring`
   - `flange_b: 1-dim. translational flange on opposite side of spring` #default function
 """
-function Spring(; name, k, flange_a__s = 0, flange_b__s = 0, l = 0)
-    Spring(ABS; name, k, flange_a__s, flange_b__s, l)
+function Spring(; name, k, l = 0)
+    Spring(ABS; name, k, l)
 end #default function
 
 @component function Spring(::Val{:absolute};
-        name, k, flange_a__s = 0,
-        flange_b__s = 0, l = 0)
+        name, k, l = 0)
     pars = @parameters begin
         k = k
         l = l
     end
     vars = @variables begin
-        f(t) = k * (flange_a__s - flange_b__s - l)
+        f(t)
     end
 
-    @named flange_a = Flange(; s = flange_a__s, f = k * (flange_a__s - flange_b__s - l))
-    @named flange_b = Flange(; s = flange_b__s, f = -k * (flange_a__s - flange_b__s - l))
+    @named flange_a = Flange()
+    @named flange_b = Flange()
 
     eqs = [
-           #    delta_s ~ flange_a.s - flange_b.s
+           #   delta_s ~ flange_a.s - flange_b.s
            f ~ k * (flange_a.s - flange_b.s - l) #delta_s
            flange_a.f ~ +f
            flange_b.f ~ -f]
@@ -166,12 +157,12 @@ Linear 1D translational damper
     @variables begin
         va(t)
         vb(t)
-        f(t) = +(va - vb) * d
+        f(t)
     end
 
     @components begin
-        flange_a = Flange(; s = 0.0, f = (va - vb) * d)
-        flange_b = Flange(; s = 0.0, f = -(va - vb) * d)
+        flange_a = Flange()
+        flange_b = Flange()
     end
 
     @equations begin
