@@ -32,10 +32,10 @@ end
 
 @testset "Spring, Damper, Mass, Fixed" begin
     @named dv = TV.Damper(d = 1)
-    @named dp = TP.Damper(d = 1, va = 1, vb = 0.0, flange_a.s = 3, flange_b.s = 1)
+    @named dp = TP.Damper(d = 1)
 
     @named sv = TV.Spring(k = 1)
-    @named sp = TP.Spring(k = 1, flange_a__s = 3, flange_b__s = 1, l = 1)
+    @named sp = TP.Spring(k = 1, l = 1)
 
     @named bv = TV.Mass(m = 1)
     @named bp = TP.Mass(m = 1, v = 1, s = 3)
@@ -52,7 +52,8 @@ end
 
         sys = structural_simplify(model)
 
-        prob = ODEProblem(sys, [], (0, 20.0), []; initialization_eqs)
+        prob = ODEProblem(
+            sys, [], (0, 20.0), []; initialization_eqs, fully_determined = true)
         sol = solve(prob; abstol = 1e-9, reltol = 1e-9)
 
         return sol
@@ -71,10 +72,10 @@ end
 
 @testset "driven spring damper mass" begin
     @named dv = TV.Damper(d = 1)
-    @named dp = TP.Damper(d = 1, va = 1.0, vb = 0.0, flange_a.s = 3, flange_b.s = 1)
+    @named dp = TP.Damper(d = 1)
 
     @named sv = TV.Spring(k = 1)
-    @named sp = TP.Spring(k = 1, flange_a__s = 3, flange_b__s = 1, l = 1)
+    @named sp = TP.Spring(k = 1, l = 1)
 
     @named bv = TV.Mass(m = 1)
     @named bp = TP.Mass(m = 1, v = 1, s = 3)
@@ -101,12 +102,13 @@ end
 
     model = System(dv, sv, bv, gv, fv, source)
     sys = structural_simplify(model)
-    prob = ODEProblem(sys, [bv.s => 0], (0, 20.0), [])
+    prob = ODEProblem(
+        sys, [bv.s => 0, sv.delta_s => 1], (0, 20.0), [], fully_determined = true)
     solv = solve(prob, Rodas4())
 
     model = System(dp, sp, bp, gp, fp, source)
     sys = structural_simplify(model)
-    prob = ODEProblem(sys, [], (0, 20.0), [])
+    prob = ODEProblem(sys, [], (0, 20.0), [], fully_determined = true)
     solp = solve(prob, Rodas4())
 
     for sol in (solv, solp)
@@ -186,8 +188,7 @@ end
             function mass_spring(; name)
                 systems = @named begin
                     fixed = TP.Fixed()
-                    spring = TP.Spring(;
-                        k = 10.0, l = 1.0, flange_a__s = 0.0, flange_b__s = 2.0)
+                    spring = TP.Spring(; k = 10.0, l = 1.0)
                     mass = TP.Mass(; m = 100.0, s = 2.0, v = 0.0)
                     pos_sensor = TP.PositionSensor()
                     force_sensor = TP.ForceSensor()
@@ -207,7 +208,7 @@ end
             @named model = mass_spring()
             sys = structural_simplify(model)
 
-            prob = ODEProblem(sys, [], (0.0, 1.0))
+            prob = ODEProblem(sys, [], (0.0, 1.0), fully_determined = true)
             sol = solve(prob, Tsit5())
 
             @test all(sol[sys.spring.flange_a.f] .== sol[sys.force_value.u])
@@ -230,7 +231,7 @@ end
             @named sys = ODESystem(
                 eqs, t, [], []; systems = [force, source, mass, acc, acc_output])
             s = complete(structural_simplify(sys))
-            prob = ODEProblem(s, [mass.s => 0], (0.0, pi))
+            prob = ODEProblem(s, [mass.s => 0], (0.0, pi), fully_determined = true)
             sol = solve(prob, Tsit5())
             @test sol[sys.acc_output.u] ≈ (sol[sys.mass.f] ./ m)
         end
