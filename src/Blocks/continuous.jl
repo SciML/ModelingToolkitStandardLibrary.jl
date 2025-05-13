@@ -312,7 +312,7 @@ See also [`LimPID`](@ref)
     else
         push!(eqs, connect(Dzero.output, addPID.input3))
     end
-    ODESystem(eqs, t, [], pars; name = name, systems = sys)
+    System(eqs, t, [], pars; name = name, systems = sys)
 end
 
 """
@@ -372,7 +372,7 @@ The simplified expression above is given without the anti-windup protection.
         connect(addTrack.output, int.input),
         connect(int.output, addPI.input2)
     ]
-    ODESystem(eqs, t, [], pars; name = name, systems = sys)
+    System(eqs, t, [], pars; name = name, systems = sys)
 end
 
 """
@@ -514,7 +514,7 @@ where the transfer function for the derivative includes additional filtering, se
         push!(eqs, connect(Dzero.output, addPID.input2))
     end
 
-    ODESystem(eqs, t, [], pars; name = name, systems = sys)
+    System(eqs, t, [], pars; name = name, systems = sys)
 end
 
 """
@@ -579,7 +579,7 @@ linearized around the operating point `x₀, u₀`, we have `y0, u0 = h(x₀, u�
                        sum(D[j, k] * (input.u[k] - u0[k]) for k in 1:nu) + y0[j]
          for j in 1:ny]...
     ]
-    compose(ODESystem(eqs, t, vcat(x...), [], name = name), [input, output])
+    compose(System(eqs, t, vcat(x...), [], name = name), [input, output])
 end
 
 StateSpace(A, B, C, D = nothing; kwargs...) = StateSpace(; A, B, C, D, kwargs...)
@@ -664,5 +664,5 @@ See also [`StateSpace`](@ref) which handles MIMO systems, as well as [ControlSys
     end
     push!(eqs, input.u ~ u)
     push!(eqs, output.u ~ y)
-    compose(ODESystem(eqs, t, sts, pars; name = name), input, output)
+    compose(System(eqs, t, sts, pars; name = name), input, output)
 end

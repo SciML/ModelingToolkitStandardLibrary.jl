@@ -87,7 +87,7 @@ const REL = Val(:relative)
            flange_b.f ~ -f]
 
     return compose(
-        ODESystem(eqs, t, vars, pars; name = name),
+        System(eqs, t, vars, pars; name = name),
         flange_a,
         flange_b)
 end
@@ -131,7 +131,7 @@ end #default function
            f ~ k * (flange_a.s - flange_b.s - l) #delta_s
            flange_a.f ~ +f
            flange_b.f ~ -f]
-    return compose(ODESystem(eqs, t, vars, pars; name = name), flange_a, flange_b)
+    return compose(System(eqs, t, vars, pars; name = name), flange_a, flange_b)
 end
 
 """

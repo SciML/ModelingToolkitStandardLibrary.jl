@@ -75,7 +75,7 @@ Sliding mass with inertia
            D(s) ~ v
            D(v) ~ f / m + g]
 
-    return compose(ODESystem(eqs, t, vars, pars; name = name),
+    return compose(System(eqs, t, vars, pars; name = name),
         flange)
 end
 
@@ -118,7 +118,7 @@ end # default
            f ~ k * delta_s
            flange_a.f ~ +f
            flange_b.f ~ -f]
-    return compose(ODESystem(eqs, t, vars, pars; name = name),
+    return compose(System(eqs, t, vars, pars; name = name),
         flange_a,
         flange_b) #flange_a.f => +k*delta_s, flange_b.f => -k*delta_s
 end
@@ -143,7 +143,7 @@ const ABS = Val(:absolute)
            f ~ k * (sa - sb - l) #delta_s
            flange_a.f ~ +f
            flange_b.f ~ -f]
-    return compose(ODESystem(eqs, t, vars, pars; name = name),
+    return compose(System(eqs, t, vars, pars; name = name),
         flange_a,
         flange_b) #, flange_a.f => k * (flange_a__s - flange_b__s - l)
 end

@@ -27,7 +27,7 @@ Limit the range of a signal.
     eqs = [
         y ~ _clamp(u, y_min, y_max)
     ]
-    extend(ODESystem(eqs, t, [], pars; name = name), siso)
+    extend(System(eqs, t, [], pars; name = name), siso)
 end
 
 """
@@ -118,5 +118,5 @@ Initial value of state `Y` can be set with `int.y`
         y ~ y_start
     ]
 
-    return extend(ODESystem(eqs, t, [], pars; name, initialization_eqs), siso)
+    return extend(System(eqs, t, [], pars; name, initialization_eqs), siso)
 end
