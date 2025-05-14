@@ -707,3 +707,45 @@ end
         0.0,
         atol = 1e-16)
 end
+
+@testset "Switch test" begin
+    V_value = 10.0
+
+    @mtkmodel SwitchTest begin
+        @parameters begin
+            V = V_value
+            C = 1.0
+            R = 1.0
+        end
+
+        @components begin
+            step = Step(start_time = 10.0, height = true, smooth = 1e-5)
+            switch = Switch()
+            voltage = Voltage()
+            resistor = Resistor(R = R)
+            capacitor = Capacitor(C = C)
+            ground = Ground()
+        end
+
+        @equations begin
+            connect(voltage.p, switch.p)
+            connect(switch.n, resistor.p)
+            connect(resistor.n, capacitor.p)
+            connect(voltage.n, capacitor.n, ground.g)
+            connect(step.output, switch.input)
+            voltage.V.u ~ V
+        end
+    end
+
+    @mtkbuild sys = SwitchTest()
+    u0 = [
+        sys.capacitor.v => 0.0,
+        sys.capacitor.i => 0.0
+    ]
+    prob = ODEProblem(sys, u0, (0.0, 25.0))
+    sol = solve(prob, Rodas4())
+
+    @test SciMLBase.successful_retcode(sol)
+    @test isapprox(sol[sys.capacitor.v][end], V_value, atol = 1e-3)
+    @test isapprox(sol[sys.capacitor.i][end], 0.0, atol = 1e-3)
+end
