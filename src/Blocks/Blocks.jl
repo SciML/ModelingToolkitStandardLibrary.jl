@@ -30,8 +30,5 @@ include("continuous.jl")
 
 export AnalysisPoint, get_sensitivity, get_comp_sensitivity,
        get_looptransfer, open_loop
-@static if !isdefined(ModelingToolkit, :AnalysisPoint)
-    include("analysis_points.jl")
-end
 
 end
