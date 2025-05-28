@@ -30,7 +30,7 @@ using OrdinaryDiffEq: ReturnCode.Success
     @test SciMLBase.successful_retcode(sol1)
 
     prob = DAEProblem(
-        sys, D.(unknowns(sys)) .=> 0.0, [D(D(sys.inertia2.phi)) => 0.0], (0, 10.0))
+        sys, [D.(unknowns(sys)) .=> 0.0; [D(D(sys.inertia2.phi)) => 0.0]], (0, 10.0))
     dae_sol = solve(prob, DFBDF())
     @test SciMLBase.successful_retcode(dae_sol)
     @test all(dae_sol[sys.inertia1.w] .== 0)
@@ -88,8 +88,8 @@ end
     end
 
     @mtkcompile sys = TwoInertiasWithDrivingTorque()
-    prob = DAEProblem(sys, D.(unknowns(sys)) .=> 0.0,
-        [D(D(sys.inertia2.phi)) => 1.0, sys.spring.flange_b.phi => 0.0], (0, 10.0))
+    prob = DAEProblem(sys, [D.(unknowns(sys)) .=> 0.0;
+        [D(D(sys.inertia2.phi)) => 1.0, sys.spring.flange_b.phi => 0.0]], (0, 10.0))
     sol = solve(prob, DFBDF())
     @test SciMLBase.successful_retcode(sol)
 
@@ -215,8 +215,8 @@ end
     end
 
     @mtkcompile sys = StickSlip()
-    prob = DAEProblem(sys, D.(unknowns(sys)) .=> 0.0,
-        [sys.inertia.flange_b.tau => 0.0; unknowns(sys) .=> 0.0...], (0, 10.0))
+    prob = DAEProblem(sys, [D.(unknowns(sys)) .=> 0.0;
+        [sys.inertia.flange_b.tau => 0.0; unknowns(sys) .=> 0.0...]], (0, 10.0))
 
     sol = solve(prob, DFBDF())
     @test SciMLBase.successful_retcode(sol)
@@ -264,7 +264,7 @@ end
     @test all(sol[sys.torque_sensor.tau.u] .== -sol[sys.inertia1.flange_b.tau])
 
     prob = DAEProblem(
-        sys, D.(unknowns(sys)) .=> 0.0, [D(D(sys.inertia2.phi)) => 0.0], (0, 10.0))
+        sys, [D.(unknowns(sys)) .=> 0.0; [D(D(sys.inertia2.phi)) => 0.0]], (0, 10.0))
     sol = solve(prob, DFBDF())
     @test SciMLBase.successful_retcode(sol)
     @test all(sol[sys.inertia1.w] .== 0)

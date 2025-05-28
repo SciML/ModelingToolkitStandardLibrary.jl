@@ -6,7 +6,7 @@ import ModelingToolkitStandardLibrary.Mechanical.Translational as TV
 import ModelingToolkitStandardLibrary.Mechanical.TranslationalPosition as TP
 
 @testset "Free" begin
-    function System(; name)
+    function TestSystem(; name)
         systems = @named begin
             acc = TV.Acceleration(false)
             a = Constant(; k = -10)
@@ -20,7 +20,7 @@ import ModelingToolkitStandardLibrary.Mechanical.TranslationalPosition as TP
         System(eqs, t, [], []; name, systems)
     end
 
-    @named system = System()
+    @named system = TestSystem()
     s = complete(system)
     sys = mtkcompile(system)
     prob = ODEProblem(sys, [s.mass.s => 0], (0, 0.1))
@@ -53,7 +53,7 @@ end
         sys = mtkcompile(model)
 
         prob = ODEProblem(
-            sys, [], (0, 20.0), []; initialization_eqs, fully_determined = true)
+            sys, [], (0, 20.0); initialization_eqs, fully_determined = true)
         sol = solve(prob; abstol = 1e-9, reltol = 1e-9)
 
         return sol
@@ -88,7 +88,7 @@ end
 
     @named source = Sine(frequency = 3, amplitude = 2)
 
-    function System(damping, spring, body, ground, f, source)
+    function TestSystem(damping, spring, body, ground, f, source)
         eqs = [connect(f.f, source.output)
                connect(f.flange, body.flange)
                connect(spring.flange_a, body.flange, damping.flange_a)
@@ -100,15 +100,15 @@ end
         return model
     end
 
-    model = System(dv, sv, bv, gv, fv, source)
+    model = TestSystem(dv, sv, bv, gv, fv, source)
     sys = mtkcompile(model)
     prob = ODEProblem(
-        sys, [bv.s => 0, sv.delta_s => 1], (0, 20.0), [], fully_determined = true)
+        sys, [bv.s => 0, sv.delta_s => 1], (0, 20.0), fully_determined = true)
     solv = solve(prob, Rodas4())
 
-    model = System(dp, sp, bp, gp, fp, source)
+    model = TestSystem(dp, sp, bp, gp, fp, source)
     sys = mtkcompile(model)
-    prob = ODEProblem(sys, [], (0, 20.0), [], fully_determined = true)
+    prob = ODEProblem(sys, [], (0, 20.0), fully_determined = true)
     solp = solve(prob, Rodas4())
 
     for sol in (solv, solp)
@@ -121,7 +121,7 @@ end
 @testset "sources & sensors" begin
     @testset "Translational" begin
         @testset "PositionSensor & ForceSensor" begin
-            function System(; name)
+            function TestSystem(; name)
                 systems = @named begin
                     pos = TV.Position()
                     pos_sensor = TV.PositionSensor(; s = 1)
@@ -148,7 +148,7 @@ end
                 System(eqs, t, [], []; name, systems)
             end
 
-            @named system = System()
+            @named system = TestSystem()
             s = complete(system)
             sys = mtkcompile(system)
             prob = ODEProblem(sys, [], (0, 1 / 400))
@@ -231,7 +231,7 @@ end
             @named sys = System(
                 eqs, t, [], []; systems = [force, source, mass, acc, acc_output])
             s = complete(mtkcompile(sys))
-            prob = ODEProblem(s, [mass.s => 0], (0.0, pi), fully_determined = true)
+            prob = ODEProblem(s, [], (0.0, pi), fully_determined = true)
             sol = solve(prob, Tsit5())
             @test sol[sys.acc_output.u] ≈ (sol[sys.mass.f] ./ m)
         end

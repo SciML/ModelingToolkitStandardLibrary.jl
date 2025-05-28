@@ -113,7 +113,7 @@ nothing # hide
 The solution shows what we would expect, a non-linear dissipation of voltage and related decrease in current flow…
 
 ```@example connections
-prob = ODEProblem(sys, [1.0], (0, 10.0), [])
+prob = ODEProblem(sys, [1.0], (0, 10.0))
 sol = solve(prob)
 
 p1 = plot(sol, idxs = [capacitor.v])
@@ -156,7 +156,7 @@ As expected, we have a similar solution…
 
 ```@example connections
 prob = ODEProblem(
-    sys, [], (0, 10.0), []; initialization_eqs = [sys.body.s ~ 0, sys.body.v ~ 1])
+    sys, [], (0, 10.0); initialization_eqs = [sys.body.s ~ 0, sys.body.v ~ 1])
 sol_v = solve(prob)
 
 p1 = plot(sol_v, idxs = [body.v])
@@ -191,7 +191,7 @@ nothing # hide
 As can be seen, we get exactly the same result.  The only difference here is that we are solving an extra equation, which allows us to plot the body position as well.
 
 ```@example connections
-prob = ODEProblem(sys, [], (0, 10.0), [], fully_determined=true)
+prob = ODEProblem(sys, [], (0, 10.0), fully_determined=true)
 sol_p = solve(prob)
 
 p1 = plot(sol_p, idxs = [body.v])
@@ -281,7 +281,7 @@ function simplify_and_solve(damping, spring, body, ground; initialization_eqs = 
 
     println.(full_equations(sys))
 
-    prob = ODEProblem(sys, [], (0, 10.0), []; initialization_eqs, fully_determined=true)
+    prob = ODEProblem(sys, [], (0, 10.0); initialization_eqs, fully_determined=true)
     sol = solve(prob; abstol = 1e-9, reltol = 1e-9)
 
     return sol

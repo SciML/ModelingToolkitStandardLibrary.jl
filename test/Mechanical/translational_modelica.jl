@@ -23,7 +23,7 @@ using ModelingToolkitStandardLibrary.Mechanical.TranslationalModelica: Damper, S
 
     @mtkcompile sys = SpringDamperMassFixed()
 
-    prob = ODEProblem(sys, [], (0, 20.0), [])
+    prob = ODEProblem(sys, [], (0, 20.0))
     sol = solve(prob, ImplicitMidpoint(), dt = 0.01)
 
     @test sol[sys.mass.v][1] == 1.0
@@ -51,7 +51,7 @@ end
 
     @mtkcompile sys = DrivenSpringDamperMass()
 
-    prob = ODEProblem(sys, [], (0, 20.0), [])
+    prob = ODEProblem(sys, [], (0, 20.0))
     sol = solve(prob, Rodas4())
 
     lb, ub = extrema(sol(15:0.05:20, idxs = sys.mass.v).u)
@@ -79,7 +79,7 @@ end
 
     @mtkcompile sys = DrivenSpringDamperMass2()
 
-    prob = ODEProblem(sys, [], (0, 20.0), [])
+    prob = ODEProblem(sys, [], (0, 20.0))
     sol = solve(prob, Rodas4())
 
     lb, ub = extrema(sol(15:0.05:20, idxs = sys.mass.v).u)

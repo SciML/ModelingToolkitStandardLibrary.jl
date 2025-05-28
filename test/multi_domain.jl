@@ -69,7 +69,7 @@ using OrdinaryDiffEq: ReturnCode.Success
     @test sol[dc_motor.emf.i][idx_t]≈(dc_gain * [V_step; -tau_L_step])[1] rtol=1e-3
 
     @test_skip begin
-        prob = DAEProblem(dc_motor, D.(unknowns(dc_motor)) .=> 0.0, Pair[], (0, 6.0))
+        prob = DAEProblem(dc_motor, D.(unknowns(dc_motor)) .=> 0.0, (0, 6.0))
         sol = solve(prob, DFBDF())
         @test sol.retcode == Success
         # EMF equations
@@ -156,7 +156,7 @@ end
     @test all(sol[sys.inertia.w] .== sol[sys.speed_sensor.w.u])
 
     @test_skip begin
-        prob = DAEProblem(sys, D.(unknowns(sys)) .=> 0.0, Pair[], (0, 6.0))
+        prob = DAEProblem(sys, D.(unknowns(sys)) .=> 0.0, (0, 6.0))
         sol = solve(prob, DFBDF())
         @test sol.retcode == Success
         # EMF equations

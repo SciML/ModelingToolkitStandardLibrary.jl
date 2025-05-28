@@ -437,9 +437,8 @@ end
         sys = mtkcompile(iosys)
         s = complete(iosys)
         prob = ODEProblem(sys,
-            [],
-            (0.0, t_end),
-            [s.src.buffer => Parameter(x, dt)];
+            [s.src.buffer => Parameter(x, dt)],
+            (0.0, t_end);
             tofloat = false)
         # prob = remake(prob; p = Parameter.(prob.p)) #<-- no longer needed with ModelingToolkit.jl PR #2231
 
@@ -467,9 +466,8 @@ end
         sys = mtkcompile(iosys)
         s = complete(iosys)
         prob = ODEProblem(sys,
-            [],
-            (0.0, t_end),
-            [s.src.buffer => x, s.src.sample_time => dt];
+            [s.src.buffer => x, s.src.sample_time => dt],
+            (0.0, t_end);
             tofloat = false)
 
         sol = solve(prob, Rodas4())
