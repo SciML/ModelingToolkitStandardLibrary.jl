@@ -31,7 +31,7 @@ using OrdinaryDiffEq: ReturnCode.Success
                    connect(capacitor.p, power_sensor.pv)
                    connect(capacitor.n, power_sensor.nv)]
 
-    @named model = ODESystem(connections, t;
+    @named model = System(connections, t;
         systems = [
             resistor,
             capacitor,
@@ -71,7 +71,7 @@ end
                    connect(short.n, R0.n, R2.p)
                    connect(R2.n, voltage.n, ground.g)]
 
-    @named model = ODESystem(connections, t,
+    @named model = System(connections, t,
         systems = [R0, R1, R2, source, short, voltage, ground]; guesses = [R2.v => 0.0])
     sys = mtkcompile(model)
     prob = ODEProblem(sys, [], (0, 2.0))
@@ -97,7 +97,7 @@ end
                    connect(resistor.n, capacitor.p)
                    connect(capacitor.n, voltage.n, ground.g)]
 
-    @named model = ODESystem(connections, t;
+    @named model = System(connections, t;
         systems = [resistor, capacitor, source, voltage, ground])
     sys = mtkcompile(model)
     prob = ODEProblem(sys, Pair[], (0.0, 10.0))
@@ -121,7 +121,7 @@ end
                    connect(resistor.n, inductor.p)
                    connect(inductor.n, voltage.n, ground.g)]
 
-    @named model = ODESystem(connections, t;
+    @named model = System(connections, t;
         systems = [resistor, inductor, source, voltage, ground])
     sys = mtkcompile(model)
     prob = ODEProblem(sys, Pair[], (0.0, 10.0))
@@ -156,7 +156,7 @@ end
                        connect(resistor.n, capacitor.p)
                        connect(capacitor.n, voltage.n, ground.g)]
 
-        @named model = ODESystem(connections, t;
+        @named model = System(connections, t;
             systems = [resistor, capacitor, source, ground, voltage])
         sys = mtkcompile(model)
         prob = ODEProblem(sys, Pair[], (0.0, 10.0))
@@ -183,7 +183,7 @@ end
                    connect(capacitor.n, resistor.p)
                    connect(capacitor.p, current.n, ground.g)]
 
-    @named model = ODESystem(connections, t;
+    @named model = System(connections, t;
         systems = [ground, resistor, current, capacitor, source])
     sys = mtkcompile(model)
     prob = ODEProblem(sys, Pair[], (0.0, 10.0))
@@ -213,7 +213,7 @@ end
                    connect(opamp.p1, ground.g, opamp.n2, voltage.n)
                    connect(opamp.p2, sensor.p)
                    connect(sensor.n, ground.g)]
-    @named model = ODESystem(connections, t,
+    @named model = System(connections, t,
         systems = [
             R1,
             R2,
@@ -283,7 +283,7 @@ _damped_sine_wave(x, f, A, st, ϕ, d) = exp((st - x) * d) * A * sin(2 * π * f *
                connect(voltage.p, voltage_sensor.p, res.p)
                connect(res.n, cap.p)
                connect(ground.g, voltage_sensor.n, voltage.n, cap.n)]
-        @named vmodel = ODESystem(eqs, t,
+        @named vmodel = System(eqs, t,
             systems = [
                 voltage_sensor,
                 res,
@@ -349,7 +349,7 @@ end
                connect(current_sensor.p, res.p)
                connect(res.n, cap.p)
                connect(current.n, ground.g, cap.n)]
-        @named model = ODESystem(eqs, t,
+        @named model = System(eqs, t,
             systems = [
                 current_sensor,
                 source,

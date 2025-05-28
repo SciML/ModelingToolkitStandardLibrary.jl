@@ -30,7 +30,7 @@ NEWTON = NLNewton(
                connect(src.port, res.port_a)
                connect(res.port_b, vol.port)]
 
-        ODESystem(eqs, t, [], pars; name, systems)
+        System(eqs, t, [], pars; name, systems)
     end
 
     @mtkcompile s1_1 = System(1; bulk_modulus = 1e9)
@@ -78,7 +78,7 @@ end
                connect(valve.port_b, vol.port)
                connect(valve.area, ramp.output)]
 
-        ODESystem(eqs, t, [], pars; name, systems)
+        System(eqs, t, [], pars; name, systems)
     end
 
     @named valve_system = System()
@@ -145,7 +145,7 @@ end
         initialization_eqs = [mass.s ~ 0.0
                               mass.v ~ 0.0]
 
-        ODESystem(eqs, t, [], pars; name, systems, initialization_eqs)
+        System(eqs, t, [], pars; name, systems, initialization_eqs)
     end
 
     @named sys = System()
@@ -277,7 +277,7 @@ end
         # body.s ~ 0
         ]
 
-        ODESystem(eqs, t, vars, pars; name, systems, initialization_eqs)
+        System(eqs, t, vars, pars; name, systems, initialization_eqs)
     end
 
     @mtkcompile initsys = System(false)
@@ -335,7 +335,7 @@ end
         initialization_eqs = [mass.s ~ 0.05
                               mass.v ~ 0]
 
-        return ODESystem(eqs, t, [], pars; name, systems, initialization_eqs)
+        return System(eqs, t, [], pars; name, systems, initialization_eqs)
     end
 
     @mtkcompile sys = System()
@@ -387,7 +387,7 @@ end
 #             connect(pipe.port_b, sink.port)
 #             connect(osc.output, source.p)]
 
-#         ODESystem(eqs, t, [], []; systems)
+#         System(eqs, t, [], []; systems)
 #     end
 
 #     @named sys = System()

@@ -8,7 +8,7 @@ using OrdinaryDiffEq: ReturnCode.Success
     @named c = Constant(; k = 1)
     @named gain = Gain(; k = 1)
     @named int = Integrator(; k = 1)
-    @named model = ODESystem(
+    @named model = System(
         [
             connect(c.output, gain.input),
             connect(gain.output, int.input)
@@ -30,7 +30,7 @@ end
     @named gain = Gain(; k = 1)
     @named int = Integrator(; k = 1)
     @named fb = Feedback(;)
-    @named model = ODESystem(
+    @named model = System(
         [
             connect(c.output, fb.input1),
             connect(fb.input2, int.output),
@@ -54,7 +54,7 @@ end
     @named c2 = Sine(; frequency = 1)
     @named add = Add(;)
     @named int = Integrator(; k = 1)
-    @named model = ODESystem(
+    @named model = System(
         [
             connect(c1.output, add.input1),
             connect(c2.output, add.input2),
@@ -73,7 +73,7 @@ end
         k1 = -1
         k2 = 2
         @named add = Add(; k1 = k1, k2 = k2)
-        @named model = ODESystem(
+        @named model = System(
             [
                 connect(c1.output, add.input1),
                 connect(c2.output, add.input2),
@@ -96,7 +96,7 @@ end
     @named c3 = Sine(; frequency = 2)
     @named add = Add3(;)
     @named int = Integrator(; k = 1)
-    @named model = ODESystem(
+    @named model = System(
         [
             connect(c1.output, add.input1),
             connect(c2.output, add.input2),
@@ -117,7 +117,7 @@ end
         k2 = 2
         k3 = -pi
         @named add = Add3(; k1 = k1, k2 = k2, k3 = k3)
-        @named model = ODESystem(
+        @named model = System(
             [
                 connect(c1.output, add.input1),
                 connect(c2.output, add.input2),
@@ -141,7 +141,7 @@ end
     @named c2 = Sine(; frequency = 1)
     @named prod = Product(;)
     @named int = Integrator(; k = 1)
-    @named model = ODESystem(
+    @named model = System(
         [
             connect(c1.output, prod.input1),
             connect(c2.output, prod.input2),
@@ -162,7 +162,7 @@ end
     @named c2 = Constant(; k = 2)
     @named pow = Power(;)
     @named int = Integrator(; k = 1)
-    @named model = ODESystem(
+    @named model = System(
         [
             connect(c1.output, pow.base),
             connect(c2.output, pow.exponent),
@@ -182,7 +182,7 @@ end
     @named c1 = Ramp(height = 2, duration = 1, offset = 1, start_time = 0, smooth = false)
     @named c2 = Constant(; k = 1)
     @named modl = Modulo(;)
-    @named model = ODESystem(
+    @named model = System(
         [
             connect(c1.output, modl.dividend),
             connect(c2.output, modl.divisor)
@@ -201,7 +201,7 @@ end
     @named c1 = Sine(; frequency = 1)
     @named minu = UnaryMinus(;)
     @named int = Integrator(; k = 1)
-    @named model = ODESystem(
+    @named model = System(
         [
             connect(c1.output, minu.input),
             connect(minu.output, int.input)
@@ -220,7 +220,7 @@ end
     @named c1 = Sine(; frequency = 1)
     @named flr = Floor(;)
     @named int = Integrator(; k = 1)
-    @named model = ODESystem(
+    @named model = System(
         [
             connect(c1.output, flr.input),
             connect(flr.output, int.input)
@@ -239,7 +239,7 @@ end
     @named c1 = Sine(; frequency = 1)
     @named cel = Ceil(;)
     @named int = Integrator(; k = 1)
-    @named model = ODESystem(
+    @named model = System(
         [
             connect(c1.output, cel.input),
             connect(cel.output, int.input)
@@ -259,7 +259,7 @@ end
     @named c2 = Constant(; k = 2)
     @named div = Division(;)
     @named int = Integrator(; k = 1)
-    @named model = ODESystem(
+    @named model = System(
         [
             connect(c1.output, div.input1),
             connect(c2.output, div.input2),
@@ -279,7 +279,7 @@ end
     @named c = Sine(; frequency = 1)
     @named absb = Abs(;)
     @named int = Integrator(; k = 1)
-    @named model = ODESystem(
+    @named model = System(
         [
             connect(c.output, absb.input),
             connect(absb.output, int.input)
@@ -326,7 +326,7 @@ end
         @named source = Sine(frequency = 1, amplitude = 0.5)
         @named b = block()
         @named int = Integrator()
-        @named model = ODESystem(
+        @named model = System(
             [
                 connect(source.output, b.input),
                 connect(b.output, int.input)
@@ -346,7 +346,7 @@ end
         @named source = Sine(; frequency = 1, offset = 2, amplitude = 0.5)
         @named b = block()
         @named int = Integrator()
-        @named model = ODESystem(
+        @named model = System(
             [
                 connect(source.output, b.input),
                 connect(b.output, int.input)
@@ -366,7 +366,7 @@ end
     @named c2 = Sine(; frequency = 1, offset = 1)
     @named b = Atan2(;)
     @named int = Integrator(; k = 1)
-    @named model = ODESystem(
+    @named model = System(
         [
             connect(c1.output, b.input1),
             connect(c2.output, b.input2),

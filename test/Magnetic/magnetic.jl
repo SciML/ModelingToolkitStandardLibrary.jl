@@ -35,7 +35,7 @@ using OrdinaryDiffEq: ReturnCode.Success
                    connect(r_mFe.port_n, coil.port_n)
                    connect(ground.g, voltage.n)
                    connect(ground_m.port, r_mFe.port_n)]
-    @named model = ODESystem(connections, t,
+    @named model = System(connections, t,
         systems = [
             source,
             r,

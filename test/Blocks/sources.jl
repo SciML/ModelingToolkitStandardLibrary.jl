@@ -15,7 +15,7 @@ using ForwardDiff
 @testset "Constant" begin
     @named src = Constant(k = 2)
     @named int = Integrator()
-    @named iosys = ODESystem([
+    @named iosys = System([
             connect(src.output, int.input)
         ],
         t,
@@ -34,7 +34,7 @@ end
     vars = @variables y(t) dy(t) ddy(t)
     @named src = TimeVaryingFunction(f)
     @named int = Integrator()
-    @named iosys = ODESystem(
+    @named iosys = System(
         [y ~ src.output.u
          D(y) ~ dy
          D(dy) ~ ddy
@@ -67,7 +67,7 @@ end
 
     @named src = Sine(frequency = frequency, amplitude = amplitude, phase = phase,
         offset = offset, start_time = start_time)
-    @named iosys = ODESystem([
+    @named iosys = System([
             connect(src.output, int.input)
         ],
         t,
@@ -86,7 +86,7 @@ end
         offset = offset,
         start_time = start_time,
         smooth = true)
-    @named smooth_iosys = ODESystem([
+    @named smooth_iosys = System([
             connect(smooth_src.output, int.input)
         ],
         t,
@@ -122,7 +122,7 @@ end
         offset = offset,
         start_time = start_time,
         smooth = false)
-    @named iosys = ODESystem([
+    @named iosys = System([
             connect(src.output, int.input)
         ],
         t,
@@ -140,7 +140,7 @@ end
         offset = offset,
         start_time = start_time,
         smooth = true)
-    @named smooth_iosys = ODESystem([
+    @named smooth_iosys = System([
             connect(smooth_src.output, int.input)
         ],
         t,
@@ -163,7 +163,7 @@ end
 
     @named src = ContinuousClock(offset = offset, start_time = start_time)
     @named int = Integrator()
-    @named iosys = ODESystem([
+    @named iosys = System([
             connect(src.output, int.input)
         ],
         t,
@@ -189,7 +189,7 @@ end
 
     @named src = Ramp(offset = offset, height = height, duration = duration,
         start_time = start_time)
-    @named iosys = ODESystem([
+    @named iosys = System([
             connect(src.output, int.input)
         ],
         t,
@@ -204,7 +204,7 @@ end
     start_time = 2
     @named smooth_src = Ramp(offset = offset, height = height, duration = duration,
         start_time = start_time, smooth = true)
-    @named smooth_iosys = ODESystem([
+    @named smooth_iosys = System([
             connect(smooth_src.output, int.input)
         ],
         t,
@@ -227,7 +227,7 @@ end
 
     @named src = Step(offset = offset, height = height, start_time = start_time,
         smooth = false)
-    @named iosys = ODESystem([
+    @named iosys = System([
             connect(src.output, int.input)
         ],
         t,
@@ -245,7 +245,7 @@ end
     duration = 1.2
     @named src = Step(offset = offset, height = height, start_time = start_time,
         duration = duration, smooth = false)
-    @named iosys = ODESystem([
+    @named iosys = System([
             connect(src.output, int.input)
         ],
         t,
@@ -261,7 +261,7 @@ end
 
     @named smooth_src = Step(offset = offset, height = height, start_time = start_time,
         smooth = true)
-    @named smooth_iosys = ODESystem([
+    @named smooth_iosys = System([
             connect(smooth_src.output, int.input)
         ],
         t,
@@ -278,7 +278,7 @@ end
     # with duration
     @named smooth_src = Step(offset = offset, height = height, start_time = start_time,
         smooth = true, duration = duration)
-    @named smooth_iosys = ODESystem([
+    @named smooth_iosys = System([
             connect(smooth_src.output, int.input)
         ],
         t,
@@ -304,7 +304,7 @@ end
 
     @named src = Square(frequency = frequency, amplitude = amplitude,
         offset = offset, start_time = start_time)
-    @named iosys = ODESystem([
+    @named iosys = System([
             connect(src.output, int.input)
         ],
         t,
@@ -319,7 +319,7 @@ end
 
     @named smooth_src = Square(frequency = frequency, amplitude = amplitude,
         offset = offset, start_time = start_time, smooth = true)
-    @named smooth_iosys = ODESystem([
+    @named smooth_iosys = System([
             connect(smooth_src.output, int.input)
         ],
         t,
@@ -344,7 +344,7 @@ end
 
     @named src = Triangular(frequency = frequency, amplitude = amplitude,
         offset = offset, start_time = start_time)
-    @named iosys = ODESystem([
+    @named iosys = System([
             connect(src.output, int.input)
         ],
         t,
@@ -359,7 +359,7 @@ end
 
     @named smooth_src = Triangular(frequency = frequency, amplitude = amplitude,
         offset = offset, start_time = start_time, smooth = true)
-    @named smooth_iosys = ODESystem([
+    @named smooth_iosys = System([
             connect(smooth_src.output, int.input)
         ],
         t,
@@ -386,7 +386,7 @@ end
     @named src = ExpSine(frequency = frequency, amplitude = amplitude, damping = damping,
         phase = phase, offset = offset, start_time = start_time)
     @named int = Integrator()
-    @named iosys = ODESystem([
+    @named iosys = System([
             connect(src.output, int.input)
         ],
         t,
@@ -402,7 +402,7 @@ end
     @named smooth_src = ExpSine(frequency = frequency, amplitude = amplitude,
         damping = damping, phase = phase, offset = offset,
         start_time = start_time, smooth = true)
-    @named smooth_iosys = ODESystem([
+    @named smooth_iosys = System([
             connect(smooth_src.output, int.input)
         ],
         t,
@@ -427,7 +427,7 @@ end
         vars = @variables y(t) dy(t) ddy(t)
         @named src = SampledData(Float64)
         @named int = Integrator()
-        @named iosys = ODESystem(
+        @named iosys = System(
             [y ~ src.output.u
              D(y) ~ dy
              D(dy) ~ ddy
@@ -457,7 +457,7 @@ end
         vars = @variables y(t) dy(t) ddy(t)
         @named src = SampledData(dt)
         @named int = Integrator()
-        @named iosys = ODESystem(
+        @named iosys = System(
             [y ~ src.output.u
              D(y) ~ dy
              D(dy) ~ ddy
@@ -491,7 +491,7 @@ end
     @named i = Interpolation(LinearInterpolation, u, x)
     eqs = [i.input.u ~ t, D(y) ~ i.output.u]
 
-    @named model = ODESystem(eqs, t, systems = [i])
+    @named model = System(eqs, t, systems = [i])
     sys = mtkcompile(model)
 
     prob = ODEProblem{true, SciMLBase.FullSpecialize}(sys, [], (0.0, 4))
@@ -512,7 +512,7 @@ end
                D(x) ~ dx
                D(dx) ~ ddx]
 
-        ODESystem(eqs, t; name, systems = [input])
+        System(eqs, t; name, systems = [input])
     end
 
     table_data = [1.0, 2.0, 3.0]
@@ -547,7 +547,7 @@ end
         @named i = ParametrizedInterpolation(LinearInterpolation, u, x)
         eqs = [i.input.u ~ t, D(y) ~ i.output.u]
 
-        @named model = ODESystem(eqs, t, systems = [i])
+        @named model = System(eqs, t, systems = [i])
         sys = mtkcompile(model)
 
         prob = ODEProblem{true, SciMLBase.FullSpecialize}(sys, [], (0.0, 4))
@@ -597,7 +597,7 @@ end
             BSplineInterpolation, u, x, 3, :Uniform, :Uniform)
         eqs = [i.input.u ~ t, D(y) ~ i.output.u]
 
-        @named model = ODESystem(eqs, t, systems = [i])
+        @named model = System(eqs, t, systems = [i])
         sys = mtkcompile(model)
 
         prob = ODEProblem(sys, [], (0.0, 4))
@@ -617,7 +617,7 @@ end
                    D(x) ~ dx
                    D(dx) ~ ddx]
 
-            ODESystem(eqs, t, vars, pars; name, systems = [input])
+            System(eqs, t, vars, pars; name, systems = [input])
         end
 
         function MassSpringDamperSystem(data, time; name)
@@ -628,7 +628,7 @@ end
             eqs = [connect(model.input, src.output)
                    connect(src.input, clk.output)]
 
-            ODESystem(eqs, t; name, systems = [src, clk, model])
+            System(eqs, t; name, systems = [src, clk, model])
         end
 
         function generate_data()

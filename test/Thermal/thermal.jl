@@ -19,7 +19,7 @@ using OrdinaryDiffEq: ReturnCode.Success
     eqs = [connect(mass1.port, th_conductor.port_a)
            connect(th_conductor.port_b, reltem_sensor.port_a)
            connect(reltem_sensor.port_b, tem_src.port)]
-    @named h1 = ODESystem(eqs, t, systems = [mass1, reltem_sensor, tem_src, th_conductor])
+    @named h1 = System(eqs, t, systems = [mass1, reltem_sensor, tem_src, th_conductor])
     sys = mtkcompile(h1)
 
     u0 = [mass1.T => 2]
@@ -37,7 +37,7 @@ using OrdinaryDiffEq: ReturnCode.Success
            connect(th_conductor.port_b, mass2.port, T_sensor2.port)
            final_T ~ (mass1.C * mass1.T + mass2.C * mass2.T) /
                      (mass1.C + mass2.C)]
-    @named h2 = ODESystem(eqs, t, [final_T], [],
+    @named h2 = System(eqs, t, [final_T], [],
         systems = [mass1, mass2, T_sensor1, T_sensor2, th_conductor])
     sys = mtkcompile(h2)
 
@@ -71,7 +71,7 @@ end
                hf_sensor2.port_a)
            connect(th_resistor.port_b, hf_sensor1.port_b, hf_sensor2.port_b,
                th_ground.port)]
-    @named h2 = ODESystem(eqs, t,
+    @named h2 = System(eqs, t,
         systems = [mass1, hf_sensor1, hf_sensor2,
             th_resistor, flow_src, th_ground, th_conductor])
     sys = mtkcompile(h2)
@@ -105,7 +105,7 @@ end
     @info "Building a radiator..."
     eqs = [connect(gas_tem.port, radiator.port_a, base.port_a, dissipator.solid, mass.port)
            connect(coolant_tem.port, base.port_b, radiator.port_b, dissipator.fluid)]
-    @named rad = ODESystem(eqs, t,
+    @named rad = System(eqs, t,
         systems = [
             base,
             gas_tem,
@@ -139,7 +139,7 @@ end
            connect(tem_src.port, collector.port_a2)
            connect(hf_sensor.port_a, collector.port_b)
            connect(hf_sensor.port_b, mass.port, th_resistor.port_b)]
-    @named coll = ODESystem(eqs, t,
+    @named coll = System(eqs, t,
         systems = [hf_sensor, flow_src, tem_src,
             collector, th_resistor, mass])
     sys = mtkcompile(coll)

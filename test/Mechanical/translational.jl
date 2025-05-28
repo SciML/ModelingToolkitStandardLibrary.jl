@@ -17,7 +17,7 @@ import ModelingToolkitStandardLibrary.Mechanical.TranslationalPosition as TP
         eqs = [connect(a.output, acc.a)
                connect(mass.flange, acc.flange, free.flange)]
 
-        ODESystem(eqs, t, [], []; name, systems)
+        System(eqs, t, [], []; name, systems)
     end
 
     @named system = System()
@@ -48,7 +48,7 @@ end
         eqs = [connect(spring.flange_a, body.flange, damping.flange_a)
                connect(spring.flange_b, damping.flange_b, ground.flange)]
 
-        @named model = ODESystem(eqs, t; systems = [ground, body, spring, damping])
+        @named model = System(eqs, t; systems = [ground, body, spring, damping])
 
         sys = mtkcompile(model)
 
@@ -94,7 +94,7 @@ end
                connect(spring.flange_a, body.flange, damping.flange_a)
                connect(spring.flange_b, damping.flange_b, ground.flange)]
 
-        @named model = ODESystem(eqs, t;
+        @named model = System(eqs, t;
             systems = [ground, body, spring, damping, f, source])
 
         return model
@@ -145,7 +145,7 @@ end
                        connect(pos_value, pos_sensor.output)
                        connect(force_output, force_sensor.output)]
 
-                ODESystem(eqs, t, [], []; name, systems)
+                System(eqs, t, [], []; name, systems)
             end
 
             @named system = System()
@@ -174,7 +174,7 @@ end
                 connect(acc.flange, mass.flange),
                 connect(acc_output, acc.output)
             ]
-            @named sys = ODESystem(
+            @named sys = System(
                 eqs, t, [], []; systems = [force, source, mass, acc, acc_output])
             s = complete(mtkcompile(sys))
             prob = ODEProblem(s, [mass.s => 0], (0.0, pi))
@@ -202,7 +202,7 @@ end
                     connect(pos_sensor.output, pos_value),
                     connect(force_sensor.output, force_value)
                 ]
-                ODESystem(eqs, t, [], []; name, systems)
+                System(eqs, t, [], []; name, systems)
             end
 
             @named model = mass_spring()
@@ -228,7 +228,7 @@ end
                 connect(acc.flange, mass.flange),
                 connect(acc_output, acc.output)
             ]
-            @named sys = ODESystem(
+            @named sys = System(
                 eqs, t, [], []; systems = [force, source, mass, acc, acc_output])
             s = complete(mtkcompile(sys))
             prob = ODEProblem(s, [mass.s => 0], (0.0, pi), fully_determined = true)

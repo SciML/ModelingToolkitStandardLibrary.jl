@@ -102,7 +102,7 @@ end
 eqs = [connect(capacitor.p, resistor.p)
        connect(resistor.n, ground.g, capacitor.n)]
 
-@named model = ODESystem(eqs, t; systems)
+@named model = System(eqs, t; systems)
 
 sys = mtkcompile(model)
 
@@ -144,7 +144,7 @@ end
 eqs = [connect(damping.flange_a, body.flange)
        connect(ground.flange, damping.flange_b)]
 
-@named model = ODESystem(eqs, t; systems)
+@named model = System(eqs, t; systems)
 
 sys = mtkcompile(model)
 
@@ -180,7 +180,7 @@ end
 eqs = [connect(damping.flange_a, body.flange)
        connect(ground.flange, damping.flange_b)]
 
-@named model = ODESystem(eqs, t; systems)
+@named model = System(eqs, t; systems)
 
 sys = mtkcompile(model)
 
@@ -275,7 +275,7 @@ function simplify_and_solve(damping, spring, body, ground; initialization_eqs = 
     eqs = [connect(spring.flange_a, body.flange, damping.flange_a)
            connect(spring.flange_b, damping.flange_b, ground.flange)]
 
-    @named model = ODESystem(eqs, t; systems = [ground, body, spring, damping])
+    @named model = System(eqs, t; systems = [ground, body, spring, damping])
 
     sys = mtkcompile(model)
 
