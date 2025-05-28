@@ -42,7 +42,7 @@ using IfElse: ifelse
                    connect(Ro.n, Gnd.g)]
 
     @named model = ODESystem(connections, t, systems = [L, Ro, G, C1, C2, Nr, Gnd])
-    sys = structural_simplify(model)
+    sys = mtkcompile(model)
     prob = ODEProblem(sys, Pair[], (0, 5e4), saveat = 0.01)
     sol = solve(prob, Rodas4())
 

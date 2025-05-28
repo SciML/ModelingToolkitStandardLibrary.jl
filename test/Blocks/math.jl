@@ -15,7 +15,7 @@ using OrdinaryDiffEq: ReturnCode.Success
         ],
         t, systems = [int, gain, c])
 
-    sys = structural_simplify(model)
+    sys = mtkcompile(model)
     prob = ODEProblem(sys, Pair[int.x => 1.0], (0.0, 1.0))
     sol = solve(prob, Rodas4())
 
@@ -39,7 +39,7 @@ end
         ],
         t,
         systems = [int, gain, c, fb])
-    sys = structural_simplify(model)
+    sys = mtkcompile(model)
 
     prob = ODEProblem(sys, Pair[int.x => 0.0], (0.0, 100.0))
 
@@ -62,7 +62,7 @@ end
         ],
         t,
         systems = [int, add, c1, c2])
-    sys = structural_simplify(model)
+    sys = mtkcompile(model)
     prob = ODEProblem(sys, Pair[int.x => 0.0], (0.0, 1.0))
     sol = solve(prob, Rodas4())
     @test isequal(unbound_inputs(sys), [])
@@ -81,7 +81,7 @@ end
             ],
             t,
             systems = [int, add, c1, c2])
-        sys = structural_simplify(model)
+        sys = mtkcompile(model)
         prob = ODEProblem(sys, Pair[int.x => 0.0], (0.0, 1.0))
         sol = solve(prob, Rodas4())
         @test isequal(unbound_inputs(sys), [])
@@ -105,7 +105,7 @@ end
         ],
         t,
         systems = [int, add, c1, c2, c3])
-    sys = structural_simplify(model)
+    sys = mtkcompile(model)
     prob = ODEProblem(sys, Pair[int.x => 0.0], (0.0, 1.0))
     sol = solve(prob, Rodas4())
     @test isequal(unbound_inputs(sys), [])
@@ -126,7 +126,7 @@ end
             ],
             t,
             systems = [int, add, c1, c2, c3])
-        sys = structural_simplify(model)
+        sys = mtkcompile(model)
         prob = ODEProblem(sys, Pair[int.x => 0.0], (0.0, 1.0))
         sol = solve(prob, Rodas4())
         @test isequal(unbound_inputs(sys), [])
@@ -149,7 +149,7 @@ end
         ],
         t,
         systems = [int, prod, c1, c2])
-    sys = structural_simplify(model)
+    sys = mtkcompile(model)
     prob = ODEProblem(sys, Pair[int.x => 0.0], (0.0, 1.0))
     sol = solve(prob, Rodas4())
     @test isequal(unbound_inputs(sys), [])
@@ -170,7 +170,7 @@ end
         ],
         t,
         systems = [int, pow, c1, c2])
-    sys = structural_simplify(model)
+    sys = mtkcompile(model)
     prob = ODEProblem(sys, Pair[int.x => 0.0], (0.0, 1.0))
     sol = solve(prob, Rodas4())
     @test isequal(unbound_inputs(sys), [])
@@ -189,7 +189,7 @@ end
         ],
         t,
         systems = [modl, c1, c2])
-    sys = structural_simplify(model)
+    sys = mtkcompile(model)
     prob = ODEProblem(sys, [], (0.0, 1.0))
     sol = solve(prob, Rodas4())
     @test isequal(unbound_inputs(sys), [])
@@ -208,7 +208,7 @@ end
         ],
         t,
         systems = [int, minu, c1])
-    sys = structural_simplify(model)
+    sys = mtkcompile(model)
     prob = ODEProblem(sys, Pair[int.x => 0.0], (0.0, 1.0))
     sol = solve(prob, Rodas4())
     @test isequal(unbound_inputs(sys), [])
@@ -227,7 +227,7 @@ end
         ],
         t,
         systems = [int, flr, c1])
-    sys = structural_simplify(model)
+    sys = mtkcompile(model)
     prob = ODEProblem(sys, Pair[int.x => 0.0], (0.0, 1.0))
     sol = solve(prob, Rodas4())
     @test isequal(unbound_inputs(sys), [])
@@ -246,7 +246,7 @@ end
         ],
         t,
         systems = [int, cel, c1])
-    sys = structural_simplify(model)
+    sys = mtkcompile(model)
     prob = ODEProblem(sys, Pair[int.x => 0.0], (0.0, 1.0))
     sol = solve(prob, Rodas4())
     @test isequal(unbound_inputs(sys), [])
@@ -267,7 +267,7 @@ end
         ],
         t,
         systems = [int, div, c1, c2])
-    sys = structural_simplify(model)
+    sys = mtkcompile(model)
     prob = ODEProblem(sys, Pair[int.x => 0.0], (0.0, 1.0))
     sol = solve(prob, Rodas4())
     @test isequal(unbound_inputs(sys), [])
@@ -286,7 +286,7 @@ end
         ],
         t,
         systems = [int, absb, c])
-    sys = structural_simplify(model)
+    sys = mtkcompile(model)
     prob = ODEProblem(sys, Pair[int.x => 0.0], (0.0, 1.0))
     sol = solve(prob, Rodas4())
     @test isequal(unbound_inputs(sys), [])
@@ -332,7 +332,7 @@ end
                 connect(b.output, int.input)
             ],
             t, systems = [int, b, source])
-        sys = structural_simplify(model)
+        sys = mtkcompile(model)
         prob = ODEProblem(sys, Pair[int.x => 0.0], (0.0, 1.0))
         sol = solve(prob, Rodas4())
         @test isequal(unbound_inputs(sys), [])
@@ -352,7 +352,7 @@ end
                 connect(b.output, int.input)
             ],
             t, systems = [int, b, source])
-        sys = structural_simplify(model)
+        sys = mtkcompile(model)
         prob = ODEProblem(sys, Pair[int.x => 0.0, b.input.u => 2.0], (0.0, 1.0))
         sol = solve(prob, Rodas4())
         @test isequal(unbound_inputs(sys), [])
@@ -375,7 +375,7 @@ end
         t,
         systems = [int, b, c1, c2])
 
-    sys = structural_simplify(model)
+    sys = mtkcompile(model)
     prob = ODEProblem(sys, Pair[int.x => 0.0, b.input1.u => 2, b.input2.u => 1], (0.0, 1.0))
     sol = solve(prob, Rodas4())
 

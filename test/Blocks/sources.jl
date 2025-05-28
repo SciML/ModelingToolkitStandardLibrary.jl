@@ -20,7 +20,7 @@ using ForwardDiff
         ],
         t,
         systems = [int, src])
-    sys = structural_simplify(iosys)
+    sys = mtkcompile(iosys)
 
     prob = ODEProblem(sys, Pair[int.x => 0.0], (0.0, 10.0))
 
@@ -41,7 +41,7 @@ end
          connect(src.output, int.input)],
         t,
         systems = [int, src])
-    sys = structural_simplify(iosys)
+    sys = mtkcompile(iosys)
 
     prob = ODEProblem(sys, unknowns(sys) .=> 0.0, (0.0, 10.0))
 
@@ -72,7 +72,7 @@ end
         ],
         t,
         systems = [int, src])
-    sys = structural_simplify(iosys)
+    sys = mtkcompile(iosys)
 
     prob = ODEProblem(sys, Pair[int.x => 0.0], (0.0, 10.0))
 
@@ -92,7 +92,7 @@ end
         t,
         systems = [int, smooth_src])
 
-    smooth_sys = structural_simplify(smooth_iosys)
+    smooth_sys = mtkcompile(smooth_iosys)
     smooth_prob = ODEProblem(smooth_sys, Pair[int.x => 0.0], (0.0, 10.0))
     smooth_sol = solve(smooth_prob, Rodas4())
 
@@ -128,7 +128,7 @@ end
         t,
         systems = [int, src])
 
-    sys = structural_simplify(iosys)
+    sys = mtkcompile(iosys)
     prob = ODEProblem(sys, Pair[int.x => 0.0], (0.0, 10.0))
     sol = solve(prob, Rodas4())
     @test sol.retcode == Success
@@ -146,7 +146,7 @@ end
         t,
         systems = [int, smooth_src])
 
-    smooth_sys = structural_simplify(smooth_iosys)
+    smooth_sys = mtkcompile(smooth_iosys)
     smooth_prob = ODEProblem(smooth_sys, Pair[int.x => 0.0], (0.0, 10.0))
     smooth_sol = solve(smooth_prob, Rodas4())
 
@@ -168,7 +168,7 @@ end
         ],
         t,
         systems = [int, src])
-    sys = structural_simplify(iosys)
+    sys = mtkcompile(iosys)
 
     prob = ODEProblem(sys, Pair[int.x => 0.0], (0.0, 10.0))
 
@@ -195,7 +195,7 @@ end
         t,
         systems = [int, src])
 
-    sys = structural_simplify(iosys)
+    sys = mtkcompile(iosys)
     prob = ODEProblem(sys, Pair[int.x => 0.0], (0.0, 10.0))
     sol = solve(prob, Rodas4())
     @test sol.retcode == Success
@@ -210,7 +210,7 @@ end
         t,
         systems = [int, smooth_src])
 
-    smooth_sys = structural_simplify(smooth_iosys)
+    smooth_sys = mtkcompile(smooth_iosys)
     smooth_prob = ODEProblem(smooth_sys, Pair[int.x => 0.0], (0.0, 10.0))
     smooth_sol = solve(smooth_prob, Rodas4())
 
@@ -233,7 +233,7 @@ end
         t,
         systems = [int, src])
 
-    sys = structural_simplify(iosys)
+    sys = mtkcompile(iosys)
     prob = ODEProblem(sys, Pair[int.x => 0.0], (0.0, 10.0))
     sol = solve(prob, Rodas4())
 
@@ -251,7 +251,7 @@ end
         t,
         systems = [int, src])
 
-    sys = structural_simplify(iosys)
+    sys = mtkcompile(iosys)
     prob = ODEProblem(sys, Pair[int.x => 0.0], (0.0, 10.0))
     sol = solve(prob, Rodas4(), dtmax = 0.1) # set dtmax to prevent the solver from overstepping the entire step disturbance
 
@@ -267,7 +267,7 @@ end
         t,
         systems = [int, smooth_src])
 
-    smooth_sys = structural_simplify(smooth_iosys)
+    smooth_sys = mtkcompile(smooth_iosys)
     smooth_prob = ODEProblem(smooth_sys, Pair[int.x => 0.0], (0.0, 10.0))
     smooth_sol = solve(smooth_prob, Rodas4(), dtmax = 0.1) # set dtmax to prevent the solver from overstepping the entire step disturbance)
 
@@ -284,7 +284,7 @@ end
         t,
         systems = [int, smooth_src])
 
-    smooth_sys = structural_simplify(smooth_iosys)
+    smooth_sys = mtkcompile(smooth_iosys)
     smooth_prob = ODEProblem(smooth_sys, Pair[int.x => 0.0], (0.0, 10.0))
     smooth_sol = solve(smooth_prob, Rodas4())
 
@@ -310,7 +310,7 @@ end
         t,
         systems = [int, src])
 
-    sys = structural_simplify(iosys)
+    sys = mtkcompile(iosys)
     prob = ODEProblem(sys, Pair[int.x => 0.0], (0.0, 10.0))
     sol = solve(prob, Rodas4())
 
@@ -325,7 +325,7 @@ end
         t,
         systems = [int, smooth_src])
 
-    smooth_sys = structural_simplify(smooth_iosys)
+    smooth_sys = mtkcompile(smooth_iosys)
     smooth_prob = ODEProblem(smooth_sys, Pair[int.x => 0.0], (0.0, 10.0))
     smooth_sol = solve(smooth_prob, Rodas4())
 
@@ -350,7 +350,7 @@ end
         t,
         systems = [int, src])
 
-    sys = structural_simplify(iosys)
+    sys = mtkcompile(iosys)
     prob = ODEProblem(sys, Pair[int.x => 0.0], (0.0, 4.0))
     sol = solve(prob, Rodas4(), saveat = 0.01)
 
@@ -365,7 +365,7 @@ end
         t,
         systems = [int, smooth_src])
 
-    smooth_sys = structural_simplify(smooth_iosys)
+    smooth_sys = mtkcompile(smooth_iosys)
     smooth_prob = ODEProblem(smooth_sys, Pair[int.x => 0.0], (0.0, 4.0))
     smooth_sol = solve(smooth_prob, Rodas4(), saveat = 0.01)
 
@@ -391,7 +391,7 @@ end
         ],
         t,
         systems = [int, src])
-    sys = structural_simplify(iosys)
+    sys = mtkcompile(iosys)
     prob = ODEProblem(sys, Pair[int.x => 0.0], (0.0, 10.0))
     sol = solve(prob, Rodas4())
     @test sol.retcode == Success
@@ -407,7 +407,7 @@ end
         ],
         t,
         systems = [int, smooth_src])
-    smooth_sys = structural_simplify(smooth_iosys)
+    smooth_sys = mtkcompile(smooth_iosys)
     smooth_prob = ODEProblem(smooth_sys, Pair[int.x => 0.0], (0.0, 10.0))
     smooth_sol = solve(smooth_prob, Rodas4())
 
@@ -434,7 +434,7 @@ end
              connect(src.output, int.input)],
             t,
             systems = [int, src])
-        sys = structural_simplify(iosys)
+        sys = mtkcompile(iosys)
         s = complete(iosys)
         prob = ODEProblem(sys,
             [],
@@ -464,7 +464,7 @@ end
              connect(src.output, int.input)],
             t,
             systems = [int, src])
-        sys = structural_simplify(iosys)
+        sys = mtkcompile(iosys)
         s = complete(iosys)
         prob = ODEProblem(sys,
             [],
@@ -492,7 +492,7 @@ end
     eqs = [i.input.u ~ t, D(y) ~ i.output.u]
 
     @named model = ODESystem(eqs, t, systems = [i])
-    sys = structural_simplify(model)
+    sys = mtkcompile(model)
 
     prob = ODEProblem{true, SciMLBase.FullSpecialize}(sys, [], (0.0, 4))
     sol = solve(prob, Tsit5())
@@ -530,7 +530,7 @@ end
             connect(src.output, model.input)
         end
     end;
-    @mtkbuild sys = model_with_lut()
+    @mtkcompile sys = model_with_lut()
 
     prob = ODEProblem(sys, [], (0.0, 1))
     sol = solve(prob, Tsit5())
@@ -548,7 +548,7 @@ end
         eqs = [i.input.u ~ t, D(y) ~ i.output.u]
 
         @named model = ODESystem(eqs, t, systems = [i])
-        sys = structural_simplify(model)
+        sys = mtkcompile(model)
 
         prob = ODEProblem{true, SciMLBase.FullSpecialize}(sys, [], (0.0, 4))
         sol = solve(prob, Tsit5())
@@ -598,7 +598,7 @@ end
         eqs = [i.input.u ~ t, D(y) ~ i.output.u]
 
         @named model = ODESystem(eqs, t, systems = [i])
-        sys = structural_simplify(model)
+        sys = mtkcompile(model)
 
         prob = ODEProblem(sys, [], (0.0, 4))
         sol = solve(prob)
@@ -642,7 +642,7 @@ end
         df = generate_data() # example data
 
         @named system = MassSpringDamperSystem(df.data, df.time)
-        sys = structural_simplify(system)
+        sys = mtkcompile(system)
         prob = ODEProblem(sys, [], (0, df.time[end]))
         sol = solve(prob)
 

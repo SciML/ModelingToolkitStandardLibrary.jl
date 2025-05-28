@@ -68,7 +68,7 @@ end
 df = generate_data() # example data
 
 @named system = MassSpringDamperSystem(df.data, df.time)
-sys = structural_simplify(system)
+sys = mtkcompile(system)
 prob = ODEProblem(sys, [], (0, df.time[end]))
 sol = solve(prob)
 plot(sol)
@@ -93,7 +93,7 @@ my_interpolation = LinearInterpolation(df.data, df.time)
         connect(src.output, model.input)
     end
 end;
-@mtkbuild sys = MassSpringDamperSystem2()
+@mtkcompile sys = MassSpringDamperSystem2()
 
 prob = ODEProblem(sys, [], (0, df.time[end]))
 sol = solve(prob, Tsit5())
@@ -159,7 +159,7 @@ end
 df = generate_data() # example data
 
 @named system = MassSpringDamperSystem(df.data, df.time)
-sys = structural_simplify(system)
+sys = mtkcompile(system)
 prob = ODEProblem(sys, [], (0, df.time[end]))
 sol = solve(prob)
 plot(sol)
@@ -217,7 +217,7 @@ function System(; name)
 end
 
 @named system = System()
-sys = structural_simplify(system)
+sys = mtkcompile(system)
 prob = ODEProblem(sys, [], (0, time[end]))
 
 rdata[] = data1
@@ -263,7 +263,7 @@ function System(; name)
 end
 
 @named system = System()
-sys = structural_simplify(system, split = false)
+sys = mtkcompile(system, split = false)
 s = complete(system)
 
 dt = 4e-4

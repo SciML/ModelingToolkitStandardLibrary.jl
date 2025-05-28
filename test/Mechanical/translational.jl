@@ -22,7 +22,7 @@ import ModelingToolkitStandardLibrary.Mechanical.TranslationalPosition as TP
 
     @named system = System()
     s = complete(system)
-    sys = structural_simplify(system)
+    sys = mtkcompile(system)
     prob = ODEProblem(sys, [s.mass.s => 0], (0, 0.1))
     sol = solve(prob, Rosenbrock23())
 
@@ -50,7 +50,7 @@ end
 
         @named model = ODESystem(eqs, t; systems = [ground, body, spring, damping])
 
-        sys = structural_simplify(model)
+        sys = mtkcompile(model)
 
         prob = ODEProblem(
             sys, [], (0, 20.0), []; initialization_eqs, fully_determined = true)
@@ -101,13 +101,13 @@ end
     end
 
     model = System(dv, sv, bv, gv, fv, source)
-    sys = structural_simplify(model)
+    sys = mtkcompile(model)
     prob = ODEProblem(
         sys, [bv.s => 0, sv.delta_s => 1], (0, 20.0), [], fully_determined = true)
     solv = solve(prob, Rodas4())
 
     model = System(dp, sp, bp, gp, fp, source)
-    sys = structural_simplify(model)
+    sys = mtkcompile(model)
     prob = ODEProblem(sys, [], (0, 20.0), [], fully_determined = true)
     solp = solve(prob, Rodas4())
 
@@ -150,7 +150,7 @@ end
 
             @named system = System()
             s = complete(system)
-            sys = structural_simplify(system)
+            sys = mtkcompile(system)
             prob = ODEProblem(sys, [], (0, 1 / 400))
             sol = solve(prob, Rosenbrock23())
 
@@ -176,7 +176,7 @@ end
             ]
             @named sys = ODESystem(
                 eqs, t, [], []; systems = [force, source, mass, acc, acc_output])
-            s = complete(structural_simplify(sys))
+            s = complete(mtkcompile(sys))
             prob = ODEProblem(s, [mass.s => 0], (0.0, pi))
             sol = solve(prob, Tsit5())
             @test sol[sys.acc_output.u] ≈ (sol[sys.mass.f] ./ m)
@@ -206,7 +206,7 @@ end
             end
 
             @named model = mass_spring()
-            sys = structural_simplify(model)
+            sys = mtkcompile(model)
 
             prob = ODEProblem(sys, [], (0.0, 1.0), fully_determined = true)
             sol = solve(prob, Tsit5())
@@ -230,7 +230,7 @@ end
             ]
             @named sys = ODESystem(
                 eqs, t, [], []; systems = [force, source, mass, acc, acc_output])
-            s = complete(structural_simplify(sys))
+            s = complete(mtkcompile(sys))
             prob = ODEProblem(s, [mass.s => 0], (0.0, pi), fully_determined = true)
             sol = solve(prob, Tsit5())
             @test sol[sys.acc_output.u] ≈ (sol[sys.mass.f] ./ m)

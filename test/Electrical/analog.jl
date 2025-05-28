@@ -42,7 +42,7 @@ using OrdinaryDiffEq: ReturnCode.Success
             current_sensor,
             power_sensor
         ])
-    sys = structural_simplify(model)
+    sys = mtkcompile(model)
     prob = ODEProblem(sys, [], (0.0, 10.0))
     sol = solve(prob, Tsit5())
 
@@ -73,7 +73,7 @@ end
 
     @named model = ODESystem(connections, t,
         systems = [R0, R1, R2, source, short, voltage, ground]; guesses = [R2.v => 0.0])
-    sys = structural_simplify(model)
+    sys = mtkcompile(model)
     prob = ODEProblem(sys, [], (0, 2.0))
     sol = solve(prob, Rodas4()) # has no state; does not work with Tsit5
     @test SciMLBase.successful_retcode(sol)
@@ -99,7 +99,7 @@ end
 
     @named model = ODESystem(connections, t;
         systems = [resistor, capacitor, source, voltage, ground])
-    sys = structural_simplify(model)
+    sys = mtkcompile(model)
     prob = ODEProblem(sys, Pair[], (0.0, 10.0))
     sol = solve(prob, Tsit5())
 
@@ -123,7 +123,7 @@ end
 
     @named model = ODESystem(connections, t;
         systems = [resistor, inductor, source, voltage, ground])
-    sys = structural_simplify(model)
+    sys = mtkcompile(model)
     prob = ODEProblem(sys, Pair[], (0.0, 10.0))
     sol = solve(prob, Tsit5())
 
@@ -158,7 +158,7 @@ end
 
         @named model = ODESystem(connections, t;
             systems = [resistor, capacitor, source, ground, voltage])
-        sys = structural_simplify(model)
+        sys = mtkcompile(model)
         prob = ODEProblem(sys, Pair[], (0.0, 10.0))
         sol = solve(prob, Tsit5())
         @test SciMLBase.successful_retcode(sol)
@@ -185,7 +185,7 @@ end
 
     @named model = ODESystem(connections, t;
         systems = [ground, resistor, current, capacitor, source])
-    sys = structural_simplify(model)
+    sys = mtkcompile(model)
     prob = ODEProblem(sys, Pair[], (0.0, 10.0))
     sol = solve(prob, Tsit5())
     y(x, st) = (x .> st) .* abs.(collect(x) .- st)
@@ -224,7 +224,7 @@ end
             ground,
             sensor
         ])
-    sys = structural_simplify(model)
+    sys = mtkcompile(model)
     u0 = [C1.v => 0.0
           R1.v => 0.0]
     prob = ODEProblem(sys, u0, (0, 100.0))
@@ -292,7 +292,7 @@ _damped_sine_wave(x, f, A, st, ϕ, d) = exp((st - x) * d) * A * sin(2 * π * f *
                 voltage,
                 ground
             ])
-        vsys = structural_simplify(vmodel)
+        vsys = mtkcompile(vmodel)
 
         u0 = [cap.v => 0.0]
 
@@ -358,7 +358,7 @@ end
                 cap,
                 ground
             ])
-        isys = structural_simplify(model)
+        isys = mtkcompile(model)
 
         u0 = [cap.v => 0.0]
 
@@ -401,7 +401,7 @@ end
         end
     end
 
-    @mtkbuild sys = DiodeTest()
+    @mtkcompile sys = DiodeTest()
     prob = ODEProblem(sys, Pair[], (0.0, 10.0))
     sol = solve(prob, Rodas4())
 
@@ -454,7 +454,7 @@ end
         end
     end
 
-    @mtkbuild sys = HeatingDiodeTest()
+    @mtkcompile sys = HeatingDiodeTest()
     prob = ODEProblem(sys, Pair[], (0.0, 10.0))
     sol = solve(prob, Rodas4())
 
@@ -520,7 +520,7 @@ end
     end
 
     # Build and solve the system
-    @mtkbuild sys = RC()
+    @mtkcompile sys = RC()
     prob = ODEProblem(sys, [], (0.0, 10.0); guesses = [sys.resistor.i => 0.0]) # No state variables initially
     sol = solve(prob)
 
@@ -571,7 +571,7 @@ end
         end
     end
 
-    @mtkbuild sys = SimpleNPNCircuit(V_cc = 3.0, V_b = 0.70)
+    @mtkcompile sys = SimpleNPNCircuit(V_cc = 3.0, V_b = 0.70)
 
     prob = ODEProblem(sys, Pair[], (0.0, 10.0))
     sol = solve(prob)
@@ -611,7 +611,7 @@ end
         end
     end
 
-    @mtkbuild sys = SimpleNPNCircuitSubstrate(V_b = 0.70)
+    @mtkcompile sys = SimpleNPNCircuitSubstrate(V_b = 0.70)
 
     prob = ODEProblem(sys, [sys.Q1.c.i => 0.0], (0.0, 10.0))
     sol = solve(prob)
@@ -654,7 +654,7 @@ end
         end
     end
 
-    @mtkbuild sys = SimplePNPCircuit(V_cc = 3.0, V_b = 0.70)
+    @mtkcompile sys = SimplePNPCircuit(V_cc = 3.0, V_b = 0.70)
 
     prob = ODEProblem(sys, Pair[], (0.0, 10.0))
     sol = solve(prob)
@@ -694,7 +694,7 @@ end
         end
     end
 
-    @mtkbuild sys = SimplePNPCircuitSubstrate(V_b = 0.70)
+    @mtkcompile sys = SimplePNPCircuitSubstrate(V_b = 0.70)
 
     prob = ODEProblem(sys, [sys.Q1.c.i => 0.0], (0.0, 10.0))
     sol = solve(prob)

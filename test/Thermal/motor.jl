@@ -41,7 +41,7 @@ using ModelingToolkitStandardLibrary.Blocks
         end
     end
 
-    @mtkbuild motor = ThermalMotor()
+    @mtkcompile motor = ThermalMotor()
     prob = ODEProblem(motor, Pair[], (0, 720.0))
     sol = solve(prob)
 

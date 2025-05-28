@@ -21,7 +21,7 @@ eqs = [connect(link1.TX1, cart.flange) #, force.flange)
 
 @named model = ODESystem(eqs, t, [], []; systems = [link1, link2, cart, fixed])
 
-sys = structural_simplify(model)
+sys = mtkcompile(model)
 @test length(unknowns(sys)) == 6
 
 # The below code does work...

@@ -250,7 +250,7 @@ end
                   connect(out2, fa.y1)]
         @named fa_model = ODESystem(fa_eqs, t,
                                     systems = [fa, one, two, three, out1, out2])
-        sys = structural_simplify(fa_model)
+        sys = mtkcompile(fa_model)
 
         u0 = []
 
@@ -445,7 +445,7 @@ end
 
         @named pul = ODESystem(eqs, t, systems = [α, β, and, out])
         sys = alias_elimination(pul)
-        # sys = structural_simplify(pul)
+        # sys = mtkcompile(pul)
         u0 = []
         prob = ODEProblem(sys, u0, (0, 1.5))
         sol = solve(prob, Rosenbrock23())
@@ -463,7 +463,7 @@ end
            connect(out, not.y)]
     @named pul = ODESystem(eqs, t, systems = [pulseD, not, out])
     sys = alias_elimination(pul)
-    # sys = structural_simplify(pul)
+    # sys = mtkcompile(pul)
 
     u0 = []
     prob = ODEProblem(sys, u0, (0, 1.5))

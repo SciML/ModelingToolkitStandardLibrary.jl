@@ -20,7 +20,7 @@ using OrdinaryDiffEq: ReturnCode.Success
            connect(th_conductor.port_b, reltem_sensor.port_a)
            connect(reltem_sensor.port_b, tem_src.port)]
     @named h1 = ODESystem(eqs, t, systems = [mass1, reltem_sensor, tem_src, th_conductor])
-    sys = structural_simplify(h1)
+    sys = mtkcompile(h1)
 
     u0 = [mass1.T => 2]
     prob = ODEProblem(sys, u0, (0, 2.0))
@@ -39,7 +39,7 @@ using OrdinaryDiffEq: ReturnCode.Success
                      (mass1.C + mass2.C)]
     @named h2 = ODESystem(eqs, t, [final_T], [],
         systems = [mass1, mass2, T_sensor1, T_sensor2, th_conductor])
-    sys = structural_simplify(h2)
+    sys = mtkcompile(h2)
 
     u0 = [mass1.T => 1.0
           mass2.T => 10.0]
@@ -74,7 +74,7 @@ end
     @named h2 = ODESystem(eqs, t,
         systems = [mass1, hf_sensor1, hf_sensor2,
             th_resistor, flow_src, th_ground, th_conductor])
-    sys = structural_simplify(h2)
+    sys = mtkcompile(h2)
 
     u0 = [mass1.T => 10.0]
     prob = ODEProblem(sys, u0, (0, 3.0))
@@ -114,7 +114,7 @@ end
             coolant_tem,
             mass
         ])
-    sys = structural_simplify(rad)
+    sys = mtkcompile(rad)
 
     u0 = [mass.T => T_gas]
     prob = ODEProblem(sys, u0, (0, 3.0))
@@ -142,7 +142,7 @@ end
     @named coll = ODESystem(eqs, t,
         systems = [hf_sensor, flow_src, tem_src,
             collector, th_resistor, mass])
-    sys = structural_simplify(coll)
+    sys = mtkcompile(coll)
 
     prob = ODEProblem(sys, [], (0, 3.0))
     sol = solve(prob, Rodas4())
@@ -169,7 +169,7 @@ end
     end
 
     @info "Building a FixedHeatFlow with alpha=0.0"
-    @mtkbuild test_model = TestModel()
+    @mtkcompile test_model = TestModel()
     prob = ODEProblem(test_model, Pair[], (0, 10.0))
     sol = solve(prob)
 

@@ -47,7 +47,7 @@ using OrdinaryDiffEq: ReturnCode.Success
             r_mLeak,
             voltage
         ])
-    sys = structural_simplify(model)
+    sys = mtkcompile(model)
     prob = ODEProblem(sys, Pair[], (0, 0.1))
     sol = solve(prob, Rodas4())
 

@@ -16,7 +16,7 @@ using OrdinaryDiffEq: ReturnCode.Success
             ],
             t,
             systems = [int, c, sat])
-        sys = structural_simplify(model)
+        sys = mtkcompile(model)
         prob = ODEProblem(sys, [int.x => 1.0], (0.0, 1.0))
 
         sol = solve(prob, Rodas4())
@@ -37,7 +37,7 @@ using OrdinaryDiffEq: ReturnCode.Success
             ],
             t,
             systems = [source, lim, int])
-        sys = structural_simplify(iosys)
+        sys = mtkcompile(iosys)
 
         prob = ODEProblem(sys, unknowns(sys) .=> 0.0, (0.0, 10.0))
 
@@ -65,7 +65,7 @@ end
             ],
             t,
             systems = [int, c, dz])
-        sys = structural_simplify(model)
+        sys = mtkcompile(model)
         prob = ODEProblem(sys, [int.x => 1.0], (0.0, 1.0))
         sol = solve(prob, Rodas4())
 
@@ -85,7 +85,7 @@ end
             ],
             t,
             systems = [int, source, dz])
-        sys = structural_simplify(model)
+        sys = mtkcompile(model)
         prob = ODEProblem(sys, [int.x => 1.0], (0.0, 10.0))
         sol = solve(prob, Rodas4())
 
@@ -109,7 +109,7 @@ end
         ],
         t,
         systems = [source, rl])
-    sys = structural_simplify(iosys)
+    sys = mtkcompile(iosys)
 
     prob = ODEProblem(sys, Pair[], (0.0, 10.0))
 

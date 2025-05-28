@@ -71,7 +71,7 @@ using ModelingToolkit: t_nounits as t
     end
 end
 
-@mtkbuild sys = RC()
+@mtkcompile sys = RC()
 prob = ODEProblem(sys, Pair[], (0, 10.0))
 sol = solve(prob)
 

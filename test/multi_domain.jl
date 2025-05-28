@@ -51,7 +51,7 @@ using OrdinaryDiffEq: ReturnCode.Success
         end
     end
 
-    @mtkbuild dc_motor = DCMotor(; f, k, R, V_step)
+    @mtkcompile dc_motor = DCMotor(; f, k, R, V_step)
 
     prob = ODEProblem(dc_motor, unknowns(dc_motor) .=> 0.0, (0, 6.0))
     sol = solve(prob, Rodas4())
@@ -135,7 +135,7 @@ end
         end
     end
 
-    @mtkbuild sys = DCMotorWithSpeedSensor(; f, k, R, V_step, tau_L_step)
+    @mtkcompile sys = DCMotorWithSpeedSensor(; f, k, R, V_step, tau_L_step)
 
     prob = ODEProblem(sys, unknowns(sys) .=> 0.0, (0, 6.0))
     sol = solve(prob, Rodas4())
@@ -195,7 +195,7 @@ end
         end
     end
 
-    @mtkbuild sys = ElHeatingCircuit()
+    @mtkcompile sys = ElHeatingCircuit()
 
     prob = ODEProblem(sys, [], (0, 6.0); guesses = [sys.heating_resistor.i => 0.0])
     sol = solve(prob, Rodas4())

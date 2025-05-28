@@ -33,9 +33,9 @@ NEWTON = NLNewton(
         ODESystem(eqs, t, [], pars; name, systems)
     end
 
-    @mtkbuild s1_1 = System(1; bulk_modulus = 1e9)
-    @mtkbuild s1_2 = System(1; bulk_modulus = 2e9)
-    @mtkbuild s5_1 = System(5; bulk_modulus = 1e9)
+    @mtkcompile s1_1 = System(1; bulk_modulus = 1e9)
+    @mtkcompile s1_2 = System(1; bulk_modulus = 2e9)
+    @mtkcompile s5_1 = System(5; bulk_modulus = 1e9)
 
     p1_1 = ODEProblem(s1_1, [], (0, 0.05))
     p1_2 = ODEProblem(s1_2, [], (0, 0.05))
@@ -82,7 +82,7 @@ end
     end
 
     @named valve_system = System()
-    sys = structural_simplify(valve_system)
+    sys = mtkcompile(valve_system)
     prob = ODEProblem(sys, [], (0, 1))
     sol = solve(prob, Rodas5P(); abstol = 1e-6, reltol = 1e-9)
     s = complete(valve_system)
@@ -149,7 +149,7 @@ end
     end
 
     @named sys = System()
-    sys = structural_simplify(sys; allow_symbolic = true)
+    sys = mtkcompile(sys; allow_symbolic = true)
     prob = ODEProblem(sys, [], (0, 5))
     sol = solve(prob, Rodas5P(); abstol = 1e-6, reltol = 1e-9)
     # begin
@@ -280,12 +280,12 @@ end
         ODESystem(eqs, t, vars, pars; name, systems, initialization_eqs)
     end
 
-    @mtkbuild initsys = System(false)
+    @mtkcompile initsys = System(false)
 
     initprob = ODEProblem(initsys, [], (0, 0))
     initsol = solve(initprob, Rodas5P())
 
-    @mtkbuild sys = System(true)
+    @mtkcompile sys = System(true)
 
     dt = 1e-4
     time = 0:dt:0.1
@@ -338,7 +338,7 @@ end
         return ODESystem(eqs, t, [], pars; name, systems, initialization_eqs)
     end
 
-    @mtkbuild sys = System()
+    @mtkcompile sys = System()
 
     prob1 = ODEProblem(sys, [], (0, 0.05))
     # prob1 = remake(prob1; u0 = BigFloat.(prob1.u0))
@@ -392,7 +392,7 @@ end
 
 #     @named sys = System()
 
-#     syss = structural_simplify.([sys])
+#     syss = mtkcompile.([sys])
 #     tspan = (0.0, 1000.0)
 #     prob = ODEProblem(sys, tspan)  # u0 guess can be supplied or not
 #     @time sol = solve(prob)

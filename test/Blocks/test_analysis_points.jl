@@ -16,7 +16,7 @@ eqs = [connect(P.output, C.input)
        connect(C.output, ap, P.input)]
 sys = ODESystem(eqs, t, systems = [P, C], name = :hej)
 
-ssys = structural_simplify(sys)
+ssys = mtkcompile(sys)
 prob = ODEProblem(ssys, [P.x => 1], (0, 10))
 sol = solve(prob, Rodas5())
 @test norm(sol.u[1]) >= 1
@@ -124,8 +124,8 @@ eqs = [connect(r.output, F.input)
        connect(F.output, sys_inner.add.input1)]
 sys_outer = ODESystem(eqs, t, systems = [F, sys_inner, r], name = :outer)
 
-# test first that the structural_simplify works correctly
-ssys = structural_simplify(sys_outer)
+# test first that the mtkcompile works correctly
+ssys = mtkcompile(sys_outer)
 prob = ODEProblem(ssys, Pair[], (0, 10))
 # sol = solve(prob, Rodas5())
 # plot(sol)
@@ -203,7 +203,7 @@ closed_loop = ODESystem(connections, t, systems = [model, pid, filt, sensor, r, 
         filt.xd => 0.0
     ])
 
-sys = structural_simplify(closed_loop)
+sys = mtkcompile(closed_loop)
 prob = ODEProblem(sys, unknowns(sys) .=> 0.0, (0.0, 4.0))
 sol = solve(prob, Rodas5P(), reltol = 1e-6, abstol = 1e-9)
 # plot(

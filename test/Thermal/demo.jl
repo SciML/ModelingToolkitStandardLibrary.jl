@@ -19,7 +19,7 @@ using OrdinaryDiffEq: ReturnCode.Success
 
     @named model = ODESystem(connections, t,
         systems = [mass1, mass2, conduction, Tsensor1, Tsensor2])
-    sys = structural_simplify(model)
+    sys = mtkcompile(model)
     prob = ODEProblem(sys, [], (0, 3.0))
     sol = solve(prob, Tsit5())
     @test SciMLBase.successful_retcode(sol)

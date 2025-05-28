@@ -15,7 +15,7 @@ an integrator with a constant input is often used together with the system under
     @named c = Constant(; k = 1)
     @named int = Integrator(x = 1)
     @named iosys = ODESystem(connect(c.output, int.input), t, systems = [int, c])
-    sys = structural_simplify(iosys)
+    sys = mtkcompile(iosys)
     prob = ODEProblem(sys, Pair[], (0.0, 1.0))
     sol = solve(prob, Rodas4())
     @test sol.retcode == Success
@@ -34,7 +34,7 @@ end
         ],
         t,
         systems = [int, source, der])
-    sys = structural_simplify(iosys)
+    sys = mtkcompile(iosys)
     prob = ODEProblem(sys, Pair[int.x => 0.0], (0.0, 10.0))
     sol = solve(prob, Rodas4())
     @test sol.retcode == Success
@@ -48,7 +48,7 @@ end
     @named c = Constant(; k = 1)
     @named pt1 = FirstOrder(; k = k, T = T)
     @named iosys = ODESystem(connect(c.output, pt1.input), t, systems = [pt1, c])
-    sys = structural_simplify(iosys)
+    sys = mtkcompile(iosys)
     prob = ODEProblem(sys, Pair[], (0.0, 100.0))
     sol = solve(prob, Rodas4())
     @test sol.retcode == Success
@@ -57,7 +57,7 @@ end
     # Test highpass feature
     @named pt1 = FirstOrder(; k = k, T = T, lowpass = false)
     @named iosys = ODESystem(connect(c.output, pt1.input), t, systems = [pt1, c])
-    sys = structural_simplify(iosys)
+    sys = mtkcompile(iosys)
     prob = ODEProblem(sys, Pair[], (0.0, 100.0))
     sol = solve(prob, Rodas4())
     @test sol.retcode == Success
@@ -81,7 +81,7 @@ end
     @named c = Constant(; k = 1)
     @named pt2 = SecondOrder(; k = k, w = w, d = d)
     @named iosys = ODESystem(connect(c.output, pt2.input), t, systems = [pt2, c])
-    sys = structural_simplify(iosys)
+    sys = mtkcompile(iosys)
     prob = ODEProblem(sys, [unknowns(sys) .=> 0.0...; pt2.xd => 0.0], (0.0, 100.0))
     sol = solve(prob, Rodas4())
     @test sol.retcode == Success
@@ -100,7 +100,7 @@ end
         ],
         t,
         systems = [ss, c])
-    sys = structural_simplify(model)
+    sys = mtkcompile(model)
     prob = ODEProblem(sys, Pair[], (0.0, 100.0))
     sol = solve(prob, Rodas4())
     @test sol.retcode == Success
@@ -120,7 +120,7 @@ end
         ],
         t,
         systems = [ss, c])
-    sys = structural_simplify(model)
+    sys = mtkcompile(model)
     prob = ODEProblem(sys, Pair[], (0.0, 100.0))
     sol = solve(prob, Rodas4())
     @test sol.retcode == Success
@@ -160,7 +160,7 @@ end
         ],
         t,
         systems = [pi_controller, plant, ref, fb])
-    sys = structural_simplify(model)
+    sys = mtkcompile(model)
     prob = ODEProblem(sys, Pair[], (0.0, 100.0))
     sol = solve(prob, Rodas4())
     @test sol.retcode == Success
@@ -183,7 +183,7 @@ end
         ],
         t,
         systems = [pid_controller, plant, ref, fb])
-    sys = structural_simplify(model)
+    sys = mtkcompile(model)
     prob = ODEProblem(sys, Pair[], (0.0, 100.0))
     sol = solve(prob, Rodas4())
     @test sol.retcode == Success
@@ -201,7 +201,7 @@ end
             ],
             t,
             systems = [pid_controller, plant, ref, fb])
-        sys = structural_simplify(model)
+        sys = mtkcompile(model)
         prob = ODEProblem(sys, Pair[], (0.0, 100.0))
         sol = solve(prob, Rodas4())
         @test sol.retcode == Success
@@ -220,7 +220,7 @@ end
             ],
             t,
             systems = [pid_controller, plant, ref, fb])
-        sys = structural_simplify(model)
+        sys = mtkcompile(model)
         prob = ODEProblem(sys, Pair[], (0.0, 100.0))
         sol = solve(prob, Rodas4())
         @test sol.retcode == Success
@@ -254,7 +254,7 @@ end
             ],
             t,
             systems = [pi_controller, plant, ref, fb, sat])
-        sys = structural_simplify(model)
+        sys = mtkcompile(model)
         prob = ODEProblem(sys, Pair[], (0.0, 20.0))
         sol = solve(prob, Rodas4())
     end
@@ -271,7 +271,7 @@ end
             ],
             t,
             systems = [pi_controller_lim, plant, ref, fb, sat])
-        sys = structural_simplify(model)
+        sys = mtkcompile(model)
         prob = ODEProblem(sys, Pair[], (0.0, 20.0))
         sol = solve(prob, Rodas4())
     end
@@ -303,7 +303,7 @@ end
         ],
         t,
         systems = [pid_controller, plant, ref])
-    sys = structural_simplify(model)
+    sys = mtkcompile(model)
     prob = ODEProblem(sys, Pair[], (0.0, 100.0))
     sol = solve(prob, Rodas4())
 
@@ -324,7 +324,7 @@ end
             ],
             t,
             systems = [pid_controller, plant, ref])
-        sys = structural_simplify(model)
+        sys = mtkcompile(model)
         prob = ODEProblem(sys, Pair[], (0.0, 100.0))
         sol = solve(prob, Rodas4())
 
@@ -345,7 +345,7 @@ end
             ],
             t,
             systems = [pid_controller, plant, ref])
-        sys = structural_simplify(model)
+        sys = mtkcompile(model)
         prob = ODEProblem(sys, Pair[], (0.0, 100.0))
         sol = solve(prob, Rodas4())
 
@@ -367,7 +367,7 @@ end
                 ],
                 t,
                 systems = [pid_controller, plant, ref])
-            sys = structural_simplify(model)
+            sys = mtkcompile(model)
             prob = ODEProblem(sys, Pair[], (0.0, 100.0))
             sol = solve(prob, Rodas4())
 
@@ -389,7 +389,7 @@ end
                 ],
                 t,
                 systems = [pid_controller, plant, ref])
-            sys = structural_simplify(model)
+            sys = mtkcompile(model)
             prob = ODEProblem(sys, Pair[], (0.0, 100.0))
             sol = solve(prob, Rodas4())
 
@@ -412,7 +412,7 @@ end
             ],
             t,
             systems = [pid_controller, plant, ref])
-        sys = structural_simplify(model)
+        sys = mtkcompile(model)
         prob = ODEProblem(sys, Pair[], (0.0, 100.0))
         sol = solve(prob, Rodas4())
 
@@ -429,7 +429,7 @@ end
         @named c = Constant(; k = 1)
         @named pt1 = TransferFunction(b = [1.2], a = [3.14, 1])
         @named iosys = ODESystem(connect(c.output, pt1.input), t, systems = [pt1, c])
-        sys = structural_simplify(iosys)
+        sys = mtkcompile(iosys)
         prob = ODEProblem(sys, Pair[], (0.0, 100.0))
         sol = solve(prob, Rodas4())
         @test sol.retcode == Success
@@ -439,7 +439,7 @@ end
         @named c = Constant(; k = 1)
         @named pt1 = TransferFunction(b = [1.2], a = [3.14, 0])
         @named iosys = ODESystem(connect(c.output, pt1.input), t, systems = [pt1, c])
-        sys = structural_simplify(iosys)
+        sys = mtkcompile(iosys)
         prob = ODEProblem(sys, Pair[], (0.0, 100.0))
         sol = solve(prob, Rodas4())
         @test sol.retcode == Success
@@ -463,7 +463,7 @@ end
         k, w, d = 1.0, 1.0, 0.5
         @named pt1 = TransferFunction(b = [w^2], a = [1, 2d * w, w^2])
         @named iosys = ODESystem(connect(c.output, pt1.input), t, systems = [pt1, c])
-        sys = structural_simplify(iosys)
+        sys = mtkcompile(iosys)
         prob = ODEProblem(sys, Pair[], (0.0, 100.0))
         sol = solve(prob, Rodas4())
         @test sol.retcode == Success
@@ -473,7 +473,7 @@ end
         @named c = Constant(; k = 1)
         @named pt1 = TransferFunction(b = [1, 0], a = [1, 1])
         @named iosys = ODESystem(connect(c.output, pt1.input), t, systems = [pt1, c])
-        sys = structural_simplify(iosys)
+        sys = mtkcompile(iosys)
         prob = ODEProblem(sys, Pair[], (0.0, 100.0))
         sol = solve(prob, Rodas4())
         @test sol.retcode == Success
@@ -483,7 +483,7 @@ end
         # Test with no state
         @named pt1 = TransferFunction(b = [2.7], a = [pi])
         @named iosys = ODESystem(connect(c.output, pt1.input), t, systems = [pt1, c])
-        sys = structural_simplify(iosys)
+        sys = mtkcompile(iosys)
         prob = ODEProblem(sys, Pair[], (0.0, 100.0))
         sol = solve(prob, Rodas4())
         @test sol.retcode == Success

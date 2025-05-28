@@ -31,7 +31,7 @@ using ModelingToolkitStandardLibrary.Blocks
         end
     end
 
-    @mtkbuild piston = Piston()
+    @mtkcompile piston = Piston()
 
     prob = ODEProblem(piston, [], (0, 3.0))
     sol = solve(prob)

@@ -88,7 +88,7 @@ Here we can see that a positive input force results in an increasing velocity.
         connect(mass.flange, force.flange)
     end
 end
-@mtkbuild sys = Model()
+@mtkcompile sys = Model()
 full_equations(sys)
 ```
 
@@ -128,7 +128,7 @@ Here we can see that a positive input current results in an increasing voltage. 
         connect(capacitor.n, current.p, ground.g)
     end
 end
-@mtkbuild sys = Model()
+@mtkcompile sys = Model()
 full_equations(sys)
 ```
 
@@ -146,7 +146,7 @@ Reversing the pins gives the same result
         connect(capacitor.p, current.n, ground.g)
     end
 end
-@mtkbuild sys = Model()
+@mtkcompile sys = Model()
 full_equations(sys)
 ```
 
@@ -184,6 +184,6 @@ A positive input mass flow leads to an increasing pressure (in this case we get 
         connect(fluid, flow.port)
     end
 end
-@mtkbuild sys = Model()
+@mtkcompile sys = Model()
 full_equations(sys) |> first
 ```
