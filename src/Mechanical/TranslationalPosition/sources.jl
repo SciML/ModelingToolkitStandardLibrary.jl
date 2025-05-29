@@ -12,9 +12,6 @@ Input signal acting as external force on a flange
     @components begin
         f = RealInput()
     end
-    begin
-        defaults[flange.s] = s
-    end
     @equations begin
         flange.f ~ -f.u
     end
