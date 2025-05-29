@@ -33,7 +33,7 @@ Takes two bits as input, and outputs the sum and the carry
            y2.val ~ _and(x1.val, x2.val)
            sum ~ y1.val
            carry ~ y2.val]
-    ODESystem(eqs, t, [sum, carry], [], systems = [x1, x2, y1, y2], name = name)
+    System(eqs, t, [sum, carry], [], systems = [x1, x2, y1, y2], name = name)
 end
 
 """
@@ -71,7 +71,7 @@ Takes three bits as input, and outputs the sum and the carry
            y2.val ~ _or(_and(x3.val, _xor(x1.val, x2.val)), _and(x1.val, x2.val))
            sum ~ y1.val
            carry ~ y2.val]
-    ODESystem(eqs, t, [sum, carry], [], systems = [x1, x2, x3, y1, y2], name = name)
+    System(eqs, t, [sum, carry], [], systems = [x1, x2, x3, y1, y2], name = name)
 end
 
 # Multiplexers
@@ -126,7 +126,7 @@ of `i`.
 
     eqs = Equation[y.val ~ _or(nodes...)]
 
-    ODESystem(eqs, t, [], [], systems = [d..., s..., y], name = name)
+    System(eqs, t, [], [], systems = [d..., s..., y], name = name)
 end
 
 # This selects one of the `N` output ports (`y₀` to `yₙ₋₁`)
@@ -178,7 +178,7 @@ representation of `i`.
         push!(eqs, y[i].val ~ _and(statelist..., d.val))
     end
 
-    ODESystem(eqs, t, [], [], systems = [d, s..., y...], name = name)
+    System(eqs, t, [], [], systems = [d, s..., y...], name = name)
 end
 
 # Encoder-Decoder
@@ -236,7 +236,7 @@ If the `i`th input is `1`, then the output corresponds to the binary representat
         push!(eqs, y[i].val ~ _or(nodes[i]...))
     end
 
-    ODESystem(eqs, t, [], [], systems = [d..., y...], name = name)
+    System(eqs, t, [], [], systems = [d..., y...], name = name)
 end
 
 # Decodes `n` inputs to `N` outputs, where `N = 2^n`
@@ -281,5 +281,5 @@ the select lines correspond to the binary representation of `1`.
         push!(eqs, y[i].val ~ _and(nodes[i]...))
     end
 
-    ODESystem(eqs, t, [], [], systems = [d..., y...], name = name)
+    System(eqs, t, [], [], systems = [d..., y...], name = name)
 end

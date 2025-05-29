@@ -17,9 +17,9 @@ using OrdinaryDiffEq: ReturnCode.Success
         connect(mass2.port, Tsensor2.port)
     ]
 
-    @named model = ODESystem(connections, t,
+    @named model = System(connections, t,
         systems = [mass1, mass2, conduction, Tsensor1, Tsensor2])
-    sys = structural_simplify(model)
+    sys = mtkcompile(model)
     prob = ODEProblem(sys, [], (0, 3.0))
     sol = solve(prob, Tsit5())
     @test SciMLBase.successful_retcode(sol)

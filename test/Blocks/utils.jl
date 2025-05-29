@@ -29,11 +29,11 @@ end
     k, w, d = 1.0, 1.0, 0.5
     @named c = Constant(; k = 1)
     @named so = SecondOrder(; k = k, w = w, d = d, xd = 1)
-    @named iosys = ODESystem(connect(c.output, so.input), t, systems = [so, c])
-    sys = structural_simplify(iosys)
+    @named iosys = System(connect(c.output, so.input), t, systems = [so, c])
+    sys = mtkcompile(iosys)
 
     initsys = ModelingToolkit.generate_initializesystem(sys)
-    initsys = structural_simplify(initsys)
+    initsys = mtkcompile(initsys)
     initprob = NonlinearProblem(initsys, [t => 0])
     initsol = solve(initprob)
 

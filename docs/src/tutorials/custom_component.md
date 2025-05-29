@@ -109,11 +109,11 @@ nothing # hide
 
 ## Simulating the Model
 
-`@mtkbuild` builds a structurally simplified `ChaoticAttractor` model.
+`@mtkcompile` builds a structurally simplified `ChaoticAttractor` model.
 Since the initial voltage of the capacitors was already specified via `v` and the initial current of inductor via `i`, no initial condition is given and an empty pair is supplied.
 
 ```@example components
-@mtkbuild sys = ChaoticAttractor()
+@mtkcompile sys = ChaoticAttractor()
 prob = ODEProblem(sys, Pair[], (0, 5e4))
 sol = solve(prob; saveat = 1.0)
 

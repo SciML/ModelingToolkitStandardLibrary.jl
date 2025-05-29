@@ -35,7 +35,7 @@ using OrdinaryDiffEq: ReturnCode.Success
                    connect(r_mFe.port_n, coil.port_n)
                    connect(ground.g, voltage.n)
                    connect(ground_m.port, r_mFe.port_n)]
-    @named model = ODESystem(connections, t,
+    @named model = System(connections, t,
         systems = [
             source,
             r,
@@ -47,7 +47,7 @@ using OrdinaryDiffEq: ReturnCode.Success
             r_mLeak,
             voltage
         ])
-    sys = structural_simplify(model)
+    sys = mtkcompile(model)
     prob = ODEProblem(sys, Pair[], (0, 0.1))
     sol = solve(prob, Rodas4())
 

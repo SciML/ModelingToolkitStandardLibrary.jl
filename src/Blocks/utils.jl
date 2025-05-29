@@ -17,7 +17,7 @@
         ]
         u = collect(u)
     end
-    ODESystem(Equation[], t, [u;], []; name = name, guesses = [(u .=> guess);])
+    System(Equation[], t, [u;], []; name = name, guesses = [(u .=> guess);])
 end
 @doc """
     RealInput(;name, guess)
@@ -41,7 +41,7 @@ Connector with one input signal of type Real.
         input = true,
         description = "Inner variable in RealInputArray $name"
     ]
-    ODESystem(Equation[], t, [u], []; name = name, guesses = [u => guess])
+    System(Equation[], t, [u], []; name = name, guesses = [u => guess])
 end
 @doc """
     RealInputArray(;name, nin, guess)
@@ -75,7 +75,7 @@ Connector with an array of input signals of type Real.
         ]
         u = collect(u)
     end
-    ODESystem(Equation[], t, [u;], []; name = name, guesses = [(u .=> guess);])
+    System(Equation[], t, [u;], []; name = name, guesses = [(u .=> guess);])
 end
 @doc """
     RealOutput(;name, guess)
@@ -99,7 +99,7 @@ Connector with one output signal of type Real.
         output = true,
         description = "Inner variable in RealOutputArray $name"
     ]
-    ODESystem(Equation[], t, [u], []; name = name, guesses = [u => guess])
+    System(Equation[], t, [u], []; name = name, guesses = [u => guess])
 end
 @doc """
     RealOutputArray(;name, nout, guess)
@@ -165,5 +165,5 @@ Base class for a multiple input multiple output (MIMO) continuous system block.
         [u[i] ~ input.u[i] for i in 1:nin]...,
         [y[i] ~ output.u[i] for i in 1:nout]...
     ]
-    return ODESystem(eqs, t, vcat(u..., y...), []; name = name, systems = [input, output])
+    return System(eqs, t, vcat(u..., y...), []; name = name, systems = [input, output])
 end

@@ -29,7 +29,7 @@ Connector port for hydraulic components.
         dm(t), [guess = 0, connect = Flow]
     end
 
-    ODESystem(Equation[], t, vars, pars; name)
+    System(Equation[], t, vars, pars; name)
 end
 
 """
@@ -68,7 +68,7 @@ Fluid parameter setter for isothermal compressible fluid domain.  Defaults given
         dm ~ 0
     ]
 
-    ODESystem(eqs, t, vars, pars; name)
+    System(eqs, t, vars, pars; name)
 end
 
 function transition(x1, x2, y1, y2, x)

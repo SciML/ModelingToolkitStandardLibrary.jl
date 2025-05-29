@@ -51,7 +51,7 @@ using OrdinaryDiffEq: ReturnCode.Success
         end
     end
 
-    @mtkbuild dc_motor = DCMotor(; f, k, R, V_step)
+    @mtkcompile dc_motor = DCMotor(; f, k, R, V_step)
 
     prob = ODEProblem(dc_motor, unknowns(dc_motor) .=> 0.0, (0, 6.0))
     sol = solve(prob, Rodas4())
@@ -69,7 +69,7 @@ using OrdinaryDiffEq: ReturnCode.Success
     @test sol[dc_motor.emf.i][idx_t]≈(dc_gain * [V_step; -tau_L_step])[1] rtol=1e-3
 
     @test_skip begin
-        prob = DAEProblem(dc_motor, D.(unknowns(dc_motor)) .=> 0.0, Pair[], (0, 6.0))
+        prob = DAEProblem(dc_motor, D.(unknowns(dc_motor)) .=> 0.0, (0, 6.0))
         sol = solve(prob, DFBDF())
         @test sol.retcode == Success
         # EMF equations
@@ -135,7 +135,7 @@ end
         end
     end
 
-    @mtkbuild sys = DCMotorWithSpeedSensor(; f, k, R, V_step, tau_L_step)
+    @mtkcompile sys = DCMotorWithSpeedSensor(; f, k, R, V_step, tau_L_step)
 
     prob = ODEProblem(sys, unknowns(sys) .=> 0.0, (0, 6.0))
     sol = solve(prob, Rodas4())
@@ -156,7 +156,7 @@ end
     @test all(sol[sys.inertia.w] .== sol[sys.speed_sensor.w.u])
 
     @test_skip begin
-        prob = DAEProblem(sys, D.(unknowns(sys)) .=> 0.0, Pair[], (0, 6.0))
+        prob = DAEProblem(sys, D.(unknowns(sys)) .=> 0.0, (0, 6.0))
         sol = solve(prob, DFBDF())
         @test sol.retcode == Success
         # EMF equations
@@ -195,7 +195,7 @@ end
         end
     end
 
-    @mtkbuild sys = ElHeatingCircuit()
+    @mtkcompile sys = ElHeatingCircuit()
 
     prob = ODEProblem(sys, [], (0, 6.0); guesses = [sys.heating_resistor.i => 0.0])
     sol = solve(prob, Rodas4())

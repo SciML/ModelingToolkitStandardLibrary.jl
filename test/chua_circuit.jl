@@ -18,7 +18,7 @@ using IfElse: ifelse
                 Gb * (v - Ve) + Ga * Ve,
                 Ga * v))
         ]
-        extend(ODESystem(eqs, t, [], pars; name = name), oneport)
+        extend(System(eqs, t, [], pars; name = name), oneport)
     end
 
     @named L = Inductor(L = 18, i = 0.0)
@@ -41,8 +41,8 @@ using IfElse: ifelse
                    connect(C2.n, Gnd.g)
                    connect(Ro.n, Gnd.g)]
 
-    @named model = ODESystem(connections, t, systems = [L, Ro, G, C1, C2, Nr, Gnd])
-    sys = structural_simplify(model)
+    @named model = System(connections, t, systems = [L, Ro, G, C1, C2, Nr, Gnd])
+    sys = mtkcompile(model)
     prob = ODEProblem(sys, Pair[], (0, 5e4), saveat = 0.01)
     sol = solve(prob, Rodas4())
 

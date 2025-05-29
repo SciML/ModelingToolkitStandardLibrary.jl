@@ -110,7 +110,7 @@ end
     for source in sources
         not_eqs = [connect(source.d, not.x)
                    connect(out, not.y)]
-        @named not_model = ODESystem(not_eqs, t, systems = [out, not, source])
+        @named not_model = System(not_eqs, t, systems = [out, not, source])
         sys = alias_elimination(not_model)
         u0 = [
             not.y.val => 0.0,
@@ -129,7 +129,7 @@ end
         and_eqs = [connect(one.d, and.x1)
                    connect(two.d, and.x2)
                    connect(out, and.y)]
-        @named and_model = ODESystem(and_eqs, t, systems = [and, one, two, out])
+        @named and_model = System(and_eqs, t, systems = [and, one, two, out])
         sys = alias_elimination(and_model)
 
         u0 = []
@@ -141,7 +141,7 @@ end
         nand_eqs = [connect(one.d, nand.x1)
                     connect(two.d, nand.x2)
                     connect(out, nand.y)]
-        @named nand_model = ODESystem(nand_eqs, t, systems = [nand, one, two, out])
+        @named nand_model = System(nand_eqs, t, systems = [nand, one, two, out])
         sys = alias_elimination(nand_model)
 
         u0 = []
@@ -159,7 +159,7 @@ end
         or_eqs = [connect(one.d, or.x1)
                   connect(two.d, or.x2)
                   connect(out, or.y)]
-        @named or_model = ODESystem(or_eqs, t, systems = [or, one, two, out])
+        @named or_model = System(or_eqs, t, systems = [or, one, two, out])
         sys = alias_elimination(or_model)
 
         u0 = []
@@ -171,7 +171,7 @@ end
         nor_eqs = [connect(one.d, nor.x1)
                    connect(two.d, nor.x2)
                    connect(out, nor.y)]
-        @named nor_model = ODESystem(nor_eqs, t, systems = [nor, one, two, out])
+        @named nor_model = System(nor_eqs, t, systems = [nor, one, two, out])
         sys = alias_elimination(nor_model)
 
         u0 = []
@@ -189,7 +189,7 @@ end
         xor_eqs = [connect(one.d, xor.x1)
                    connect(two.d, xor.x2)
                    connect(out, xor.y)]
-        @named xor_model = ODESystem(xor_eqs, t, systems = [xor, one, two, out])
+        @named xor_model = System(xor_eqs, t, systems = [xor, one, two, out])
         sys = alias_elimination(xor_model)
 
         u0 = []
@@ -203,7 +203,7 @@ end
         xnor_eqs = [connect(one.d, xnor.x1)
                     connect(two.d, xnor.x2)
                     connect(out, xnor.y)]
-        @named xnor_model = ODESystem(xnor_eqs, t, systems = [xnor, one, two, out])
+        @named xnor_model = System(xnor_eqs, t, systems = [xnor, one, two, out])
         sys = alias_elimination(xnor_model)
 
         u0 = []
@@ -223,7 +223,7 @@ end
                   connect(two.d, ha.x2)
                   connect(out1, ha.y0)
                   connect(out2, ha.y1)]
-        @named ha_model = ODESystem(ha_eqs, t, systems = [ha, one, two, out1, out2])
+        @named ha_model = System(ha_eqs, t, systems = [ha, one, two, out1, out2])
         sys = alias_elimination(ha_model)
 
         u0 = []
@@ -248,9 +248,9 @@ end
                   connect(three.d, fa.x3)
                   connect(out1, fa.y0)
                   connect(out2, fa.y1)]
-        @named fa_model = ODESystem(fa_eqs, t,
+        @named fa_model = System(fa_eqs, t,
                                     systems = [fa, one, two, three, out1, out2])
-        sys = structural_simplify(fa_model)
+        sys = mtkcompile(fa_model)
 
         u0 = []
 
@@ -284,7 +284,7 @@ end
                connect(select1.d, demux1x2.s0)
                connect(out[1], demux1x2.y0)
                connect(out[2], demux1x2.y1)]
-    @named mux_model = ODESystem(mux_eqs, t,
+    @named mux_model = System(mux_eqs, t,
                                  systems = [mux2x1, demux1x2,
                                      out[2], out[1], select0, select1,
                                      input[2], input[1]])
@@ -312,7 +312,7 @@ end
                    connect(select0[idx0].d, mux4x1.s0)
                    connect(select1[idx1].d, mux4x1.s1)
                    connect(out[1], mux4x1.y)]
-        @named mux_model = ODESystem(mux_eqs, t,
+        @named mux_model = System(mux_eqs, t,
                                      systems = [mux4x1, out[1], select0[idx0],
                                          select1[idx1],
                                          input[1], input[2], input[3], input[4]])
@@ -353,7 +353,7 @@ end
                connect(out[2], demux1x4.y1)
                connect(out[3], demux1x4.y2)
                connect(out[4], demux1x4.y3)]
-        @named demux_model = ODESystem(eqs, t,
+        @named demux_model = System(eqs, t,
                                        systems = [demux1x4, select0[idx0], select1[idx1],
                                            input,
                                            out[1], out[2], out[3], out[4]])
@@ -389,7 +389,7 @@ end
                connect(input[4].d, enc4x2.d3)
                connect(out[1], enc4x2.y0)
                connect(out[2], enc4x2.y1)]
-    @named enc_model = ODESystem(enc_eqs, t,
+    @named enc_model = System(enc_eqs, t,
                                  systems = [enc4x2, out[1], out[2],
                                      input[1], input[2], input[3], input[4]])
     sys = alias_elimination(enc_model)
@@ -409,7 +409,7 @@ end
                connect(out[2], dec2x4.y1)
                connect(out[3], dec2x4.y2)
                connect(out[4], dec2x4.y3)]
-    @named dec_model = ODESystem(dec_eqs, t,
+    @named dec_model = System(dec_eqs, t,
                                  systems = [dec2x4, out[1], out[2],
                                      out[3], out[4],
                                      input[1], input[2]])
@@ -443,9 +443,9 @@ end
                connect(β.d, and.x2)
                connect(out, and.y)]
 
-        @named pul = ODESystem(eqs, t, systems = [α, β, and, out])
+        @named pul = System(eqs, t, systems = [α, β, and, out])
         sys = alias_elimination(pul)
-        # sys = structural_simplify(pul)
+        # sys = mtkcompile(pul)
         u0 = []
         prob = ODEProblem(sys, u0, (0, 1.5))
         sol = solve(prob, Rosenbrock23())
@@ -461,9 +461,9 @@ end
     @named not = Not()
     eqs = [connect(pulseD.d, not.x)
            connect(out, not.y)]
-    @named pul = ODESystem(eqs, t, systems = [pulseD, not, out])
+    @named pul = System(eqs, t, systems = [pulseD, not, out])
     sys = alias_elimination(pul)
-    # sys = structural_simplify(pul)
+    # sys = mtkcompile(pul)
 
     u0 = []
     prob = ODEProblem(sys, u0, (0, 1.5))

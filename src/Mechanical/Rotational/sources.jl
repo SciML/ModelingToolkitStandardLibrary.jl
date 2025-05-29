@@ -115,7 +115,7 @@ Forced movement of a flange according to a reference angular velocity signal
         push!(eqs, D(w) ~ a)
         push!(eqs, a ~ (w_ref.u - w) * tau_filt)
     end
-    return extend(ODESystem(eqs, t, [phi, w, a], pars; name = name, systems = [w_ref]),
+    return extend(System(eqs, t, [phi, w, a], pars; name = name, systems = [w_ref]),
         partial_element)
 end
 
@@ -176,5 +176,5 @@ The input signal `phi_ref` defines the reference angle in [rad]. Flange is force
          D(w) ~ a
          a ~ ((phi_ref.u - phi) * w_crit - af * w) * (w_crit / bf)]
     end
-    extend(ODESystem(equations, t; name, systems = [phi_ref]), partial_element)
+    extend(System(equations, t; name, systems = [phi_ref]), partial_element)
 end

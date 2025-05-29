@@ -10,7 +10,7 @@ NEWTON = NLNewton(
     check_div = false, always_new = true, max_iter = 100, relax = 9 // 10, κ = 1e-6)
 
 @testset "Fluid Domain and Tube" begin
-    function System(N; bulk_modulus, name)
+    function FluidSystem(N; bulk_modulus, name)
         pars = @parameters begin
             bulk_modulus = bulk_modulus
             p_int = 0
@@ -30,12 +30,12 @@ NEWTON = NLNewton(
                connect(src.port, res.port_a)
                connect(res.port_b, vol.port)]
 
-        ODESystem(eqs, t, [], pars; name, systems)
+        System(eqs, t, [], pars; name, systems)
     end
 
-    @mtkbuild s1_1 = System(1; bulk_modulus = 1e9)
-    @mtkbuild s1_2 = System(1; bulk_modulus = 2e9)
-    @mtkbuild s5_1 = System(5; bulk_modulus = 1e9)
+    @mtkcompile s1_1 = FluidSystem(1; bulk_modulus = 1e9)
+    @mtkcompile s1_2 = FluidSystem(1; bulk_modulus = 2e9)
+    @mtkcompile s5_1 = FluidSystem(5; bulk_modulus = 1e9)
 
     p1_1 = ODEProblem(s1_1, [], (0, 0.05))
     p1_2 = ODEProblem(s1_2, [], (0, 0.05))
@@ -61,7 +61,7 @@ NEWTON = NLNewton(
 end
 
 @testset "Valve" begin
-    function System(; name)
+    function ValveSystem(; name)
         pars = []
 
         systems = @named begin
@@ -78,11 +78,11 @@ end
                connect(valve.port_b, vol.port)
                connect(valve.area, ramp.output)]
 
-        ODESystem(eqs, t, [], pars; name, systems)
+        System(eqs, t, [], pars; name, systems)
     end
 
-    @named valve_system = System()
-    sys = structural_simplify(valve_system)
+    @named valve_system = ValveSystem()
+    sys = mtkcompile(valve_system)
     prob = ODEProblem(sys, [], (0, 1))
     sol = solve(prob, Rodas5P(); abstol = 1e-6, reltol = 1e-9)
     s = complete(valve_system)
@@ -98,7 +98,7 @@ end
 end
 
 @testset "DynamicVolume and minimum_volume feature" begin # Need help here
-    function System(; name, area = 0.01, length = 0.1, damping_volume = length * area * 0.1)
+    function TestSystem(; name, area = 0.01, length = 0.1, damping_volume = length * area * 0.1)
         pars = []
 
         # DynamicVolume values
@@ -145,11 +145,11 @@ end
         initialization_eqs = [mass.s ~ 0.0
                               mass.v ~ 0.0]
 
-        ODESystem(eqs, t, [], pars; name, systems, initialization_eqs)
+        System(eqs, t, [], pars; name, systems, initialization_eqs)
     end
 
-    @named sys = System()
-    sys = structural_simplify(sys; allow_symbolic = true)
+    @named sys = TestSystem()
+    sys = mtkcompile(sys; allow_symbolic = true)
     prob = ODEProblem(sys, [], (0, 5))
     sol = solve(prob, Rodas5P(); abstol = 1e-6, reltol = 1e-9)
     # begin
@@ -190,7 +190,7 @@ end
 end
 
 @testset "Actuator System" begin
-    function System(use_input; name)
+    function ActuatorSystem(use_input; name)
         pars = @parameters begin
             p_s = 200e5
             p_r = 5e5
@@ -277,15 +277,15 @@ end
         # body.s ~ 0
         ]
 
-        ODESystem(eqs, t, vars, pars; name, systems, initialization_eqs)
+        System(eqs, t, vars, pars; name, systems, initialization_eqs)
     end
 
-    @mtkbuild initsys = System(false)
+    @mtkcompile initsys = ActuatorSystem(false)
 
     initprob = ODEProblem(initsys, [], (0, 0))
     initsol = solve(initprob, Rodas5P())
 
-    @mtkbuild sys = System(true)
+    @mtkcompile sys = ActuatorSystem(true)
 
     dt = 1e-4
     time = 0:dt:0.1
@@ -318,7 +318,7 @@ end
 end
 
 @testset "Prevent Negative Pressure" begin
-    @component function System(; name)
+    @component function HydraulicSystem(; name)
         pars = @parameters let_gas = 1
 
         systems = @named begin
@@ -335,14 +335,14 @@ end
         initialization_eqs = [mass.s ~ 0.05
                               mass.v ~ 0]
 
-        return ODESystem(eqs, t, [], pars; name, systems, initialization_eqs)
+        return System(eqs, t, [], pars; name, systems, initialization_eqs)
     end
 
-    @mtkbuild sys = System()
+    @mtkcompile sys = HydraulicSystem()
 
     prob1 = ODEProblem(sys, [], (0, 0.05))
     # prob1 = remake(prob1; u0 = BigFloat.(prob1.u0))
-    prob2 = ODEProblem(sys, [], (0, 0.05), [sys.let_gas => 0])
+    prob2 = ODEProblem(sys, [sys.let_gas => 0], (0, 0.05))
 
     # @time sol1 = solve(prob1, Rodas5P(); abstol=1e-9, reltol=1e-9) #BUG: Using BigFloat gives... ERROR: MethodError: no method matching getindex(::Missing, ::Int64)
     @time sol1 = solve(prob1, Rodas5P(); adaptive = false, dt = 1e-6) #TODO: fix BigFloat to implement abstol=1e-9, reltol=1e-9
@@ -387,12 +387,12 @@ end
 #             connect(pipe.port_b, sink.port)
 #             connect(osc.output, source.p)]
 
-#         ODESystem(eqs, t, [], []; systems)
+#         System(eqs, t, [], []; systems)
 #     end
 
 #     @named sys = System()
 
-#     syss = structural_simplify.([sys])
+#     syss = mtkcompile.([sys])
 #     tspan = (0.0, 1000.0)
 #     prob = ODEProblem(sys, tspan)  # u0 guess can be supplied or not
 #     @time sol = solve(prob)

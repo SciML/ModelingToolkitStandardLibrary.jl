@@ -43,7 +43,7 @@ function MassSpringDamper(; name)
            D(x) ~ dx
            D(dx) ~ ddx]
 
-    ODESystem(eqs, t; name, systems = [input])
+    System(eqs, t; name, systems = [input])
 end
 
 function MassSpringDamperSystem(data, time; name)
@@ -54,7 +54,7 @@ function MassSpringDamperSystem(data, time; name)
     eqs = [connect(clk.output, src.input)
            connect(src.output, model.input)]
 
-    ODESystem(eqs, t, [], []; name, systems = [src, clk, model])
+    System(eqs, t, [], []; name, systems = [src, clk, model])
 end
 
 function generate_data()
@@ -68,7 +68,7 @@ end
 df = generate_data() # example data
 
 @named system = MassSpringDamperSystem(df.data, df.time)
-sys = structural_simplify(system)
+sys = mtkcompile(system)
 prob = ODEProblem(sys, [], (0, df.time[end]))
 sol = solve(prob)
 plot(sol)
@@ -93,7 +93,7 @@ my_interpolation = LinearInterpolation(df.data, df.time)
         connect(src.output, model.input)
     end
 end;
-@mtkbuild sys = MassSpringDamperSystem2()
+@mtkcompile sys = MassSpringDamperSystem2()
 
 prob = ODEProblem(sys, [], (0, df.time[end]))
 sol = solve(prob, Tsit5())
@@ -134,7 +134,7 @@ function MassSpringDamper(; name)
            D(x) ~ dx
            D(dx) ~ ddx]
 
-    ODESystem(eqs, t, vars, pars; name, systems = [input])
+    System(eqs, t, vars, pars; name, systems = [input])
 end
 
 function MassSpringDamperSystem(data, time; name)
@@ -145,7 +145,7 @@ function MassSpringDamperSystem(data, time; name)
     eqs = [connect(model.input, src.output)
            connect(clk.output, src.input)]
 
-    ODESystem(eqs, t; name, systems = [src, clk, model])
+    System(eqs, t; name, systems = [src, clk, model])
 end
 
 function generate_data()
@@ -159,7 +159,7 @@ end
 df = generate_data() # example data
 
 @named system = MassSpringDamperSystem(df.data, df.time)
-sys = structural_simplify(system)
+sys = mtkcompile(system)
 prob = ODEProblem(sys, [], (0, df.time[end]))
 sol = solve(prob)
 plot(sol)
@@ -213,11 +213,11 @@ function System(; name)
            D(x) ~ dx
            D(dx) ~ ddx]
 
-    ODESystem(eqs, t, vars, pars; name)
+    System(eqs, t, vars, pars; name)
 end
 
 @named system = System()
-sys = structural_simplify(system)
+sys = mtkcompile(system)
 prob = ODEProblem(sys, [], (0, time[end]))
 
 rdata[] = data1
@@ -240,7 +240,7 @@ Additional code could be added to resolve this issue, for example by using a `Re
 
 ## `SampledData` Component
 
-To resolve the issues presented above, the `ModelingToolkitStandardLibrary.Blocks.SampledData` component can be used which allows for a resusable `ODESystem` and self contained data which ensures a solution which remains valid for it's lifetime.  Now it's possible to also parallelize the call to `solve()`.
+To resolve the issues presented above, the `ModelingToolkitStandardLibrary.Blocks.SampledData` component can be used which allows for a resusable `System` and self contained data which ensures a solution which remains valid for it's lifetime.  Now it's possible to also parallelize the call to `solve()`.
 
 ```julia
 using ModelingToolkit
@@ -259,11 +259,11 @@ function System(; name)
            D(x) ~ dx
            D(dx) ~ ddx]
 
-    ODESystem(eqs, t, vars, pars; systems = [src], name)
+    System(eqs, t, vars, pars; systems = [src], name)
 end
 
 @named system = System()
-sys = structural_simplify(system, split = false)
+sys = mtkcompile(system, split = false)
 s = complete(system)
 
 dt = 4e-4

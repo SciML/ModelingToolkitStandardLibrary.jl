@@ -14,8 +14,8 @@ an integrator with a constant input is often used together with the system under
 @testset "Constant" begin
     @named c = Constant(; k = 1)
     @named int = Integrator(x = 1)
-    @named iosys = ODESystem(connect(c.output, int.input), t, systems = [int, c])
-    sys = structural_simplify(iosys)
+    @named iosys = System(connect(c.output, int.input), t, systems = [int, c])
+    sys = mtkcompile(iosys)
     prob = ODEProblem(sys, Pair[], (0.0, 1.0))
     sol = solve(prob, Rodas4())
     @test sol.retcode == Success
@@ -27,14 +27,14 @@ end
     @named source = Sine(; frequency = 1)
     @named int = Integrator(; k = 1)
     @named der = Derivative(; k = 1, T = 0.001)
-    @named iosys = ODESystem(
+    @named iosys = System(
         [
             connect(source.output, der.input),
             connect(der.output, int.input)
         ],
         t,
         systems = [int, source, der])
-    sys = structural_simplify(iosys)
+    sys = mtkcompile(iosys)
     prob = ODEProblem(sys, Pair[int.x => 0.0], (0.0, 10.0))
     sol = solve(prob, Rodas4())
     @test sol.retcode == Success
@@ -47,8 +47,8 @@ end
     k, T = 1.2, 0.1
     @named c = Constant(; k = 1)
     @named pt1 = FirstOrder(; k = k, T = T)
-    @named iosys = ODESystem(connect(c.output, pt1.input), t, systems = [pt1, c])
-    sys = structural_simplify(iosys)
+    @named iosys = System(connect(c.output, pt1.input), t, systems = [pt1, c])
+    sys = mtkcompile(iosys)
     prob = ODEProblem(sys, Pair[], (0.0, 100.0))
     sol = solve(prob, Rodas4())
     @test sol.retcode == Success
@@ -56,8 +56,8 @@ end
 
     # Test highpass feature
     @named pt1 = FirstOrder(; k = k, T = T, lowpass = false)
-    @named iosys = ODESystem(connect(c.output, pt1.input), t, systems = [pt1, c])
-    sys = structural_simplify(iosys)
+    @named iosys = System(connect(c.output, pt1.input), t, systems = [pt1, c])
+    sys = mtkcompile(iosys)
     prob = ODEProblem(sys, Pair[], (0.0, 100.0))
     sol = solve(prob, Rodas4())
     @test sol.retcode == Success
@@ -80,8 +80,8 @@ end
     k, w, d = 1.0, 1.0, 0.5
     @named c = Constant(; k = 1)
     @named pt2 = SecondOrder(; k = k, w = w, d = d)
-    @named iosys = ODESystem(connect(c.output, pt2.input), t, systems = [pt2, c])
-    sys = structural_simplify(iosys)
+    @named iosys = System(connect(c.output, pt2.input), t, systems = [pt2, c])
+    sys = mtkcompile(iosys)
     prob = ODEProblem(sys, [unknowns(sys) .=> 0.0...; pt2.xd => 0.0], (0.0, 100.0))
     sol = solve(prob, Rodas4())
     @test sol.retcode == Success
@@ -95,12 +95,12 @@ end
     D = [0;;]
     @named ss = StateSpace(; A, B, C, D, x = zeros(2))
     @named c = Constant(; k = 1)
-    @named model = ODESystem([
+    @named model = System([
             connect(c.output, ss.input)
         ],
         t,
         systems = [ss, c])
-    sys = structural_simplify(model)
+    sys = mtkcompile(model)
     prob = ODEProblem(sys, Pair[], (0.0, 100.0))
     sol = solve(prob, Rodas4())
     @test sol.retcode == Success
@@ -115,12 +115,12 @@ end
     u0 = [1] # This causes no effective input to the system since c.k = 1
     y0 = [2]
     @named ss = StateSpace(; A, B, C, D, x = zeros(2), u0, y0)
-    @named model = ODESystem([
+    @named model = System([
             connect(c.output, ss.input)
         ],
         t,
         systems = [ss, c])
-    sys = structural_simplify(model)
+    sys = mtkcompile(model)
     prob = ODEProblem(sys, Pair[], (0.0, 100.0))
     sol = solve(prob, Rodas4())
     @test sol.retcode == Success
@@ -142,7 +142,7 @@ Second order demo plant
     eqs = [D(x1) ~ x2
            D(x2) ~ -x1 - 0.5 * x2 + input.u
            output.u ~ 0.9 * x1 + x2]
-    compose(ODESystem(eqs, t, sts, []; name), [input, output])
+    compose(System(eqs, t, sts, []; name), [input, output])
 end
 
 @testset "PI" begin
@@ -151,7 +151,7 @@ end
     @named pi_controller = PI(k = 1, T = 1)
     @named plant = Plant()
     @named fb = Feedback()
-    @named model = ODESystem(
+    @named model = System(
         [
             connect(ref.output, fb.input1),
             connect(plant.output, fb.input2),
@@ -160,7 +160,7 @@ end
         ],
         t,
         systems = [pi_controller, plant, ref, fb])
-    sys = structural_simplify(model)
+    sys = mtkcompile(model)
     prob = ODEProblem(sys, Pair[], (0.0, 100.0))
     sol = solve(prob, Rodas4())
     @test sol.retcode == Success
@@ -174,7 +174,7 @@ end
     @named pid_controller = PID(k = 3, Ti = 0.5, Td = 1 / 100)
     @named plant = Plant()
     @named fb = Feedback()
-    @named model = ODESystem(
+    @named model = System(
         [
             connect(ref.output, fb.input1),
             connect(plant.output, fb.input2),
@@ -183,7 +183,7 @@ end
         ],
         t,
         systems = [pid_controller, plant, ref, fb])
-    sys = structural_simplify(model)
+    sys = mtkcompile(model)
     prob = ODEProblem(sys, Pair[], (0.0, 100.0))
     sol = solve(prob, Rodas4())
     @test sol.retcode == Success
@@ -192,7 +192,7 @@ end
 
     @testset "PI" begin
         @named pid_controller = PID(k = 3, Ti = 0.5, Td = false)
-        @named model = ODESystem(
+        @named model = System(
             [
                 connect(ref.output, fb.input1),
                 connect(plant.output, fb.input2),
@@ -201,7 +201,7 @@ end
             ],
             t,
             systems = [pid_controller, plant, ref, fb])
-        sys = structural_simplify(model)
+        sys = mtkcompile(model)
         prob = ODEProblem(sys, Pair[], (0.0, 100.0))
         sol = solve(prob, Rodas4())
         @test sol.retcode == Success
@@ -211,7 +211,7 @@ end
 
     @testset "PD" begin
         @named pid_controller = PID(k = 10, Ti = false, Td = 1)
-        @named model = ODESystem(
+        @named model = System(
             [
                 connect(ref.output, fb.input1),
                 connect(plant.output, fb.input2),
@@ -220,7 +220,7 @@ end
             ],
             t,
             systems = [pid_controller, plant, ref, fb])
-        sys = structural_simplify(model)
+        sys = mtkcompile(model)
         prob = ODEProblem(sys, Pair[], (0.0, 100.0))
         sol = solve(prob, Rodas4())
         @test sol.retcode == Success
@@ -244,7 +244,7 @@ end
 
     # without anti-windup measure
     sol = let
-        @named model = ODESystem(
+        @named model = System(
             [
                 connect(ref.output, fb.input1),
                 connect(plant.output, fb.input2),
@@ -254,14 +254,14 @@ end
             ],
             t,
             systems = [pi_controller, plant, ref, fb, sat])
-        sys = structural_simplify(model)
+        sys = mtkcompile(model)
         prob = ODEProblem(sys, Pair[], (0.0, 20.0))
         sol = solve(prob, Rodas4())
     end
 
     # with anti-windup measure
     sol_lim = let
-        @named model = ODESystem(
+        @named model = System(
             [
                 connect(ref.output, fb.input1),
                 connect(plant.output, fb.input2),
@@ -271,7 +271,7 @@ end
             ],
             t,
             systems = [pi_controller_lim, plant, ref, fb, sat])
-        sys = structural_simplify(model)
+        sys = mtkcompile(model)
         prob = ODEProblem(sys, Pair[], (0.0, 20.0))
         sol = solve(prob, Rodas4())
     end
@@ -295,7 +295,7 @@ end
         k = 3, Ti = 0.5, Td = 1 / 100, u_max = 1.5, u_min = -1.5,
         Ni = 0.1 / 0.5)
     @named plant = Plant()
-    @named model = ODESystem(
+    @named model = System(
         [
             connect(ref.output, pid_controller.reference),
             connect(plant.output, pid_controller.measurement),
@@ -303,7 +303,7 @@ end
         ],
         t,
         systems = [pid_controller, plant, ref])
-    sys = structural_simplify(model)
+    sys = mtkcompile(model)
     prob = ODEProblem(sys, Pair[], (0.0, 100.0))
     sol = solve(prob, Rodas4())
 
@@ -316,7 +316,7 @@ end
     @testset "PI" begin
         @named pid_controller = LimPID(k = 3, Ti = 0.5, Td = false, u_max = 1.5,
             u_min = -1.5, Ni = 0.1 / 0.5)
-        @named model = ODESystem(
+        @named model = System(
             [
                 connect(ref.output, pid_controller.reference),
                 connect(plant.output, pid_controller.measurement),
@@ -324,7 +324,7 @@ end
             ],
             t,
             systems = [pid_controller, plant, ref])
-        sys = structural_simplify(model)
+        sys = mtkcompile(model)
         prob = ODEProblem(sys, Pair[], (0.0, 100.0))
         sol = solve(prob, Rodas4())
 
@@ -337,7 +337,7 @@ end
     @testset "PD" begin
         @named pid_controller = LimPID(k = 10, Ti = false, Td = 1, u_max = 1.5,
             u_min = -1.5)
-        @named model = ODESystem(
+        @named model = System(
             [
                 connect(ref.output, pid_controller.reference),
                 connect(plant.output, pid_controller.measurement),
@@ -345,7 +345,7 @@ end
             ],
             t,
             systems = [pid_controller, plant, ref])
-        sys = structural_simplify(model)
+        sys = mtkcompile(model)
         prob = ODEProblem(sys, Pair[], (0.0, 100.0))
         sol = solve(prob, Rodas4())
 
@@ -359,7 +359,7 @@ end
         @testset "wp" begin
             @named pid_controller = LimPID(k = 3, Ti = 0.5, Td = 1 / 100, u_max = 1.5,
                 u_min = -1.5, Ni = 0.1 / 0.5, wp = 0, wd = 1)
-            @named model = ODESystem(
+            @named model = System(
                 [
                     connect(ref.output, pid_controller.reference),
                     connect(plant.output, pid_controller.measurement),
@@ -367,7 +367,7 @@ end
                 ],
                 t,
                 systems = [pid_controller, plant, ref])
-            sys = structural_simplify(model)
+            sys = mtkcompile(model)
             prob = ODEProblem(sys, Pair[], (0.0, 100.0))
             sol = solve(prob, Rodas4())
 
@@ -381,7 +381,7 @@ end
         @testset "wd" begin
             @named pid_controller = LimPID(k = 3, Ti = 0.5, Td = 1 / 100, u_max = 1.5,
                 u_min = -1.5, Ni = 0.1 / 0.5, wp = 1, wd = 0)
-            @named model = ODESystem(
+            @named model = System(
                 [
                     connect(ref.output, pid_controller.reference),
                     connect(plant.output, pid_controller.measurement),
@@ -389,7 +389,7 @@ end
                 ],
                 t,
                 systems = [pid_controller, plant, ref])
-            sys = structural_simplify(model)
+            sys = mtkcompile(model)
             prob = ODEProblem(sys, Pair[], (0.0, 100.0))
             sol = solve(prob, Rodas4())
 
@@ -404,7 +404,7 @@ end
     @testset "PI without AWM" begin
         @named pid_controller = LimPID(k = 3, Ti = 0.5, Td = false, u_max = 1.5,
             u_min = -1.5, Ni = Inf)
-        @named model = ODESystem(
+        @named model = System(
             [
                 connect(ref.output, pid_controller.reference),
                 connect(plant.output, pid_controller.measurement),
@@ -412,7 +412,7 @@ end
             ],
             t,
             systems = [pid_controller, plant, ref])
-        sys = structural_simplify(model)
+        sys = mtkcompile(model)
         prob = ODEProblem(sys, Pair[], (0.0, 100.0))
         sol = solve(prob, Rodas4())
 
@@ -428,8 +428,8 @@ end
 
         @named c = Constant(; k = 1)
         @named pt1 = TransferFunction(b = [1.2], a = [3.14, 1])
-        @named iosys = ODESystem(connect(c.output, pt1.input), t, systems = [pt1, c])
-        sys = structural_simplify(iosys)
+        @named iosys = System(connect(c.output, pt1.input), t, systems = [pt1, c])
+        sys = mtkcompile(iosys)
         prob = ODEProblem(sys, Pair[], (0.0, 100.0))
         sol = solve(prob, Rodas4())
         @test sol.retcode == Success
@@ -438,8 +438,8 @@ end
         # Test logic for a_end by constructing an integrator
         @named c = Constant(; k = 1)
         @named pt1 = TransferFunction(b = [1.2], a = [3.14, 0])
-        @named iosys = ODESystem(connect(c.output, pt1.input), t, systems = [pt1, c])
-        sys = structural_simplify(iosys)
+        @named iosys = System(connect(c.output, pt1.input), t, systems = [pt1, c])
+        sys = mtkcompile(iosys)
         prob = ODEProblem(sys, Pair[], (0.0, 100.0))
         sol = solve(prob, Rodas4())
         @test sol.retcode == Success
@@ -462,8 +462,8 @@ end
 
         k, w, d = 1.0, 1.0, 0.5
         @named pt1 = TransferFunction(b = [w^2], a = [1, 2d * w, w^2])
-        @named iosys = ODESystem(connect(c.output, pt1.input), t, systems = [pt1, c])
-        sys = structural_simplify(iosys)
+        @named iosys = System(connect(c.output, pt1.input), t, systems = [pt1, c])
+        sys = mtkcompile(iosys)
         prob = ODEProblem(sys, Pair[], (0.0, 100.0))
         sol = solve(prob, Rodas4())
         @test sol.retcode == Success
@@ -472,8 +472,8 @@ end
         # test zeros (high-pass version of first test)
         @named c = Constant(; k = 1)
         @named pt1 = TransferFunction(b = [1, 0], a = [1, 1])
-        @named iosys = ODESystem(connect(c.output, pt1.input), t, systems = [pt1, c])
-        sys = structural_simplify(iosys)
+        @named iosys = System(connect(c.output, pt1.input), t, systems = [pt1, c])
+        sys = mtkcompile(iosys)
         prob = ODEProblem(sys, Pair[], (0.0, 100.0))
         sol = solve(prob, Rodas4())
         @test sol.retcode == Success
@@ -482,8 +482,8 @@ end
 
         # Test with no state
         @named pt1 = TransferFunction(b = [2.7], a = [pi])
-        @named iosys = ODESystem(connect(c.output, pt1.input), t, systems = [pt1, c])
-        sys = structural_simplify(iosys)
+        @named iosys = System(connect(c.output, pt1.input), t, systems = [pt1, c])
+        sys = mtkcompile(iosys)
         prob = ODEProblem(sys, Pair[], (0.0, 100.0))
         sol = solve(prob, Rodas4())
         @test sol.retcode == Success

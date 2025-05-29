@@ -6,7 +6,7 @@ import ModelingToolkitStandardLibrary.Mechanical.Translational as TV
 import ModelingToolkitStandardLibrary.Mechanical.TranslationalPosition as TP
 
 @testset "Free" begin
-    function System(; name)
+    function TestSystem(; name)
         systems = @named begin
             acc = TV.Acceleration(false)
             a = Constant(; k = -10)
@@ -17,12 +17,12 @@ import ModelingToolkitStandardLibrary.Mechanical.TranslationalPosition as TP
         eqs = [connect(a.output, acc.a)
                connect(mass.flange, acc.flange, free.flange)]
 
-        ODESystem(eqs, t, [], []; name, systems)
+        System(eqs, t, [], []; name, systems)
     end
 
-    @named system = System()
+    @named system = TestSystem()
     s = complete(system)
-    sys = structural_simplify(system)
+    sys = mtkcompile(system)
     prob = ODEProblem(sys, [s.mass.s => 0], (0, 0.1))
     sol = solve(prob, Rosenbrock23())
 
@@ -48,12 +48,12 @@ end
         eqs = [connect(spring.flange_a, body.flange, damping.flange_a)
                connect(spring.flange_b, damping.flange_b, ground.flange)]
 
-        @named model = ODESystem(eqs, t; systems = [ground, body, spring, damping])
+        @named model = System(eqs, t; systems = [ground, body, spring, damping])
 
-        sys = structural_simplify(model)
+        sys = mtkcompile(model)
 
         prob = ODEProblem(
-            sys, [], (0, 20.0), []; initialization_eqs, fully_determined = true)
+            sys, [], (0, 20.0); initialization_eqs, fully_determined = true)
         sol = solve(prob; abstol = 1e-9, reltol = 1e-9)
 
         return sol
@@ -88,27 +88,27 @@ end
 
     @named source = Sine(frequency = 3, amplitude = 2)
 
-    function System(damping, spring, body, ground, f, source)
+    function TestSystem(damping, spring, body, ground, f, source)
         eqs = [connect(f.f, source.output)
                connect(f.flange, body.flange)
                connect(spring.flange_a, body.flange, damping.flange_a)
                connect(spring.flange_b, damping.flange_b, ground.flange)]
 
-        @named model = ODESystem(eqs, t;
+        @named model = System(eqs, t;
             systems = [ground, body, spring, damping, f, source])
 
         return model
     end
 
-    model = System(dv, sv, bv, gv, fv, source)
-    sys = structural_simplify(model)
+    model = TestSystem(dv, sv, bv, gv, fv, source)
+    sys = mtkcompile(model)
     prob = ODEProblem(
-        sys, [bv.s => 0, sv.delta_s => 1], (0, 20.0), [], fully_determined = true)
+        sys, [bv.s => 0, sv.delta_s => 1], (0, 20.0), fully_determined = true)
     solv = solve(prob, Rodas4())
 
-    model = System(dp, sp, bp, gp, fp, source)
-    sys = structural_simplify(model)
-    prob = ODEProblem(sys, [], (0, 20.0), [], fully_determined = true)
+    model = TestSystem(dp, sp, bp, gp, fp, source)
+    sys = mtkcompile(model)
+    prob = ODEProblem(sys, [], (0, 20.0), fully_determined = true)
     solp = solve(prob, Rodas4())
 
     for sol in (solv, solp)
@@ -121,7 +121,7 @@ end
 @testset "sources & sensors" begin
     @testset "Translational" begin
         @testset "PositionSensor & ForceSensor" begin
-            function System(; name)
+            function TestSystem(; name)
                 systems = @named begin
                     pos = TV.Position()
                     pos_sensor = TV.PositionSensor(; s = 1)
@@ -145,12 +145,12 @@ end
                        connect(pos_value, pos_sensor.output)
                        connect(force_output, force_sensor.output)]
 
-                ODESystem(eqs, t, [], []; name, systems)
+                System(eqs, t, [], []; name, systems)
             end
 
-            @named system = System()
+            @named system = TestSystem()
             s = complete(system)
-            sys = structural_simplify(system)
+            sys = mtkcompile(system)
             prob = ODEProblem(sys, [], (0, 1 / 400))
             sol = solve(prob, Rosenbrock23())
 
@@ -174,9 +174,9 @@ end
                 connect(acc.flange, mass.flange),
                 connect(acc_output, acc.output)
             ]
-            @named sys = ODESystem(
+            @named sys = System(
                 eqs, t, [], []; systems = [force, source, mass, acc, acc_output])
-            s = complete(structural_simplify(sys))
+            s = complete(mtkcompile(sys))
             prob = ODEProblem(s, [mass.s => 0], (0.0, pi))
             sol = solve(prob, Tsit5())
             @test sol[sys.acc_output.u] ≈ (sol[sys.mass.f] ./ m)
@@ -202,11 +202,11 @@ end
                     connect(pos_sensor.output, pos_value),
                     connect(force_sensor.output, force_value)
                 ]
-                ODESystem(eqs, t, [], []; name, systems)
+                System(eqs, t, [], []; name, systems)
             end
 
             @named model = mass_spring()
-            sys = structural_simplify(model)
+            sys = mtkcompile(model)
 
             prob = ODEProblem(sys, [], (0.0, 1.0), fully_determined = true)
             sol = solve(prob, Tsit5())
@@ -228,10 +228,10 @@ end
                 connect(acc.flange, mass.flange),
                 connect(acc_output, acc.output)
             ]
-            @named sys = ODESystem(
+            @named sys = System(
                 eqs, t, [], []; systems = [force, source, mass, acc, acc_output])
-            s = complete(structural_simplify(sys))
-            prob = ODEProblem(s, [mass.s => 0], (0.0, pi), fully_determined = true)
+            s = complete(mtkcompile(sys))
+            prob = ODEProblem(s, [], (0.0, pi), fully_determined = true)
             sol = solve(prob, Tsit5())
             @test sol[sys.acc_output.u] ≈ (sol[sys.mass.f] ./ m)
         end

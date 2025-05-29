@@ -9,14 +9,14 @@ using OrdinaryDiffEq: ReturnCode.Success
         @named c = Constant(; k = 1)
         @named int = Integrator(; k = 1)
         @named sat = Limiter(; y_min = -0.6, y_max = 0.8)
-        @named model = ODESystem(
+        @named model = System(
             [
                 connect(c.output, int.input),
                 connect(int.output, sat.input)
             ],
             t,
             systems = [int, c, sat])
-        sys = structural_simplify(model)
+        sys = mtkcompile(model)
         prob = ODEProblem(sys, [int.x => 1.0], (0.0, 1.0))
 
         sol = solve(prob, Rodas4())
@@ -30,14 +30,14 @@ using OrdinaryDiffEq: ReturnCode.Success
         @named source = Sine(; frequency = 1 / 2)
         @named lim = Limiter(; y_max = y_max, y_min = y_min)
         @named int = Integrator(; k = 1)
-        @named iosys = ODESystem(
+        @named iosys = System(
             [
                 connect(source.output, lim.input),
                 connect(lim.output, int.input)
             ],
             t,
             systems = [source, lim, int])
-        sys = structural_simplify(iosys)
+        sys = mtkcompile(iosys)
 
         prob = ODEProblem(sys, unknowns(sys) .=> 0.0, (0.0, 10.0))
 
@@ -58,14 +58,14 @@ end
         @named c = Constant(; k = 1)
         @named int = Integrator(; k = 1)
         @named dz = DeadZone(; u_min = -2, u_max = 1)
-        @named model = ODESystem(
+        @named model = System(
             [
                 connect(c.output, int.input),
                 connect(int.output, dz.input)
             ],
             t,
             systems = [int, c, dz])
-        sys = structural_simplify(model)
+        sys = mtkcompile(model)
         prob = ODEProblem(sys, [int.x => 1.0], (0.0, 1.0))
         sol = solve(prob, Rodas4())
 
@@ -78,14 +78,14 @@ end
         @named source = Sine(; amplitude = 3, frequency = 1 / 2)
         @named dz = DeadZone(; u_min = u_min, u_max = u_max)
         @named int = Integrator(; k = 1)
-        @named model = ODESystem(
+        @named model = System(
             [
                 connect(source.output, dz.input),
                 connect(dz.output, int.input)
             ],
             t,
             systems = [int, source, dz])
-        sys = structural_simplify(model)
+        sys = mtkcompile(model)
         prob = ODEProblem(sys, [int.x => 1.0], (0.0, 10.0))
         sol = solve(prob, Rodas4())
 
@@ -104,12 +104,12 @@ end
 @testset "SlewRateLimiter" begin
     @named source = Sine(; frequency = 1 / 2)
     @named rl = SlewRateLimiter(; rising = 1, falling = -1, Td = 0.001, y_start = -1 / 3)
-    @named iosys = ODESystem([
+    @named iosys = System([
             connect(source.output, rl.input)
         ],
         t,
         systems = [source, rl])
-    sys = structural_simplify(iosys)
+    sys = mtkcompile(iosys)
 
     prob = ODEProblem(sys, Pair[], (0.0, 10.0))
 

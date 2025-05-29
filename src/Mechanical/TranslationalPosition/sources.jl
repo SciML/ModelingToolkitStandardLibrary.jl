@@ -10,7 +10,6 @@ Input signal acting as external force on a flange
         s = 0
     end
     @components begin
-        flange = Flange(; s = s)
         f = RealInput()
     end
     @equations begin

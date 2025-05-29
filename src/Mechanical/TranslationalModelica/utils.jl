@@ -107,10 +107,10 @@ function PartialElementaryOneFlangeAndSupport2(; name, use_support = false)
     if use_support
         @named support = Support()
         push!(eqs, support.f ~ -flange.f)
-        compose(ODESystem(eqs, t; name = name), flange, support)
+        compose(System(eqs, t; name = name), flange, support)
     else
         push!(eqs, s_support ~ 0)
-        compose(ODESystem(eqs, t; name = name), flange)
+        compose(System(eqs, t; name = name), flange)
     end
 end
 
@@ -139,10 +139,10 @@ function PartialElementaryTwoFlangesAndSupport2(; name, use_support = false)
     if use_support
         @named support = Support()
         push!(eqs, support.f ~ -flange_a.f - flange_b.f)
-        compose(ODESystem(eqs, t; name = name), flange, support)
+        compose(System(eqs, t; name = name), flange, support)
     else
         push!(eqs, s_support ~ 0)
-        compose(ODESystem(eqs, t; name = name), flange)
+        compose(System(eqs, t; name = name), flange)
     end
 end
 

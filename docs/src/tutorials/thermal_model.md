@@ -30,7 +30,7 @@ using ModelingToolkit: t_nounits as t
     end
 end
 
-@mtkbuild sys = HeatConductionModel()
+@mtkcompile sys = HeatConductionModel()
 prob = ODEProblem(sys, Pair[], (0, 5.0))
 sol = solve(prob)
 

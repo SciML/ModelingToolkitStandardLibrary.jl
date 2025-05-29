@@ -76,7 +76,7 @@ Now the model can be simulated. Typical rotational mechanical systems are descri
 so that it can be represented as a system of `ODEs` (ordinary differential equations).
 
 ```@example dc_motor_pi
-sys = structural_simplify(model)
+sys = mtkcompile(model)
 prob = ODEProblem(sys, [sys.L1.i => 0.0], (0, 6.0))
 sol = solve(prob)
 
