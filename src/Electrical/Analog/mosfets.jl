@@ -41,9 +41,7 @@ Based on the MOSFET models in (Sedra, A. S., Smith, K. C., Carusone, T. C., & Ga
         V_tn = 0.8, [description = "Threshold voltage (V)"]
         R_DS = 1e7, [description = "Drain to source resistance (Ω)"]
 
-        if use_channel_length_modulation
-            lambda = 1 / 25, [description = "Channel length modulation coefficient (V^(-1))"]
-        end
+        lambda = 0.04, [description = "Channel length modulation coefficient (V^(-1))"]
 
         if !use_transconductance
             mu_n, [description = "Electron mobility"]
@@ -57,7 +55,6 @@ Based on the MOSFET models in (Sedra, A. S., Smith, K. C., Carusone, T. C., & Ga
 
     @structural_parameters begin
         use_transconductance = true
-        use_channel_length_modulation = true
     end
 
     begin
@@ -72,16 +69,12 @@ Based on the MOSFET models in (Sedra, A. S., Smith, K. C., Carusone, T. C., & Ga
         V_OV ~ V_GS - V_tn
 
         d.i ~ ifelse(d.v < s.v, -1, 1) * ifelse(V_GS < V_tn,
-            0 + V_DS / R_DS,
+            V_DS / R_DS,
             ifelse(V_DS < V_OV,
-                ifelse(use_channel_length_modulation,
                     k_n * (1 + lambda * V_DS) * (V_OV - V_DS / 2) * V_DS + V_DS / R_DS,
-                    k_n * (V_OV - V_DS / 2) * V_DS + V_DS / R_DS),
-                ifelse(use_channel_length_modulation,
-                    ((k_n * V_OV^2) / 2) * (1 + lambda * V_DS) + V_DS / R_DS,
-                    (k_n * V_OV^2) / 2 + V_DS / R_DS)
+                    ((k_n * V_OV^2) / 2) * (1 + lambda * V_DS) + V_DS / R_DS
+                )
             )
-        )
 
         g.i ~ 0
         s.i ~ -d.i
@@ -132,9 +125,7 @@ Based on the MOSFET models in (Sedra, A. S., Smith, K. C., Carusone, T. C., & Ga
         V_tp = -1.5, [description = "Threshold voltage (V)"]
         R_DS = 1e7, [description = "Drain-source resistance (Ω)"]
 
-        if use_channel_length_modulation
-            lambda = 1 / 25, [description = "Channel length modulation coefficient (V^(-1))"]
-        end
+        lambda = 1 / 25, [description = "Channel length modulation coefficient (V^(-1))"]
 
         if !use_transconductance
             mu_p, [description = "Hole mobility"]
@@ -148,7 +139,6 @@ Based on the MOSFET models in (Sedra, A. S., Smith, K. C., Carusone, T. C., & Ga
 
     @structural_parameters begin
         use_transconductance = true
-        use_channel_length_modulation = true
     end
 
     begin
@@ -162,15 +152,11 @@ Based on the MOSFET models in (Sedra, A. S., Smith, K. C., Carusone, T. C., & Ga
         V_GS ~ g.v - ifelse(d.v > s.v, d.v, s.v)
 
         d.i ~ -ifelse(d.v > s.v, -1.0, 1.0) * ifelse(V_GS > V_tp,
-            0.0 + V_DS / R_DS,
+            V_DS / R_DS,
             ifelse(V_DS > (V_GS - V_tp),
-                ifelse(use_channel_length_modulation,
                     k_p * (1 + lambda * V_DS) * ((V_GS - V_tp) - V_DS / 2) * V_DS +
                     V_DS / R_DS,
-                    k_p * ((V_GS - V_tp) - V_DS / 2) * V_DS + V_DS / R_DS),
-                ifelse(use_channel_length_modulation,
                     ((k_p * (V_GS - V_tp)^2) / 2) * (1 + lambda * V_DS) + V_DS / R_DS,
-                    (k_p * (V_GS - V_tp)^2) / 2 + V_DS / R_DS)
             )
         )
 
