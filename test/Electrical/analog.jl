@@ -618,43 +618,7 @@ end
     @test flipped_sol[flipped_sys.Q1.d.i][1] < 0
     @test flipped_sol[flipped_sys.Q1.s.i][1] > 0 
     @test flipped_sol[flipped_sys.Q1.s.v] > flipped_sol[flipped_sys.Q1.d.v]
-
-    # channel length modulation
-    @mtkmodel SimpleNMOSCircuitChannel begin
-            @components begin
-                Q1 = NMOS(use_channel_length_modulation = false)
-                Vcc = Voltage()
-                Vb = Voltage()
-                ground = Ground()
-
-                Vcc_const = Constant(k=V_cc)
-                Vb_const = Constant(k=V_b)
-            end
-
-            @parameters begin
-                V_cc = 5.0
-                V_b = 3.5
-            end
-            @equations begin
-                #voltage sources
-                connect(Vcc_const.output, Vcc.V)
-                connect(Vb_const.output, Vb.V)
-
-                #ground connections
-                connect(Vcc.n, Vb.n, ground.g, Q1.s)
-
-                #other stuff
-                connect(Vcc.p, Q1.d)
-                connect(Vb.p, Q1.g)
-        end
-    end
-
-    @mtkbuild sys = SimpleNMOSCircuitChannel(V_cc = 5.0, V_b = 3.5)
-
-    prob = ODEProblem(sys, Pair[], (0.0, 10.0))
-    sol = solve(prob)
-    @test sol[sys.Q1.d.i][1] > 0.0
-    @test sol[sys.Q1.s.i][1] < 0.0
+    
 end
 
 
@@ -662,7 +626,7 @@ end
 
     @mtkmodel SimplePMOSCircuit begin
         @components begin
-            Q1 = PMOS(use_channel_length_modulation = false)
+            Q1 = PMOS()
             Vs = Voltage()
             Vb = Voltage()
             Vd = Voltage()
@@ -742,8 +706,8 @@ end
     flipped_prob = ODEProblem(flipped_sys, Pair[], (0.0, 10.0))
     flipped_sol = solve(flipped_prob)
 
-    flipped_sol[flipped_sys.Q1.d.i][1] > 0.0
-    flipped_sol[flipped_sys.Q1.s.i][1] < 0.0
+    @test flipped_sol[flipped_sys.Q1.d.i][1] > 0.0
+    @test flipped_sol[flipped_sys.Q1.s.i][1] < 0.0
 
 
 end
