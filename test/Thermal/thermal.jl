@@ -49,9 +49,8 @@ using OrdinaryDiffEq: ReturnCode.Success
     @test SciMLBase.successful_retcode(sol)
     m1, m2 = sol.u[end]
     @test m1≈m2 atol=1e-1
-    mass_T = reduce(hcat, sol.u)
-    @test sol[T_sensor1.T.u] == mass_T[1, :]
-    @test sol[T_sensor2.T.u] == mass_T[2, :]
+    @test sol[T_sensor1.T.u] == sol[sys.mass1.T]
+    @test sol[T_sensor2.T.u] == sol[sys.mass2.T]
 end
 
 # Test HeatFlowSensor, FixedHeatFlow, ThermalResistor, ThermalConductor
