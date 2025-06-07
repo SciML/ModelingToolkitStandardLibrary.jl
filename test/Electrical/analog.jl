@@ -1,5 +1,5 @@
 using ModelingToolkitStandardLibrary.Electrical, ModelingToolkit, OrdinaryDiffEq, Test
-using ModelingToolkit: t_nounits as t
+using ModelingToolkit: t_nounits as t, D_nounits as D
 using ModelingToolkitStandardLibrary.Blocks: Step,
                                              Constant, Sine, Cosine, ExpSine, Ramp,
                                              Square, Triangular
@@ -646,15 +646,15 @@ end
                 #other stuff
                 connect(Vcc.p, Q1.d)
                 connect(Vb.p, Q1.g)
-            end
+        end
     end
 
-        @mtkbuild sys = SimpleNMOSCircuitChannel(V_cc = 5.0, V_b = 3.5)
+    @mtkbuild sys = SimpleNMOSCircuitChannel(V_cc = 5.0, V_b = 3.5)
 
-        prob = ODEProblem(sys, Pair[], (0.0, 10.0))
-        sol = solve(prob)
-        @test sol[sys.Q1.d.i][1] > 0.0
-        @test sol[sys.Q1.s.i][1] < 0.0
+    prob = ODEProblem(sys, Pair[], (0.0, 10.0))
+    sol = solve(prob)
+    @test sol[sys.Q1.d.i][1] > 0.0
+    @test sol[sys.Q1.s.i][1] < 0.0
 end
 
 
