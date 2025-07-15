@@ -72,7 +72,7 @@ end
                    connect(R2.n, voltage.n, ground.g)]
 
     @named model = System(connections, t,
-        systems = [R0, R1, R2, source, short, voltage, ground]; guesses = [R2.v => 0.0])
+        systems = [R0, R1, R2, source, short, voltage, ground]; guesses = [R2.v => 0.0, R1.v => 0.0])
     sys = mtkcompile(model)
     prob = ODEProblem(sys, [], (0, 2.0))
     sol = solve(prob, Rodas4()) # has no state; does not work with Tsit5
@@ -867,7 +867,7 @@ end
 
     @mtkcompile sys = SimplePNPCircuitSubstrate(V_b = 0.70)
 
-    prob = ODEProblem(sys, [sys.Q1.c.i => 0.0], (0.0, 10.0))
+    prob = ODEProblem(sys, [sys.Q1.c.i => 0.0], (0.0, 10.0); guesses = [sys.Q1.I_sub => 1.0])
     sol = solve(prob)
 
     @test isapprox(
