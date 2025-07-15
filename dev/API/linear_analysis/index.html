@@ -13,14 +13,14 @@ y &amp;= Cx + Du
 t = ModelingToolkit.get_iv(P)
 eqs = [connect(P.output, :plant_output, C.input)  # Connect with an automatically created analysis point called :plant_output
        connect(C.output, :plant_input, P.input)]
-sys = ODESystem(eqs, t, systems = [P, C], name = :feedback_system)
+sys = System(eqs, t, systems = [P, C], name = :feedback_system)
 
 matrices_S = get_sensitivity(sys, :plant_input)[1] # Compute the matrices of a state-space representation of the (input)sensitivity function.
 matrices_T = get_comp_sensitivity(sys, :plant_input)[1]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(A = [-2.0;;], B = [-1.0;;], C = [-1.0;;], D = [0.0;;])</code></pre><p>Continued linear analysis and design can be performed using ControlSystemsBase.jl. We create <code>ControlSystemsBase.StateSpace</code> objects using</p><pre><code class="language-julia hljs">using ControlSystemsBase, Plots
 S = ss(matrices_S...)
 T = ss(matrices_T...)
 bodeplot([S, T], lab = [&quot;S&quot; &quot;&quot; &quot;T&quot; &quot;&quot;], plot_title = &quot;Bode plot of sensitivity functions&quot;,
-    margin = 5Plots.mm)</code></pre><img src="c96dbd74.svg" alt="Example block output"/><p>The sensitivity functions obtained this way should be equivalent to the ones obtained with the code below</p><pre><code class="language-julia hljs">using ControlSystemsBase
+    margin = 5Plots.mm)</code></pre><img src="a3dfe958.svg" alt="Example block output"/><p>The sensitivity functions obtained this way should be equivalent to the ones obtained with the code below</p><pre><code class="language-julia hljs">using ControlSystemsBase
 P = tf(1.0, [1, 1]) |&gt; ss
 C = 1                      # Negative feedback assumed in ControlSystems
 S = sensitivity(P, C)      # or feedback(1, P*C)
@@ -70,11 +70,11 @@ Continuous-time state-space model</code></pre><h3 id="Obtaining-transfer-functio
 ----------
 1.0s + 2.0
 
-Continuous-time transfer function model</code></pre><h2 id="Gain-and-phase-margins"><a class="docs-heading-anchor" href="#Gain-and-phase-margins">Gain and phase margins</a><a id="Gain-and-phase-margins-1"></a><a class="docs-heading-anchor-permalink" href="#Gain-and-phase-margins" title="Permalink"></a></h2><p>Further linear analysis can be performed using the <a href="https://juliacontrol.github.io/ControlSystems.jl/stable/lib/analysis/">analysis methods from ControlSystemsBase</a>. For example, calculating the gain and phase margins of a system can be done using</p><pre><code class="language-julia hljs">margin(P)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(wgm = [NaN;;], gm = [Inf;;], wpm = [NaN;;], pm = [Inf;;])</code></pre><p>(they are infinite for this system). A Nyquist plot can be produced using</p><pre><code class="language-julia hljs">nyquistplot(P)</code></pre><img src="c7be1aad.svg" alt="Example block output"/><h2 id="Index"><a class="docs-heading-anchor" href="#Index">Index</a><a id="Index-1"></a><a class="docs-heading-anchor-permalink" href="#Index" title="Permalink"></a></h2><ul><li><a href="#ModelingToolkit.linearize"><code>ModelingToolkit.linearize</code></a></li></ul><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="ModelingToolkit.linearize" href="#ModelingToolkit.linearize"><code>ModelingToolkit.linearize</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">(; A, B, C, D), simplified_sys = linearize(sys, inputs, outputs;    t=0.0, op = Dict(), allow_input_derivatives = false, zero_dummy_der=false, kwargs...)
-(; A, B, C, D)                 = linearize(simplified_sys, lin_fun; t=0.0, op = Dict(), allow_input_derivatives = false, zero_dummy_der=false)</code></pre><p>Linearize <code>sys</code> between <code>inputs</code> and <code>outputs</code>, both vectors of variables. Return a NamedTuple with the matrices of a linear statespace representation on the form</p><p class="math-container">\[\begin{aligned}
+Continuous-time transfer function model</code></pre><h2 id="Gain-and-phase-margins"><a class="docs-heading-anchor" href="#Gain-and-phase-margins">Gain and phase margins</a><a id="Gain-and-phase-margins-1"></a><a class="docs-heading-anchor-permalink" href="#Gain-and-phase-margins" title="Permalink"></a></h2><p>Further linear analysis can be performed using the <a href="https://juliacontrol.github.io/ControlSystems.jl/stable/lib/analysis/">analysis methods from ControlSystemsBase</a>. For example, calculating the gain and phase margins of a system can be done using</p><pre><code class="language-julia hljs">margin(P)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(wgm = [NaN;;], gm = [Inf;;], wpm = [NaN;;], pm = [Inf;;])</code></pre><p>(they are infinite for this system). A Nyquist plot can be produced using</p><pre><code class="language-julia hljs">nyquistplot(P)</code></pre><img src="7d927431.svg" alt="Example block output"/><h2 id="Index"><a class="docs-heading-anchor" href="#Index">Index</a><a id="Index-1"></a><a class="docs-heading-anchor-permalink" href="#Index" title="Permalink"></a></h2><ul><li><a href="#ModelingToolkit.linearize"><code>ModelingToolkit.linearize</code></a></li></ul><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="ModelingToolkit.linearize" href="#ModelingToolkit.linearize"><code>ModelingToolkit.linearize</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">(; A, B, C, D), simplified_sys, extras = linearize(sys, inputs, outputs;    t=0.0, op = Dict(), allow_input_derivatives = false, zero_dummy_der=false, kwargs...)
+(; A, B, C, D), extras                 = linearize(simplified_sys, lin_fun; t=0.0, op = Dict(), allow_input_derivatives = false, zero_dummy_der=false)</code></pre><p>Linearize <code>sys</code> between <code>inputs</code> and <code>outputs</code>, both vectors of variables. Return a NamedTuple with the matrices of a linear statespace representation on the form</p><p class="math-container">\[\begin{aligned}
 ẋ &amp;= Ax + Bu\\
 y &amp;= Cx + Du
-\end{aligned}\]</p><p>The first signature automatically calls <a href="@ref"><code>linearization_function</code></a> internally, while the second signature expects the outputs of <a href="@ref"><code>linearization_function</code></a> as input.</p><p><code>op</code> denotes the operating point around which to linearize. If none is provided, the default values of <code>sys</code> are used.</p><p>If <code>allow_input_derivatives = false</code>, an error will be thrown if input derivatives (<span>$u̇$</span>) appear as inputs in the linearized equations. If input derivatives are allowed, the returned <code>B</code> matrix will be of double width, corresponding to the input <code>[u; u̇]</code>.</p><p><code>zero_dummy_der</code> can be set to automatically set the operating point to zero for all dummy derivatives.</p><p>See also <a href="@ref"><code>linearization_function</code></a> which provides a lower-level interface, <a href="@ref"><code>linearize_symbolic</code></a> and <a href="@ref"><code>ModelingToolkit.reorder_unknowns</code></a>.</p><p>See extended help for an example.</p><p>The implementation and notation follows that of <a href="https://ep.liu.se/ecp/043/075/ecp09430097.pdf">&quot;Linear Analysis Approach for Modelica Models&quot;, Allain et al. 2009</a></p><p><strong>Extended help</strong></p><p>This example builds the following feedback interconnection and linearizes it from the input of <code>F</code> to the output of <code>P</code>.</p><pre><code class="nohighlight hljs">
+\end{aligned}\]</p><p>The first signature automatically calls <a href="@ref"><code>linearization_function</code></a> internally, while the second signature expects the outputs of <a href="@ref"><code>linearization_function</code></a> as input.</p><p><code>op</code> denotes the operating point around which to linearize. If none is provided, the default values of <code>sys</code> are used.</p><p>If <code>allow_input_derivatives = false</code>, an error will be thrown if input derivatives (<span>$u̇$</span>) appear as inputs in the linearized equations. If input derivatives are allowed, the returned <code>B</code> matrix will be of double width, corresponding to the input <code>[u; u̇]</code>.</p><p><code>zero_dummy_der</code> can be set to automatically set the operating point to zero for all dummy derivatives.</p><p>The return value <code>extras</code> is a NamedTuple <code>(; x, p, t)</code> containing the result of the initialization problem that was solved to determine the operating point.</p><p>See also <a href="@ref"><code>linearization_function</code></a> which provides a lower-level interface, <a href="@ref"><code>linearize_symbolic</code></a> and <a href="@ref"><code>ModelingToolkit.reorder_unknowns</code></a>.</p><p>See extended help for an example.</p><p>The implementation and notation follows that of <a href="https://ep.liu.se/ecp/043/075/ecp09430097.pdf">&quot;Linear Analysis Approach for Modelica Models&quot;, Allain et al. 2009</a></p><p><strong>Extended help</strong></p><p>This example builds the following feedback interconnection and linearizes it from the input of <code>F</code> to the output of <code>P</code>.</p><pre><code class="nohighlight hljs">
   r ┌─────┐       ┌─────┐     ┌─────┐
 ───►│     ├──────►│     │  u  │     │
     │  F  │       │  C  ├────►│  P  │ y
@@ -88,7 +88,7 @@ function plant(; name)
     @variables u(t)=0 y(t)=0
     eqs = [D(x) ~ -x + u
            y ~ x]
-    ODESystem(eqs, t; name = name)
+    System(eqs, t; name = name)
 end
 
 function ref_filt(; name)
@@ -96,7 +96,7 @@ function ref_filt(; name)
     @variables u(t)=0 [input = true]
     eqs = [D(x) ~ -2 * x + u
            y ~ x]
-    ODESystem(eqs, t, name = name)
+    System(eqs, t, name = name)
 end
 
 function controller(kp; name)
@@ -105,7 +105,7 @@ function controller(kp; name)
     eqs = [
         u ~ kp * (r - y),
     ]
-    ODESystem(eqs, t; name = name)
+    System(eqs, t; name = name)
 end
 
 @named f = ref_filt()
@@ -116,7 +116,7 @@ connections = [f.y ~ c.r # filtered reference to controller reference
                c.u ~ p.u # controller output to plant input
                p.y ~ c.y]
 
-@named cl = ODESystem(connections, t, systems = [f, c, p])
+@named cl = System(connections, t, systems = [f, c, p])
 
 lsys0, ssys = linearize(cl, [f.u], [p.x])
 desired_order = [f.x, p.x]
@@ -130,4 +130,4 @@ lsys = ModelingToolkit.reorder_unknowns(lsys0, unknowns(ssys), desired_order)
 ## Symbolic linearization
 lsys_sym, _ = ModelingToolkit.linearize_symbolic(cl, [f.u], [p.x])
 
-@assert substitute(lsys_sym.A, ModelingToolkit.defaults(cl)) == lsys.A</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/SciML/ModelingToolkit.jl/blob/v9.78.0/src/linearization.jl#L589-L687">source</a></section></article></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../hydraulic/">« Hydraulic Components</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.11.0 on <span class="colophon-date" title="Tuesday 13 May 2025 11:49">Tuesday 13 May 2025</span>. Using Julia version 1.11.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+@assert substitute(lsys_sym.A, ModelingToolkit.defaults(cl)) == lsys.A</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/SciML/ModelingToolkit.jl/blob/v10.10.0/src/linearization.jl#L625-L725">source</a></section></article></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../hydraulic/">« Hydraulic Components</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.14.1 on <span class="colophon-date" title="Tuesday 15 July 2025 12:59">Tuesday 15 July 2025</span>. Using Julia version 1.11.6.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
