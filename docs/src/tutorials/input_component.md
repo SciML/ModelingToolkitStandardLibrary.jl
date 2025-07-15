@@ -204,7 +204,7 @@ end
 
 Symbolics.@register_symbolic get_sampled_data(t)
 
-function System(; name)
+function CustomSystem(; name)
     vars = @variables f(t)=0 x(t)=0 dx(t)=0 ddx(t)=0
     pars = @parameters m=10 k=1000 d=1
 
@@ -216,7 +216,7 @@ function System(; name)
     System(eqs, t, vars, pars; name)
 end
 
-@named system = System()
+@named system = CustomSystem()
 sys = mtkcompile(system)
 prob = ODEProblem(sys, [], (0, time[end]))
 
@@ -248,7 +248,7 @@ using ModelingToolkit: t_nounits as t, D_nounits as D
 using ModelingToolkitStandardLibrary.Blocks
 using OrdinaryDiffEq
 
-function System(; name)
+function SampledDataSystem(; name)
     src = SampledData(Float64, name = :src)
 
     vars = @variables f(t)=0 x(t)=0 dx(t)=0 ddx(t)=0
@@ -262,7 +262,7 @@ function System(; name)
     System(eqs, t, vars, pars; systems = [src], name)
 end
 
-@named system = System()
+@named system = SampledDataSystem()
 sys = mtkcompile(system, split = false)
 s = complete(system)
 
