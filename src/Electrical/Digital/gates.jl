@@ -1,3 +1,7 @@
+using ModelingToolkit: ODESystem, t_nounits as t
+using ..Electrical: DigitalPin, _not, _and, _or, _xor
+const System = ODESystem
+
 """
 ```julia
 Not(; name)

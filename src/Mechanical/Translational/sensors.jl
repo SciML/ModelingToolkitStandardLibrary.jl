@@ -5,8 +5,9 @@ Linear 1D force sensor, measures the force between two flanges.
 
 # Connectors:
 
-- `flange`: 1-dim. translational flange
-- `output`: real output
+- `flange_a`: 1-dim. translational flange ([`MechanicalPort`](@ref))
+- `flange_b`: 1-dim. translational flange ([`MechanicalPort`](@ref))
+- `output`: real output ([`RealOutput`](@ref))
 """
 @mtkmodel ForceSensor begin
     @components begin
@@ -33,8 +34,8 @@ Linear 1D position sensor.
 
 # Connectors:
 
-- `flange`: 1-dim. translational flange
-- `output`: real output
+- `flange`: 1-dim. translational flange ([`MechanicalPort`](@ref))
+- `output`: real output ([`RealOutput`](@ref))
 """
 @mtkmodel PositionSensor begin
     @components begin
@@ -64,8 +65,8 @@ Linear 1D acceleration sensor.
 
 # Connectors:
 
-- `flange`: 1-dim. translational flange
-- `output`: real output
+- `flange`: 1-dim. translational flange ([`MechanicalPort`](@ref))
+- `output`: real output ([`RealOutput`](@ref))
 """
 @mtkmodel AccelerationSensor begin
     @components begin
