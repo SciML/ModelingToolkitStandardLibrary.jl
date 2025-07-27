@@ -300,11 +300,11 @@ Early voltage effect.
 
             C_jE ~ if V_EB > phi_E - Z_E
                 ((C_jE0 * gamma_E * (1 - ((phi_E - Z_E) / phi_E))^(-gamma_E - 1)) / phi_E) *
-                V_BE -
+                V_EB -
                 ((C_jE0 * gamma_E * (1 - ((phi_E - Z_E) / phi_E))^(-gamma_E - 1)) / phi_E) *
                 (phi_E - Z_E) + (C_jE0) / (1 - (phi_E - Z_E) / phi_E)^gamma_E
             else
-                (C_jE0) / (1 - V_BE / phi_E)^gamma_E
+                (C_jE0) / (1 - V_EB / phi_E)^gamma_E
             end
         end
 
