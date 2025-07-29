@@ -72,7 +72,8 @@ end
                    connect(R2.n, voltage.n, ground.g)]
 
     @named model = System(connections, t,
-        systems = [R0, R1, R2, source, short, voltage, ground]; guesses = [R2.v => 0.0, R1.v => 0.0])
+        systems = [R0, R1, R2, source, short, voltage, ground]; guesses = [
+            R2.v => 0.0, R1.v => 0.0])
     sys = mtkcompile(model)
     prob = ODEProblem(sys, [], (0, 2.0))
     sol = solve(prob, Rodas4()) # has no state; does not work with Tsit5
@@ -541,7 +542,6 @@ end
     # savefig(plt, "rc_circuit_test_variable_resistor")
 end
 @testset "NMOS Transistor" begin
-
     @mtkmodel SimpleNMOSCircuit begin
         @components begin
             Q1 = NMOS()
@@ -549,8 +549,8 @@ end
             Vb = Voltage()
             ground = Ground()
 
-            Vcc_const = Constant(k=V_cc)
-            Vb_const = Constant(k=V_b)
+            Vcc_const = Constant(k = V_cc)
+            Vb_const = Constant(k = V_b)
         end
 
         @parameters begin
@@ -589,8 +589,8 @@ end
             Vb = Voltage()
             ground = Ground()
 
-            Vcc_const = Constant(k=V_cc)
-            Vb_const = Constant(k=V_b)
+            Vcc_const = Constant(k = V_cc)
+            Vb_const = Constant(k = V_b)
         end
 
         @parameters begin
@@ -611,19 +611,16 @@ end
         end
     end
 
-    @mtkbuild flipped_sys = FlippedNMOSCircuit(V_cc=5.0, V_b=3.5)
+    @mtkbuild flipped_sys = FlippedNMOSCircuit(V_cc = 5.0, V_b = 3.5)
 
     flipped_prob = ODEProblem(flipped_sys, Pair[], (0.0, 10.0))
     flipped_sol = solve(flipped_prob)
     @test flipped_sol[flipped_sys.Q1.d.i][1] < 0
-    @test flipped_sol[flipped_sys.Q1.s.i][1] > 0 
+    @test flipped_sol[flipped_sys.Q1.s.i][1] > 0
     @test flipped_sol[flipped_sys.Q1.s.v] > flipped_sol[flipped_sys.Q1.d.v]
-    
 end
 
-
 @testset "PMOS Transistor" begin
-
     @mtkmodel SimplePMOSCircuit begin
         @components begin
             Q1 = PMOS()
@@ -632,9 +629,9 @@ end
             Vd = Voltage()
             ground = Ground()
 
-            Vs_const = Constant(k=V_s)
-            Vb_const = Constant(k=V_b)
-            Vd_const = Constant(k=V_d)
+            Vs_const = Constant(k = V_s)
+            Vb_const = Constant(k = V_b)
+            Vd_const = Constant(k = V_d)
         end
 
         @parameters begin
@@ -646,7 +643,7 @@ end
             #voltage sources
             connect(Vs_const.output, Vs.V)
             connect(Vb_const.output, Vb.V)
-            connect(Vd_const.output, Vd.V )
+            connect(Vd_const.output, Vd.V)
 
             #ground connections
             connect(Vs.n, Vb.n, ground.g, Vd.n)
@@ -658,7 +655,7 @@ end
         end
     end
 
-    @mtkbuild sys = SimplePMOSCircuit(V_s=5.0, V_b=2.5, V_d = 3)
+    @mtkbuild sys = SimplePMOSCircuit(V_s = 5.0, V_b = 2.5, V_d = 3)
 
     prob = ODEProblem(sys, Pair[], (0.0, 10.0))
     sol = solve(prob)
@@ -675,9 +672,9 @@ end
             Vd = Voltage()
             ground = Ground()
 
-            Vs_const = Constant(k=V_s)
-            Vb_const = Constant(k=V_b)
-            Vd_const = Constant(k=V_d)
+            Vs_const = Constant(k = V_s)
+            Vb_const = Constant(k = V_b)
+            Vd_const = Constant(k = V_d)
         end
 
         @parameters begin
@@ -689,7 +686,7 @@ end
             #voltage sources
             connect(Vs_const.output, Vs.V)
             connect(Vb_const.output, Vb.V)
-            connect(Vd_const.output, Vd.V )
+            connect(Vd_const.output, Vd.V)
 
             #ground connections
             connect(Vs.n, Vb.n, ground.g, Vd.n)
@@ -701,15 +698,13 @@ end
         end
     end
 
-    @mtkbuild flipped_sys = FlippedPMOSCircuit(V_s=5.0, V_b=2.5, V_d = 3)
+    @mtkbuild flipped_sys = FlippedPMOSCircuit(V_s = 5.0, V_b = 2.5, V_d = 3)
 
     flipped_prob = ODEProblem(flipped_sys, Pair[], (0.0, 10.0))
     flipped_sol = solve(flipped_prob)
 
     @test flipped_sol[flipped_sys.Q1.d.i][1] > 0.0
     @test flipped_sol[flipped_sys.Q1.s.i][1] < 0.0
-
-
 end
 
 @testset "NPN Tests" begin
@@ -867,7 +862,8 @@ end
 
     @mtkcompile sys = SimplePNPCircuitSubstrate(V_b = 0.70)
 
-    prob = ODEProblem(sys, [sys.Q1.c.i => 0.0], (0.0, 10.0); guesses = [sys.Q1.I_sub => 1.0])
+    prob = ODEProblem(
+        sys, [sys.Q1.c.i => 0.0], (0.0, 10.0); guesses = [sys.Q1.I_sub => 1.0])
     sol = solve(prob)
 
     @test isapprox(

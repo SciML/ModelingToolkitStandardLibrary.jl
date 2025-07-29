@@ -499,7 +499,6 @@ end
 end
 
 @testset "Interpolation in model macro" begin
-
     function MassSpringDamper(; name)
         @named input = RealInput()
         @variables f(t) x(t)=0 dx(t)=0 ddx(t)
@@ -527,7 +526,7 @@ end
             connect(src.input, clk.output)
             connect(src.output, model.input)
         end
-    end;
+    end
     @mtkcompile sys = model_with_lut()
 
     prob = ODEProblem(sys, [], (0.0, 1))

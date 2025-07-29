@@ -871,6 +871,7 @@ function ParametrizedInterpolation(
         name)
 end
 
-function ParametrizedInterpolation(; interp_type, u::AbstractVector, x::AbstractVector, name)
+function ParametrizedInterpolation(;
+        interp_type, u::AbstractVector, x::AbstractVector, name)
     ParametrizedInterpolation(interp_type, u, x; name)
 end

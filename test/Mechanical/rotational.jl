@@ -89,8 +89,10 @@ end
 
     @mtkcompile sys = TwoInertiasWithDrivingTorque()
     deqs = [eq.lhs => eq.rhs for eq in equations(sys)]
-    prob = DAEProblem(sys, [deqs;
-        D(D(sys.inertia2.phi)) => 1.0; sys.spring.flange_b.phi => 0.0], (0, 10.0))
+    prob = DAEProblem(
+        sys, [deqs;
+              D(D(sys.inertia2.phi)) => 1.0; sys.spring.flange_b.phi => 0.0],
+        (0, 10.0))
     sol = solve(prob, DFBDF())
     @test SciMLBase.successful_retcode(sol)
 
@@ -216,8 +218,10 @@ end
     end
 
     @mtkcompile sys = StickSlip()
-    prob = DAEProblem(sys, [D.(unknowns(sys)) .=> 0.0;
-        [sys.inertia.flange_b.tau => 0.0; unknowns(sys) .=> 0.0...]], (0, 10.0))
+    prob = DAEProblem(sys,
+        [D.(unknowns(sys)) .=> 0.0;
+         [sys.inertia.flange_b.tau => 0.0; unknowns(sys) .=> 0.0...]],
+        (0, 10.0))
 
     sol = solve(prob, DFBDF())
     @test SciMLBase.successful_retcode(sol)
