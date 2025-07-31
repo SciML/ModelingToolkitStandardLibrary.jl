@@ -84,7 +84,7 @@ my_interpolation = LinearInterpolation(df.data, df.time)
 
 @mtkmodel MassSpringDamperSystem2 begin
     @components begin
-        src = Interpolation(itp=my_interpolation)
+        src = Interpolation(itp = my_interpolation)
         clk = ContinuousClock()
         model = MassSpringDamper()
     end
@@ -174,7 +174,7 @@ plot(sol2)
 ```
 
 !!! note
-
+    
     Note that when changing the data, the length of the new data must be the same as the length of the original data.
 
 ## Custom Component with External Data

@@ -191,7 +191,7 @@ nothing # hide
 As can be seen, we get exactly the same result.  The only difference here is that we are solving an extra equation, which allows us to plot the body position as well.
 
 ```@example connections
-prob = ODEProblem(sys, [], (0, 10.0), fully_determined=true)
+prob = ODEProblem(sys, [], (0, 10.0), fully_determined = true)
 sol_p = solve(prob)
 
 p1 = plot(sol_p, idxs = [body.v])
@@ -281,7 +281,7 @@ function simplify_and_solve(damping, spring, body, ground; initialization_eqs = 
 
     println.(full_equations(sys))
 
-    prob = ODEProblem(sys, [], (0, 10.0); initialization_eqs, fully_determined=true)
+    prob = ODEProblem(sys, [], (0, 10.0); initialization_eqs, fully_determined = true)
     sol = solve(prob; abstol = 1e-9, reltol = 1e-9)
 
     return sol

@@ -1,5 +1,6 @@
 @mtkmodel PartialTorque begin
-    @extend flange, phi_support = partial_element = PartialElementaryOneFlangeAndSupport2(;
+    @extend flange,
+    phi_support = partial_element = PartialElementaryOneFlangeAndSupport2(;
         use_support = false)
     @variables begin
         phi(t),
