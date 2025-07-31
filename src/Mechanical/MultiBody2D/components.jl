@@ -67,8 +67,9 @@
         m * ddy_cm ~ m * g + fy1 + fy2
 
         # torques
-        I * ddA ~ -fy1 * (x2 - x1) / 2 + fy2 * (x2 - x1) / 2 + fx1 * (y2 - y1) / 2 -
-                  fx2 * (y2 - y1) / 2
+        I * ddA ~
+        -fy1 * (x2 - x1) / 2 + fy2 * (x2 - x1) / 2 + fx1 * (y2 - y1) / 2 -
+        fx2 * (y2 - y1) / 2
 
         # geometry
         x2 ~ l * cos(A) + x1

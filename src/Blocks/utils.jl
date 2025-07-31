@@ -159,8 +159,8 @@ Base class for a multiple input multiple output (MIMO) continuous system block.
         y_start = zeros(nout))
     @named input = RealInput(nin = nin, guess = u_start)
     @named output = RealOutput(nout = nout, guess = y_start)
-    @variables(u(t)[1:nin]=u_start, [description = "Input of MIMO system $name"],
-        y(t)[1:nout]=y_start, [description = "Output of MIMO system $name"],)
+    @variables(u(t)[1:nin]=u_start, [description="Input of MIMO system $name"],
+        y(t)[1:nout]=y_start, [description="Output of MIMO system $name"],)
     eqs = [
         [u[i] ~ input.u[i] for i in 1:nin]...,
         [y[i] ~ output.u[i] for i in 1:nout]...

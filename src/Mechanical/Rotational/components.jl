@@ -200,7 +200,8 @@ This element characterizes any type of gear box which is fixed in the ground and
   - `use_support`: If support flange enabled, otherwise implicitly grounded. By default it is `false`
 """
 @mtkmodel IdealGear begin
-    @extend phi_support, flange_a, flange_b = partial_element = PartialElementaryTwoFlangesAndSupport2(;
+    @extend phi_support, flange_a,
+    flange_b = partial_element = PartialElementaryTwoFlangesAndSupport2(;
         use_support = false)
     @parameters begin
         ratio, [description = "Transmission ratio"]
@@ -261,7 +262,8 @@ Friction model: "Armstrong, B. and C.C. de Wit, Friction Modeling and Compensati
         w_coul = w_brk / 10
     end
     @equations begin
-        tau ~ str_scale * (exp(-(w_rel / w_st)^2) * w_rel / w_st) +
-              tau_c * tanh(w_rel / w_coul) + f * w_rel # Stribeck friction + Coulomb friction + Viscous friction
+        tau ~
+        str_scale * (exp(-(w_rel / w_st)^2) * w_rel / w_st) +
+        tau_c * tanh(w_rel / w_coul) + f * w_rel # Stribeck friction + Coulomb friction + Viscous friction
     end
 end

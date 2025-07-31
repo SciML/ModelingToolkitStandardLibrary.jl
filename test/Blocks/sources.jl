@@ -499,7 +499,6 @@ end
 end
 
 @testset "Interpolation in model macro" begin
-
     function MassSpringDamper(; name)
         @named input = RealInput()
         @variables f(t) x(t)=0 dx(t)=0 ddx(t)

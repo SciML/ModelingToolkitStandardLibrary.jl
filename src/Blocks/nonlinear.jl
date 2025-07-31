@@ -21,8 +21,8 @@ Limit the range of a signal.
     m = (y_max + y_min) / 2
     siso = SISO(u_start = m, y_start = m, name = :siso) # Default signals to center of saturation to minimize risk of saturation while linearizing etc.
     @unpack u, y = siso
-    pars = @parameters y_max=y_max [description = "Maximum allowed output of Limiter $name"] y_min=y_min [
-        description = "Minimum allowed output of Limiter $name"
+    pars = @parameters y_max=y_max [description="Maximum allowed output of Limiter $name"] y_min=y_min [
+        description="Minimum allowed output of Limiter $name"
     ]
     eqs = [
         y ~ _clamp(u, y_min, y_max)

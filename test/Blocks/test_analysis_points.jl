@@ -333,7 +333,8 @@ eqs = [connect(r.output, F.input)
        connect(F.output, sys_inner.add.input1)]
 sys_outer = System(eqs, t, systems = [F, sys_inner, r], name = :outer)
 
-matrices, _ = get_sensitivity(
+matrices,
+_ = get_sensitivity(
     sys_outer, [sys_outer.inner.plant_input, sys_outer.inner.plant_output])
 
 Ps = tf(1, [1, 1]) |> ss
@@ -348,7 +349,8 @@ So = CS.feedback(1, Ps * Cs)
 @test tf(G[1, 2]) ≈ tf(-CS.feedback(Cs, Ps))
 @test tf(G[2, 1]) ≈ tf(CS.feedback(Ps, Cs))
 
-matrices, _ = get_comp_sensitivity(
+matrices,
+_ = get_comp_sensitivity(
     sys_outer, [sys_outer.inner.plant_input, sys_outer.inner.plant_output])
 
 G = CS.ss(matrices...) |> sminreal
@@ -372,7 +374,8 @@ L = CS.ss(matrices...) |> sminreal
 @test tf(L[1, 1]) ≈ -tf(Ps * Cs)
 
 # Calling looptransfer like below is not the intended way, but we can work out what it should return if we did so it remains a valid test
-matrices, _ = get_looptransfer(
+matrices,
+_ = get_looptransfer(
     sys_outer, [sys_outer.inner.plant_input, sys_outer.inner.plant_output])
 L = CS.ss(matrices...) |> sminreal
 @test tf(L[1, 1]) ≈ tf(0)
@@ -380,7 +383,8 @@ L = CS.ss(matrices...) |> sminreal
 @test sminreal(L[1, 2]) ≈ ss(-1)
 @test tf(L[2, 1]) ≈ tf(Ps)
 
-matrices, _ = linearize(
+matrices,
+_ = linearize(
     sys_outer, [sys_outer.inner.plant_input], [sys_outer.inner.plant_output])
 G = CS.ss(matrices...) |> sminreal
 @test tf(G) ≈ tf(CS.feedback(Ps, Cs))

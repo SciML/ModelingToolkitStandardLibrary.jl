@@ -98,7 +98,8 @@ end
 end
 
 @testset "DynamicVolume and minimum_volume feature" begin # Need help here
-    function TestSystem(; name, area = 0.01, length = 0.1, damping_volume = length * area * 0.1)
+    function TestSystem(; name, area = 0.01, length = 0.1, damping_volume = length * area *
+                                                                            0.1)
         pars = []
 
         # DynamicVolume values

@@ -157,8 +157,9 @@ Early voltage effect.
 
         I_sub ~ ifelse(use_substrate, -C_CS * D(V_CS), -C_CS * D(V_sub))
 
-        c.i ~ (ICC - IEC) * ifelse(use_Early, (1 - V_BC * V_A), 1.0) - IEC / B_R -
-              (C_jC + C_DC) * D(V_BC) - I_sub
+        c.i ~
+        (ICC - IEC) * ifelse(use_Early, (1 - V_BC * V_A), 1.0) - IEC / B_R -
+        (C_jC + C_DC) * D(V_BC) - I_sub
         b.i ~ IEC / B_R + ICC / B_F + (C_jC + C_DC) * D(V_BC) + (C_jE + C_DE) * D(V_BE)
         e.i ~ -c.i - b.i - I_sub
     end
@@ -323,8 +324,9 @@ Early voltage effect.
 
         I_sub ~ ifelse(use_substrate, -C_CS * D(V_CS), -C_CS * D(V_sub))
 
-        c.i ~ IEC / B_R - (ICC - IEC) * ifelse(use_Early, (1 - V_CB * V_A), 1.0) +
-              (C_jC + C_DC) * D(V_CB) - I_sub
+        c.i ~
+        IEC / B_R - (ICC - IEC) * ifelse(use_Early, (1 - V_CB * V_A), 1.0) +
+        (C_jC + C_DC) * D(V_CB) - I_sub
         b.i ~ -IEC / B_R - ICC / B_F - (C_jC + C_DC) * D(V_CB) - (C_jE + C_DE) * D(V_EB)
         e.i ~ -c.i - b.i - I_sub
     end

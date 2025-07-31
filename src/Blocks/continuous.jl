@@ -572,11 +572,13 @@ linearized around the operating point `x₀, u₀`, we have `y0, u0 = h(x₀, u�
     ]
     # pars = @parameters A=A B=B C=C D=D # This is buggy
     eqs = [ # FIXME: if array equations work
-        [Differential(t)(x[i]) ~ sum(A[i, k] * x[k] for k in 1:nx) +
-                                 sum(B[i, j] * (input.u[j] - u0[j]) for j in 1:nu)
+        [Differential(t)(x[i]) ~
+         sum(A[i, k] * x[k] for k in 1:nx) +
+         sum(B[i, j] * (input.u[j] - u0[j]) for j in 1:nu)
          for i in 1:nx]..., # cannot use D here
-        [output.u[j] ~ sum(C[j, i] * x[i] for i in 1:nx) +
-                       sum(D[j, k] * (input.u[k] - u0[k]) for k in 1:nu) + y0[j]
+        [output.u[j] ~
+         sum(C[j, i] * x[i] for i in 1:nx) +
+         sum(D[j, k] * (input.u[k] - u0[k]) for k in 1:nu) + y0[j]
          for j in 1:ny]...
     ]
     compose(System(eqs, t, vcat(x...), [], name = name), [input, output])

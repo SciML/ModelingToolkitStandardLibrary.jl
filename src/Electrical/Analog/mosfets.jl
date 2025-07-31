@@ -68,20 +68,19 @@ Based on the MOSFET models in (Sedra, A. S., Smith, K. C., Carusone, T. C., & Ga
         V_GS ~ g.v - ifelse(d.v < s.v, d.v, s.v)
         V_OV ~ V_GS - V_tn
 
-        d.i ~ ifelse(d.v < s.v, -1, 1) * ifelse(V_GS < V_tn,
+        d.i ~
+        ifelse(d.v < s.v, -1, 1) * ifelse(V_GS < V_tn,
             V_DS / R_DS,
             ifelse(V_DS < V_OV,
-                    k_n * (1 + lambda * V_DS) * (V_OV - V_DS / 2) * V_DS + V_DS / R_DS,
-                    ((k_n * V_OV^2) / 2) * (1 + lambda * V_DS) + V_DS / R_DS
-                )
+                k_n * (1 + lambda * V_DS) * (V_OV - V_DS / 2) * V_DS + V_DS / R_DS,
+                ((k_n * V_OV^2) / 2) * (1 + lambda * V_DS) + V_DS / R_DS
             )
+        )
 
         g.i ~ 0
         s.i ~ -d.i
     end
 end
-
-
 
 """
     PMOS(;name, V_tp, R_DS, lambda)
@@ -151,12 +150,13 @@ Based on the MOSFET models in (Sedra, A. S., Smith, K. C., Carusone, T. C., & Ga
         V_DS ~ ifelse(d.v > s.v, s.v - d.v, d.v - s.v)
         V_GS ~ g.v - ifelse(d.v > s.v, d.v, s.v)
 
-        d.i ~ -ifelse(d.v > s.v, -1.0, 1.0) * ifelse(V_GS > V_tp,
+        d.i ~
+        -ifelse(d.v > s.v, -1.0, 1.0) * ifelse(V_GS > V_tp,
             V_DS / R_DS,
             ifelse(V_DS > (V_GS - V_tp),
-                    k_p * (1 + lambda * V_DS) * ((V_GS - V_tp) - V_DS / 2) * V_DS +
-                    V_DS / R_DS,
-                    ((k_p * (V_GS - V_tp)^2) / 2) * (1 + lambda * V_DS) + V_DS / R_DS,
+                k_p * (1 + lambda * V_DS) * ((V_GS - V_tp) - V_DS / 2) * V_DS +
+                V_DS / R_DS,
+                ((k_p * (V_GS - V_tp)^2) / 2) * (1 + lambda * V_DS) + V_DS / R_DS
             )
         )
 
