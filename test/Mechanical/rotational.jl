@@ -234,6 +234,37 @@ end
     # Plots.scatter(sol[friction.w], sol[friction.tau], label="")
 end
 
+@testset "lossy gear" begin
+    @mtkmodel LossyGear begin
+        @components begin
+            drive = Blocks.Sine(frequency=1, amplitude=10)
+            load = Ramp(duration=2, height=5, offset=-10)
+            torque1 = Torque(use_support=true)
+            torque2 = Torque(use_support=true)
+            inertia1 = Inertia(J=1)
+            inertia2 = Inertia(J=1.5)
+            gear = IdealGear(ratio=2, use_support=true)
+            fixed = Fixed()
+        end
+        @equations begin
+            connect(drive.output, torque1.tau)
+            connect(torque1.flange, inertia1.flange_a)
+            connect(inertia1.flange_b, gear.flange_a)
+            connect(gear.flange_b, inertia2.flange_a)
+            connect(inertia2.flange_b, torque2.flange)
+            connect(torque2.tau, load.output)
+            connect(torque1.support, fixed.flange)
+            connect(gear.support, fixed.flange)
+            connect(torque2.support, fixed.flange)
+        end
+    end
+    @mtkbuild model = LossyGear()
+    tspan = (0.0, 10.0)
+    prob = ODEProblem(model, ModelingToolkit.missing_variable_defaults(model), tspan)
+    sol = solve(prob, Rosenbrock23());
+    @test ModelingToolkit.SciMLBase.successful_retcode(sol)
+end
+
 @testset "sensors" begin
     @mtkmodel Sensors begin
         @components begin
