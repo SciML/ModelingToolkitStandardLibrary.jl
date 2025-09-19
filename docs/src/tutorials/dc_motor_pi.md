@@ -75,9 +75,20 @@ Now the model can be simulated. Typical rotational mechanical systems are descri
 (differential algebraic equations), however in this case, ModelingToolkit can simplify the model enough
 so that it can be represented as a system of `ODEs` (ordinary differential equations).
 
+!!! note "Initial Conditions"
+    We provide complete initial conditions for all state variables to avoid initialization warnings.
+    These include the inductor current, inertia angular velocity and position, and the PI controller integrator state.
+
 ```@example dc_motor_pi
 sys = mtkcompile(model)
-prob = ODEProblem(sys, [sys.L1.i => 0.0], (0, 6.0))
+# Provide complete initial conditions for all state variables
+u0 = Dict(
+    sys.L1.i => 0.0,                  # Initial inductor current
+    sys.inertia.w => 0.0,              # Initial angular velocity
+    sys.inertia.phi => 0.0,            # Initial angle
+    sys.pi_controller.int.x => 0.0    # Initial PI integrator state
+)
+prob = ODEProblem(sys, u0, (0, 6.0))
 sol = solve(prob)
 
 p1 = plot(sol.t, sol[sys.inertia.w], ylabel = "Angular Vel. in rad/s",
@@ -86,6 +97,11 @@ plot!(sol.t, sol[sys.ref.output.u], label = "Reference")
 p2 = plot(sol.t, sol[sys.load.tau.u], ylabel = "Disturbance in Nm", label = "")
 plot(p1, p2, layout = (2, 1))
 ```
+
+!!! note "Pluto Notebooks"
+    If you're using this example in a Pluto notebook, note that Pluto requires each variable to have a unique name.
+    If you encounter "Multiple definitions" errors, rename variables accordingly (e.g., `simplified_sys1`, `simplified_sys2`, etc.).
+    This is due to Pluto's reactive behavior where all variables must be uniquely named for automatic dependency tracking.
 
 ## Closed-loop analysis
 
@@ -107,12 +123,14 @@ T(s) &= \dfrac{P(s)C(s)}{I + P(s)C(s)}
 
 ```@example dc_motor_pi
 using ControlSystemsBase
+# Get sensitivity function
 matrices_S,
-simplified_sys = Blocks.get_sensitivity(
+simplified_sys_S = Blocks.get_sensitivity(
     model, :y, op = Dict(unknowns(sys) .=> 0.0))
 So = ss(matrices_S...) |> minreal # The output-sensitivity function as a StateSpace system
+# Get complementary sensitivity function
 matrices_T,
-simplified_sys = Blocks.get_comp_sensitivity(
+simplified_sys_T = Blocks.get_comp_sensitivity(
     model, :y, op = Dict(unknowns(sys) .=> 0.0))
 To = ss(matrices_T...)# The output complementary sensitivity function as a StateSpace system
 bodeplot([So, To], label = ["S" "T"], plot_title = "Sensitivity functions",
@@ -123,7 +141,7 @@ Similarly, we may compute the loop-transfer function and plot its Nyquist curve
 
 ```@example dc_motor_pi
 matrices_L,
-simplified_sys = Blocks.get_looptransfer(
+simplified_sys_L = Blocks.get_looptransfer(
     model, :y, op = Dict(unknowns(sys) .=> 0.0))
 L = -ss(matrices_L...) # The loop-transfer function as a StateSpace system. The negative sign is to negate the built-in negative feedback
 Ms, ωMs = hinfnorm(So) # Compute the peak of the sensitivity function to draw a circle in the Nyquist plot
