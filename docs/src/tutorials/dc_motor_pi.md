@@ -75,10 +75,6 @@ Now the model can be simulated. Typical rotational mechanical systems are descri
 (differential algebraic equations), however in this case, ModelingToolkit can simplify the model enough
 so that it can be represented as a system of `ODEs` (ordinary differential equations).
 
-!!! note "Initial Conditions"
-    We provide complete initial conditions for all state variables to avoid initialization warnings.
-    These include the inductor current, inertia angular velocity and position, and the PI controller integrator state.
-
 ```@example dc_motor_pi
 sys = mtkcompile(model)
 # Provide complete initial conditions for all state variables
@@ -97,11 +93,6 @@ plot!(sol.t, sol[sys.ref.output.u], label = "Reference")
 p2 = plot(sol.t, sol[sys.load.tau.u], ylabel = "Disturbance in Nm", label = "")
 plot(p1, p2, layout = (2, 1))
 ```
-
-!!! note "Pluto Notebooks"
-    If you're using this example in a Pluto notebook, note that Pluto requires each variable to have a unique name.
-    If you encounter "Multiple definitions" errors, rename variables accordingly (e.g., `simplified_sys1`, `simplified_sys2`, etc.).
-    This is due to Pluto's reactive behavior where all variables must be uniquely named for automatic dependency tracking.
 
 ## Closed-loop analysis
 
