@@ -17,7 +17,7 @@ using Plots
 ## Custom Component
 
 Now the custom component can be defined.
-The [Modelica implementation](https://www.maplesoft.com/documentation_center/online_manuals/modelica/Modelica_Electrical_Analog_Examples_Utilities.html#Modelica.Electrical.Analog.Examples.Utilities.NonlinearResistor) of the `NonlinearResistor` looks as follows:
+The Modelica implementation of the `NonlinearResistor` looks as follows:
 
 ```Modelica
 model NonlinearResistor "Chua's resistor"
