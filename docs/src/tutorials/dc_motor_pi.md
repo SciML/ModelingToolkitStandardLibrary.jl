@@ -77,7 +77,14 @@ so that it can be represented as a system of `ODEs` (ordinary differential equat
 
 ```@example dc_motor_pi
 sys = mtkcompile(model)
-prob = ODEProblem(sys, [sys.L1.i => 0.0], (0, 6.0))
+# Provide complete initial conditions for all state variables
+u0 = Dict(
+    sys.L1.i => 0.0,                  # Initial inductor current
+    sys.inertia.w => 0.0,              # Initial angular velocity
+    sys.inertia.phi => 0.0,            # Initial angle
+    sys.pi_controller.int.x => 0.0    # Initial PI integrator state
+)
+prob = ODEProblem(sys, u0, (0, 6.0))
 sol = solve(prob)
 
 p1 = plot(sol.t, sol[sys.inertia.w], ylabel = "Angular Vel. in rad/s",
@@ -107,12 +114,14 @@ T(s) &= \dfrac{P(s)C(s)}{I + P(s)C(s)}
 
 ```@example dc_motor_pi
 using ControlSystemsBase
+# Get sensitivity function
 matrices_S,
-simplified_sys = Blocks.get_sensitivity(
+simplified_sys_S = Blocks.get_sensitivity(
     model, :y, op = Dict(unknowns(sys) .=> 0.0))
 So = ss(matrices_S...) |> minreal # The output-sensitivity function as a StateSpace system
+# Get complementary sensitivity function
 matrices_T,
-simplified_sys = Blocks.get_comp_sensitivity(
+simplified_sys_T = Blocks.get_comp_sensitivity(
     model, :y, op = Dict(unknowns(sys) .=> 0.0))
 To = ss(matrices_T...)# The output complementary sensitivity function as a StateSpace system
 bodeplot([So, To], label = ["S" "T"], plot_title = "Sensitivity functions",
@@ -123,7 +132,7 @@ Similarly, we may compute the loop-transfer function and plot its Nyquist curve
 
 ```@example dc_motor_pi
 matrices_L,
-simplified_sys = Blocks.get_looptransfer(
+simplified_sys_L = Blocks.get_looptransfer(
     model, :y, op = Dict(unknowns(sys) .=> 0.0))
 L = -ss(matrices_L...) # The loop-transfer function as a StateSpace system. The negative sign is to negate the built-in negative feedback
 Ms, ωMs = hinfnorm(So) # Compute the peak of the sensitivity function to draw a circle in the Nyquist plot
