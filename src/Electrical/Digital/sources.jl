@@ -1,3 +1,7 @@
+using ModelingToolkit: ODESystem, t_nounits as t
+using ..Electrical: DigitalPin
+const System = ODESystem
+
 """
 ```julia
 PulseDiff(; name, Val = 1, dt = 0.1)
