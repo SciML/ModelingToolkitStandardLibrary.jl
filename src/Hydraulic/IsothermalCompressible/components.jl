@@ -202,6 +202,7 @@ Constant length internal flow model discretized by `N` (`FixedVolume`: `N`, `Tub
 
     return System(eqs, t, vars, pars; name, systems = [ports; pipe_bases; volumes])
 end
+function Pipe end
 @deprecate Pipe Tube
 
 """
