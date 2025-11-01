@@ -10,7 +10,7 @@ using ..Thermal: HeatPort
 using ..Mechanical.Rotational: Flange, Support
 using ..Blocks: RealInput, RealOutput
 
-export Pin, OnePort
+export Pin, OnePort, DigitalPin
 include("utils.jl")
 
 export Capacitor,
@@ -30,14 +30,6 @@ include("Analog/mosfets.jl")
 export NPN, PNP
 include("Analog/transistors.jl")
 
-# include("Digital/gates.jl")
-# include("Digital/sources.jl")
-
-# TODO:
-# - digital
-# - machines
-# - multi-phase
-
 export Logic
 include("Digital/logic.jl")
 
@@ -47,7 +39,22 @@ export StdLogicVector, StdULogicVector,
 include("Digital/logic_vectors.jl")
 
 export LogicTable,
-       AndTable, OrTable, NotTable, XorTable
+       AndTable, OrTable, NotTable, XorTable,
+       _not, _and, _or, _xor
 include("Digital/tables.jl")
+
+export Not, And, Nand, Or, Nor, Xor, Xnor
+include("Digital/gates.jl")
+
+export HalfAdder, FullAdder, MUX, DEMUX, Encoder, Decoder
+include("Digital/components.jl")
+
+export PulseDiff, Set, Reset, Pulse
+include("Digital/sources.jl")
+
+# TODO:
+# - digital
+# - machines
+# - multi-phase
 
 end
