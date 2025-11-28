@@ -822,7 +822,7 @@ Base.nameof(::CachedInterpolation) = :CachedInterpolation
 @register_symbolic (f::CachedInterpolation)(u::AbstractArray, x::AbstractArray, args::Tuple)
 
 """
-    ParametrizedInterpolation(interp_type, u, x, args...; name, t = ModelingToolkit.t_nounits)
+    ParametrizedInterpolation(interp_type, u, x, args...; name, t = ModelingToolkitBase.t_nounits)
 
 Represent function interpolation symbolically as a block component, with the interpolation data represented parametrically.
 By default interpolation types from [`DataInterpolations.jl`](https://github.com/SciML/DataInterpolations.jl) are supported,
@@ -862,7 +862,7 @@ function ParametrizedInterpolation(
 
     eqs = [output.u ~ interpolator(input.u)]
 
-    System(eqs, ModelingToolkit.t_nounits, [],
+    System(eqs, ModelingToolkitBase.t_nounits, [],
         [data, ts, interpolation_type, interpolator];
         parameter_dependencies = [
             interpolator ~ build_interpolation(data, ts, args)

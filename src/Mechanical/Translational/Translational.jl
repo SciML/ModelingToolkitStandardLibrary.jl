@@ -3,8 +3,8 @@ Library to model 1-dimensional, translational mechanical systems
 """
 module Translational
 
-using ModelingToolkit, Symbolics
-using ModelingToolkit: getdefault, t_nounits as t, D_nounits as D
+using ModelingToolkitBase, Symbolics
+using ModelingToolkitBase: getdefault, t_nounits as t, D_nounits as D
 
 using ModelingToolkitStandardLibrary.Blocks: RealInput, RealOutput
 using IfElse: ifelse

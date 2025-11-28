@@ -2,10 +2,10 @@
 The module `Blocks` contains common input-output components, referred to as blocks.
 """
 module Blocks
-using ModelingToolkit, Symbolics
+using ModelingToolkitBase, Symbolics
 import IfElse: ifelse
 import ..@symcheck
-using ModelingToolkit: getdefault, t_nounits as t, D_nounits as D
+using ModelingToolkitBase: getdefault, t_nounits as t, D_nounits as D
 
 export RealInput, RealInputArray, RealOutput, RealOutputArray, SISO
 include("utils.jl")

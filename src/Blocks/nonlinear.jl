@@ -62,7 +62,7 @@ If the input is within `u_min` ... `u_max`, the output is zero. Outside of this 
         u_min = -u_max, [description = "Lower limit of dead zone of DeadZone"]
     end
     begin
-        if !ModelingToolkit.isvariable(u_max)
+        if !ModelingToolkitBase.isvariable(u_max)
             u_max ≥ u_min || throw(ArgumentError("`u_min` must be smaller than `u_max`"))
         end
     end
