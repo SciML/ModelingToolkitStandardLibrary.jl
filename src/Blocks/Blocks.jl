@@ -2,7 +2,7 @@
 The module `Blocks` contains common input-output components, referred to as blocks.
 """
 module Blocks
-using ModelingToolkitBase, Symbolics
+using ModelingToolkitBase, Symbolics, SciCompDSL
 import IfElse: ifelse
 import ..@symcheck
 using ModelingToolkitBase: getdefault, t_nounits as t, D_nounits as D

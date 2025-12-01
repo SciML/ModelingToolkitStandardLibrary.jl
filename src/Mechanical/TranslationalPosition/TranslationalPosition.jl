@@ -3,7 +3,7 @@ Library to model 1-dimensional, translational mechanical components.
 """
 module TranslationalPosition
 
-using ModelingToolkitBase, Symbolics, IfElse
+using ModelingToolkitBase, Symbolics, IfElse, SciCompDSL
 using ModelingToolkitBase: t_nounits as t, D_nounits as D
 using ...Blocks: RealInput, RealOutput
 

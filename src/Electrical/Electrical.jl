@@ -4,7 +4,7 @@ This library contains electrical components to build up analog circuits.
 """
 module Electrical
 
-using ModelingToolkitBase, Symbolics, IfElse
+using ModelingToolkitBase, Symbolics, IfElse, SciCompDSL
 using ModelingToolkitBase: t_nounits as t, D_nounits as D
 using ..Thermal: HeatPort
 using ..Mechanical.Rotational: Flange, Support

@@ -3,7 +3,7 @@ Library of mechanical models.
 """
 module Mechanical
 
-using ModelingToolkitBase
+using ModelingToolkitBase, SciCompDSL
 
 include("Rotational/Rotational.jl")
 include("Translational/Translational.jl")
