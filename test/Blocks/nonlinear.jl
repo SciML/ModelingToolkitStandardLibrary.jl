@@ -1,7 +1,7 @@
 using ModelingToolkit, OrdinaryDiffEq
 using ModelingToolkitStandardLibrary.Blocks
 using ModelingToolkit: t_nounits as t
-using ModelingToolkitStandardLibrary.Blocks: _clamp, _dead_zone
+using ModelingToolkitStandardLibrary.Blocks: _dead_zone
 using OrdinaryDiffEq: ReturnCode.Success
 
 @testset "Limiter" begin
@@ -44,12 +44,12 @@ using OrdinaryDiffEq: ReturnCode.Success
         sol = solve(prob, Rodas4())
         @test SciMLBase.successful_retcode(sol)
         @test all(abs.(sol[lim.output.u]) .<= 0.5)
-        @test all(isapprox.(sol[lim.output.u], _clamp.(sol[source.output.u], y_min, y_max),
+        @test all(isapprox.(sol[lim.output.u], clamp.(sol[source.output.u], y_min, y_max),
             atol = 1e-2))
 
         # Plots.plot(sol; vars=[source.output.u, lim.output.u])
         # Plots.scatter(sol[source.output.u], sol[lim.output.u])
-        # Plots.scatter!(sol[source.output.u], _clamp.(sol[source.output.u], y_min, y_max))
+        # Plots.scatter!(sol[source.output.u], clamp.(sol[source.output.u], y_min, y_max))
     end
 end
 
