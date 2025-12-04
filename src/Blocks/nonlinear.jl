@@ -1,4 +1,3 @@
-_clamp(u, u_min, u_max) = max(min(u, u_max), u_min)
 _dead_zone(u, u_min, u_max) = ifelse(u > u_max, u - u_max, ifelse(u < u_min, u - u_min, 0))
 
 """
@@ -25,7 +24,7 @@ Limit the range of a signal.
         description="Minimum allowed output of Limiter $name"
     ]
     eqs = [
-        y ~ _clamp(u, y_min, y_max)
+        y ~ clamp(u, y_min, y_max)
     ]
     extend(System(eqs, t, [], pars; name = name), siso)
 end
@@ -111,7 +110,7 @@ Initial value of state `Y` can be set with `int.y`
     @unpack y, u = siso
 
     eqs = [
-        D(y) ~ max(min((u - y) / Td, rising), falling)
+        D(y) ~ clamp((u - y) / Td, falling, rising)
     ]
 
     initialization_eqs = [
