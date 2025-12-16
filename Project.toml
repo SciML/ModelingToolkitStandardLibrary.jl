@@ -10,7 +10,6 @@ IfElse = "615f187c-cbe4-4ef1-ba3b-2fcf58d6d173"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 ModelingToolkitBase = "7771a370-6774-4173-bd38-47e70ca0b839"
 PreallocationTools = "d236fae5-4411-538c-8e31-a6e3d9e00b46"
-SciCompDSL = "91a8cdf1-4ca6-467b-a780-87fda3fff15e"
 Symbolics = "0c5d862f-8b57-4792-8d23-62f2024744c7"
 
 [compat]
@@ -47,9 +46,10 @@ LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 OrdinaryDiffEq = "1dea7af3-3e70-54e6-95c3-0bf5283fa5ed"
 OrdinaryDiffEqDefault = "50262376-6c5a-4cf5-baba-aaf4f84d72d7"
 SafeTestsets = "1bc83da4-3b8d-516f-aca4-4fe02f6d838f"
+SciCompDSL = "91a8cdf1-4ca6-467b-a780-87fda3fff15e"
 SciMLStructures = "53ae85a6-f571-4167-b2af-e1d143709226"
 SymbolicIndexingInterface = "2efcf032-c050-4f8e-a9bb-153293bab1f5"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["ADTypes", "Aqua", "LinearAlgebra", "OrdinaryDiffEqDefault", "OrdinaryDiffEq", "SafeTestsets", "Test", "ControlSystemsBase", "DataFrames", "DataInterpolations", "SciMLStructures", "SymbolicIndexingInterface", "ForwardDiff"]
+test = ["ADTypes", "Aqua", "LinearAlgebra", "OrdinaryDiffEqDefault", "OrdinaryDiffEq", "SafeTestsets", "Test", "ControlSystemsBase", "DataFrames", "DataInterpolations", "SciMLStructures", "SymbolicIndexingInterface", "ForwardDiff", "SciCompDSL"]
