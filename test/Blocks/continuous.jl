@@ -1,4 +1,5 @@
 using ModelingToolkit, ModelingToolkitStandardLibrary, OrdinaryDiffEq
+using SciCompDSL
 using ModelingToolkitStandardLibrary.Blocks
 using ModelingToolkit: t_nounits as t
 using OrdinaryDiffEq: ReturnCode.Success

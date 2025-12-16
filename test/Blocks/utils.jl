@@ -1,4 +1,5 @@
 using ModelingToolkitStandardLibrary.Blocks
+using SciCompDSL
 using ModelingToolkit
 using OrdinaryDiffEq
 using ModelingToolkit: t_nounits as t, D_nounits as D

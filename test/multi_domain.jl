@@ -1,4 +1,5 @@
 using ModelingToolkitStandardLibrary.Electrical
+using SciCompDSL
 using ModelingToolkitStandardLibrary.Mechanical.Rotational
 using ModelingToolkitStandardLibrary.Blocks
 using ModelingToolkitStandardLibrary.Thermal
