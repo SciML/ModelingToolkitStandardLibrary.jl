@@ -2,7 +2,7 @@
 Library of thermal system components to model heat transfer.
 """
 module Thermal
-using ModelingToolkitBase, Symbolics, IfElse, SciCompDSL
+using ModelingToolkitBase, Symbolics, IfElse
 using ModelingToolkitBase: t_nounits as t, D_nounits as D
 using ...Blocks: RealInput, RealOutput
 

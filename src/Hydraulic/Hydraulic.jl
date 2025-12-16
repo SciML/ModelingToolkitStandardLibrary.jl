@@ -3,7 +3,7 @@ Library of hydraulic models.
 """
 module Hydraulic
 
-using ModelingToolkitBase, SciCompDSL
+using ModelingToolkitBase
 
 include("IsothermalCompressible/IsothermalCompressible.jl")
 
