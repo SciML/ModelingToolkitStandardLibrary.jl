@@ -246,6 +246,7 @@ Electromotoric force (electric/mechanic transformer)
         D(phi) ~ w
         k * w ~ v
         flange.tau ~ -k * i
+        support.tau ~ -flange.tau
     end
 end
 
