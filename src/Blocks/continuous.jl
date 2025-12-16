@@ -17,18 +17,28 @@ Initial value of integrator state ``x`` can be set with `x`
 
   - `x`: State of Integrator. Defaults to 0.0.
 """
-@mtkmodel Integrator begin
-    @extend u, y = siso = SISO()
-    @variables begin
-        x(t) = 0.0, [description = "State of Integrator"]
+@component function Integrator(; name, k = 1, x = 0.0)
+    @named siso = SISO()
+    @unpack u, y = siso
+
+    pars = @parameters begin
+        k = k, [description = "Gain"]
     end
-    @parameters begin
-        k = 1, [description = "Gain"]
+
+    systems = @named begin
     end
-    @equations begin
-        D(x) ~ k * u
+
+    vars = @variables begin
+        x(t) = x, [description = "State of Integrator"]
+    end
+
+    equations = Equation[
+        D(x) ~ k * u,
         y ~ x
-    end
+    ]
+
+    sys = System(equations, t, vars, pars; name, systems)
+    return extend(sys, siso)
 end
 
 """
@@ -37,8 +47,8 @@ end
 Outputs an approximate derivative of the input. The transfer function of this block is
 
 ```
-k      k        ks  
-─ - ─────── = ────── 
+k      k        ks
+─ - ─────── = ──────
 T   sT² + T   sT + 1
 ```
 
@@ -62,23 +72,32 @@ Initial value of the state ``x`` can be set with `x`.
   - `input`
   - `output`
 """
-@mtkmodel Derivative begin
-    @extend u, y = siso = SISO()
-    @variables begin
-        x(t) = 0.0, [description = "Derivative-filter state"]
-    end
-    @parameters begin
+@component function Derivative(; name, k = 1, T = nothing, x = 0.0)
+    @symcheck T > 0 ||
+              throw(ArgumentError("Time constant `T` has to be strictly positive"))
+
+    @named siso = SISO()
+    @unpack u, y = siso
+
+    pars = @parameters begin
         T = T, [description = "Time constant"]
-        k = 1, [description = "Gain"]
+        k = k, [description = "Gain"]
     end
-    begin
-        @symcheck T > 0 ||
-                  throw(ArgumentError("Time constant `T` has to be strictly positive"))
+
+    systems = @named begin
     end
-    @equations begin
-        D(x) ~ (u - x) / T
+
+    vars = @variables begin
+        x(t) = x, [description = "Derivative-filter state"]
+    end
+
+    equations = Equation[
+        D(x) ~ (u - x) / T,
         y ~ (k / T) * (u - x)
-    end
+    ]
+
+    sys = System(equations, t, vars, pars; name, systems)
+    return extend(sys, siso)
 end
 
 """
@@ -116,26 +135,32 @@ Initial value of the state `x` can be set with `x`
 
 See also [`SecondOrder`](@ref)
 """
-@mtkmodel FirstOrder begin
-    @extend u, y = siso = SISO()
-    @structural_parameters begin
-        lowpass = true
-    end
-    @variables begin
-        x(t) = 0.0, [description = "State of FirstOrder filter"]
-    end
-    @parameters begin
+@component function FirstOrder(; name, lowpass = true, T = nothing, k = 1.0, x = 0.0)
+    @symcheck T > 0 ||
+              throw(ArgumentError("Time constant `T` has to be strictly positive"))
+
+    @named siso = SISO()
+    @unpack u, y = siso
+
+    pars = @parameters begin
         T = T, [description = "Time constant"]
-        k = 1.0, [description = "Gain"]
+        k = k, [description = "Gain"]
     end
-    begin
-        @symcheck T > 0 ||
-                  throw(ArgumentError("Time constant `T` has to be strictly positive"))
+
+    systems = @named begin
     end
-    @equations begin
-        D(x) ~ (k * u - x) / T
-        lowpass ? y ~ x : y ~ k * u - x
+
+    vars = @variables begin
+        x(t) = x, [description = "State of FirstOrder filter"]
     end
+
+    equations = Equation[
+        D(x) ~ (k * u - x) / T,
+        lowpass ? (y ~ x) : (y ~ k * u - x)
+    ]
+
+    sys = System(equations, t, vars, pars; name, systems)
+    return extend(sys, siso)
 end
 
 """
@@ -165,22 +190,32 @@ Initial value of the state `x` can be set with `x`, and of derivative state `xd`
   - `input`
   - `output`
 """
-@mtkmodel SecondOrder begin
-    @extend u, y = siso = SISO()
-    @variables begin
-        x(t), [description = "State of SecondOrder filter", guess = 0.0]
-        xd(t), [description = "Derivative state of SecondOrder filter", guess = 0.0]
+@component function SecondOrder(; name, k = 1.0, w = 1.0, d = 1.0, x = nothing, xd = nothing)
+    @named siso = SISO()
+    @unpack u, y = siso
+
+    pars = @parameters begin
+        k = k, [description = "Gain"]
+        w = w, [description = "Bandwidth (angular frequency)"]
+        d = d, [description = "Relative damping"]
     end
-    @parameters begin
-        k = 1.0, [description = "Gain"]
-        w = 1.0, [description = "Bandwidth (angular frequency)"]
-        d = 1.0, [description = "Relative damping"]
+
+    systems = @named begin
     end
-    @equations begin
-        D(x) ~ xd
-        D(xd) ~ w * (w * (k * u - x) - 2 * d * xd)
+
+    vars = @variables begin
+        x(t) = x, [description = "State of SecondOrder filter", guess = 0.0]
+        xd(t) = xd, [description = "Derivative state of SecondOrder filter", guess = 0.0]
+    end
+
+    equations = Equation[
+        D(x) ~ xd,
+        D(xd) ~ w * (w * (k * u - x) - 2 * d * xd),
         y ~ x
-    end
+    ]
+
+    sys = System(equations, t, vars, pars; name, systems)
+    return extend(sys, siso)
 end
 
 """
@@ -206,29 +241,35 @@ U(s) = k (1 + \\dfrac{1}{sT}) E(S)
 
 See also [`LimPI`](@ref)
 """
-@mtkmodel PI begin
-    @parameters begin
-        k = 1.0, [description = "Proportional gain"]
-        T = 1.0, [description = "Integrator time constant"]
+@component function PI(; name, k = 1.0, T = 1.0)
+    @symcheck T > 0 ||
+              throw(ArgumentError("Time constant `T` has to be strictly positive"))
+
+    pars = @parameters begin
+        k = k, [description = "Proportional gain"]
+        T = T, [description = "Integrator time constant"]
     end
-    begin
-        @symcheck T > 0 ||
-                  throw(ArgumentError("Time constant `T` has to be strictly positive"))
-    end
-    @components begin
+
+    systems = @named begin
         err_input = RealInput() # control error
         ctr_output = RealOutput() # control signal
         gainPI = Gain(; k)
         addPI = Add()
         int = Integrator(k = 1 / T, x = 0.0)
     end
-    @equations begin
-        connect(err_input, addPI.input1)
-        connect(addPI.output, gainPI.input)
-        connect(gainPI.output, ctr_output)
-        connect(err_input, int.input)
-        connect(int.output, addPI.input2)
+
+    vars = @variables begin
     end
+
+    equations = Equation[
+        connect(err_input, addPI.input1),
+        connect(addPI.output, gainPI.input),
+        connect(gainPI.output, ctr_output),
+        connect(err_input, int.input),
+        connect(int.output, addPI.input2)
+    ]
+
+    return System(equations, t, vars, pars; name, systems)
 end
 
 """
@@ -337,7 +378,7 @@ The simplified expression above is given without the anti-windup protection.
   - `err_input`
   - `ctr_output`
 """
-@component function LimPI(; name, k = 1, T, u_max, u_min = -u_max, Ta, int__x = 0.0)
+@component function LimPI(; name, k = 1, T = nothing, u_max = nothing, u_min = -u_max, Ta = nothing, int__x = 0.0)
     @symcheck Ta > 0 ||
               throw(ArgumentError("Time constant `Ta` has to be strictly positive"))
     @symcheck T > 0 || throw(ArgumentError("Time constant `T` has to be strictly positive"))

@@ -8,18 +8,26 @@ Linear 1D force sensor, measures the force between two flanges.
 - `flange`: 1-dim. translational flange
 - `output`: real output
 """
-@mtkmodel ForceSensor begin
-    @components begin
+@component function ForceSensor(; name)
+    pars = @parameters begin
+    end
+
+    systems = @named begin
         flange_a = MechanicalPort()
         flange_b = MechanicalPort()
         output = RealOutput()
     end
 
-    @equations begin
-        flange_a.v ~ flange_b.v
-        flange_a.f + flange_b.f ~ 0.0
-        output.u ~ flange_a.f
+    vars = @variables begin
     end
+
+    equations = Equation[
+        flange_a.v ~ flange_b.v,
+        flange_a.f + flange_b.f ~ 0.0,
+        output.u ~ flange_a.f
+    ]
+
+    return System(equations, t, vars, pars; name, systems)
 end
 
 """
@@ -36,21 +44,26 @@ Linear 1D position sensor.
 - `flange`: 1-dim. translational flange
 - `output`: real output
 """
-@mtkmodel PositionSensor begin
-    @components begin
+@component function PositionSensor(; name, s = nothing)
+    pars = @parameters begin
+    end
+
+    systems = @named begin
         flange = MechanicalPort()
         output = RealOutput()
     end
 
-    @variables begin
-        s(t)
+    vars = @variables begin
+        s(t) = s
     end
 
-    @equations begin
-        D(s) ~ flange.v
-        output.u ~ s
+    equations = Equation[
+        D(s) ~ flange.v,
+        output.u ~ s,
         flange.f ~ 0.0
-    end
+    ]
+
+    return System(equations, t, vars, pars; name, systems)
 end
 
 """
@@ -67,19 +80,24 @@ Linear 1D acceleration sensor.
 - `flange`: 1-dim. translational flange
 - `output`: real output
 """
-@mtkmodel AccelerationSensor begin
-    @components begin
+@component function AccelerationSensor(; name, a = nothing)
+    pars = @parameters begin
+    end
+
+    systems = @named begin
         flange = MechanicalPort()
         output = RealOutput()
     end
 
-    @variables begin
-        a(t)
+    vars = @variables begin
+        a(t) = a
     end
 
-    @equations begin
-        a ~ D(flange.v)
-        output.u ~ a
+    equations = Equation[
+        a ~ D(flange.v),
+        output.u ~ a,
         flange.f ~ 0.0
-    end
+    ]
+
+    return System(equations, t, vars, pars; name, systems)
 end

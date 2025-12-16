@@ -3,16 +3,25 @@
 
 Input signal acting as external force on a flange
 """
-@mtkmodel Force begin
-    @extend (flange,) = partial_element = PartialElementaryOneFlangeAndSupport2(;
-        use_support = false)
-    @parameters begin
-        s = 0
+@component function Force(; name, use_support = false, s = 0)
+    @named partial_element = PartialElementaryOneFlangeAndSupport2(; use_support)
+    @unpack flange = partial_element
+
+    pars = @parameters begin
+        s = s
     end
-    @components begin
+
+    systems = @named begin
         f = RealInput()
     end
-    @equations begin
-        flange.f ~ -f.u
+
+    vars = @variables begin
     end
+
+    equations = Equation[
+        flange.f ~ -f.u
+    ]
+
+    sys = System(equations, t, vars, pars; name, systems)
+    return extend(sys, partial_element)
 end

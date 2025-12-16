@@ -12,15 +12,24 @@ lags are associated with this sensor model.
   - `port`: [HeatPort](@ref) Thermal port from which sensor information shall be measured
   - `T`: [RealOutput](@ref) [K] Absolute temperature of port
 """
-@mtkmodel TemperatureSensor begin
-    @components begin
+@component function TemperatureSensor(; name)
+    pars = @parameters begin
+    end
+
+    systems = @named begin
         port = HeatPort()
         T = RealOutput()
     end
-    @equations begin
-        T.u ~ port.T
-        port.Q_flow ~ 0
+
+    vars = @variables begin
     end
+
+    equations = Equation[
+        T.u ~ port.T,
+        port.Q_flow ~ 0
+    ]
+
+    return System(equations, t, vars, pars; name, systems)
 end
 
 """
@@ -37,17 +46,26 @@ output signal in kelvin.
   - `port_b`: [HeatPort](@ref) Thermal port from which sensor information shall be measured
   - `T`: [RealOutput](@ref) [K] Relative temperature `a.T - b.T`
 """
-@mtkmodel RelativeTemperatureSensor begin
-    @components begin
+@component function RelativeTemperatureSensor(; name)
+    pars = @parameters begin
+    end
+
+    systems = @named begin
         port_a = HeatPort()
         port_b = HeatPort()
         T = RealOutput()
     end
-    @equations begin
-        T.u ~ port_a.T - port_b.T
-        port_a.Q_flow ~ 0
-        port_b.Q_flow ~ 0
+
+    vars = @variables begin
     end
+
+    equations = Equation[
+        T.u ~ port_a.T - port_b.T,
+        port_a.Q_flow ~ 0,
+        port_b.Q_flow ~ 0
+    ]
+
+    return System(equations, t, vars, pars; name, systems)
 end
 
 """
@@ -66,15 +84,24 @@ The output signal is positive, if the heat flows from `port_a` to `port_b`.
   - `port_b`: [HeatPort](@ref) Thermal port from which sensor information shall be measured
   - `Q_flow`: [RealOutput](@ref) [W] Heat flow from `port_a` to `port_b` 
 """
-@mtkmodel HeatFlowSensor begin
-    @components begin
+@component function HeatFlowSensor(; name)
+    pars = @parameters begin
+    end
+
+    systems = @named begin
         port_a = HeatPort()
         port_b = HeatPort()
         Q_flow = RealOutput()
     end
-    @equations begin
-        port_a.T ~ port_b.T
-        port_a.Q_flow + port_b.Q_flow ~ 0
-        Q_flow.u ~ port_a.Q_flow
+
+    vars = @variables begin
     end
+
+    equations = Equation[
+        port_a.T ~ port_b.T,
+        port_a.Q_flow + port_b.Q_flow ~ 0,
+        Q_flow.u ~ port_a.Q_flow
+    ]
+
+    return System(equations, t, vars, pars; name, systems)
 end

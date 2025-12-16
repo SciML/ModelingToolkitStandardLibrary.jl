@@ -13,19 +13,26 @@ an ideal ammeter.
   - `p` Positive pin
   - `n` Negative pin
 """
-@mtkmodel CurrentSensor begin
-    @components begin
+@component function CurrentSensor(; name)
+    pars = @parameters begin
+    end
+
+    systems = @named begin
         p = Pin()
         n = Pin()
     end
-    @variables begin
+
+    vars = @variables begin
         i(t)
     end
-    @equations begin
-        p.v ~ n.v
-        i ~ p.i
+
+    equations = Equation[
+        p.v ~ n.v,
+        i ~ p.i,
         i ~ -n.i
-    end
+    ]
+
+    return System(equations, t, vars, pars; name, systems)
 end
 
 """
@@ -41,17 +48,24 @@ Creates a circuit component which measures the potential at a pin.
 
   - `p` Pin at which potential is to be measured
 """
-@mtkmodel PotentialSensor begin
-    @components begin
+@component function PotentialSensor(; name)
+    pars = @parameters begin
+    end
+
+    systems = @named begin
         p = Pin()
     end
-    @variables begin
+
+    vars = @variables begin
         phi(t)
     end
-    @equations begin
-        p.i ~ 0
+
+    equations = Equation[
+        p.i ~ 0,
         phi ~ p.v
-    end
+    ]
+
+    return System(equations, t, vars, pars; name, systems)
 end
 
 """
@@ -68,19 +82,26 @@ Creates a circuit component that measures the voltage across it. Analogous to an
   - `p` Positive pin
   - `n` Negative pin
 """
-@mtkmodel VoltageSensor begin
-    @components begin
+@component function VoltageSensor(; name)
+    pars = @parameters begin
+    end
+
+    systems = @named begin
         p = Pin()
         n = Pin()
     end
-    @variables begin
+
+    vars = @variables begin
         v(t)
     end
-    @equations begin
-        p.i ~ 0
-        n.i ~ 0
+
+    equations = Equation[
+        p.i ~ 0,
+        n.i ~ 0,
         v ~ p.v - n.v
-    end
+    ]
+
+    return System(equations, t, vars, pars; name, systems)
 end
 
 """
@@ -102,8 +123,11 @@ consumed by a circuit.
   - `pv` Corresponds to the `p` pin of the [`VoltageSensor`](@ref)
   - `nv` Corresponds to the `n` pin of the [`VoltageSensor`](@ref)
 """
-@mtkmodel PowerSensor begin
-    @components begin
+@component function PowerSensor(; name)
+    pars = @parameters begin
+    end
+
+    systems = @named begin
         pc = Pin()
         nc = Pin()
         pv = Pin()
@@ -111,16 +135,20 @@ consumed by a circuit.
         voltage_sensor = VoltageSensor()
         current_sensor = CurrentSensor()
     end
-    @variables begin
+
+    vars = @variables begin
         power(t)
     end
-    @equations begin
-        connect(voltage_sensor.p, pv)
-        connect(voltage_sensor.n, nv)
-        connect(current_sensor.p, pc)
-        connect(current_sensor.n, nc)
+
+    equations = Equation[
+        connect(voltage_sensor.p, pv),
+        connect(voltage_sensor.n, nv),
+        connect(current_sensor.p, pc),
+        connect(current_sensor.n, nc),
         power ~ current_sensor.i * voltage_sensor.v
-    end
+    ]
+
+    return System(equations, t, vars, pars; name, systems)
 end
 
 """
@@ -140,8 +168,11 @@ Combines a [`VoltageSensor`](@ref) and a [`CurrentSensor`](@ref).
   - `pv` Corresponds to the `p` pin of the [`VoltageSensor`](@ref)
   - `nv` Corresponds to the `n` pin of the [`VoltageSensor`](@ref)
 """
-@mtkmodel MultiSensor begin
-    @components begin
+@component function MultiSensor(; name)
+    pars = @parameters begin
+    end
+
+    systems = @named begin
         pc = Pin()
         nc = Pin()
         pv = Pin()
@@ -149,16 +180,20 @@ Combines a [`VoltageSensor`](@ref) and a [`CurrentSensor`](@ref).
         voltage_sensor = VoltageSensor()
         current_sensor = CurrentSensor()
     end
-    @variables begin
+
+    vars = @variables begin
         i(t) = 1.0
         v(t) = 1.0
     end
-    @equations begin
-        connect(voltage_sensor.p, pv)
-        connect(voltage_sensor.n, nv)
-        connect(current_sensor.p, pc)
-        connect(current_sensor.n, nc)
-        i ~ current_sensor.i
+
+    equations = Equation[
+        connect(voltage_sensor.p, pv),
+        connect(voltage_sensor.n, nv),
+        connect(current_sensor.p, pc),
+        connect(current_sensor.n, nc),
+        i ~ current_sensor.i,
         v ~ voltage_sensor.v
-    end
+    ]
+
+    return System(equations, t, vars, pars; name, systems)
 end

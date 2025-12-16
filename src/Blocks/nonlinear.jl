@@ -15,7 +15,7 @@ Limit the range of a signal.
   - `input`
   - `output`
 """
-@component function Limiter(; name, y_max, y_min = y_max > 0 ? -y_max : -Inf)
+@component function Limiter(; name, y_max = nothing, y_min = y_max > 0 ? -y_max : -Inf)
     @symcheck y_max ≥ y_min || throw(ArgumentError("`y_min` must be smaller than `y_max`"))
     m = (y_max + y_min) / 2
     siso = SISO(u_start = m, y_start = m, name = :siso) # Default signals to center of saturation to minimize risk of saturation while linearizing etc.
@@ -56,22 +56,35 @@ If the input is within `u_min` ... `u_max`, the output is zero. Outside of this 
   - `input`
   - `output`
 """
-@mtkmodel DeadZone begin
-    @parameters begin
-        u_max, [description = "Upper limit of dead zone of DeadZone"]
-        u_min = -u_max, [description = "Lower limit of dead zone of DeadZone"]
-    end
-    begin
-        if !ModelingToolkitBase.isvariable(u_max)
-            u_max ≥ u_min || throw(ArgumentError("`u_min` must be smaller than `u_max`"))
-        end
+@component function DeadZone(; name, u_max = nothing, u_min = nothing)
+    # Set default for u_min based on u_max
+    _u_min = isnothing(u_min) ? (isnothing(u_max) ? nothing : -u_max) : u_min
+
+    # Validation (only if u_max is a concrete value)
+    if !isnothing(u_max) && !ModelingToolkitBase.isvariable(u_max)
+        u_max ≥ _u_min || throw(ArgumentError("`u_min` must be smaller than `u_max`"))
     end
 
-    @extend u, y = siso = SISO()
+    @named siso = SISO()
+    @unpack u, y = siso
 
-    @equations begin
+    pars = @parameters begin
+        u_max = u_max, [description = "Upper limit of dead zone of DeadZone"]
+        u_min = _u_min, [description = "Lower limit of dead zone of DeadZone"]
+    end
+
+    systems = @named begin
+    end
+
+    vars = @variables begin
+    end
+
+    equations = Equation[
         y ~ _dead_zone(u, u_min, u_max)
-    end
+    ]
+
+    sys = System(equations, t, vars, pars; name, systems)
+    return extend(sys, siso)
 end
 
 """

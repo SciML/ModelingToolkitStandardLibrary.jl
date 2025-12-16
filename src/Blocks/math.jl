@@ -12,16 +12,28 @@ Output the product of a gain value with the input signal.
   - `input`
   - `output`
 """
-@mtkmodel Gain begin
-    @extend u, y = siso = SISO()
-    @parameters begin
-        k, [description = "Gain"]
+@component function Gain(; name, k = nothing)
+    @named siso = SISO()
+    @unpack u, y = siso
+
+    pars = @parameters begin
+        k = k, [description = "Gain"]
     end
-    @equations begin
+
+    systems = @named begin
+    end
+
+    vars = @variables begin
+    end
+
+    equations = Equation[
         y ~ k * u
-    end
+    ]
+
+    sys = System(equations, t, vars, pars; name, systems)
+    return extend(sys, siso)
 end
-Gain.f(k; name) = Gain.f(; k, name)
+Gain(k; name) = Gain(; k, name)
 
 """
     MatrixGain(; K::AbstractArray, name)
@@ -37,22 +49,27 @@ Output the product of a gain matrix with the input signal vector.
   - `input`
   - `output`
 """
-@mtkmodel MatrixGain begin
-    @structural_parameters begin
-        K
+@component function MatrixGain(; name, K = nothing)
+    nout = size(K, 1)
+    nin = size(K, 2)
+
+    pars = @parameters begin
     end
-    begin
-        nout = size(K, 1)
-        nin = size(K, 2)
-    end
-    @components begin
+
+    systems = @named begin
         input = RealInput(; nin = nin)
         output = RealOutput(; nout = nout)
     end
-    @equations begin
+
+    vars = @variables begin
+    end
+
+    equations = Equation[
         [output.u[i] ~ sum(K[i, j] * input.u[j] for j in 1:nin)
          for i in 1:nout]...
-    end
+    ]
+
+    return System(equations, t, vars, pars; name, systems)
 end
 
 """
@@ -66,14 +83,23 @@ Input port dimension can be set with `input__nin`
   - `input`
   - `output`
 """
-@mtkmodel Sum begin
-    @components begin
+@component function Sum(; name, nin = nothing)
+    pars = @parameters begin
+    end
+
+    systems = @named begin
         input = RealInput(; nin)
         output = RealOutput()
     end
-    @equations begin
-        output.u ~ sum(input.u)
+
+    vars = @variables begin
     end
+
+    equations = Equation[
+        output.u ~ sum(input.u)
+    ]
+
+    return System(equations, t, vars, pars; name, systems)
 end
 
 """
@@ -87,15 +113,24 @@ Output difference between reference input (input1) and feedback input (input2).
   - `input2`
   - `output`
 """
-@mtkmodel Feedback begin
-    @components begin
+@component function Feedback(; name)
+    pars = @parameters begin
+    end
+
+    systems = @named begin
         input1 = RealInput()
         input2 = RealInput()
         output = RealOutput()
     end
-    @equations begin
-        output.u ~ input1.u - input2.u
+
+    vars = @variables begin
     end
+
+    equations = Equation[
+        output.u ~ input1.u - input2.u
+    ]
+
+    return System(equations, t, vars, pars; name, systems)
 end
 
 """
@@ -114,19 +149,26 @@ Output the sum of the two scalar inputs.
   - `input2`
   - `output`
 """
-@mtkmodel Add begin
-    @components begin
+@component function Add(; name, k1 = 1.0, k2 = 1.0)
+    pars = @parameters begin
+        k1 = k1, [description = "Gain of Add input1"]
+        k2 = k2, [description = "Gain of Add input2"]
+    end
+
+    systems = @named begin
         input1 = RealInput()
         input2 = RealInput()
         output = RealOutput()
     end
-    @parameters begin
-        k1 = 1.0, [description = "Gain of Add input1"]
-        k2 = 1.0, [description = "Gain of Add input2"]
+
+    vars = @variables begin
     end
-    @equations begin
+
+    equations = Equation[
         output.u ~ k1 * input1.u + k2 * input2.u
-    end
+    ]
+
+    return System(equations, t, vars, pars; name, systems)
 end
 
 """
@@ -147,21 +189,28 @@ Output the sum of the three scalar inputs.
   - `input3`
   - `output`
 """
-@mtkmodel Add3 begin
-    @components begin
+@component function Add3(; name, k1 = 1.0, k2 = 1.0, k3 = 1.0)
+    pars = @parameters begin
+        k1 = k1, [description = "Gain of Add input1"]
+        k2 = k2, [description = "Gain of Add input2"]
+        k3 = k3, [description = "Gain of Add input3"]
+    end
+
+    systems = @named begin
         input1 = RealInput()
         input2 = RealInput()
         input3 = RealInput()
         output = RealOutput()
     end
-    @parameters begin
-        k1 = 1.0, [description = "Gain of Add input1"]
-        k2 = 1.0, [description = "Gain of Add input2"]
-        k3 = 1.0, [description = "Gain of Add input3"]
+
+    vars = @variables begin
     end
-    @equations begin
+
+    equations = Equation[
         output.u ~ k1 * input1.u + k2 * input2.u + k3 * input3.u
-    end
+    ]
+
+    return System(equations, t, vars, pars; name, systems)
 end
 
 """
@@ -175,15 +224,24 @@ Output product of the two inputs.
   - `input2`
   - `output`
 """
-@mtkmodel Product begin
-    @components begin
+@component function Product(; name)
+    pars = @parameters begin
+    end
+
+    systems = @named begin
         input1 = RealInput()
         input2 = RealInput()
         output = RealOutput()
     end
-    @equations begin
-        output.u ~ input1.u * input2.u
+
+    vars = @variables begin
     end
+
+    equations = Equation[
+        output.u ~ input1.u * input2.u
+    ]
+
+    return System(equations, t, vars, pars; name, systems)
 end
 
 """
@@ -197,15 +255,24 @@ Output first input divided by second input.
   - `input2`
   - `output`
 """
-@mtkmodel Division begin
-    @components begin
+@component function Division(; name)
+    pars = @parameters begin
+    end
+
+    systems = @named begin
         input1 = RealInput()
         input2 = RealInput(guess = 1.0) # denominator can not be zero
         output = RealOutput()
     end
-    @equations begin
-        output.u ~ input1.u / input2.u
+
+    vars = @variables begin
     end
+
+    equations = Equation[
+        output.u ~ input1.u / input2.u
+    ]
+
+    return System(equations, t, vars, pars; name, systems)
 end
 
 """
@@ -219,15 +286,24 @@ Output the exponential with base as the first input and exponent as second input
   - `exponent`
   - `output`
 """
-@mtkmodel Power begin
-    @components begin
+@component function Power(; name)
+    pars = @parameters begin
+    end
+
+    systems = @named begin
         base = RealInput()
         exponent = RealInput()
         output = RealOutput()
     end
-    @equations begin
-        output.u ~ base.u^exponent.u
+
+    vars = @variables begin
     end
+
+    equations = Equation[
+        output.u ~ base.u^exponent.u
+    ]
+
+    return System(equations, t, vars, pars; name, systems)
 end
 
 """
@@ -241,15 +317,24 @@ Output the remainder when the first input is divided by second input.
   - `divisor`
   - `remainder`
 """
-@mtkmodel Modulo begin
-    @components begin
+@component function Modulo(; name)
+    pars = @parameters begin
+    end
+
+    systems = @named begin
         dividend = RealInput()
         divisor = RealInput(guess = 1.0) # denominator can not be zero
         remainder = RealOutput()
     end
-    @equations begin
-        remainder.u ~ mod(dividend.u, divisor.u)
+
+    vars = @variables begin
     end
+
+    equations = Equation[
+        remainder.u ~ mod(dividend.u, divisor.u)
+    ]
+
+    return System(equations, t, vars, pars; name, systems)
 end
 
 """
@@ -262,14 +347,23 @@ Output the product of -1 and the input.
   - `input`
   - `output`
 """
-@mtkmodel UnaryMinus begin
-    @components begin
+@component function UnaryMinus(; name)
+    pars = @parameters begin
+    end
+
+    systems = @named begin
         input = RealInput()
         output = RealOutput()
     end
-    @equations begin
-        output.u ~ -(input.u)
+
+    vars = @variables begin
     end
+
+    equations = Equation[
+        output.u ~ -(input.u)
+    ]
+
+    return System(equations, t, vars, pars; name, systems)
 end
 
 """
@@ -282,14 +376,23 @@ Output the floor rounding of the input.
   - `input`
   - `output`
 """
-@mtkmodel Floor begin
-    @components begin
+@component function Floor(; name)
+    pars = @parameters begin
+    end
+
+    systems = @named begin
         input = RealInput()
         output = RealOutput()
     end
-    @equations begin
-        output.u ~ floor(input.u)
+
+    vars = @variables begin
     end
+
+    equations = Equation[
+        output.u ~ floor(input.u)
+    ]
+
+    return System(equations, t, vars, pars; name, systems)
 end
 
 """
@@ -302,14 +405,23 @@ Output the ceiling rounding of the input.
   - `input`
   - `output`
 """
-@mtkmodel Ceil begin
-    @components begin
+@component function Ceil(; name)
+    pars = @parameters begin
+    end
+
+    systems = @named begin
         input = RealInput()
         output = RealOutput()
     end
-    @equations begin
-        output.u ~ ceil(input.u)
+
+    vars = @variables begin
     end
+
+    equations = Equation[
+        output.u ~ ceil(input.u)
+    ]
+
+    return System(equations, t, vars, pars; name, systems)
 end
 
 """
@@ -324,16 +436,27 @@ If the given function is not composed of simple core methods (e.g. sin, abs, ...
   - `input`
   - `output`
 """
-@mtkmodel StaticNonLinearity begin
-    @structural_parameters begin
-        func
+@component function StaticNonLinearity(; name, func = nothing)
+    @named siso = SISO()
+    @unpack u, y = siso
+
+    pars = @parameters begin
     end
-    @extend u, y = siso = SISO()
-    @equations begin
+
+    systems = @named begin
+    end
+
+    vars = @variables begin
+    end
+
+    equations = Equation[
         y ~ func(u)
-    end
+    ]
+
+    sys = System(equations, t, vars, pars; name, systems)
+    return extend(sys, siso)
 end
-StaticNonLinearity.f(func; name) = StaticNonLinearity(; func, name)
+StaticNonLinearity(func; name) = StaticNonLinearity(; func, name)
 
 """
     Abs(; name)
@@ -445,15 +568,24 @@ Output the arc tangent of the input.
   - `input2`
   - `output`
 """
-@mtkmodel Atan2 begin
-    @components begin
+@component function Atan2(; name)
+    pars = @parameters begin
+    end
+
+    systems = @named begin
         input1 = RealInput()
         input2 = RealInput()
         output = RealOutput()
     end
-    @equations begin
-        output.u ~ atan(input1.u, input2.u)
+
+    vars = @variables begin
     end
+
+    equations = Equation[
+        output.u ~ atan(input1.u, input2.u)
+    ]
+
+    return System(equations, t, vars, pars; name, systems)
 end
 
 """

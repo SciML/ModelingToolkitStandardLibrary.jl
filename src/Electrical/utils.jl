@@ -1,6 +1,9 @@
-@connector Pin begin
-    v(t)                  # Potential at the pin [V]
-    i(t), [connect = Flow]    # Current flowing into the pin [A]
+@connector function Pin(; name, v = nothing, i = nothing)
+    vars = @variables begin
+        v(t) = v                  # Potential at the pin [V]
+        i(t) = i, [connect = Flow]    # Current flowing into the pin [A]
+    end
+    System(Equation[], t, vars, []; name)
 end
 @doc """
     Pin(; name)
@@ -13,7 +16,7 @@ A pin in an analog circuit.
 """ Pin
 
 """
-    OnePort(; name, v = 0.0, i = 0.0)
+    OnePort(; name, v = nothing, i = nothing)
 
 Component with two electrical pins `p` and `n` and current `i` flows from `p` to `n`.
 
@@ -27,24 +30,31 @@ Component with two electrical pins `p` and `n` and current `i` flows from `p` to
   - `p` Positive pin
   - `n` Negative pin
 """
-@mtkmodel OnePort begin
-    @components begin
+@component function OnePort(; v = nothing, i = nothing, name)
+    pars = @parameters begin
+    end
+
+    systems = @named begin
         p = Pin()
         n = Pin()
     end
-    @variables begin
-        v(t)
-        i(t)
+
+    vars = @variables begin
+        v(t) = v
+        i(t) = i
     end
-    @equations begin
-        v ~ p.v - n.v
-        0 ~ p.i + n.i
+
+    equations = Equation[
+        v ~ p.v - n.v,
+        0 ~ p.i + n.i,
         i ~ p.i
-    end
+    ]
+
+    return System(equations, t, vars, pars; name, systems)
 end
 
 """
-    TwoPort(; name, v1 = 0.0, v2 = 0.0, i1 = 0.0, i2 = 0.0)
+    TwoPort(; name, v1 = nothing, v2 = nothing, i1 = nothing, i2 = nothing)
 
 Component with four electrical pins `p1`, `n1`, `p2` and `n2`
 Current `i1` flows from `p1` to `n1` and `i2` from `p2` to `n2`.
@@ -62,27 +72,34 @@ Current `i1` flows from `p1` to `n1` and `i2` from `p2` to `n2`.
 - `n2` Second Negative pin
 """
 
-@mtkmodel TwoPort begin
-    @components begin
+@component function TwoPort(; v1 = nothing, v2 = nothing, i1 = nothing, i2 = nothing, name)
+    pars = @parameters begin
+    end
+
+    systems = @named begin
         p1 = Pin()
         n1 = Pin()
         p2 = Pin()
         n2 = Pin()
     end
-    @variables begin
-        v1(t)
-        i1(t)
-        v2(t)
-        i2(t)
+
+    vars = @variables begin
+        v1(t) = v1
+        i1(t) = i1
+        v2(t) = v2
+        i2(t) = i2
     end
-    @equations begin
-        v1 ~ p1.v - n1.v
-        0 ~ p1.i + n1.i
-        i1 ~ p1.i
-        v2 ~ p2.v - n2.v
-        0 ~ p2.i + n2.i
+
+    equations = Equation[
+        v1 ~ p1.v - n1.v,
+        0 ~ p1.i + n1.i,
+        i1 ~ p1.i,
+        v2 ~ p2.v - n2.v,
+        0 ~ p2.i + n2.i,
         i2 ~ p2.i
-    end
+    ]
+
+    return System(equations, t, vars, pars; name, systems)
 end
 
 @connector function DigitalPin(; name)

@@ -13,14 +13,26 @@ See [OnePort](@ref)
   - `n` Negative pin
   - `V` [RealInput](@ref) Input for the voltage control signal, i.e. `V ~ p.v - n.v`
 """
-@mtkmodel Voltage begin
-    @extend v, i = oneport = OnePort()
-    @components begin
+@component function Voltage(; name)
+    @named oneport = OnePort()
+    @unpack v, i = oneport
+
+    pars = @parameters begin
+    end
+
+    systems = @named begin
         V = RealInput()
     end
-    @equations begin
-        v ~ V.u
+
+    vars = @variables begin
     end
+
+    equations = Equation[
+        v ~ V.u
+    ]
+
+    sys = System(equations, t, vars, pars; name, systems)
+    return extend(sys, oneport)
 end
 
 """
@@ -38,12 +50,24 @@ See [OnePort](@ref)
   - `n` Negative pin
   - `I` [RealInput](@ref) Input for the current control signal, i.e. `I ~ p.i
 """
-@mtkmodel Current begin
-    @extend v, i = oneport = OnePort()
-    @components begin
+@component function Current(; name)
+    @named oneport = OnePort()
+    @unpack v, i = oneport
+
+    pars = @parameters begin
+    end
+
+    systems = @named begin
         I = RealInput()
     end
-    @equations begin
-        i ~ I.u
+
+    vars = @variables begin
     end
+
+    equations = Equation[
+        i ~ I.u
+    ]
+
+    sys = System(equations, t, vars, pars; name, systems)
+    return extend(sys, oneport)
 end

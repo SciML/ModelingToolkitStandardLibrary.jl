@@ -75,16 +75,23 @@ Generate constant signal.
 
   - `output`
 """
-@mtkmodel Constant begin
-    @components begin
+@component function Constant(; k = 0.0, name)
+    pars = @parameters begin
+        k = k, [description = "Constant output value of block"]
+    end
+
+    systems = @named begin
         output = RealOutput()
     end
-    @parameters begin
-        k = 0.0, [description = "Constant output value of block"]
+
+    vars = @variables begin
     end
-    @equations begin
+
+    equations = Equation[
         output.u ~ k
-    end
+    ]
+
+    return System(equations, t, vars, pars; name, systems)
 end
 
 """
@@ -97,18 +104,24 @@ The input variable `t` can be changed by passing a different variable as the key
 # Connectors:
 - `output`
 """
-@mtkmodel TimeVaryingFunction begin
-    @structural_parameters begin
-        f
+@component function TimeVaryingFunction(; f = nothing, name)
+    pars = @parameters begin
     end
-    @components begin
+
+    systems = @named begin
         output = RealOutput()
     end
-    @equations begin
-        output.u ~ f(t)
+
+    vars = @variables begin
     end
+
+    equations = Equation[
+        output.u ~ f(t)
+    ]
+
+    return System(equations, t, vars, pars; name, systems)
 end
-TimeVaryingFunction.f(f; name) = TimeVaryingFunction(; f, name)
+TimeVaryingFunction(f; name) = TimeVaryingFunction(; f, name)
 
 """
     Sine(; name, frequency, amplitude = 1, phase = 0, offset = 0, start_time = 0,
@@ -131,7 +144,7 @@ Generate sine signal.
   - `output`
 """
 @component function Sine(; name,
-        frequency,
+        frequency = nothing,
         amplitude = 1,
         phase = 0,
         offset = 0,
@@ -173,7 +186,7 @@ Generate cosine signal.
 - `output`
 """
 @component function Cosine(; name,
-        frequency,
+        frequency = nothing,
         amplitude = 1,
         phase = 0,
         offset = 0,
@@ -368,7 +381,7 @@ Exponentially damped sine signal.
   - `output`
 """
 @component function ExpSine(; name,
-        frequency,
+        frequency = nothing,
         amplitude = 1.0,
         damping = 0.1,
         phase = 0.0,
@@ -655,8 +668,8 @@ data input component.
 """
 @component function SampledData(::Val{SampledDataType.vector_based};
         name,
-        buffer,
-        sample_time,
+        buffer = nothing,
+        sample_time = nothing,
         circular_buffer = true)
     T = eltype(buffer)
     pars = @parameters begin
