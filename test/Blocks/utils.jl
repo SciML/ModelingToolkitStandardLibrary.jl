@@ -3,6 +3,7 @@ using SciCompDSL
 using ModelingToolkit
 using OrdinaryDiffEq
 using ModelingToolkit: t_nounits as t, D_nounits as D
+using Symbolics
 
 @testset "Array Guesses" begin
     for (block, guess) in [
@@ -10,7 +11,7 @@ using ModelingToolkit: t_nounits as t, D_nounits as D
         (RealOutputArray(; nout = 3, name = :a), zeros(3))
     ]
         guesses = ModelingToolkit.guesses(block)
-        @test guesses[@nonamespace block.u] == guess
+        @test Symbolics.value(guesses[@nonamespace block.u]) == guess
     end
 end
 
@@ -22,7 +23,7 @@ end
         (RealOutput(; nout = 3, name = :a), zeros(3))
     ]
         guesses = ModelingToolkit.guesses(block)
-        @test guesses[@nonamespace block.u[1]] == guess[1]
+        @test Symbolics.value(guesses[@nonamespace block.u[1]]) == guess[1]
     end
 end
 
