@@ -28,7 +28,4 @@ export Integrator, Derivative, FirstOrder, SecondOrder, StateSpace, TransferFunc
 export PI, LimPI, PID, LimPID
 include("continuous.jl")
 
-export AnalysisPoint, get_sensitivity, get_comp_sensitivity,
-       get_looptransfer, open_loop
-
 end
