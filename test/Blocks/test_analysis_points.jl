@@ -195,7 +195,7 @@ connections = [connect(r.output, :r, filt.input)
                connect(er.output, :e, pid.err_input)]
 
 closed_loop = System(connections, t, systems = [model, pid, filt, sensor, r, er],
-    name = :closed_loop, defaults = [
+    name = :closed_loop, initial_conditions = [
         model.inertia1.phi => 0.0,
         model.inertia2.phi => 0.0,
         model.inertia1.w => 0.0,

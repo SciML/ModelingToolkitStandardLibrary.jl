@@ -21,7 +21,7 @@ function PulseDiff(; name, Val = 1, dt = 0.1)
     eqs = [D(val) ~ Val
            val ~ d.val]
 
-    System(eqs, t, [val], [], systems = [d], defaults = Dict(Val => 0), name = name)
+    System(eqs, t, [val], [], systems = [d], initial_conditions = Dict(Val => 0), name = name)
 end
 
 """

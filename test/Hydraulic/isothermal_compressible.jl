@@ -295,7 +295,7 @@ end
     x = @. (time - 0.015)^2 - 10 * (time - 0.02)^3
     x[1:150] = zeros(150)
 
-    defs = ModelingToolkit.defaults(sys)
+    defs = ModelingToolkit.initial_conditions(sys)
     defs[sys.input.buffer] = Parameter(0.5 * x, dt)
 
     # NOTE: bypassing initialization system: https://github.com/SciML/ModelingToolkit.jl/issues/3312
