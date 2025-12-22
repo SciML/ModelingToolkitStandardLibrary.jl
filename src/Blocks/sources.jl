@@ -867,8 +867,8 @@ function ParametrizedInterpolation(
 
     System(eqs, ModelingToolkitBase.t_nounits, [],
         [data, ts, interpolation_type, interpolator];
-        parameter_dependencies = [
-            interpolator ~ build_interpolation(data, ts, args)
+        bindings = [
+            interpolator => build_interpolation(data, ts, args)
         ],
         systems = [input, output],
         name)
