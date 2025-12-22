@@ -740,7 +740,7 @@ end
 
     @mtkcompile sys = SimpleNPNCircuit(V_cc = 3.0, V_b = 0.70)
 
-    prob = ODEProblem(sys, Pair[], (0.0, 10.0))
+    prob = ODEProblem(sys, Pair[], (0.0, 10.0); guesses = [sys.Q1.I_sub => 1.0, sys.Vcc_sine.output.u => 1.0])
     sol = solve(prob)
 
     # make sure KCL is true
