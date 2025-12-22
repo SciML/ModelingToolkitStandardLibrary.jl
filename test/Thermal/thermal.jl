@@ -135,8 +135,8 @@ end
     @named mass = HeatCapacitor(C = 10)
 
     @info "Building a heat collector..."
-    eqs = [connect(flow_src.port, collector.port_a1, th_resistor.port_a)
-           connect(tem_src.port, collector.port_a2)
+    eqs = [connect(flow_src.port, collector.port_a_1, th_resistor.port_a)
+           connect(tem_src.port, collector.port_a_2)
            connect(hf_sensor.port_a, collector.port_b)
            connect(hf_sensor.port_b, mass.port, th_resistor.port_b)]
     @named coll = System(eqs, t,
@@ -148,10 +148,10 @@ end
     sol = solve(prob, Rodas4())
 
     @test SciMLBase.successful_retcode(sol)
-    @test sol[collector.port_b.Q_flow] + sol[collector.port_a1.Q_flow] +
-          sol[collector.port_a2.Q_flow] ==
+    @test sol[collector.port_b.Q_flow] + sol[collector.port_a_1.Q_flow] +
+          sol[collector.port_a_2.Q_flow] ==
           zeros(length(sol[collector.port_b.Q_flow]))
-    @test sol[collector.port_b.T] == sol[collector.port_a1.T] == sol[collector.port_a2.T]
+    @test sol[collector.port_b.T] == sol[collector.port_a_1.T] == sol[collector.port_a_2.T]
 end
 
 @testset "FixedHeatFlow with alpha=0.0 test" begin
