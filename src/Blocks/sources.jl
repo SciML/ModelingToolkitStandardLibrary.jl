@@ -621,22 +621,12 @@ end
 Symbolics.@register_symbolic Parameter(data::Vector, ref, circular_buffer::Bool)
 Symbolics.@register_symbolic get_sampled_data(t, buffer::Parameter)
 Symbolics.@register_symbolic get_sampled_data(t, buffer::Vector, dt, circular_buffer) false
-
-function Symbolics.derivative(::typeof(get_sampled_data), args::NTuple{2, Any}, ::Val{1})
-    t = @inbounds args[1]
-    buffer = @inbounds args[2]
-    first_order_backwards_difference(t, buffer)
-end
+Symbolics.@register_derivative get_sampled_data(t, buffer) 1 first_order_backwards_difference(t, buffer)
 function ChainRulesCore.frule((_, ẋ, _), ::typeof(get_sampled_data), t, buffer)
     first_order_backwards_difference(t, buffer) * ẋ
 end
-
-function Symbolics.derivative(::typeof(get_sampled_data), args::NTuple{4, Any}, ::Val{1})
-    t = @inbounds args[1]
-    buffer = @inbounds args[2]
-    sample_time = @inbounds args[3]
-    circular_buffer = @inbounds args[4]
-    first_order_backwards_difference(t, buffer, sample_time, circular_buffer)
+Symbolics.@register_derivative get_sampled_data(t, buffer, dt, circular_buffer) 1 begin
+    first_order_backwards_difference(t, buffer, dt, circular_buffer)
 end
 function ChainRulesCore.frule((_, ẋ, _),
         ::typeof(get_sampled_data),
