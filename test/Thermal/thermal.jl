@@ -42,9 +42,7 @@ using OrdinaryDiffEq: ReturnCode.Success
         systems = [mass1, mass2, T_sensor1, T_sensor2, th_conductor])
     sys = mtkcompile(h2)
 
-    u0 = [mass1.T => 1.0
-          mass2.T => 10.0]
-    prob = ODEProblem(sys, u0, (0, 3.0))
+    prob = ODEProblem(sys, [], (0, 3.0))
     sol = solve(prob, Tsit5())
 
     @test SciMLBase.successful_retcode(sol)
@@ -76,7 +74,7 @@ end
             th_resistor, flow_src, th_ground, th_conductor])
     sys = mtkcompile(h2)
 
-    u0 = [mass1.T => 10.0]
+    u0 = [mass1.T => 10.0, th_conductor.dT => nothing, th_conductor.Q_flow => nothing, th_resistor.Q_flow => nothing, th_resistor.dT => nothing]
     prob = ODEProblem(sys, u0, (0, 3.0))
     sol = solve(prob, Tsit5())
 
@@ -144,7 +142,7 @@ end
             collector, th_resistor, mass])
     sys = mtkcompile(coll)
 
-    prob = ODEProblem(sys, [], (0, 3.0))
+    prob = ODEProblem(sys, [mass.T => nothing, th_resistor.Q_flow => nothing, th_resistor.dT => nothing], (0, 3.0))
     sol = solve(prob, Rodas4())
 
     @test SciMLBase.successful_retcode(sol)
@@ -169,8 +167,8 @@ end
     end
 
     @info "Building a FixedHeatFlow with alpha=0.0"
-    @mtkcompile test_model = TestModel()
-    prob = ODEProblem(test_model, Pair[], (0, 10.0))
+    @mtkcompile test_model = TestModel() allow_parameter = false
+    prob = ODEProblem(test_model, [test_model.wall.Q_flow => nothing, test_model.wall.dT => nothing], (0, 10.0); guesses = [test_model.heatflow.port.T => 1.0])
     sol = solve(prob)
 
     heat_flow = sol[test_model.heatflow.port.Q_flow]

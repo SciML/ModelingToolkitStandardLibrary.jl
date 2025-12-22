@@ -34,7 +34,7 @@ using ModelingToolkitStandardLibrary.Blocks
 
     @mtkcompile piston = Piston()
 
-    prob = ODEProblem(piston, [], (0, 3.0))
+    prob = ODEProblem(piston, [piston.gas.dT => nothing, piston.coolant.dT => nothing, piston.wall.Q_flow => nothing, piston.wall.dT => nothing, piston.gas.Q_flow => nothing, piston.coolant.Q_flow => nothing], (0, 3.0))
     sol = solve(prob)
 
     # Heat-flow-rate is equal in magnitude
