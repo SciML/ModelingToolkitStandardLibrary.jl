@@ -119,7 +119,7 @@ Initial value of state `Y` can be set with `int.y`
     getdefault(Td) > 0 ||
         throw(ArgumentError("Time constant `Td` must be strictly positive"))
 
-    @named siso = SISO(; y_start)
+    @named siso = SISO()
     @unpack y, u = siso
 
     eqs = [
