@@ -241,7 +241,7 @@ U(s) = k (1 + \\dfrac{1}{sT}) E(S)
 
 See also [`LimPI`](@ref)
 """
-@component function PI(; name, k = 1.0, T = 1.0)
+@component function PI(; name, k = 1.0, T = 1.0, gainPI__k = nothing)
     @symcheck T > 0 ||
               throw(ArgumentError("Time constant `T` has to be strictly positive"))
 
@@ -253,7 +253,7 @@ See also [`LimPI`](@ref)
     systems = @named begin
         err_input = RealInput() # control error
         ctr_output = RealOutput() # control signal
-        gainPI = Gain(; k)
+        gainPI = Gain(; k = gainPI__k)
         addPI = Add()
         int = Integrator(k = 1 / T, x = 0.0)
     end

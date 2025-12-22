@@ -162,14 +162,14 @@ Linear 1D translational damper
   - `flange_a: 1-dim. translational flange on one side of damper`
   - `flange_b: 1-dim. translational flange on opposite side of damper`
 """
-@component function Damper(; name, d = nothing, va = nothing, vb = nothing, f = nothing)
+@component function Damper(; name, d = nothing, va = nothing, vb = nothing, f = nothing, flange_a__s = nothing, flange_b__s = nothing)
     pars = @parameters begin
         d = d
     end
 
     systems = @named begin
-        flange_a = Flange()
-        flange_b = Flange()
+        flange_a = Flange(; s = flange_a__s)
+        flange_b = Flange(; s = flange_b__s)
     end
 
     vars = @variables begin

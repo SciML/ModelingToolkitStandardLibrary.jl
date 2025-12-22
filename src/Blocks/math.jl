@@ -83,12 +83,12 @@ Input port dimension can be set with `input__nin`
   - `input`
   - `output`
 """
-@component function Sum(; name, nin = nothing)
+@component function Sum(; name, input__nin = nothing)
     pars = @parameters begin
     end
 
     systems = @named begin
-        input = RealInput(; nin)
+        input = RealInput(; nin = input__nin)
         output = RealOutput()
     end
 
