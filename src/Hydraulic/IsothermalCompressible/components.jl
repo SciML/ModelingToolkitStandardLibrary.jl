@@ -7,19 +7,23 @@ Caps a hydraulic port to prevent mass flow in or out.
 # Connectors:
 - `port`: hydraulic port
 """
-@mtkmodel Cap begin
-    @variables begin
-        p(t), [guess = 0]
+@component function Cap(; name, p = nothing)
+    pars = @parameters begin
     end
 
-    @components begin
-        port = HydraulicPort()
+    @named port = HydraulicPort()
+    systems = [port]
+
+    vars = @variables begin
+        p(t) = p, [guess = 0]
     end
 
-    @equations begin
-        port.p ~ p
+    equations = Equation[
+        port.p ~ p,
         port.dm ~ 0
-    end
+    ]
+
+    return System(equations, t, vars, pars; name, systems)
 end
 
 """
@@ -30,20 +34,24 @@ Provides an "open" boundary condition for a hydraulic port such that mass flow `
 # Connectors:
 - `port`: hydraulic port
 """
-@mtkmodel Open begin
-    @variables begin
-        p(t), [guess = 0]
-        dm(t), [guess = 0]
+@component function Open(; name, p = nothing, dm = nothing)
+    pars = @parameters begin
     end
 
-    @components begin
-        port = HydraulicPort()
+    @named port = HydraulicPort()
+    systems = [port]
+
+    vars = @variables begin
+        p(t) = p, [guess = 0]
+        dm(t) = dm, [guess = 0]
     end
 
-    @equations begin
-        port.p ~ p
+    equations = Equation[
+        port.p ~ p,
         port.dm ~ dm
-    end
+    ]
+
+    return System(equations, t, vars, pars; name, systems)
 end
 
 """
@@ -67,8 +75,8 @@ Variable length internal flow model of the fully developed incompressible flow f
 - `port_b`: hydraulic port
 """
 @component function TubeBase(add_inertia = true, variable_length = true;
-        area,
-        length_int,
+        area = nothing,
+        length_int = nothing,
         head_factor = 1,
         perimeter = 2 * sqrt(area * pi),
         shape_factor = 64,
@@ -153,9 +161,9 @@ Constant length internal flow model discretized by `N` (`FixedVolume`: `N`, `Tub
 - `port_a`: hydraulic port
 - `port_b`: hydraulic port
 """
-@component function Tube(N, add_inertia = true; area, length, head_factor = 1,
+@component function Tube(N, add_inertia = true; area = nothing, length = nothing, head_factor = 1,
         perimeter = 2 * sqrt(area * pi),
-        shape_factor = 64, p_int, name)
+        shape_factor = 64, p_int = nothing, name)
     @assert(N>0,
         "the Tube component must be defined with at least 1 segment (i.e. N>0), found N=$N")
 
@@ -215,36 +223,37 @@ Reduces the flow from `port_a` to `port_b` by `n`.  Useful for modeling parallel
 - `port_a`: full flow hydraulic port
 - `port_b`: part flow hydraulic port
 """
-@mtkmodel FlowDivider begin
+@component function FlowDivider(; name, n = nothing, dm_a = nothing, dm_b = nothing)
 
     #TODO: assert n >= 1
 
-    @parameters begin
+    pars = @parameters begin
         n = n
     end
 
-    @variables begin
-        dm_a(t), [guess = 0]
-        dm_b(t), [guess = 0]
+    @named port_a = HydraulicPort()
+    @named port_b = HydraulicPort()
+    @named open = Open()
+    systems = [port_a, port_b, open]
+
+    vars = @variables begin
+        dm_a(t) = dm_a, [guess = 0]
+        dm_b(t) = dm_b, [guess = 0]
     end
 
-    @components begin
-        port_a = HydraulicPort()
-        port_b = HydraulicPort()
-        open = Open()
-    end
-
-    @equations begin
-        connect(port_a, port_b, open.port)
-        dm_a ~ port_a.dm
-        dm_b ~ dm_a / n
+    equations = Equation[
+        connect(port_a, port_b, open.port),
+        dm_a ~ port_a.dm,
+        dm_b ~ dm_a / n,
         open.dm ~ dm_a - dm_b # extra flow dumps into an open port
         # port_b.dm ~ dm_b # divided flow goes to port_b
-    end
+    ]
+
+    return System(equations, t, vars, pars; name, systems)
 end
 
 @component function ValveBase(
-        reversible = false; minimum_area = 0, Cd, Cd_reverse = Cd, name)
+        reversible = false; minimum_area = 0, Cd = nothing, Cd_reverse = Cd, name)
     pars = @parameters begin
         Cd = Cd
         Cd_reverse = Cd_reverse
@@ -307,7 +316,7 @@ Valve with `area` input and discharge coefficient `Cd` defined by https://en.wik
 - `area`: real input setting the valve `area`.  When `reversible = true`, negative input reverses flow direction, otherwise a floor of `minimum_area` is enforced.
 """
 @component function Valve(reversible = false;
-        Cd, Cd_reverse = Cd,
+        Cd = nothing, Cd_reverse = Cd,
         minimum_area = 0,
         name)
     pars = @parameters begin
@@ -333,7 +342,7 @@ Valve with `area` input and discharge coefficient `Cd` defined by https://en.wik
     System(eqs, t, vars, pars; name, systems)
 end
 
-@component function VolumeBase(; area, dead_volume = 0, p_int, x_int,
+@component function VolumeBase(; area = nothing, dead_volume = 0, p_int = nothing, x_int = nothing,
         name)
     pars = @parameters begin
         area = area
@@ -381,7 +390,7 @@ Fixed fluid volume.
 # Connectors:
 - `port`: hydraulic port
 """
-@component function FixedVolume(; vol, name, p_int)
+@component function FixedVolume(; vol = nothing, name, p_int = nothing)
     pars = @parameters begin
         vol = vol
         p_int = p_int
@@ -449,9 +458,9 @@ See also [`FixedVolume`](@ref), [`DynamicVolume`](@ref)
 """
 @component function Volume(;
         #parameters
-        area,
+        area = nothing,
         direction = +1,
-        x_int,
+        x_int = nothing,
         name)
     pars = @parameters begin
         area = area
@@ -550,9 +559,9 @@ dm ────►               │  │ area
 - `flange`: mechanical translational port
 """
 @component function DynamicVolume(reversible = false;
-        area,
+        area = nothing,
         x_int = 0,
-        x_max,
+        x_max = nothing,
         x_min = 0,
         x_damp = x_min,
         direction = +1,
@@ -561,7 +570,7 @@ dm ────►               │  │ area
         perimeter = 2 * sqrt(area * pi),
         shape_factor = 64,
         head_factor = 1,
-        p_int,
+        p_int = nothing,
 
         # Valve
         Cd = 1e2,
@@ -651,7 +660,7 @@ Spool valve with `x` valve opening input as mechanical flange port and `d` diame
 
 See [`Valve`](@ref) for more information.
 """
-@component function SpoolValve(reversible = false; Cd, d, x_int, name)
+@component function SpoolValve(reversible = false; Cd = nothing, d = nothing, x_int = nothing, name)
     pars = @parameters begin
         d = d
         Cd = Cd
@@ -701,7 +710,7 @@ end
 
 See [`SpoolValve`](@ref) for more information.
 """
-@component function SpoolValve2Way(reversible = false; m, g, Cd, d, x_int, name)
+@component function SpoolValve2Way(reversible = false; m = nothing, g = nothing, Cd = nothing, d = nothing, x_int = nothing, name)
     pars = @parameters begin
         m = m
         g = g
@@ -814,18 +823,18 @@ Actuator made of two DynamicVolumes connected in opposite direction with body ma
 - `flange`: mechanical translational port
 """
 @component function Actuator(reversible = false;
-        area_a,
-        area_b,
+        area_a = nothing,
+        area_b = nothing,
         perimeter_a = 2 * sqrt(area_a * pi),
         perimeter_b = 2 * sqrt(area_b * pi),
-        length_a_int,
-        length_b_int,
+        length_a_int = nothing,
+        length_b_int = nothing,
         shape_factor_a = 64,
         shape_factor_b = 64,
         head_factor_a = 1,
         head_factor_b = 1,
-        m,
-        g,
+        m = nothing,
+        g = nothing,
         x_int = 0,
         dx_int = 0,
         minimum_volume_a = 0,
@@ -835,8 +844,8 @@ Actuator made of two DynamicVolumes connected in opposite direction with body ma
         Cd = 1e4,
         Cd_reverse = Cd,
         d = 0,
-        p_a_int,
-        p_b_int,
+        p_a_int = nothing,
+        p_b_int = nothing,
         name)
     pars = @parameters begin
         area_a = area_a
@@ -922,20 +931,20 @@ end
 """
     Orifice()
 
-A valve in fixed position, with parameters for area and the discharge coefficient (fitting the form Effective Area = area x Cd)  
+A valve in fixed position, with parameters for area and the discharge coefficient (fitting the form Effective Area = area x Cd)
 
 ```
-     ┌ 
-     │                   
+     ┌
+     │
          ▲
 dm ────►  effective area
          ▼
-     │           
+     │
      └
 ```
 
 # Features:
-- 
+-
 
 # Parameters:
 ## volume
@@ -947,22 +956,28 @@ dm ────►  effective area
 - `port_b`: hydraulic port
 """
 
-@mtkmodel Orifice begin
-    @parameters begin
-        orifice_area = 0.00094
-        Cd = 0.6 # TODO Cd here is defined differently from Valve(). 
+@component function Orifice(; name, orifice_area = 0.00094, Cd = 0.6)
+    pars = @parameters begin
+        orifice_area = orifice_area
+        Cd = Cd # TODO Cd here is defined differently from Valve().
         # Here it follows the form Effective Orifice Area = Cd x Physical Orifice Area
         # The Valve component should be updated too.
     end
-    @components begin
-        area = Constant(k = orifice_area)
-        valve = Valve(Cd = 1 / (Cd * Cd))
-        port_a = HydraulicPort()
-        port_b = HydraulicPort()
+
+    @named area = Constant(k = orifice_area)
+    @named valve = Valve(Cd = 1 / (Cd * Cd))
+    @named port_a = HydraulicPort()
+    @named port_b = HydraulicPort()
+    systems = [area, valve, port_a, port_b]
+
+    vars = @variables begin
     end
-    @equations begin
-        connect(valve.area, area.output)
-        connect(valve.port_a, port_a)
+
+    equations = Equation[
+        connect(valve.area, area.output),
+        connect(valve.port_a, port_a),
         connect(valve.port_b, port_b)
-    end
+    ]
+
+    return System(equations, t, vars, pars; name, systems)
 end

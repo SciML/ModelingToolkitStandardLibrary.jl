@@ -1,4 +1,5 @@
 using Test, LinearAlgebra
+using SciCompDSL
 using ModelingToolkit
 using ModelingToolkitStandardLibrary.Blocks
 using OrdinaryDiffEq
@@ -59,7 +60,7 @@ matrices, _ = get_comp_sensitivity(sys, :plant_input)
 
 ## get_looptransfer
 
-matrices, _ = Blocks.get_looptransfer(sys, :plant_input)
+matrices, _ = ModelingToolkit.get_looptransfer(sys, :plant_input)
 @test matrices.A[] == -1
 @test matrices.B[] * matrices.C[] == -1 # either one negative
 @test matrices.D[] == 0
@@ -72,7 +73,7 @@ L = P*C
 =#
 
 # Open loop
-open_sys, (u, y) = Blocks.open_loop(sys, :plant_input)
+open_sys, (u, y) = ModelingToolkit.open_loop(sys, :plant_input)
 
 # Linearizing the open-loop system should yield the same system as get_looptransfer
 matrices, _ = linearize(open_sys, [u], [y])
@@ -194,7 +195,7 @@ connections = [connect(r.output, :r, filt.input)
                connect(er.output, :e, pid.err_input)]
 
 closed_loop = System(connections, t, systems = [model, pid, filt, sensor, r, er],
-    name = :closed_loop, defaults = [
+    name = :closed_loop, initial_conditions = [
         model.inertia1.phi => 0.0,
         model.inertia2.phi => 0.0,
         model.inertia1.w => 0.0,
@@ -294,19 +295,19 @@ eqs = [connect(P.output, :plant_output, K.input)
        connect(K.output, :plant_input, P.input)]
 sys = System(eqs, t, systems = [P, K], name = :hej)
 
-matrices, _ = Blocks.get_sensitivity(sys, :plant_input)
+matrices, _ = ModelingToolkit.get_sensitivity(sys, :plant_input)
 S = CS.feedback(I(2), Kss * Pss, pos_feedback = true)
 
 # bodeplot([ss(matrices...), S])
 @test CS.tf(CS.ss(matrices...)) ≈ CS.tf(S)
 
-matrices, _ = Blocks.get_comp_sensitivity(sys, :plant_input)
+matrices, _ = ModelingToolkit.get_comp_sensitivity(sys, :plant_input)
 T = -CS.feedback(Kss * Pss, I(2), pos_feedback = true)
 
 # bodeplot([ss(matrices...), T])
 @test CS.tf(CS.ss(matrices...)) ≈ CS.tf(T)
 
-matrices, _ = Blocks.get_looptransfer(
+matrices, _ = ModelingToolkit.get_looptransfer(
     sys, :plant_input)
 L = Kss * Pss
 @test CS.tf(CS.ss(matrices...)) ≈ CS.tf(L)

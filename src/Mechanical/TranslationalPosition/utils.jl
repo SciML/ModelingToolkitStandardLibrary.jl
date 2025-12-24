@@ -1,6 +1,9 @@
-@connector Flange begin
-    s(t)
-    f(t), [connect = Flow]
+@connector function Flange(; name, s = nothing, f = nothing)
+    vars = @variables begin
+        s(t) = s
+        f(t) = f, [connect = Flow]
+    end
+    System(Equation[], t, vars, []; name)
 end
 Base.@doc """
     Flange(;name)
@@ -12,9 +15,12 @@ Base.@doc """
 - `f`: [N] Cut force into the flange
 """ Flange
 
-@connector Support begin
-    s(t)
-    f(t), [connect = Flow]
+@connector function Support(; name, s = nothing, f = nothing)
+    vars = @variables begin
+        s(t) = s
+        f(t) = f, [connect = Flow]
+    end
+    System(Equation[], t, vars, []; name)
 end
 Base.@doc """
     Support(;name)
@@ -36,24 +42,31 @@ Partial model for the compliant connection of two translational 1-dim. flanges.
   - `s_rel`: [m] Relative distance (= flange_b.s - flange_a.s). It accepts an initial value, which defaults to 0.0.
   - `f`: [N] Force between flanges (= flange_b.f). It accepts an initial value, which defaults to 0.0.
 """
-@mtkmodel PartialCompliant begin#(; name, s_rel_start = 0.0, f_start = 0.0)
-    @components begin
+@component function PartialCompliant(; name, v_a = nothing, v_b = nothing, s_rel = nothing, f = nothing)
+    pars = @parameters begin
+    end
+
+    systems = @named begin
         flange_a = Flange()
         flange_b = Flange()
     end
-    @variables begin
-        v_a(t)
-        v_b(t)
-        s_rel(t)
-        f(t)
+
+    vars = @variables begin
+        v_a(t) = v_a
+        v_b(t) = v_b
+        s_rel(t) = s_rel
+        f(t) = f
     end
-    @equations begin
-        D(flange_a.s) ~ v_a
-        D(flange_b.s) ~ v_b
-        D(s_rel) ~ v_b - v_a
-        flange_b.f ~ +f
+
+    equations = Equation[
+        D(flange_a.s) ~ v_a,
+        D(flange_b.s) ~ v_b,
+        D(s_rel) ~ v_b - v_a,
+        flange_b.f ~ +f,
         flange_a.f ~ -f
-    end
+    ]
+
+    return System(equations, t, vars, pars; name, systems)
 end
 
 """
@@ -75,20 +88,27 @@ Partial model for the compliant connection of two translational 1-dim. flanges.
   - `a_rel`: [m/s²] Relative linear acceleration (= der(v_rel))
   - `f`: [N] Force between flanges (= flange_b.f)
 """
-@mtkmodel PartialCompliantWithRelativeStates begin
-    @components begin
+@component function PartialCompliantWithRelativeStates(; name, delta_s = nothing, f = nothing)
+    pars = @parameters begin
+    end
+
+    systems = @named begin
         flange_a = Flange()
         flange_b = Flange()
     end
-    @variables begin
-        delta_s(t)
-        f(t)
+
+    vars = @variables begin
+        delta_s(t) = delta_s
+        f(t) = f
     end
-    @equations begin
-        delta_s ~ flange_a.s - flange_b.s
-        flange_a.f ~ +f
+
+    equations = Equation[
+        delta_s ~ flange_a.s - flange_b.s,
+        flange_a.f ~ +f,
         flange_b.f ~ -f
-    end
+    ]
+
+    return System(equations, t, vars, pars; name, systems)
 end
 
 """

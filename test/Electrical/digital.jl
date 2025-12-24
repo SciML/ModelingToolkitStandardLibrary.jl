@@ -1,4 +1,5 @@
 using ModelingToolkitStandardLibrary.Electrical, ModelingToolkit, OrdinaryDiffEq, Test
+using SciCompDSL
 using ModelingToolkitStandardLibrary.Electrical: _and, _or, _not, _xor
 using ModelingToolkitStandardLibrary.Electrical: U, X, F0, F1, Z, W, L, H, DC, Uninitialized
 using ModelingToolkitStandardLibrary.Electrical: AndTable, OrTable, NotTable, XorTable

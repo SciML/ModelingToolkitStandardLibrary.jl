@@ -16,23 +16,27 @@ Lumped thermal element storing heat
 
   - `C`: [`J/K`] Heat capacity of element (= cp*m)
 """
-@mtkmodel HeatCapacitor begin
-    @components begin
+@component function HeatCapacitor(; C = nothing, T = 273.15 + 20, name)
+    pars = @parameters begin
+        C = C, [description = "Heat capacity of element"]
+    end
+
+    systems = @named begin
         port = HeatPort()
     end
-    @parameters begin
-        C, [description = "Heat capacity of element"]
-    end
-    @variables begin
-        T(t), [guess = 273.15 + 20]
+
+    vars = @variables begin
+        T(t) = T, [guess = 273.15 + 20]
         der_T(t), [guess = 0.0]
     end
 
-    @equations begin
-        T ~ port.T
-        der_T ~ port.Q_flow / C
+    equations = Equation[
+        T ~ port.T,
+        der_T ~ port.Q_flow / C,
         D(T) ~ der_T
-    end
+    ]
+
+    return System(equations, t, vars, pars; name, systems)
 end
 
 """
@@ -53,14 +57,26 @@ see [`Element1D`](@ref)
 
   - `G`: [`W/K`] Constant thermal conductance of material
 """
-@mtkmodel ThermalConductor begin
-    @extend Q_flow, dT = element1d = Element1D()
-    @parameters begin
-        G
+@component function ThermalConductor(; G = nothing, name)
+    @named element1d = Element1D()
+    @unpack Q_flow, dT = element1d
+
+    pars = @parameters begin
+        G = G
     end
-    @equations begin
+
+    systems = @named begin
+    end
+
+    vars = @variables begin
+    end
+
+    equations = Equation[
         Q_flow ~ G * dT
-    end
+    ]
+
+    sys = System(equations, t, vars, pars; name, systems)
+    return extend(sys, element1d)
 end
 
 """
@@ -82,14 +98,26 @@ Lumped thermal element transporting heat without storing it.
 
   - `R`: [`K/W`] Constant thermal resistance of material
 """
-@mtkmodel ThermalResistor begin
-    @extend Q_flow, dT = element1d = Element1D()
-    @parameters begin
-        R
+@component function ThermalResistor(; R = nothing, name)
+    @named element1d = Element1D()
+    @unpack Q_flow, dT = element1d
+
+    pars = @parameters begin
+        R = R
     end
-    @equations begin
+
+    systems = @named begin
+    end
+
+    vars = @variables begin
+    end
+
+    equations = Equation[
         dT ~ R * Q_flow
-    end
+    ]
+
+    sys = System(equations, t, vars, pars; name, systems)
+    return extend(sys, element1d)
 end
 
 """
@@ -111,14 +139,26 @@ Lumped thermal element for heat convection.
 
   - `G`: [W/K] Convective thermal conductance
 """
-@mtkmodel ConvectiveConductor begin
-    @extend Q_flow, dT = convective_element1d = ConvectiveElement1D()
-    @parameters begin
-        G
+@component function ConvectiveConductor(; G = nothing, name)
+    @named convective_element1d = ConvectiveElement1D()
+    @unpack Q_flow, dT = convective_element1d
+
+    pars = @parameters begin
+        G = G
     end
-    @equations begin
+
+    systems = @named begin
+    end
+
+    vars = @variables begin
+    end
+
+    equations = Equation[
         Q_flow ~ G * dT
-    end
+    ]
+
+    sys = System(equations, t, vars, pars; name, systems)
+    return extend(sys, convective_element1d)
 end
 
 """
@@ -140,14 +180,26 @@ Lumped thermal element for heat convection.
 
   - `R`: [`K/W`] Constant thermal resistance of material
 """
-@mtkmodel ConvectiveResistor begin
-    @extend Q_flow, dT = convective_element1d = ConvectiveElement1D()
-    @parameters begin
-        R
+@component function ConvectiveResistor(; R = nothing, name)
+    @named convective_element1d = ConvectiveElement1D()
+    @unpack Q_flow, dT = convective_element1d
+
+    pars = @parameters begin
+        R = R
     end
-    @equations begin
+
+    systems = @named begin
+    end
+
+    vars = @variables begin
+    end
+
+    equations = Equation[
         dT ~ R * Q_flow
-    end
+    ]
+
+    sys = System(equations, t, vars, pars; name, systems)
+    return extend(sys, convective_element1d)
 end
 
 """
@@ -169,18 +221,28 @@ Lumped thermal element for radiation heat transfer.
 
   - `G`: [m^2] Net radiation conductance between two surfaces # Stefan-Boltzmann constant TODO: extract into physical constants module or use existing one
 """
-@mtkmodel BodyRadiation begin
-    begin
-        sigma = 5.6703744191844294e-8 # Stefan-Boltzmann constant TODO: extract into physical constants module or use existing one
+@component function BodyRadiation(; G = nothing, name)
+    sigma = 5.6703744191844294e-8 # Stefan-Boltzmann constant TODO: extract into physical constants module or use existing one
+
+    @named element1d = Element1D()
+    @unpack Q_flow, dT, port_a, port_b = element1d
+
+    pars = @parameters begin
+        G = G
     end
 
-    @extend Q_flow, dT, port_a, port_b = element1d = Element1D()
-    @parameters begin
-        G
+    systems = @named begin
     end
-    @equations begin
+
+    vars = @variables begin
+    end
+
+    equations = Equation[
         Q_flow ~ G * sigma * (port_a.T^4 - port_b.T^4)
-    end
+    ]
+
+    sys = System(equations, t, vars, pars; name, systems)
+    return extend(sys, element1d)
 end
 
 """
@@ -201,19 +263,27 @@ This is a model to collect the heat flows from `m` heatports to one single heatp
 
   - `m`: Number of heat ports (e.g. m=2: `port_a1`, `port_a2`)
 """
-@mtkmodel ThermalCollector begin
-    @structural_parameters begin
-        m::Integer = 1
+@component function ThermalCollector(; m::Integer = 1, name)
+    pars = @parameters begin
     end
 
-    @components begin
-        port_a = [HeatPort(name = Symbol(:port_a, i)) for i in 1:m]
+    port_a = @named begin
+        port_a[1:m] = HeatPort()
+    end
+
+    systems = @named begin
         port_b = HeatPort()
     end
+    append!(systems, port_a)
 
-    @equations begin
-        port_b.Q_flow + sum(k -> k.Q_flow, port_a) ~ 0
-        port_b.T ~ port_a[1].T
-        [port_a[i].T ~ port_a[i + 1].T for i in 1:(m - 1)]
+    vars = @variables begin
     end
+
+    equations = Equation[
+        port_b.Q_flow + sum(k -> k.Q_flow, port_a) ~ 0,
+        port_b.T ~ port_a[1].T,
+        [port_a[i].T ~ port_a[i + 1].T for i in 1:(m - 1)]...
+    ]
+
+    return System(equations, t, vars, pars; name, systems)
 end

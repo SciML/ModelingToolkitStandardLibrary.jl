@@ -1,6 +1,9 @@
-@connector MagneticPort begin
-    V_m(t), [description = "Magnetic potential at the port"]
-    Phi(t), [connect = Flow, description = "Magnetic flux flowing into the port"]
+@connector function MagneticPort(; name, V_m = nothing, Phi = nothing)
+    vars = @variables begin
+        V_m(t) = V_m, [description = "Magnetic potential at the port"]
+        Phi(t) = Phi, [connect = Flow, description = "Magnetic flux flowing into the port"]
+    end
+    System(Equation[], t, vars, []; name)
 end
 Base.@doc "Port for a Magnetic system." MagneticPort
 
@@ -24,18 +27,25 @@ Partial component with magnetic potential difference between two magnetic ports 
   - `V_m`: Initial magnetic potential difference between both ports
   - `Phi`: Initial magnetic flux from port_p to port_n
 """
-@mtkmodel TwoPort begin
-    @components begin
+@component function TwoPort(; name, V_m = nothing, Phi = nothing)
+    pars = @parameters begin
+    end
+
+    systems = @named begin
         port_p = PositiveMagneticPort()
         port_n = NegativeMagneticPort()
     end
-    @variables begin
-        V_m(t)
-        Phi(t)
+
+    vars = @variables begin
+        V_m(t) = V_m
+        Phi(t) = Phi
     end
-    @equations begin
-        V_m ~ port_p.V_m - port_n.V_m
-        Phi ~ port_p.Phi
+
+    equations = Equation[
+        V_m ~ port_p.V_m - port_n.V_m,
+        Phi ~ port_p.Phi,
         0 ~ port_p.Phi + port_n.Phi
-    end
+    ]
+
+    return System(equations, t, vars, pars; name, systems)
 end

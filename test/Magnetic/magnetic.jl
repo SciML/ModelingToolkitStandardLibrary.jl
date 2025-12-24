@@ -1,4 +1,5 @@
 using ModelingToolkitStandardLibrary.Magnetic, ModelingToolkit, OrdinaryDiffEq, Test
+using SciCompDSL
 
 import ModelingToolkitStandardLibrary.Electrical
 import ModelingToolkitStandardLibrary.Blocks

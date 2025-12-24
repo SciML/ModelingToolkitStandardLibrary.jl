@@ -3,15 +3,26 @@
 
 Input signal acting as external force on a flange
 """
-@mtkmodel Force begin
-    @extend (flange,) = partial_element = PartialElementaryOneFlangeAndSupport2(;
-        use_support = false)
-    @components begin
-        f = RealInput() # Accelerating force acting at flange (= -flange.tau)
+@component function Force(; name, use_support = false)
+    @named partial_element = PartialElementaryOneFlangeAndSupport2(; use_support)
+    @unpack flange = partial_element
+
+    pars = @parameters begin
     end
-    @equations begin
+
+    systems = @named begin
+        f = RealInput()
+    end
+
+    vars = @variables begin
+    end
+
+    equations = Equation[
         flange.f ~ -f.u
-    end
+    ]
+
+    sys = System(equations, t, vars, pars; name, systems)
+    return extend(sys, partial_element)
 end
 
 """
@@ -26,33 +37,41 @@ The input signal `s_ref` defines the reference position in [m]. Flange flange is
 
 The input signal can be provided from one of the signal generator blocks of the block library `Blocks.Sources`.
 """
-@mtkmodel Position begin
-    @extend (s,) = ptf = PartialElementaryOneFlangeAndSupport2()
-    @structural_parameters begin
-        exact = false
+@component function Position(; name, exact = false, f_crit = 50, v = nothing, a = nothing)
+    @named ptf = PartialElementaryOneFlangeAndSupport2()
+    @unpack s = ptf
+
+    pars = @parameters begin
+        f_crit = f_crit
     end
-    @parameters begin
-        f_crit = 50
-    end
-    @variables begin
-        v(t)
-        a(t)
-    end
-    @components begin
+
+    w_crit = 2π * f_crit
+    af = 1.3617
+    bf = 0.6180
+
+    systems = @named begin
         s_ref = RealInput()
     end
-    begin
-        w_crit = 2π * f_crit
-        af = 1.3617
-        bf = 0.6180
+
+    vars = @variables begin
+        v(t) = v
+        a(t) = a
     end
-    @equations begin
-        if exact
-            s ~ s_ref.u
-        else
-            a ~ ((s_ref.u - s) * w_crit - af * v) * (w_crit / bf)
-        end
-        v ~ D(s)
-        a ~ D(v)
+
+    equations = if exact
+        Equation[
+            s ~ s_ref.u,
+            v ~ D(s),
+            a ~ D(v)
+        ]
+    else
+        Equation[
+            a ~ ((s_ref.u - s) * w_crit - af * v) * (w_crit / bf),
+            v ~ D(s),
+            a ~ D(v)
+        ]
     end
+
+    sys = System(equations, t, vars, pars; name, systems)
+    return extend(sys, ptf)
 end

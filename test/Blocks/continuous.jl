@@ -1,4 +1,5 @@
 using ModelingToolkit, ModelingToolkitStandardLibrary, OrdinaryDiffEq
+using SciCompDSL
 using ModelingToolkitStandardLibrary.Blocks
 using ModelingToolkit: t_nounits as t
 using OrdinaryDiffEq: ReturnCode.Success
@@ -161,6 +162,7 @@ end
         t,
         systems = [pi_controller, plant, ref, fb])
     sys = mtkcompile(model)
+    initial_conditions(sys)[sys.pi_controller.gainPI.k] = 1.0
     prob = ODEProblem(sys, Pair[], (0.0, 100.0))
     sol = solve(prob, Rodas4())
     @test sol.retcode == Success
@@ -237,7 +239,7 @@ end
         u_max = 1.5,
         u_min = -1.5,
         Ta = 0.1)
-    @named pi_controller = PI(gainPI.k = 3, T = 0.5)
+    @named pi_controller = PI(T = 0.5)
     @named sat = Limiter(y_max = 1.5, y_min = -1.5)
     @named plant = Plant()
     @named fb = Feedback()
@@ -255,6 +257,7 @@ end
             t,
             systems = [pi_controller, plant, ref, fb, sat])
         sys = mtkcompile(model)
+        initial_conditions(sys)[sys.pi_controller.gainPI.k] = 1.0
         prob = ODEProblem(sys, Pair[], (0.0, 20.0))
         sol = solve(prob, Rodas4())
     end

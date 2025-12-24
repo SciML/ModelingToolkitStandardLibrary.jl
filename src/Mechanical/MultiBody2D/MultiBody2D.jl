@@ -1,7 +1,7 @@
 module MultiBody2D
 
-using ModelingToolkit, Symbolics, IfElse
-using ModelingToolkit: t_nounits as t, D_nounits as D
+using ModelingToolkitBase, Symbolics, IfElse
+using ModelingToolkitBase: t_nounits as t, D_nounits as D
 using ..TranslationalPosition
 
 export Link

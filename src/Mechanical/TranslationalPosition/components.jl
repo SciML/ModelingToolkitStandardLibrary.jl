@@ -11,16 +11,23 @@ Flange fixed in housing at a given position.
 
   - `flange: 1-dim. translational flange`
 """
-@mtkmodel Fixed begin
-    @parameters begin
-        s_0 = 0
+@component function Fixed(; name, s_0 = 0)
+    pars = @parameters begin
+        s_0 = s_0
     end
-    @components begin
+
+    systems = @named begin
         flange = Flange()
     end
-    @equations begin
-        flange.s ~ s_0
+
+    vars = @variables begin
     end
+
+    equations = Equation[
+        flange.s ~ s_0
+    ]
+
+    return System(equations, t, vars, pars; name, systems)
 end
 
 """
@@ -43,28 +50,33 @@ Sliding mass with inertia
 
   - `flange: 1-dim. translational flange of mass`
 """
-@mtkmodel Mass begin
-    @parameters begin
-        m
+@component function Mass(; name, m = nothing, s = nothing, v = nothing, f = nothing)
+    pars = @parameters begin
+        m = m
     end
-    @variables begin
-        s(t)
-        v(t)
-        f(t)
-    end
-    @components begin
+
+    systems = @named begin
         flange = Flange()
     end
-    @equations begin
-        flange.s ~ s
-        flange.f ~ f
-        D(s) ~ v
-        D(v) ~ f / m
+
+    vars = @variables begin
+        s(t) = s
+        v(t) = v
+        f(t) = f
     end
+
+    equations = Equation[
+        flange.s ~ s,
+        flange.f ~ f,
+        D(s) ~ v,
+        D(v) ~ f / m
+    ]
+
+    return System(equations, t, vars, pars; name, systems)
 end
 
 const REL = Val(:relative)
-@component function Spring(::Val{:relative}; name, k, va = 0.0, vb = 0.0,
+@component function Spring(::Val{:relative}; name, k = nothing, va = 0.0, vb = 0.0,
         delta_s = 0)
     pars = @parameters begin
         k = k
@@ -109,12 +121,12 @@ Linear 1D translational spring
   - `flange_a: 1-dim. translational flange on one side of spring`
   - `flange_b: 1-dim. translational flange on opposite side of spring` #default function
 """
-function Spring(; name, k, l = 0)
+function Spring(; name, k = nothing, l = 0)
     Spring(ABS; name, k, l)
 end #default function
 
 @component function Spring(::Val{:absolute};
-        name, k, l = 0)
+        name, k = nothing, l = 0)
     pars = @parameters begin
         k = k
         l = l
@@ -150,26 +162,29 @@ Linear 1D translational damper
   - `flange_a: 1-dim. translational flange on one side of damper`
   - `flange_b: 1-dim. translational flange on opposite side of damper`
 """
-@mtkmodel Damper begin
-    @parameters begin
-        d
-    end
-    @variables begin
-        va(t)
-        vb(t)
-        f(t)
+@component function Damper(; name, d = nothing, va = nothing, vb = nothing, f = nothing, flange_a__s = nothing, flange_b__s = nothing)
+    pars = @parameters begin
+        d = d
     end
 
-    @components begin
-        flange_a = Flange()
-        flange_b = Flange()
+    systems = @named begin
+        flange_a = Flange(; s = flange_a__s)
+        flange_b = Flange(; s = flange_b__s)
     end
 
-    @equations begin
-        D(flange_a.s) ~ va
-        D(flange_b.s) ~ vb
-        f ~ (va - vb) * d
-        flange_a.f ~ +f
+    vars = @variables begin
+        va(t) = va
+        vb(t) = vb
+        f(t) = f
+    end
+
+    equations = Equation[
+        D(flange_a.s) ~ va,
+        D(flange_b.s) ~ vb,
+        f ~ (va - vb) * d,
+        flange_a.f ~ +f,
         flange_b.f ~ -f
-    end
+    ]
+
+    return System(equations, t, vars, pars; name, systems)
 end

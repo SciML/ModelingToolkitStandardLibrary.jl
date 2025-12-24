@@ -1,4 +1,5 @@
 using ModelingToolkitStandardLibrary.Thermal, ModelingToolkit, OrdinaryDiffEq, Test
+using SciCompDSL
 using ModelingToolkit: t_nounits as t, D_nounits as D
 using OrdinaryDiffEq: ReturnCode.Success
 
@@ -20,7 +21,7 @@ using OrdinaryDiffEq: ReturnCode.Success
     @named model = System(connections, t,
         systems = [mass1, mass2, conduction, Tsensor1, Tsensor2])
     sys = mtkcompile(model)
-    prob = ODEProblem(sys, [], (0, 3.0))
+    prob = ODEProblem(sys, [conduction.Q_flow => nothing, conduction.dT => nothing], (0, 3.0))
     sol = solve(prob, Tsit5())
     @test SciMLBase.successful_retcode(sol)
 end

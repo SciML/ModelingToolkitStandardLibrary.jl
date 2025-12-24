@@ -1,16 +1,23 @@
-@mtkmodel PartialTorque begin
-    @extend flange,
-    phi_support = partial_element = PartialElementaryOneFlangeAndSupport2(;
-        use_support = false)
-    @variables begin
-        phi(t),
-        [
-            description = "Angle of flange with respect to support (= flange.phi - support.phi)"
-        ]
+@component function PartialTorque(; use_support = false, name)
+    @named partial_element = PartialElementaryOneFlangeAndSupport2(; use_support)
+    @unpack flange, phi_support = partial_element
+
+    pars = @parameters begin
     end
-    @equations begin
+
+    systems = @named begin
+    end
+
+    vars = @variables begin
+        phi(t), [description = "Angle of flange with respect to support (= flange.phi - support.phi)"]
+    end
+
+    equations = Equation[
         phi ~ flange.phi - phi_support
-    end
+    ]
+
+    sys = System(equations, t, vars, pars; name, systems)
+    return extend(sys, partial_element)
 end
 
 """
@@ -31,15 +38,26 @@ Input signal acting as external torque on a flange
 
   - `use_support`
 """
-@mtkmodel Torque begin
-    @extend (flange,) = partial_element = PartialElementaryOneFlangeAndSupport2(;
-        use_support = false)
-    @components begin
+@component function Torque(; use_support = false, name)
+    @named partial_element = PartialElementaryOneFlangeAndSupport2(; use_support)
+    @unpack flange = partial_element
+
+    pars = @parameters begin
+    end
+
+    systems = @named begin
         tau = RealInput()
     end
-    @equations begin
-        flange.tau ~ -tau.u
+
+    vars = @variables begin
     end
+
+    equations = Equation[
+        flange.tau ~ -tau.u
+    ]
+
+    sys = System(equations, t, vars, pars; name, systems)
+    return extend(sys, partial_element)
 end
 
 """
@@ -60,24 +78,30 @@ Constant torque source
 - `tau_constant`: The constant torque applied by the source
 - `use_support`: Whether or not an internal support flange is added. By default, it is `false`
 """
-@mtkmodel ConstantTorque begin
-    @parameters begin
-        tau_constant,
-        [
-            description = "Constant torque (if negative, torque is acting as load in positive direction of rotation)"
-        ]
+@component function ConstantTorque(; tau_constant, use_support = false, name)
+    @named partial_element = PartialTorque(; use_support)
+    @unpack flange, phi = partial_element
+
+    pars = @parameters begin
+        tau_constant = tau_constant, [description = "Constant torque (if negative, torque is acting as load in positive direction of rotation)"]
     end
-    @extend flange, phi = partial_element = PartialTorque(; use_support = false)
-    @variables begin
+
+    systems = @named begin
+    end
+
+    vars = @variables begin
         tau(t), [description = "Accelerating torque acting at flange (= -flange.tau)"]
-        w(t),
-        [description = "Angular velocity of flange with respect to support (= der(phi))"]
+        w(t), [description = "Angular velocity of flange with respect to support (= der(phi))"]
     end
-    @equations begin
-        w ~ D(phi)
-        tau ~ -flange.tau
+
+    equations = Equation[
+        w ~ D(phi),
+        tau ~ -flange.tau,
         tau ~ tau_constant
-    end
+    ]
+
+    sys = System(equations, t, vars, pars; name, systems)
+    return extend(sys, partial_element)
 end
 
 """
@@ -101,23 +125,46 @@ Forced movement of a flange according to a reference angular velocity signal
   - `tau_filt`: [`rad/s`] if exact=false, Time constant of low-pass filter to filter input signal
 """
 @component function Speed(; name, use_support = false, exact = false, tau_filt = 50)
-    @named partial_element = PartialElementaryOneFlangeAndSupport2(use_support = use_support)
+    @named partial_element = PartialElementaryOneFlangeAndSupport2(; use_support)
     @unpack flange, phi_support = partial_element
-    @named w_ref = RealInput()
-    @variables phi(t) [guess = 0.0] w(t) [guess = 0.0] a(t) [guess = 0.0]
-    eqs = [phi ~ flange.phi - phi_support
-           D(phi) ~ w]
-    if exact
-        pars = []
-        push!(eqs, w ~ w_ref.u)
-        push!(eqs, a ~ 0)
+
+    pars = if exact
+        @parameters begin
+        end
     else
-        pars = @parameters tau_filt = tau_filt
-        push!(eqs, D(w) ~ a)
-        push!(eqs, a ~ (w_ref.u - w) * tau_filt)
+        @parameters begin
+            tau_filt = tau_filt, [description = "Time constant of low-pass filter to filter input signal"]
+        end
     end
-    return extend(System(eqs, t, [phi, w, a], pars; name = name, systems = [w_ref]),
-        partial_element)
+
+    systems = @named begin
+        w_ref = RealInput()
+    end
+
+    vars = @variables begin
+        phi(t), [guess = 0.0, description = "Angle of flange with respect to support"]
+        w(t), [guess = 0.0, description = "Angular velocity of flange with respect to support"]
+        a(t), [guess = 0.0, description = "Angular acceleration of flange with respect to support"]
+    end
+
+    equations = if exact
+        Equation[
+            phi ~ flange.phi - phi_support,
+            D(phi) ~ w,
+            w ~ w_ref.u,
+            a ~ 0
+        ]
+    else
+        Equation[
+            phi ~ flange.phi - phi_support,
+            D(phi) ~ w,
+            D(w) ~ a,
+            a ~ (w_ref.u - w) * tau_filt
+        ]
+    end
+
+    sys = System(equations, t, vars, pars; name, systems)
+    return extend(sys, partial_element)
 end
 
 """

@@ -1,4 +1,5 @@
 using ModelingToolkitStandardLibrary.Electrical, ModelingToolkit, OrdinaryDiffEq, Test
+using SciCompDSL
 using ModelingToolkit: t_nounits as t, D_nounits as D
 using ModelingToolkitStandardLibrary.Blocks: Step,
                                              Constant, Sine, Cosine, ExpSine, Ramp,
@@ -739,7 +740,7 @@ end
 
     @mtkcompile sys = SimpleNPNCircuit(V_cc = 3.0, V_b = 0.70)
 
-    prob = ODEProblem(sys, Pair[], (0.0, 10.0))
+    prob = ODEProblem(sys, Pair[], (0.0, 10.0); guesses = [sys.Q1.I_sub => 1.0])
     sol = solve(prob)
 
     # make sure KCL is true
@@ -779,7 +780,7 @@ end
 
     @mtkcompile sys = SimpleNPNCircuitSubstrate(V_b = 0.70)
 
-    prob = ODEProblem(sys, [sys.Q1.c.i => 0.0], (0.0, 10.0))
+    prob = ODEProblem(sys, [sys.Q1.c.i => 0.0], (0.0, 10.0); guesses = [sys.Q1.I_sub => 1.0, sys.Vcc_sine.output.u => 1.0])
     sol = solve(prob)
 
     @test isapprox(

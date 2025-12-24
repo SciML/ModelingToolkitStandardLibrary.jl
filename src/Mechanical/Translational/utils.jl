@@ -1,6 +1,9 @@
-@connector MechanicalPort begin
-    v(t)
-    f(t), [connect = Flow]
+@connector function MechanicalPort(; name, v = nothing, f = nothing)
+    vars = @variables begin
+        v(t) = v
+        f(t) = f, [connect = Flow]
+    end
+    return System(Equation[], t, vars, []; name)
 end
 Base.@doc """
     MechanicalPort(;name)

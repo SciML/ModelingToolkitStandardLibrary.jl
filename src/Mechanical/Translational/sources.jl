@@ -8,15 +8,23 @@ Linear 1D force input source
   - `flange`: 1-dim. translational flange
   - `f`: real input
 """
-@mtkmodel Force begin
-    @components begin
+@component function Force(; name)
+    pars = @parameters begin
+    end
+
+    systems = @named begin
         flange = MechanicalPort(; v = 0.0)
         f = RealInput()
     end
 
-    @equations begin
-        flange.f ~ -f.u
+    vars = @variables begin
     end
+
+    equations = Equation[
+        flange.f ~ -f.u
+    ]
+
+    return System(equations, t, vars, pars; name, systems)
 end
 
 """

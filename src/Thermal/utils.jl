@@ -1,13 +1,14 @@
-@connector HeatPort begin
-    @parameters begin
+@connector function HeatPort(; name, T_guess = 273.15 + 20, Q_flow_guess = 0.0, T = nothing, Q_flow = nothing)
+    pars = @parameters begin
         T_guess = 273.15 + 20
         Q_flow_guess = 0.0
     end
 
-    @variables begin
-        T(t), [guess = T_guess]
-        Q_flow(t), [guess = Q_flow_guess, connect = Flow]
+    vars = @variables begin
+        T(t) = T, [guess = T_guess]
+        Q_flow(t) = Q_flow, [guess = Q_flow_guess, connect = Flow]
     end
+    System(Equation[], t, vars, pars; name)
 end
 Base.@doc """
     HeatPort(; T = nothing, T_guess = 273.15 + 20, Q_flow = nothing, Q_flow_guess = 0.0, name)
@@ -39,20 +40,27 @@ flow rate through the element from `port_a` to `port_b`, `Q_flow`.
 `port_a`
 `port_b`
 """
-@mtkmodel Element1D begin
-    @components begin
+@component function Element1D(; dT = 0.0, Q_flow = 0.0, name)
+    pars = @parameters begin
+    end
+
+    systems = @named begin
         port_a = HeatPort()
         port_b = HeatPort()
     end
-    @variables begin
-        dT(t), [guess = 0.0]
-        Q_flow(t), [guess = 0.0]
+
+    vars = @variables begin
+        dT(t) = dT, [guess = 0.0]
+        Q_flow(t) = Q_flow, [guess = 0.0]
     end
-    @equations begin
-        dT ~ port_a.T - port_b.T
-        port_a.Q_flow ~ Q_flow
+
+    equations = Equation[
+        dT ~ port_a.T - port_b.T,
+        port_a.Q_flow ~ Q_flow,
         port_a.Q_flow + port_b.Q_flow ~ 0
-    end
+    ]
+
+    return System(equations, t, vars, pars; name, systems)
 end
 
 """
@@ -73,18 +81,25 @@ flow rate through the element from `solid` to `fluid`, `Q_flow`.
 `solid`
 `fluid`
 """
-@mtkmodel ConvectiveElement1D begin
-    @components begin
+@component function ConvectiveElement1D(; dT = 0.0, Q_flow = 0.0, name)
+    pars = @parameters begin
+    end
+
+    systems = @named begin
         solid = HeatPort()
         fluid = HeatPort()
     end
-    @variables begin
-        dT(t), [guess = 0.0]
-        Q_flow(t), [guess = 0.0]
+
+    vars = @variables begin
+        dT(t) = dT, [guess = 0.0]
+        Q_flow(t) = Q_flow, [guess = 0.0]
     end
-    @equations begin
-        dT ~ solid.T - fluid.T
-        solid.Q_flow ~ Q_flow
+
+    equations = Equation[
+        dT ~ solid.T - fluid.T,
+        solid.Q_flow ~ Q_flow,
         solid.Q_flow + fluid.Q_flow ~ 0
-    end
+    ]
+
+    return System(equations, t, vars, pars; name, systems)
 end

@@ -7,16 +7,23 @@ Use to close a system that has un-connected `MechanicalPort`'s where the force s
 
   - `flange`: 1-dim. translational flange
 """
-@mtkmodel Free begin
-    @components begin
+@component function Free(; name, f = nothing)
+    pars = @parameters begin
+    end
+
+    systems = @named begin
         flange = MechanicalPort()
     end
-    @variables begin
-        f(t)
+
+    vars = @variables begin
+        f(t) = f
     end
-    @equations begin
+
+    equations = Equation[
         flange.f ~ f
-    end
+    ]
+
+    return System(equations, t, vars, pars; name, systems)
 end
 
 """
@@ -28,13 +35,22 @@ Fixes a flange position (velocity = 0)
 
   - `flange`: 1-dim. translational flange
 """
-@mtkmodel Fixed begin
-    @components begin
+@component function Fixed(; name)
+    pars = @parameters begin
+    end
+
+    systems = @named begin
         flange = MechanicalPort()
     end
-    @equations begin
-        flange.v ~ 0
+
+    vars = @variables begin
     end
+
+    equations = Equation[
+        flange.v ~ 0
+    ]
+
+    return System(equations, t, vars, pars; name, systems)
 end
 
 """
@@ -98,11 +114,11 @@ Linear 1D translational spring
   - `flange_a`: 1-dim. translational flange on one side of spring
   - `flange_b`: 1-dim. translational flange on opposite side of spring
 """
-@component function Spring(; name, k)
+@component function Spring(; name, k = nothing)
     Spring(REL; name, k)
 end # default
 
-@component function Spring(::Val{:relative}; name, k)
+@component function Spring(::Val{:relative}; name, k = nothing)
     pars = @parameters begin
         k = k
     end
@@ -124,7 +140,7 @@ end # default
 end
 
 const ABS = Val(:absolute)
-@component function Spring(::Val{:absolute}; name, k, l = 0)
+@component function Spring(::Val{:absolute}; name, k = nothing, l = 0)
     pars = @parameters begin
         k = k
         l = l
@@ -162,24 +178,27 @@ Linear 1D translational damper
   - `flange_a`: 1-dim. translational flange on one side of damper. Initial value of state `v` is set to 0.0 m/s.
   - `flange_b`: 1-dim. translational flange on opposite side of damper. Initial value of state `v` is set to 0.0 m/s.
 """
-@mtkmodel Damper begin
-    @parameters begin
-        d
-    end
-    @variables begin
-        v(t), [guess = 0]
-        f(t), [guess = 0]
+@component function Damper(; name, d = nothing, v = nothing, f = nothing)
+    pars = @parameters begin
+        d = d
     end
 
-    @components begin
+    systems = @named begin
         flange_a = MechanicalPort()
         flange_b = MechanicalPort()
     end
 
-    @equations begin
-        v ~ flange_a.v - flange_b.v
-        f ~ v * d
-        flange_a.f ~ +f
-        flange_b.f ~ -f
+    vars = @variables begin
+        v(t) = v, [guess = 0]
+        f(t) = f, [guess = 0]
     end
+
+    equations = Equation[
+        v ~ flange_a.v - flange_b.v,
+        f ~ v * d,
+        flange_a.f ~ +f,
+        flange_b.f ~ -f
+    ]
+
+    return System(equations, t, vars, pars; name, systems)
 end

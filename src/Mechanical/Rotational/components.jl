@@ -11,20 +11,27 @@ Flange fixed in housing at a given angle.
 
   - `phi0`: [`rad`] Fixed offset angle of housing
 """
-@mtkmodel Fixed begin
-    @components begin
+@component function Fixed(; phi0 = 0.0, name)
+    pars = @parameters begin
+        phi0 = phi0, [description = "Fixed offset angle of flange"]
+    end
+
+    systems = @named begin
         flange = Flange()
     end
-    @parameters begin
-        phi0 = 0.0, [description = "Fixed offset angle of flange"]
+
+    vars = @variables begin
     end
-    @equations begin
+
+    equations = Equation[
         flange.phi ~ phi0
-    end
+    ]
+
+    return System(equations, t, vars, pars; name, systems)
 end
 
 """
-    Inertia(;name, J, phi = 0.0, w = 0.0, a = 0.0)
+    Inertia(;name, J, phi = nothing, w = nothing, a = nothing)
 
 1D-rotational component with inertia.
 
@@ -43,29 +50,33 @@ end
 
   - `J`: [`kg·m²`] Moment of inertia
 """
-@mtkmodel Inertia begin
-    @parameters begin
-        J, [description = "Moment of inertia"]
+@component function Inertia(; J = nothing, phi = nothing, w = nothing, a = nothing, name)
+    @symcheck J > 0 || throw(ArgumentError("Expected `J` to be positive"))
+
+    pars = @parameters begin
+        J = J, [description = "Moment of inertia"]
     end
-    @components begin
+
+    systems = @named begin
         flange_a = Flange()
         flange_b = Flange()
     end
-    begin
-        @symcheck J > 0 || throw(ArgumentError("Expected `J` to be positive"))
+
+    vars = @variables begin
+        phi(t) = phi, [description = "Absolute rotation angle", guess = 0.0]
+        w(t) = w, [description = "Absolute angular velocity", guess = 0.0]
+        a(t) = a, [description = "Absolute angular acceleration", guess = 0.0]
     end
-    @variables begin
-        phi(t), [description = "Absolute rotation angle", guess = 0.0]
-        w(t), [description = "Absolute angular velocity", guess = 0.0]
-        a(t), [description = "Absolute angular acceleration", guess = 0.0]
-    end
-    @equations begin
-        phi ~ flange_a.phi
-        phi ~ flange_b.phi
-        D(phi) ~ w
-        D(w) ~ a
+
+    equations = Equation[
+        phi ~ flange_a.phi,
+        phi ~ flange_b.phi,
+        D(phi) ~ w,
+        D(w) ~ a,
         J * a ~ flange_a.tau + flange_b.tau
-    end
+    ]
+
+    return System(equations, t, vars, pars; name, systems)
 end
 
 """
@@ -88,18 +99,29 @@ Linear 1D rotational spring
   - `c`: [`N.m/rad`] Spring constant
   - `phi_rel0`: [`rad`] Unstretched spring angle. Defaults to 0.0.
 """
-@mtkmodel Spring begin
-    @extend phi_rel, tau = partial_comp = PartialCompliant()
-    begin
-        @symcheck c > 0 || throw(ArgumentError("Expected `c` to be positive"))
+@component function Spring(; c = nothing, phi_rel0 = 0.0, name)
+    @symcheck c > 0 || throw(ArgumentError("Expected `c` to be positive"))
+
+    @named partial_comp = PartialCompliant()
+    @unpack phi_rel, tau = partial_comp
+
+    pars = @parameters begin
+        c = c, [description = "Spring constant"]
+        phi_rel0 = phi_rel0, [description = "Unstretched spring angle"]
     end
-    @parameters begin
-        c, [description = "Spring constant"]
-        phi_rel0 = 0.0, [description = "Unstretched spring angle"]
+
+    systems = @named begin
     end
-    @equations begin
+
+    vars = @variables begin
+    end
+
+    equations = Equation[
         tau ~ c * (phi_rel - phi_rel0)
-    end
+    ]
+
+    sys = System(equations, t, vars, pars; name, systems)
+    return extend(sys, partial_comp)
 end
 
 """
@@ -123,17 +145,28 @@ Linear 1D rotational damper
 
   - `d`: [`N.m.s/rad`] Damping constant
 """
-@mtkmodel Damper begin
-    @extend w_rel, tau = partial_comp = PartialCompliantWithRelativeStates()
-    begin
-        @symcheck d > 0 || throw(ArgumentError("Expected `d` to be positive"))
+@component function Damper(; d = nothing, name)
+    @symcheck d > 0 || throw(ArgumentError("Expected `d` to be positive"))
+
+    @named partial_comp = PartialCompliantWithRelativeStates()
+    @unpack w_rel, tau = partial_comp
+
+    pars = @parameters begin
+        d = d, [description = "Damping constant"]
     end
-    @parameters begin
-        d, [description = "Damping constant"]
+
+    systems = @named begin
     end
-    @equations begin
+
+    vars = @variables begin
+    end
+
+    equations = Equation[
         tau ~ d * w_rel
-    end
+    ]
+
+    sys = System(equations, t, vars, pars; name, systems)
+    return extend(sys, partial_comp)
 end
 """
     SpringDamper(; name, d)
@@ -158,22 +191,32 @@ Linear 1D rotational spring and damper
   - `c`: [`N.m/rad`] Spring constant
   - `phi_rel0`: [`rad`] Unstretched spring angle. Defaults to 0.0
 """
-@mtkmodel SpringDamper begin
-    @extend phi_rel, w_rel, tau = partial_comp = PartialCompliantWithRelativeStates()
-    @variables begin
-        tau_c(t), [description = "Spring torque"]
-        tau_d(t), [description = "Damper torque"]
+@component function SpringDamper(; d = nothing, c = nothing, phi_rel0 = 0.0, tau_c = nothing, tau_d = nothing, name)
+    @named partial_comp = PartialCompliantWithRelativeStates()
+    @unpack phi_rel, w_rel, tau = partial_comp
+
+    pars = @parameters begin
+        d = d, [description = "Damping constant"]
+        c = c, [description = "Spring constant"]
+        phi_rel0 = phi_rel0, [description = "Unstretched spring angle"]
     end
-    @parameters begin
-        d, [description = "Damping constant"]
-        c, [description = "Spring constant"]
-        phi_rel0 = 0.0, [description = "Unstretched spring angle"]
+
+    systems = @named begin
     end
-    @equations begin
-        tau_c ~ c * (phi_rel - phi_rel0)
-        tau_d ~ d * w_rel
+
+    vars = @variables begin
+        tau_c(t) = tau_c, [description = "Spring torque"]
+        tau_d(t) = tau_d, [description = "Damper torque"]
+    end
+
+    equations = Equation[
+        tau_c ~ c * (phi_rel - phi_rel0),
+        tau_d ~ d * w_rel,
         tau ~ tau_c + tau_d
-    end
+    ]
+
+    sys = System(equations, t, vars, pars; name, systems)
+    return extend(sys, partial_comp)
 end
 
 """
@@ -199,25 +242,31 @@ This element characterizes any type of gear box which is fixed in the ground and
   - `ratio`: Transmission ratio (flange_a.phi/flange_b.phi)
   - `use_support`: If support flange enabled, otherwise implicitly grounded. By default it is `false`
 """
-@mtkmodel IdealGear begin
-    @extend phi_support, flange_a,
-    flange_b = partial_element = PartialElementaryTwoFlangesAndSupport2(;
-        use_support = false)
-    @parameters begin
-        ratio, [description = "Transmission ratio"]
+@component function IdealGear(; ratio = nothing, use_support = false, phi_a = nothing, phi_b = nothing, name)
+    @named partial_element = PartialElementaryTwoFlangesAndSupport2(; use_support)
+    @unpack phi_support, flange_a, flange_b = partial_element
+
+    pars = @parameters begin
+        ratio = ratio, [description = "Transmission ratio"]
     end
-    @variables begin
-        phi_a(t),
-        [description = "Relative angle between shaft a and the support", guess = 0.0]
-        phi_b(t),
-        [description = "Relative angle between shaft b and the support", guess = 0.0]
+
+    systems = @named begin
     end
-    @equations begin
-        phi_a ~ flange_a.phi - phi_support
-        phi_b ~ flange_b.phi - phi_support
-        phi_a ~ ratio * phi_b
+
+    vars = @variables begin
+        phi_a(t) = phi_a, [description = "Relative angle between shaft a and the support", guess = 0.0]
+        phi_b(t) = phi_b, [description = "Relative angle between shaft b and the support", guess = 0.0]
+    end
+
+    equations = Equation[
+        phi_a ~ flange_a.phi - phi_support,
+        phi_b ~ flange_b.phi - phi_support,
+        phi_a ~ ratio * phi_b,
         0 ~ ratio * flange_a.tau + flange_b.tau
-    end
+    ]
+
+    sys = System(equations, t, vars, pars; name, systems)
+    return extend(sys, partial_element)
 end
 
 """
@@ -247,23 +296,33 @@ Friction model: "Armstrong, B. and C.C. de Wit, Friction Modeling and Compensati
   - `w_brk`: [`rad/s`] Breakaway friction velocity
   - `tau_brk`: [`N⋅m`] Breakaway friction torque
 """
-@mtkmodel RotationalFriction begin
-    @extend w_rel, tau = partial_comp = PartialCompliantWithRelativeStates()
-    @parameters begin
-        f, [description = "Viscous friction coefficient"]
-        tau_c, [description = "Coulomb friction torque"]
-        w_brk, [description = "Breakaway friction velocity"]
-        tau_brk, [description = "Breakaway friction torque"]
+@component function RotationalFriction(; f = nothing, tau_c = nothing, w_brk = nothing, tau_brk = nothing, name)
+    @named partial_comp = PartialCompliantWithRelativeStates()
+    @unpack w_rel, tau = partial_comp
+
+    pars = @parameters begin
+        f = f, [description = "Viscous friction coefficient"]
+        tau_c = tau_c, [description = "Coulomb friction torque"]
+        w_brk = w_brk, [description = "Breakaway friction velocity"]
+        tau_brk = tau_brk, [description = "Breakaway friction torque"]
     end
 
-    begin
-        str_scale = sqrt(2 * exp(1)) * (tau_brk - tau_c)
-        w_st = w_brk * sqrt(2)
-        w_coul = w_brk / 10
+    str_scale = sqrt(2 * exp(1)) * (tau_brk - tau_c)
+    w_st = w_brk * sqrt(2)
+    w_coul = w_brk / 10
+
+    systems = @named begin
     end
-    @equations begin
+
+    vars = @variables begin
+    end
+
+    equations = Equation[
         tau ~
         str_scale * (exp(-(w_rel / w_st)^2) * w_rel / w_st) +
-        tau_c * tanh(w_rel / w_coul) + f * w_rel # Stribeck friction + Coulomb friction + Viscous friction
-    end
+        tau_c * tanh(w_rel / w_coul) + f * w_rel  # Stribeck friction + Coulomb friction + Viscous friction
+    ]
+
+    sys = System(equations, t, vars, pars; name, systems)
+    return extend(sys, partial_comp)
 end

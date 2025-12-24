@@ -1,4 +1,5 @@
 using ModelingToolkitStandardLibrary.Thermal, ModelingToolkit, OrdinaryDiffEq, Test
+using SciCompDSL
 using ModelingToolkit: t_nounits as t, D_nounits as D
 using ModelingToolkitStandardLibrary.Blocks: Constant, Step
 using OrdinaryDiffEq: ReturnCode.Success
@@ -41,9 +42,7 @@ using OrdinaryDiffEq: ReturnCode.Success
         systems = [mass1, mass2, T_sensor1, T_sensor2, th_conductor])
     sys = mtkcompile(h2)
 
-    u0 = [mass1.T => 1.0
-          mass2.T => 10.0]
-    prob = ODEProblem(sys, u0, (0, 3.0))
+    prob = ODEProblem(sys, [], (0, 3.0))
     sol = solve(prob, Tsit5())
 
     @test SciMLBase.successful_retcode(sol)
@@ -75,7 +74,7 @@ end
             th_resistor, flow_src, th_ground, th_conductor])
     sys = mtkcompile(h2)
 
-    u0 = [mass1.T => 10.0]
+    u0 = [mass1.T => 10.0, th_conductor.dT => nothing, th_conductor.Q_flow => nothing, th_resistor.Q_flow => nothing, th_resistor.dT => nothing]
     prob = ODEProblem(sys, u0, (0, 3.0))
     sol = solve(prob, Tsit5())
 
@@ -134,8 +133,8 @@ end
     @named mass = HeatCapacitor(C = 10)
 
     @info "Building a heat collector..."
-    eqs = [connect(flow_src.port, collector.port_a1, th_resistor.port_a)
-           connect(tem_src.port, collector.port_a2)
+    eqs = [connect(flow_src.port, collector.port_a_1, th_resistor.port_a)
+           connect(tem_src.port, collector.port_a_2)
            connect(hf_sensor.port_a, collector.port_b)
            connect(hf_sensor.port_b, mass.port, th_resistor.port_b)]
     @named coll = System(eqs, t,
@@ -143,14 +142,14 @@ end
             collector, th_resistor, mass])
     sys = mtkcompile(coll)
 
-    prob = ODEProblem(sys, [], (0, 3.0))
+    prob = ODEProblem(sys, [mass.T => nothing, th_resistor.Q_flow => nothing, th_resistor.dT => nothing], (0, 3.0))
     sol = solve(prob, Rodas4())
 
     @test SciMLBase.successful_retcode(sol)
-    @test sol[collector.port_b.Q_flow] + sol[collector.port_a1.Q_flow] +
-          sol[collector.port_a2.Q_flow] ==
+    @test sol[collector.port_b.Q_flow] + sol[collector.port_a_1.Q_flow] +
+          sol[collector.port_a_2.Q_flow] ==
           zeros(length(sol[collector.port_b.Q_flow]))
-    @test sol[collector.port_b.T] == sol[collector.port_a1.T] == sol[collector.port_a2.T]
+    @test sol[collector.port_b.T] == sol[collector.port_a_1.T] == sol[collector.port_a_2.T]
 end
 
 @testset "FixedHeatFlow with alpha=0.0 test" begin
@@ -168,8 +167,8 @@ end
     end
 
     @info "Building a FixedHeatFlow with alpha=0.0"
-    @mtkcompile test_model = TestModel()
-    prob = ODEProblem(test_model, Pair[], (0, 10.0))
+    @mtkcompile test_model = TestModel() allow_parameter = false
+    prob = ODEProblem(test_model, [test_model.wall.Q_flow => nothing, test_model.wall.dT => nothing], (0, 10.0); guesses = [test_model.heatflow.port.T => 1.0])
     sol = solve(prob)
 
     heat_flow = sol[test_model.heatflow.port.Q_flow]
