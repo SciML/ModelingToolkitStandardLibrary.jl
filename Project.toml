@@ -1,6 +1,6 @@
 name = "ModelingToolkitStandardLibrary"
 uuid = "16a59e39-deab-5bd0-87e4-056b12336739"
-version = "2.25.0"
+version = "2.26.0"
 authors = ["Chris Rackauckas and Julia Computing"]
 
 [deps]
