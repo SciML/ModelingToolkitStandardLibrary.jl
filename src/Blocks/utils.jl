@@ -15,9 +15,8 @@
             input = true,
             description = "Inner variable in RealInput $name"
         ]
-        u = collect(u)
     end
-    System(Equation[], t, [u;], []; name = name, guesses = [(u .=> guess);])
+    System(Equation[], t, [u;], []; name = name, guesses = [u => guess])
 end
 @doc """
     RealInput(;name, guess)
@@ -73,9 +72,8 @@ Connector with an array of input signals of type Real.
             output = true,
             description = "Inner variable in RealOutput $name"
         ]
-        u = collect(u)
     end
-    System(Equation[], t, [u;], []; name = name, guesses = [(u .=> guess);])
+    System(Equation[], t, [u;], []; name = name, guesses = [u => guess])
 end
 @doc """
     RealOutput(;name, guess)
@@ -124,23 +122,28 @@ Single input single output (SISO) continuous system block.
   - `u_start`: Initial value for the input
   - `y_start`: Initial value for the output
 """
-@mtkmodel SISO begin
-    @parameters begin
-        u_start = 0.0
-        y_start = 0.0
+@component function SISO(; name, u_start = 0.0, y_start = 0.0, u = nothing, y = nothing)
+    pars = @parameters begin
+        u_start = u_start
+        y_start = y_start
     end
-    @variables begin
-        u(t), [guess = u_start, description = "Input of SISO system"]
-        y(t), [guess = y_start, description = "Output of SISO system"]
-    end
-    @components begin
+
+    systems = @named begin
         input = RealInput(guess = u_start)
         output = RealOutput(guess = y_start)
     end
-    @equations begin
-        u ~ input.u
-        y ~ output.u
+
+    vars = @variables begin
+        u(t) = u, [guess = u_start, description = "Input of SISO system"]
+        y(t) = y, [guess = y_start, description = "Output of SISO system"]
     end
+
+    equations = Equation[
+        u ~ input.u,
+        y ~ output.u
+    ]
+
+    return System(equations, t, vars, pars; name, systems)
 end
 
 """

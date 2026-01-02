@@ -7,22 +7,27 @@ Parameters:
 
   - `V_m`: [A] Magnetic potential difference
 """
-@mtkmodel ConstantMagneticPotentialDifference begin
-    @components begin
+@component function ConstantMagneticPotentialDifference(; name, V_m = 0.0, Phi = nothing)
+    pars = @parameters begin
+        V_m = V_m, [description = "Magnetic potential difference"]
+    end
+
+    systems = @named begin
         port_p = PositiveMagneticPort()
         port_n = NegativeMagneticPort()
     end
-    @parameters begin
-        V_m = 0.0, [description = "Magnetic potential difference"]
+
+    vars = @variables begin
+        Phi(t) = Phi
     end
-    @variables begin
-        Phi(t)
-    end
-    @equations begin
-        V_m ~ port_p.V_m - port_n.V_m
-        Phi ~ port_p.Phi
+
+    equations = Equation[
+        V_m ~ port_p.V_m - port_n.V_m,
+        Phi ~ port_p.Phi,
         0 ~ port_p.Phi + port_n.Phi
-    end
+    ]
+
+    return System(equations, t, vars, pars; name, systems)
 end
 
 """
@@ -34,20 +39,25 @@ Parameters:
 
   - `Phi`: [Wb] Magnetic flux
 """
-@mtkmodel ConstantMagneticFlux begin
-    @components begin
+@component function ConstantMagneticFlux(; name, Phi = 0.0, V_m = nothing)
+    pars = @parameters begin
+        Phi = Phi, [description = "Magnetic flux"]
+    end
+
+    systems = @named begin
         port_p = PositiveMagneticPort()
         port_n = NegativeMagneticPort()
     end
-    @parameters begin
-        Phi = 0.0, [description = "Magnetic flux"]
+
+    vars = @variables begin
+        V_m(t) = V_m
     end
-    @variables begin
-        V_m(t)
-    end
-    @equations begin
-        V_m ~ port_p.V_m - port_n.V_m
-        Phi ~ port_p.Phi
+
+    equations = Equation[
+        V_m ~ port_p.V_m - port_n.V_m,
+        Phi ~ port_p.Phi,
         0 ~ port_p.Phi + port_n.Phi
-    end
+    ]
+
+    return System(equations, t, vars, pars; name, systems)
 end

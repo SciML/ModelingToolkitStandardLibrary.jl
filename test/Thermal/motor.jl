@@ -1,4 +1,5 @@
 using ModelingToolkit, Test
+using SciCompDSL
 using ModelingToolkitStandardLibrary.Thermal
 using ModelingToolkitStandardLibrary.Blocks
 

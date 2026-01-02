@@ -1,6 +1,9 @@
-@connector Flange begin
-    s(t)
-    f(t), [connect = Flow]
+@connector function Flange(; name, s = nothing, f = nothing)
+    vars = @variables begin
+        s(t) = s
+        f(t) = f, [connect = Flow]
+    end
+    System(Equation[], t, vars, []; name)
 end
 Base.@doc """
     Flange(;name)
@@ -12,9 +15,12 @@ Base.@doc """
 - `f`: [N] Cut force into the flange
 """ Flange
 
-@connector Support begin
-    s(t)
-    f(t), [connect = Flow]
+@connector function Support(; name, s = nothing, f = nothing)
+    vars = @variables begin
+        s(t) = s
+        f(t) = f, [connect = Flow]
+    end
+    System(Equation[], t, vars, []; name)
 end
 Base.@doc """
     Support(;name)
@@ -26,11 +32,21 @@ Support/housing 1-dim. translational flange.
 - `f`: [N] Cut force into the flange
 """ Support
 
-@mtkmodel PartialTwoFlanges begin
-    @components begin
-        flange_a = Flange() # (left) driving flange (flange axis directed into cut plane, e. g. from left to right)
-        flange_b = Flange() # (right) driven flange (flange axis directed out of cut plane)
+@component function PartialTwoFlanges(; name)
+    pars = @parameters begin
     end
+
+    systems = @named begin
+        flange_a = Flange()
+        flange_b = Flange()
+    end
+
+    vars = @variables begin
+    end
+
+    equations = Equation[]
+
+    return System(equations, t, vars, pars; name, systems)
 end
 
 """
@@ -43,18 +59,29 @@ Partial model for the compliant connection of two translational 1-dim. flanges.
   - `s_rel`: [m] Relative distance (= flange_b.s - flange_a.s). It accepts an initial value, which defaults to 0.0.
   - `f`: [N] Force between flanges (= flange_b.f). It accepts an initial value, which defaults to 0.0.
 """
-@mtkmodel PartialCompliant begin
-    @extend (flange_a, flange_b) = pt = PartialTwoFlanges()
-    @variables begin
-        s_rel(t), [description = "Relative distance between flanges", guess = 0.0]
-        f(t), [description = "Force between flanges", guess = 0.0]
+@component function PartialCompliant(; name, s_rel = nothing, f = nothing)
+    @named pt = PartialTwoFlanges()
+    @unpack flange_a, flange_b = pt
+
+    pars = @parameters begin
     end
 
-    @equations begin
-        s_rel ~ flange_b.s - flange_a.s
-        flange_b.f ~ +f
-        flange_a.f ~ -f
+    systems = @named begin
     end
+
+    vars = @variables begin
+        s_rel(t) = s_rel, [description = "Relative distance between flanges", guess = 0.0]
+        f(t) = f, [description = "Force between flanges", guess = 0.0]
+    end
+
+    equations = Equation[
+        s_rel ~ flange_b.s - flange_a.s,
+        flange_b.f ~ +f,
+        flange_a.f ~ -f
+    ]
+
+    sys = System(equations, t, vars, pars; name, systems)
+    return extend(sys, pt)
 end
 
 """
@@ -68,20 +95,31 @@ Partial model for the compliant connection of two translational 1-dim. flanges.
   - `v_rel`: [m/s] Relative linear velocity (= der(s_rel)). It accepts an initial value, which defaults to 0.0.
   - `f`: [N] Force between flanges (= flange_b.f). It accepts an initial value, which defaults to 0.0.
 """
-@mtkmodel PartialCompliantWithRelativeStates begin
-    @extend flange_a, flange_b = pt = PartialTwoFlanges()
-    @variables begin
-        s_rel(t), [description = "Relative distance between flanges"]
-        v_rel(t), [description = "Relative linear velocity))"]
-        f(t), [description = "Forces between flanges"]
+@component function PartialCompliantWithRelativeStates(; name, s_rel = nothing, v_rel = nothing, f = nothing)
+    @named pt = PartialTwoFlanges()
+    @unpack flange_a, flange_b = pt
+
+    pars = @parameters begin
     end
 
-    @equations begin
-        s_rel ~ flange_b.s - flange_a.s
-        v_rel ~ D(s_rel)
-        flange_b.f ~ f
-        flange_a.f ~ -f
+    systems = @named begin
     end
+
+    vars = @variables begin
+        s_rel(t) = s_rel, [description = "Relative distance between flanges"]
+        v_rel(t) = v_rel, [description = "Relative linear velocity))"]
+        f(t) = f, [description = "Forces between flanges"]
+    end
+
+    equations = Equation[
+        s_rel ~ flange_b.s - flange_a.s,
+        v_rel ~ D(s_rel),
+        flange_b.f ~ f,
+        flange_a.f ~ -f
+    ]
+
+    sys = System(equations, t, vars, pars; name, systems)
+    return extend(sys, pt)
 end
 
 """
@@ -146,16 +184,26 @@ function PartialElementaryTwoFlangesAndSupport2(; name, use_support = false)
     end
 end
 
-@mtkmodel PartialRigid begin
-    @extend flange_a, flange_b = ptf = PartialTwoFlanges()
-    @variables begin
-        s(t), [description = "Absolute position of center of component"]
+@component function PartialRigid(; name, L = 0.0, s = nothing)
+    @named ptf = PartialTwoFlanges()
+    @unpack flange_a, flange_b = ptf
+
+    pars = @parameters begin
+        L = L, [description = "Length of component, from left flange to right flange"]
     end
-    @parameters begin
-        L = 0.0, [description = "Length of component, from left flange to right flange"]
+
+    systems = @named begin
     end
-    @equations begin
-        flange_a.s ~ s - L / 2
+
+    vars = @variables begin
+        s(t) = s, [description = "Absolute position of center of component"]
+    end
+
+    equations = Equation[
+        flange_a.s ~ s - L / 2,
         flange_b.s ~ s + L / 2
-    end
+    ]
+
+    sys = System(equations, t, vars, pars; name, systems)
+    return extend(sys, ptf)
 end

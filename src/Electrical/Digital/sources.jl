@@ -16,12 +16,12 @@ PulseDiff(; name, Val = 1, dt = 0.1)
 function PulseDiff(; name, Val = 1, dt = 0.1)
     @named d = DigitalPin()
     @variables val(t)
-    D = ModelingToolkit.Difference(t; dt = dt)
+    D = ModelingToolkitBase.Difference(t; dt = dt)
 
     eqs = [D(val) ~ Val
            val ~ d.val]
 
-    System(eqs, t, [val], [], systems = [d], defaults = Dict(Val => 0), name = name)
+    System(eqs, t, [val], [], systems = [d], initial_conditions = Dict(Val => 0), name = name)
 end
 
 """

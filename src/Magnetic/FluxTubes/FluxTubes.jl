@@ -1,6 +1,6 @@
 module FluxTubes
-using ModelingToolkit
-using ModelingToolkit: t_nounits as t, D_nounits as D
+using ModelingToolkitBase
+using ModelingToolkitBase: t_nounits as t, D_nounits as D
 using ...Electrical: Pin
 
 export PositiveMagneticPort, NegativeMagneticPort, TwoPort

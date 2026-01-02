@@ -8,13 +8,22 @@ node.
 
   - `g`
 """
-@mtkmodel Ground begin
-    @components begin
+@component function Ground(; name)
+    pars = @parameters begin
+    end
+
+    systems = @named begin
         g = Pin()
     end
-    @equations begin
-        g.v ~ 0
+
+    vars = @variables begin
     end
+
+    equations = Equation[
+        g.v ~ 0
+    ]
+
+    return System(equations, t, vars, pars; name, systems)
 end
 
 """
@@ -40,36 +49,48 @@ Generic resistor with optional temperature dependency.
   - `alpha`: [K⁻¹] Temperature coefficient of resistance
   - `T_dep`: [bool] Temperature dependency
 """
-@mtkmodel Resistor begin
-    @extend v, i = oneport = OnePort()
+@component function Resistor(; T_dep = false, R = 1.0, T_ref = 300.15, alpha = 0.0, name)
+    @named oneport = OnePort()
+    @unpack v, i = oneport
 
-    @structural_parameters begin
-        T_dep = false
+    pars = @parameters begin
+        R = R, [description = "Reference resistance"]
+        T_ref = T_ref, [description = "Reference temperature"]
+        alpha = alpha, [description = "Temperature coefficient of resistance"]
     end
 
-    @parameters begin
-        R = 1.0, [description = "Reference resistance"]
-        T_ref = 300.15, [description = "Reference temperature"]
-        alpha = 0.0, [description = "Temperature coefficient of resistance"]
-    end
-
-    if T_dep
-        @components begin
+    systems = if T_dep
+        @named begin
             heat_port = HeatPort()
         end
+    else
+        @named begin
+        end
+    end
+
+    vars = if T_dep
         @variables begin
             R_T(t), [description = "Temperature-dependent resistance"]
         end
-        @equations begin
-            R_T ~ R * (1 + alpha * (heat_port.T - T_ref))  # Temperature-dependent resistance
-            heat_port.Q_flow ~ -v * i  # -LossPower
-            v ~ i * R_T  # Ohm's Law
-        end
     else
-        @equations begin
-            v ~ i * R  # Ohm's Law for constant resistance
+        @variables begin
         end
     end
+
+    equations = if T_dep
+        Equation[
+            R_T ~ R * (1 + alpha * (heat_port.T - T_ref)),
+            heat_port.Q_flow ~ -v * i,
+            v ~ i * R_T
+        ]
+    else
+        Equation[
+            v ~ i * R
+        ]
+    end
+
+    sys = System(equations, t, vars, pars; name, systems)
+    return extend(sys, oneport)
 end
 
 """
@@ -90,14 +111,26 @@ See [OnePort](@ref)
 
   - `G`: [`S`] Conductance
 """
-@mtkmodel Conductor begin
-    @extend v, i = oneport = OnePort()
-    @parameters begin
-        G, [description = "Conductance"]
+@component function Conductor(; G = nothing, name)
+    @named oneport = OnePort()
+    @unpack v, i = oneport
+
+    pars = @parameters begin
+        G = G, [description = "Conductance"]
     end
-    @equations begin
+
+    systems = @named begin
+    end
+
+    vars = @variables begin
+    end
+
+    equations = Equation[
         i ~ v * G
-    end
+    ]
+
+    sys = System(equations, t, vars, pars; name, systems)
+    return extend(sys, oneport)
 end
 
 """
@@ -119,14 +152,26 @@ See [OnePort](@ref)
 
   - `C`: [`F`] Capacitance
 """
-@mtkmodel Capacitor begin
-    @parameters begin
-        C, [description = "Capacitance"]
+@component function Capacitor(; C = nothing, v = nothing, name)
+    @named oneport = OnePort(; v)
+    @unpack v, i = oneport
+
+    pars = @parameters begin
+        C = C, [description = "Capacitance"]
     end
-    @extend v, i = oneport = OnePort(; v)
-    @equations begin
+
+    systems = @named begin
+    end
+
+    vars = @variables begin
+    end
+
+    equations = Equation[
         D(v) ~ i / C
-    end
+    ]
+
+    sys = System(equations, t, vars, pars; name, systems)
+    return extend(sys, oneport)
 end
 
 """
@@ -148,14 +193,26 @@ See [OnePort](@ref)
 
   - `L`: [`H`] Inductance
 """
-@mtkmodel Inductor begin
-    @parameters begin
-        L, [description = "Inductance"]
+@component function Inductor(; L = nothing, i = nothing, name)
+    @named oneport = OnePort(; i)
+    @unpack v, i = oneport
+
+    pars = @parameters begin
+        L = L, [description = "Inductance"]
     end
-    @extend v, i = oneport = OnePort(; i)
-    @equations begin
+
+    systems = @named begin
+    end
+
+    vars = @variables begin
+    end
+
+    equations = Equation[
         D(i) ~ 1 / L * v
-    end
+    ]
+
+    sys = System(equations, t, vars, pars; name, systems)
+    return extend(sys, oneport)
 end
 
 """
@@ -176,12 +233,26 @@ See [TwoPort](@ref)
   - `n1` Negative pin (left port)
   - `n2` Negative pin (right port)
 """
-@mtkmodel IdealOpAmp begin
-    @extend v1, v2, i1, i2 = twoport = TwoPort()
-    @equations begin
-        v1 ~ 0
-        i1 ~ 0
+@component function IdealOpAmp(; name)
+    @named twoport = TwoPort()
+    @unpack v1, v2, i1, i2 = twoport
+
+    pars = @parameters begin
     end
+
+    systems = @named begin
+    end
+
+    vars = @variables begin
+    end
+
+    equations = Equation[
+        v1 ~ 0,
+        i1 ~ 0
+    ]
+
+    sys = System(equations, t, vars, pars; name, systems)
+    return extend(sys, twoport)
 end
 
 """
@@ -198,11 +269,25 @@ See [OnePort](@ref)
   - `p` Positive pin
   - `n` Negative pin
 """
-@mtkmodel Short begin
-    @extend v, i = oneport = OnePort()
-    @equations begin
-        v ~ 0
+@component function Short(; name)
+    @named oneport = OnePort()
+    @unpack v, i = oneport
+
+    pars = @parameters begin
     end
+
+    systems = @named begin
+    end
+
+    vars = @variables begin
+    end
+
+    equations = Equation[
+        v ~ 0
+    ]
+
+    sys = System(equations, t, vars, pars; name, systems)
+    return extend(sys, oneport)
 end
 
 """
@@ -228,25 +313,34 @@ Electromotoric force (electric/mechanic transformer)
 
   - `k`: [`N⋅m/A`] Transformation coefficient
 """
-@mtkmodel EMF begin
-    @parameters begin
-        k, [description = "Transformation coefficient"]
+@component function EMF(; k = nothing, name)
+    @named oneport = OnePort()
+    @unpack v, i = oneport
+
+    pars = @parameters begin
+        k = k, [description = "Transformation coefficient"]
     end
-    @variables begin
-        phi(t), [guess = 0.0, description = "Rotation Angle"]
-        w(t), [guess = 0.0]
-    end
-    @extend v, i = oneport = OnePort()
-    @components begin
+
+    systems = @named begin
         flange = Flange()
         support = Support()
     end
-    @equations begin
-        phi ~ flange.phi - support.phi
-        D(phi) ~ w
-        k * w ~ v
-        flange.tau ~ -k * i
+
+    vars = @variables begin
+        phi(t), [guess = 0.0, description = "Rotation Angle"]
+        w(t), [guess = 0.0]
     end
+
+    equations = Equation[
+        phi ~ flange.phi - support.phi,
+        D(phi) ~ w,
+        k * w ~ v,
+        flange.tau ~ -k * i,
+        support.tau ~ -flange.tau
+    ]
+
+    sys = System(equations, t, vars, pars; name, systems)
+    return extend(sys, oneport)
 end
 
 """
@@ -271,40 +365,54 @@ Generic diode with optional temperature dependency.
     - `T`: [K] Constant ambient temperature - only used if T_dep=false
     - `T_dep`: [bool] Temperature dependency
 """
-@mtkmodel Diode begin
-    @constants begin
+@component function Diode(; T_dep = false, Is = 1e-6, n = 1, T = 300.15, v = 0.0, name)
+    consts = @constants begin
         k = 1.380649e-23 # Boltzmann constant (J/K)
         q = 1.602176634e-19 # Elementary charge (C)
     end
-    @extend v, i = oneport = OnePort(; v = 0.0)
 
-    @structural_parameters begin
-        T_dep = false
+    @named oneport = OnePort(; v)
+    @unpack v, i = oneport
+
+    pars = @parameters begin
+        Is = Is, [description = "Saturation current (A)"]
+        n = n, [description = "Ideality factor"]
+        T = T, [description = "Ambient temperature"]
     end
+    pars = [pars; consts]
 
-    @parameters begin
-        Is = 1e-6, [description = "Saturation current (A)"]
-        n = 1, [description = "Ideality factor"]
-        T = 300.15, [description = "Ambient temperature"]
-    end
-
-    if T_dep
-        @components begin
+    systems = if T_dep
+        @named begin
             port = HeatPort()
         end
+    else
+        @named begin
+        end
+    end
+
+    vars = if T_dep
         @variables begin
             Vt(t), [description = "Thermal voltage"]
         end
-        @equations begin
-            Vt ~ k * port.T / q  # Thermal voltage equation
-            i ~ Is * (exp(v / (n * Vt)) - 1)  # Shockley diode equation with temperature dependence
-            port.Q_flow ~ -v * i  # -LossPower
-        end
     else
-        @equations begin
-            i ~ Is * (exp(v * q / (n * k * T)) - 1)  # Shockley diode equation
+        @variables begin
         end
     end
+
+    equations = if T_dep
+        Equation[
+            Vt ~ k * port.T / q,  # Thermal voltage equation
+            i ~ Is * (exp(v / (n * Vt)) - 1),  # Shockley diode equation with temperature dependence
+            port.Q_flow ~ -v * i  # -LossPower
+        ]
+    else
+        Equation[
+            i ~ Is * (exp(v * q / (n * k * T)) - 1)  # Shockley diode equation
+        ]
+    end
+
+    sys = System(equations, t, vars, pars; name, systems)
+    return extend(sys, oneport)
 end
 
 """
@@ -345,49 +453,58 @@ R = R_const + pos * R_ref * (1 + alpha * (port.T - T_ref))
         - `alpha`: [K⁻¹] Temperature coefficient of resistance
         - `enforce_bounds`: Enforce bounds for the position of the wiper (0-1)
 """
-@mtkmodel VariableResistor begin
-    @extend v, i = oneport = OnePort()
+@component function VariableResistor(; T_dep = false, enforce_bounds = true, R_ref = 1.0, T_ref = 300.15, R_const = 1e-3, alpha = 1e-3, name)
+    @named oneport = OnePort()
+    @unpack v, i = oneport
 
-    @structural_parameters begin
-        T_dep = false
-        enforce_bounds = true
+    pars = if T_dep
+        @parameters begin
+            R_ref = R_ref, [description = "Resistance at temperature T_ref when fully closed (pos=1.0) (Ω)"]
+            T_ref = T_ref, [description = "Reference temperature (K)"]
+            R_const = R_const, [description = "Constant resistance between p and n (Ω)"]
+            alpha = alpha, [description = "Temperature coefficient of resistance (K^-1)"]
+        end
+    else
+        @parameters begin
+            R_ref = R_ref, [description = "Resistance at temperature T_ref when fully closed (pos=1.0) (Ω)"]
+            T_ref = T_ref, [description = "Reference temperature (K)"]
+            R_const = R_const, [description = "Constant resistance between p and n (Ω)"]
+        end
     end
 
-    @parameters begin
-        R_ref = 1.0,
-        [description = "Resistance at temperature T_ref when fully closed (pos=1.0) (Ω)"]
-        T_ref = 300.15, [description = "Reference temperature (K)"]
-        R_const = 1e-3, [description = "Constant resistance between p and n (Ω)"]
+    systems = if T_dep
+        @named begin
+            position = RealInput()
+            port = HeatPort()
+        end
+    else
+        @named begin
+            position = RealInput()
+        end
     end
 
-    @components begin
-        position = RealInput()
-    end
-
-    @variables begin
+    vars = @variables begin
         pos(t), [description = "Position of the wiper (normally 0-1)"]
         R(t), [description = "Resistance (Ω)"]
     end
 
-    if T_dep
-        @parameters begin
-            alpha = 1e-3, [description = "Temperature coefficient of resistance (K^-1)"]
-        end
-        @components begin
-            port = HeatPort()
-        end
-        @equations begin
-            port.Q_flow ~ -v * i  # -LossPower
+    conditional_eqs = if T_dep
+        Equation[
+            port.Q_flow ~ -v * i,  # -LossPower
             R ~ R_const + pos * R_ref * (1 + alpha * (port.T - T_ref))
-        end
+        ]
     else
-        @equations begin
+        Equation[
             R ~ R_const + pos * R_ref
-        end
+        ]
     end
 
-    @equations begin
+    equations = [
+        conditional_eqs...
         pos ~ (enforce_bounds ? clamp(position.u, 0, 1) : position.u)
         v ~ i * R
-    end
+    ]
+
+    sys = System(equations, t, vars, pars; name, systems)
+    return extend(sys, oneport)
 end

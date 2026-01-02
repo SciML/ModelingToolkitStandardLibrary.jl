@@ -1,6 +1,9 @@
-@connector Flange begin
-    phi(t), [description = "Rotation angle of flange"]
-    tau(t), [connect = Flow, description = "Cut torque in flange"]
+@connector function Flange(; name, phi = nothing, tau = nothing)
+    vars = @variables begin
+        phi(t) = phi, [description = "Rotation angle of flange"]
+        tau(t) = tau, [connect = Flow, description = "Cut torque in flange"]
+    end
+    System(Equation[], t, vars, []; name)
 end
 
 Base.@doc """
@@ -13,9 +16,12 @@ Base.@doc """
 - `tau(t)`: [`N.m`] Cut torque in the flange
 """ Flange
 
-@connector Support begin
-    phi(t), [description = "Rotation angle of flange"]
-    tau(t), [connect = Flow, description = "Cut torque in flange"]
+@connector function Support(; name, phi = nothing, tau = nothing)
+    vars = @variables begin
+        phi(t) = phi, [description = "Rotation angle of flange"]
+        tau(t) = tau, [connect = Flow, description = "Cut torque in flange"]
+    end
+    System(Equation[], t, vars, []; name)
 end
 
 # Base.@doc """
@@ -65,20 +71,27 @@ Partial model for the compliant connection of two rotational 1-dim. shaft flange
   - `flange_b` [Flange](@ref)
 
 """
-@mtkmodel PartialCompliant begin
-    @components begin
+@component function PartialCompliant(; name, phi_rel = nothing, tau = nothing)
+    pars = @parameters begin
+    end
+
+    systems = @named begin
         flange_a = Flange()
         flange_b = Flange()
     end
-    @variables begin
-        phi_rel(t), [description = "Relative rotation angle between flanges", guess = 0.0]
-        tau(t), [description = "Torque between flanges", guess = 0.0]
+
+    vars = @variables begin
+        phi_rel(t) = phi_rel, [description = "Relative rotation angle between flanges", guess = 0.0]
+        tau(t) = tau, [description = "Torque between flanges", guess = 0.0]
     end
-    @equations begin
-        phi_rel ~ flange_b.phi - flange_a.phi
-        flange_b.tau ~ tau
+
+    equations = Equation[
+        phi_rel ~ flange_b.phi - flange_a.phi,
+        flange_b.tau ~ tau,
         flange_a.tau ~ -tau
-    end
+    ]
+
+    return System(equations, t, vars, pars; name, systems)
 end
 
 """
@@ -98,25 +111,32 @@ Partial model for the compliant connection of two rotational 1-dim. shaft flange
   - `flange_a` [Flange](@ref)
   - `flange_b` [Flange](@ref)
 """
-@mtkmodel PartialCompliantWithRelativeStates begin
-    @components begin
+@component function PartialCompliantWithRelativeStates(; name, phi_rel = nothing, w_rel = nothing, a_rel = nothing, tau = nothing)
+    pars = @parameters begin
+    end
+
+    systems = @named begin
         flange_a = Flange()
         flange_b = Flange()
     end
-    @variables begin
-        phi_rel(t), [description = "Relative rotation angle between flanges", guess = 0.0]
-        w_rel(t), [description = "Relative angular velocity between flanges", guess = 0.0]
-        a_rel(t),
+
+    vars = @variables begin
+        phi_rel(t) = phi_rel, [description = "Relative rotation angle between flanges", guess = 0.0]
+        w_rel(t) = w_rel, [description = "Relative angular velocity between flanges", guess = 0.0]
+        a_rel(t) = a_rel,
         [description = "Relative angular acceleration between flanges", guess = 0.0]
-        tau(t), [description = "Torque between flanges", guess = 0.0]
+        tau(t) = tau, [description = "Torque between flanges", guess = 0.0]
     end
-    @equations begin
-        phi_rel ~ flange_b.phi - flange_a.phi
-        D(phi_rel) ~ w_rel
-        D(w_rel) ~ a_rel
-        flange_b.tau ~ tau
+
+    equations = Equation[
+        phi_rel ~ flange_b.phi - flange_a.phi,
+        D(phi_rel) ~ w_rel,
+        D(w_rel) ~ a_rel,
+        flange_b.tau ~ tau,
         flange_a.tau ~ -tau
-    end
+    ]
+
+    return System(equations, t, vars, pars; name, systems)
 end
 
 """

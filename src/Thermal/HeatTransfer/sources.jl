@@ -17,21 +17,27 @@ the component FixedHeatFlow is connected, if parameter `Q_flow` is positive.
   - `T_ref`: [K] Reference temperature
   - `alpha`: [1/K] Temperature coefficient of heat flow rate
 """
-@mtkmodel FixedHeatFlow begin
-    @parameters begin
-        Q_flow = 1.0, [description = "Fixed heat flow rate at port"]
-        T_ref = 293.15, [description = "Reference temperature"]
-        alpha = 0.0, [description = "Temperature coefficient of heat flow rate"]
+@component function FixedHeatFlow(; Q_flow = 1.0, T_ref = 293.15, alpha = 0.0, name)
+    pars = @parameters begin
+        Q_flow = Q_flow, [description = "Fixed heat flow rate at port"]
+        T_ref = T_ref, [description = "Reference temperature"]
+        alpha = alpha, [description = "Temperature coefficient of heat flow rate"]
     end
-    @components begin
+
+    systems = @named begin
         port = HeatPort()
     end
 
-    @equations begin
+    vars = @variables begin
+    end
+
+    equations = Equation[
         port.Q_flow ~ ifelse(alpha == 0.0,
             -Q_flow,  # Simplified equation when alpha is 0
             -Q_flow * (1 + alpha * (port.T - T_ref)))
-    end
+    ]
+
+    return System(equations, t, vars, pars; name, systems)
 end
 
 """
@@ -49,16 +55,23 @@ This model defines a fixed temperature `T` at its port in kelvin, i.e., it defin
 
   - `T`: [K] Fixed temperature boundary condition
 """
-@mtkmodel FixedTemperature begin
-    @components begin
+@component function FixedTemperature(; T = nothing, name)
+    pars = @parameters begin
+        T = T, [description = "Fixed temperature boundary condition"]
+    end
+
+    systems = @named begin
         port = HeatPort()
     end
-    @parameters begin
-        T, [description = "Fixed temperature boundary condition"]
+
+    vars = @variables begin
     end
-    @equations begin
+
+    equations = Equation[
         port.T ~ T
-    end
+    ]
+
+    return System(equations, t, vars, pars; name, systems)
 end
 
 """
@@ -82,18 +95,25 @@ dependent losses (which are given a reference temperature T_ref).
   - `T_ref`: [K] Reference temperature
   - `alpha`: [1/K] Temperature coefficient of heat flow rate
 """
-@mtkmodel PrescribedHeatFlow begin
-    @parameters begin
-        T_ref = 293.15, [description = "Reference temperature"]
-        alpha = 0.0, [description = "Temperature coefficient of heat flow rate"]
+@component function PrescribedHeatFlow(; T_ref = 293.15, alpha = 0.0, name)
+    pars = @parameters begin
+        T_ref = T_ref, [description = "Reference temperature"]
+        alpha = alpha, [description = "Temperature coefficient of heat flow rate"]
     end
-    @components begin
+
+    systems = @named begin
         port = HeatPort()
         Q_flow = RealInput()
     end
-    @equations begin
-        port.Q_flow ~ -Q_flow.u * (1 + alpha * (port.T - T_ref))
+
+    vars = @variables begin
     end
+
+    equations = Equation[
+        port.Q_flow ~ -Q_flow.u * (1 + alpha * (port.T - T_ref))
+    ]
+
+    return System(equations, t, vars, pars; name, systems)
 end
 
 """
@@ -110,12 +130,21 @@ the temperature at the specified value.
   - `port`
   - `RealInput` `T` input for the temperature
 """
-@mtkmodel PrescribedTemperature begin
-    @components begin
+@component function PrescribedTemperature(; name)
+    pars = @parameters begin
+    end
+
+    systems = @named begin
         port = HeatPort()
         T = RealInput()
     end
-    @equations begin
-        port.T ~ T.u
+
+    vars = @variables begin
     end
+
+    equations = Equation[
+        port.T ~ T.u
+    ]
+
+    return System(equations, t, vars, pars; name, systems)
 end
