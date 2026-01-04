@@ -15,10 +15,12 @@ using Test
 # @named m1 = Mass(;m=0.5)
 # @named m2 = Mass(;m=0.5)
 
-eqs = [connect(link1.TX1, cart.flange) #, force.flange)
-       connect(link1.TY1, fixed.flange)
-       connect(link1.TX2, link2.TX1)
-       connect(link1.TY2, link2.TY1)]
+eqs = [
+    connect(link1.TX1, cart.flange) #, force.flange)
+    connect(link1.TY1, fixed.flange)
+    connect(link1.TX2, link2.TX1)
+    connect(link1.TY2, link2.TY1)
+]
 
 @named model = System(eqs, t, [], []; systems = [link1, link2, cart, fixed])
 

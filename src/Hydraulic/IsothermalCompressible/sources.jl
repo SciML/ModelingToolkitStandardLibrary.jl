@@ -20,7 +20,7 @@ Hydraulic mass flow input source
     end
 
     equations = Equation[
-        port.dm ~ -dm.u
+        port.dm ~ -dm.u,
     ]
 
     return System(equations, t, vars, pars; name, systems)
@@ -49,7 +49,7 @@ Fixed pressure source
     end
 
     equations = Equation[
-        port.p ~ p
+        port.p ~ p,
     ]
 
     return System(equations, t, vars, pars; name, systems)
@@ -77,7 +77,7 @@ input pressure source
     end
 
     equations = Equation[
-        port.p ~ p.u
+        port.p ~ p.u,
     ]
 
     return System(equations, t, vars, pars; name, systems)

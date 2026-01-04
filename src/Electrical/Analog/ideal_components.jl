@@ -20,7 +20,7 @@ node.
     end
 
     equations = Equation[
-        g.v ~ 0
+        g.v ~ 0,
     ]
 
     return System(equations, t, vars, pars; name, systems)
@@ -81,11 +81,11 @@ Generic resistor with optional temperature dependency.
         Equation[
             R_T ~ R * (1 + alpha * (heat_port.T - T_ref)),
             heat_port.Q_flow ~ -v * i,
-            v ~ i * R_T
+            v ~ i * R_T,
         ]
     else
         Equation[
-            v ~ i * R
+            v ~ i * R,
         ]
     end
 
@@ -126,7 +126,7 @@ See [OnePort](@ref)
     end
 
     equations = Equation[
-        i ~ v * G
+        i ~ v * G,
     ]
 
     sys = System(equations, t, vars, pars; name, systems)
@@ -167,7 +167,7 @@ See [OnePort](@ref)
     end
 
     equations = Equation[
-        D(v) ~ i / C
+        D(v) ~ i / C,
     ]
 
     sys = System(equations, t, vars, pars; name, systems)
@@ -208,7 +208,7 @@ See [OnePort](@ref)
     end
 
     equations = Equation[
-        D(i) ~ 1 / L * v
+        D(i) ~ 1 / L * v,
     ]
 
     sys = System(equations, t, vars, pars; name, systems)
@@ -248,7 +248,7 @@ See [TwoPort](@ref)
 
     equations = Equation[
         v1 ~ 0,
-        i1 ~ 0
+        i1 ~ 0,
     ]
 
     sys = System(equations, t, vars, pars; name, systems)
@@ -283,7 +283,7 @@ See [OnePort](@ref)
     end
 
     equations = Equation[
-        v ~ 0
+        v ~ 0,
     ]
 
     sys = System(equations, t, vars, pars; name, systems)
@@ -336,7 +336,7 @@ Electromotoric force (electric/mechanic transformer)
         D(phi) ~ w,
         k * w ~ v,
         flange.tau ~ -k * i,
-        support.tau ~ -flange.tau
+        support.tau ~ -flange.tau,
     ]
 
     sys = System(equations, t, vars, pars; name, systems)
@@ -365,7 +365,7 @@ Generic diode with optional temperature dependency.
     - `T`: [K] Constant ambient temperature - only used if T_dep=false
     - `T_dep`: [bool] Temperature dependency
 """
-@component function Diode(; T_dep = false, Is = 1e-6, n = 1, T = 300.15, v = 0.0, name)
+@component function Diode(; T_dep = false, Is = 1.0e-6, n = 1, T = 300.15, v = 0.0, name)
     consts = @constants begin
         k = 1.380649e-23 # Boltzmann constant (J/K)
         q = 1.602176634e-19 # Elementary charge (C)
@@ -403,11 +403,11 @@ Generic diode with optional temperature dependency.
         Equation[
             Vt ~ k * port.T / q,  # Thermal voltage equation
             i ~ Is * (exp(v / (n * Vt)) - 1),  # Shockley diode equation with temperature dependence
-            port.Q_flow ~ -v * i  # -LossPower
+            port.Q_flow ~ -v * i,  # -LossPower
         ]
     else
         Equation[
-            i ~ Is * (exp(v * q / (n * k * T)) - 1)  # Shockley diode equation
+            i ~ Is * (exp(v * q / (n * k * T)) - 1),  # Shockley diode equation
         ]
     end
 
@@ -453,7 +453,7 @@ R = R_const + pos * R_ref * (1 + alpha * (port.T - T_ref))
         - `alpha`: [K⁻¹] Temperature coefficient of resistance
         - `enforce_bounds`: Enforce bounds for the position of the wiper (0-1)
 """
-@component function VariableResistor(; T_dep = false, enforce_bounds = true, R_ref = 1.0, T_ref = 300.15, R_const = 1e-3, alpha = 1e-3, name)
+@component function VariableResistor(; T_dep = false, enforce_bounds = true, R_ref = 1.0, T_ref = 300.15, R_const = 1.0e-3, alpha = 1.0e-3, name)
     @named oneport = OnePort()
     @unpack v, i = oneport
 
@@ -491,11 +491,11 @@ R = R_const + pos * R_ref * (1 + alpha * (port.T - T_ref))
     conditional_eqs = if T_dep
         Equation[
             port.Q_flow ~ -v * i,  # -LossPower
-            R ~ R_const + pos * R_ref * (1 + alpha * (port.T - T_ref))
+            R ~ R_const + pos * R_ref * (1 + alpha * (port.T - T_ref)),
         ]
     else
         Equation[
-            R ~ R_const + pos * R_ref
+            R ~ R_const + pos * R_ref,
         ]
     end
 

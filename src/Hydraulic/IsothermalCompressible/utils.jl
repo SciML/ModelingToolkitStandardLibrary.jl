@@ -1,6 +1,6 @@
 # regPow(x, a, delta = 0.01) = x * (x * x + delta * delta)^((a - 1) / 2);
 function regPow(x, a, delta = 0.01)
-    ifelse(abs(x / delta) >= 1, sign(x) * abs(x / delta)^a * delta^a, (delta^a * x) / delta)
+    return ifelse(abs(x / delta) >= 1, sign(x) * abs(x / delta)^a * delta^a, (delta^a * x) / delta)
 end
 regRoot(x, delta = 0.01) = regPow(x, 0.5, delta)
 
@@ -47,9 +47,11 @@ Fluid parameter setter for isothermal compressible fluid domain.  Defaults given
 - `ρ_gas`: [kg/m^3] density of fluid in gas state at reference gage pressure `p_gas` (set by `gas_density` argument)
 - `p_gas`: [Pa] reference pressure (set by `gas_pressure` argument)
 """
-@connector function HydraulicFluid(; density = 997, bulk_modulus = 2.09e9,
+@connector function HydraulicFluid(;
+        density = 997, bulk_modulus = 2.09e9,
         viscosity = 0.0010016, gas_density = 0.0073955,
-        gas_pressure = -1000, n = 1, let_gas = 1, name)
+        gas_pressure = -1000, n = 1, let_gas = 1, name
+    )
     pars = @parameters begin
         ρ = density
         β = bulk_modulus
@@ -65,7 +67,7 @@ Fluid parameter setter for isothermal compressible fluid domain.  Defaults given
     end
 
     eqs = [
-        dm ~ 0
+        dm ~ 0,
     ]
 
     System(eqs, t, vars, pars; name)
@@ -112,8 +114,10 @@ function friction_factor(dm, area, d_h, viscosity, shape_factor)
     if Re <= 2000
         return f_laminar(shape_factor, Re)
     elseif 2000 < Re < 3000
-        return transition(2000, 3000, f_laminar(shape_factor, Re),
-            f_turbulent(shape_factor, Re), Re)
+        return transition(
+            2000, 3000, f_laminar(shape_factor, Re),
+            f_turbulent(shape_factor, Re), Re
+        )
     else
         return f_turbulent(shape_factor, Re)
     end
@@ -130,8 +134,8 @@ bulk_modulus(port) = port.β
 viscosity(port) = port.μ
 
 function liquid_density(port, p)
-    density_ref(port) *
-    regPow(1 + density_exp(port) * p / bulk_modulus(port), 1 / density_exp(port))
+    return density_ref(port) *
+        regPow(1 + density_exp(port) * p / bulk_modulus(port), 1 / density_exp(port))
 end #Tait-Murnaghan equation of state
 liquid_density(port) = liquid_density(port, port.p)
 
@@ -139,7 +143,7 @@ liquid_density(port) = liquid_density(port, port.p)
 # (p/beta + 1)*rho_0 = rho
 
 function liquid_pressure(port, rho)
-    (rho / density_ref(port) - 1) * bulk_modulus(port)
+    return (rho / density_ref(port) - 1) * bulk_modulus(port)
 end
 
 function gas_density(port, p)
@@ -157,16 +161,20 @@ function gas_pressure(port, rho)
 end
 
 function full_density(port, p)
-    ifelse(port.let_gas == 1,
+    return ifelse(
+        port.let_gas == 1,
         ifelse(p >= 0, liquid_density(port, p), gas_density(port, p)),
-        liquid_density(port, p))
+        liquid_density(port, p)
+    )
 end
 full_density(port) = full_density(port, port.p)
 
 function full_pressure(port, rho)
-    ifelse(port.let_gas == 1,
+    return ifelse(
+        port.let_gas == 1,
         ifelse(
-            rho >= density_ref(port), liquid_pressure(port, rho), gas_pressure(port, rho)),
+            rho >= density_ref(port), liquid_pressure(port, rho), gas_pressure(port, rho)
+        ),
         liquid_pressure(port, rho)
     )
 end

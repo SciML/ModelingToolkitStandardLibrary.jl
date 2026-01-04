@@ -24,7 +24,7 @@ Flange fixed in housing at a given position.
     end
 
     equations = Equation[
-        flange.s ~ s0
+        flange.s ~ s0,
     ]
 
     return System(equations, t, vars, pars; name, systems)
@@ -67,7 +67,7 @@ Sliding mass with inertia
     equations = Equation[
         v ~ D(s),
         a ~ D(v),
-        m * a ~ flange_a.f + flange_b.f
+        m * a ~ flange_a.f + flange_b.f,
     ]
 
     sys = System(equations, t, vars, pars; name, systems)
@@ -105,7 +105,7 @@ Linear 1D translational spring
     end
 
     equations = Equation[
-        f ~ c * (s_rel - s_rel0)
+        f ~ c * (s_rel - s_rel0),
     ]
 
     sys = System(equations, t, vars, pars; name, systems)
@@ -143,7 +143,7 @@ Linear 1D translational damper
 
     equations = Equation[
         f ~ d * v_rel,
-        lossPower ~ f * v_rel
+        lossPower ~ f * v_rel,
     ]
 
     sys = System(equations, t, vars, pars; name, systems)
@@ -187,7 +187,7 @@ Linear 1D translational spring and damper in parallel
 
     equations = Equation[
         f ~ c * (s_rel - s_rel0) + d * v_rel,
-        lossPower ~ d * v_rel^2
+        lossPower ~ d * v_rel^2,
     ]
 
     sys = System(equations, t, vars, pars; name, systems)

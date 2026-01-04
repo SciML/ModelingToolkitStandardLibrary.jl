@@ -1,4 +1,4 @@
-@enum Logic Uninitialized=1 ForcingUnknown ForcingZero ForcingOne HighImpedance WeakUnknown WeakZero WeakOne DontCare
+@enum Logic Uninitialized = 1 ForcingUnknown ForcingZero ForcingOne HighImpedance WeakUnknown WeakZero WeakOne DontCare
 
 const U = Uninitialized
 const X = ForcingUnknown
@@ -11,7 +11,7 @@ const H = WeakOne
 const DC = DontCare
 
 function Base.show(io::IO, ::MIME"text/plain", l::Logic)
-    if Int(l) == 1
+    return if Int(l) == 1
         print(io, "U")
     elseif Int(l) == 2
         print(io, "X")
@@ -41,7 +41,7 @@ Base.one(::Type{Logic}) = F1
 
 # Helpers to convert 1 and 0 to their `Logic` counterparts
 function Base.convert(l::Type{Logic}, i::Number)
-    if i == zero(i)
+    return if i == zero(i)
         zero(l)
     elseif i == one(i)
         one(l)

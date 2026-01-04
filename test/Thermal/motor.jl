@@ -24,8 +24,10 @@ using ModelingToolkitStandardLibrary.Blocks
             environment = PrescribedTemperature()
             amb = Constant(k = T_amb)
             core_losses_const = Constant(k = 500)
-            winding_losses = Step(height = 900, offset = 100, start_time = 360,
-                duration = Inf, smooth = false)
+            winding_losses = Step(
+                height = 900, offset = 100, start_time = 360,
+                duration = Inf, smooth = false
+            )
         end
         @equations begin
             connect(windingLosses.port, winding.port)
@@ -51,7 +53,7 @@ using ModelingToolkitStandardLibrary.Blocks
     @test sol[motor.T_winding.T.u] == sol[motor.winding.T]
     @test sol[motor.T_core.T.u] == sol[motor.core.T]
     @test sol[-motor.core.port.Q_flow] ≈
-          sol[motor.coreLosses.port.Q_flow + motor.convection.solid.Q_flow + motor.winding2core.port_b.Q_flow]
+        sol[motor.coreLosses.port.Q_flow + motor.convection.solid.Q_flow + motor.winding2core.port_b.Q_flow]
     @test sol[motor.T_winding.T.u][end] >= 500 # not good but better than nothing
     @test sol[motor.T_core.T.u] <= sol[motor.T_winding.T.u]
 end

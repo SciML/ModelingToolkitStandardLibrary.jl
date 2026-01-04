@@ -44,7 +44,7 @@ Partial component with magnetic potential difference between two magnetic ports 
     equations = Equation[
         V_m ~ port_p.V_m - port_n.V_m,
         Phi ~ port_p.Phi,
-        0 ~ port_p.Phi + port_n.Phi
+        0 ~ port_p.Phi + port_n.Phi,
     ]
 
     return System(equations, t, vars, pars; name, systems)

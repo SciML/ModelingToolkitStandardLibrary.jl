@@ -24,12 +24,14 @@ Creates an N-type MOSFET transistor
 
 Based on the MOSFET models in (Sedra, A. S., Smith, K. C., Carusone, T. C., & Gaudet, V. C. (2021). Microelectronic circuits (8th ed.). Oxford University Press.)
 """
-@component function NMOS(; name,
-                          use_transconductance = true,
-                          V_GS = nothing, V_DS = nothing, V_OV = nothing,
-                          V_tn = 0.8, R_DS = 1e7, lambda = 0.04,
-                          mu_n = nothing, C_ox = nothing, W = nothing, L = nothing,
-                          k_n = 20e-3)
+@component function NMOS(;
+        name,
+        use_transconductance = true,
+        V_GS = nothing, V_DS = nothing, V_OV = nothing,
+        V_tn = 0.8, R_DS = 1.0e7, lambda = 0.04,
+        mu_n = nothing, C_ox = nothing, W = nothing, L = nothing,
+        k_n = 20.0e-3
+    )
     pars = @parameters begin
         V_tn = V_tn, [description = "Threshold voltage (V)"]
         R_DS = R_DS, [description = "Drain to source resistance (Ω)"]
@@ -66,13 +68,17 @@ Based on the MOSFET models in (Sedra, A. S., Smith, K. C., Carusone, T. C., & Ga
         V_GS ~ g.v - ifelse(d.v < s.v, d.v, s.v),
         V_OV ~ V_GS - V_tn,
         d.i ~
-        ifelse(d.v < s.v, -1, 1) * ifelse(V_GS < V_tn,
+            ifelse(d.v < s.v, -1, 1) * ifelse(
+            V_GS < V_tn,
             V_DS / R_DS,
-            ifelse(V_DS < V_OV,
+            ifelse(
+                V_DS < V_OV,
                 k_n * (1 + lambda * V_DS) * (V_OV - V_DS / 2) * V_DS + V_DS / R_DS,
-                ((k_n * V_OV^2) / 2) * (1 + lambda * V_DS) + V_DS / R_DS)),
+                ((k_n * V_OV^2) / 2) * (1 + lambda * V_DS) + V_DS / R_DS
+            )
+        ),
         g.i ~ 0,
-        s.i ~ -d.i
+        s.i ~ -d.i,
     ]
 
     return System(equations, t, vars, pars; name, systems)
@@ -104,12 +110,14 @@ Creates an N-type MOSFET transistor
 
 Based on the MOSFET models in (Sedra, A. S., Smith, K. C., Carusone, T. C., & Gaudet, V. C. (2021). Microelectronic circuits (8th ed.). Oxford University Press.)
 """
-@component function PMOS(; name,
-                          use_transconductance = true,
-                          V_GS = nothing, V_DS = nothing,
-                          V_tp = -1.5, R_DS = 1e7, lambda = 1 / 25,
-                          mu_p = nothing, C_ox = nothing, W = nothing, L = nothing,
-                          k_p = 20e-3)
+@component function PMOS(;
+        name,
+        use_transconductance = true,
+        V_GS = nothing, V_DS = nothing,
+        V_tp = -1.5, R_DS = 1.0e7, lambda = 1 / 25,
+        mu_p = nothing, C_ox = nothing, W = nothing, L = nothing,
+        k_p = 20.0e-3
+    )
     pars = @parameters begin
         V_tp = V_tp, [description = "Threshold voltage (V)"]
         R_DS = R_DS, [description = "Drain-source resistance (Ω)"]
@@ -144,14 +152,18 @@ Based on the MOSFET models in (Sedra, A. S., Smith, K. C., Carusone, T. C., & Ga
         V_DS ~ ifelse(d.v > s.v, s.v - d.v, d.v - s.v),
         V_GS ~ g.v - ifelse(d.v > s.v, d.v, s.v),
         d.i ~
-        -ifelse(d.v > s.v, -1.0, 1.0) * ifelse(V_GS > V_tp,
+            -ifelse(d.v > s.v, -1.0, 1.0) * ifelse(
+            V_GS > V_tp,
             V_DS / R_DS,
-            ifelse(V_DS > (V_GS - V_tp),
+            ifelse(
+                V_DS > (V_GS - V_tp),
                 k_p * (1 + lambda * V_DS) * ((V_GS - V_tp) - V_DS / 2) * V_DS +
-                V_DS / R_DS,
-                ((k_p * (V_GS - V_tp)^2) / 2) * (1 + lambda * V_DS) + V_DS / R_DS)),
+                    V_DS / R_DS,
+                ((k_p * (V_GS - V_tp)^2) / 2) * (1 + lambda * V_DS) + V_DS / R_DS
+            )
+        ),
         g.i ~ 0,
-        s.i ~ -d.i
+        s.i ~ -d.i,
     ]
 
     return System(equations, t, vars, pars; name, systems)

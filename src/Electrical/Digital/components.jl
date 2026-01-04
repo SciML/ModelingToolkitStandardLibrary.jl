@@ -29,10 +29,12 @@ Takes two bits as input, and outputs the sum and the carry
     @named y2 = DigitalPin()
     @variables sum(t), carry(t)
 
-    eqs = [y1.val ~ _xor(x1.val, x2.val)
-           y2.val ~ _and(x1.val, x2.val)
-           sum ~ y1.val
-           carry ~ y2.val]
+    eqs = [
+        y1.val ~ _xor(x1.val, x2.val)
+        y2.val ~ _and(x1.val, x2.val)
+        sum ~ y1.val
+        carry ~ y2.val
+    ]
     System(eqs, t, [sum, carry], [], systems = [x1, x2, y1, y2], name = name)
 end
 
@@ -67,10 +69,12 @@ Takes three bits as input, and outputs the sum and the carry
     @named y2 = DigitalPin()
     @variables sum(t), carry(t)
 
-    eqs = [y1.val ~ _xor(x1.val, x2.val, x3.val)
-           y2.val ~ _or(_and(x3.val, _xor(x1.val, x2.val)), _and(x1.val, x2.val))
-           sum ~ y1.val
-           carry ~ y2.val]
+    eqs = [
+        y1.val ~ _xor(x1.val, x2.val, x3.val)
+        y2.val ~ _or(_and(x3.val, _xor(x1.val, x2.val)), _and(x1.val, x2.val))
+        sum ~ y1.val
+        carry ~ y2.val
+    ]
     System(eqs, t, [sum, carry], [], systems = [x1, x2, x3, y1, y2], name = name)
 end
 

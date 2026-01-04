@@ -13,10 +13,11 @@ using OrdinaryDiffEq: ReturnCode.Success
         @named model = System(
             [
                 connect(c.output, int.input),
-                connect(int.output, sat.input)
+                connect(int.output, sat.input),
             ],
             t,
-            systems = [int, c, sat])
+            systems = [int, c, sat]
+        )
         sys = mtkcompile(model)
         prob = ODEProblem(sys, [int.x => 1.0], (0.0, 1.0))
 
@@ -34,10 +35,11 @@ using OrdinaryDiffEq: ReturnCode.Success
         @named iosys = System(
             [
                 connect(source.output, lim.input),
-                connect(lim.output, int.input)
+                connect(lim.output, int.input),
             ],
             t,
-            systems = [source, lim, int])
+            systems = [source, lim, int]
+        )
         sys = mtkcompile(iosys)
 
         prob = ODEProblem(sys, unknowns(sys) .=> 0.0, (0.0, 10.0))
@@ -45,8 +47,12 @@ using OrdinaryDiffEq: ReturnCode.Success
         sol = solve(prob, Rodas4())
         @test SciMLBase.successful_retcode(sol)
         @test all(abs.(sol[lim.output.u]) .<= 0.5)
-        @test all(isapprox.(sol[lim.output.u], clamp.(sol[source.output.u], y_min, y_max),
-            atol = 1e-2))
+        @test all(
+            isapprox.(
+                sol[lim.output.u], clamp.(sol[source.output.u], y_min, y_max),
+                atol = 1.0e-2
+            )
+        )
 
         # Plots.plot(sol; vars=[source.output.u, lim.output.u])
         # Plots.scatter(sol[source.output.u], sol[lim.output.u])
@@ -62,10 +68,11 @@ end
         @named model = System(
             [
                 connect(c.output, int.input),
-                connect(int.output, dz.input)
+                connect(int.output, dz.input),
             ],
             t,
-            systems = [int, c, dz])
+            systems = [int, c, dz]
+        )
         sys = mtkcompile(model)
         prob = ODEProblem(sys, [int.x => 1.0], (0.0, 1.0))
         sol = solve(prob, Rodas4())
@@ -82,10 +89,11 @@ end
         @named model = System(
             [
                 connect(source.output, dz.input),
-                connect(dz.output, int.input)
+                connect(dz.output, int.input),
             ],
             t,
-            systems = [int, source, dz])
+            systems = [int, source, dz]
+        )
         sys = mtkcompile(model)
         prob = ODEProblem(sys, [int.x => 1.0], (0.0, 10.0))
         sol = solve(prob, Rodas4())
@@ -93,8 +101,12 @@ end
         @test SciMLBase.successful_retcode(sol)
         @test all(sol[dz.output.u] .<= 2)
         @test all(sol[dz.output.u] .>= -1)
-        @test all(isapprox.(sol[dz.output.u],
-            _dead_zone.(sol[source.output.u], u_min, u_max), atol = 1e-2))
+        @test all(
+            isapprox.(
+                sol[dz.output.u],
+                _dead_zone.(sol[source.output.u], u_min, u_max), atol = 1.0e-2
+            )
+        )
 
         # Plots.plot(sol; vars=[source.output.u, dz.output.u])
         # Plots.scatter(sol[source.output.u], sol[dz.output.u])
@@ -105,18 +117,20 @@ end
 @testset "SlewRateLimiter" begin
     @named source = Sine(; frequency = 1 / 2)
     @named rl = SlewRateLimiter(; rising = 1, falling = -1, Td = 0.001, y_start = -1 / 3)
-    @named iosys = System([
-            connect(source.output, rl.input)
+    @named iosys = System(
+        [
+            connect(source.output, rl.input),
         ],
         t,
-        systems = [source, rl])
+        systems = [source, rl]
+    )
     sys = mtkcompile(iosys)
 
     prob = ODEProblem(sys, Pair[], (0.0, 10.0))
 
     tS = 0.01
-    sol = solve(prob, Rodas4(), saveat = tS, abstol = 1e-10, reltol = 1e-10)
+    sol = solve(prob, Rodas4(), saveat = tS, abstol = 1.0e-10, reltol = 1.0e-10)
     @test SciMLBase.successful_retcode(sol)
     @test all(abs.(sol[rl.output.u]) .<= 0.51)
-    @test all(-1 - 1e-5 .<= diff(sol[rl.output.u]) ./ tS .<= 1 + 1e-5) # just an approximation
+    @test all(-1 - 1.0e-5 .<= diff(sol[rl.output.u]) ./ tS .<= 1 + 1.0e-5) # just an approximation
 end

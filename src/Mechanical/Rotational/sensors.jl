@@ -22,7 +22,7 @@ Ideal sensor to measure the absolute flange angle
 
     equations = Equation[
         phi.u ~ flange.phi,
-        flange.tau ~ 0
+        flange.tau ~ 0,
     ]
 
     return System(equations, t, vars, pars; name, systems)
@@ -52,7 +52,7 @@ Ideal sensor to measure the absolute flange angular velocity
 
     equations = Equation[
         D(flange.phi) ~ w.u,
-        flange.tau ~ 0
+        flange.tau ~ 0,
     ]
 
     return System(equations, t, vars, pars; name, systems)
@@ -84,7 +84,7 @@ Ideal sensor to measure the torque between two flanges (`= flange_a.tau`)
 
     equations = Equation[
         flange_a.phi ~ flange_b.phi,
-        tau.u ~ flange_a.tau
+        tau.u ~ flange_a.tau,
     ]
 
     return System(equations, t, vars, pars; name, systems)
@@ -119,7 +119,7 @@ Ideal sensor to measure the relative angular velocity
         0 ~ flange_a.tau + flange_b.tau,
         phi_rel ~ flange_b.phi - flange_a.phi,
         D(phi_rel) ~ w_rel.u,
-        0 ~ flange_a.tau
+        0 ~ flange_a.tau,
     ]
 
     return System(equations, t, vars, pars; name, systems)

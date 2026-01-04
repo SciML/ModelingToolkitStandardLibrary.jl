@@ -31,15 +31,16 @@ end
     @named iosys = System(
         [
             connect(source.output, der.input),
-            connect(der.output, int.input)
+            connect(der.output, int.input),
         ],
         t,
-        systems = [int, source, der])
+        systems = [int, source, der]
+    )
     sys = mtkcompile(iosys)
     prob = ODEProblem(sys, Pair[int.x => 0.0], (0.0, 10.0))
     sol = solve(prob, Rodas4())
     @test sol.retcode == Success
-    @test all(isapprox.(sol[source.output.u], sol[int.output.u], atol = 1e-1))
+    @test all(isapprox.(sol[source.output.u], sol[int.output.u], atol = 1.0e-1))
 end
 
 @testset "PT1" begin
@@ -53,7 +54,7 @@ end
     prob = ODEProblem(sys, Pair[], (0.0, 100.0))
     sol = solve(prob, Rodas4())
     @test sol.retcode == Success
-    @test sol[pt1.output.u]≈pt1_func.(sol.t, k, T) atol=1e-3
+    @test sol[pt1.output.u] ≈ pt1_func.(sol.t, k, T) atol = 1.0e-3
 
     # Test highpass feature
     @named pt1 = FirstOrder(; k = k, T = T, lowpass = false)
@@ -62,7 +63,7 @@ end
     prob = ODEProblem(sys, Pair[], (0.0, 100.0))
     sol = solve(prob, Rodas4())
     @test sol.retcode == Success
-    @test sol[pt1.output.u]≈k .- pt1_func.(sol.t, k, T) atol=1e-3
+    @test sol[pt1.output.u] ≈ k .- pt1_func.(sol.t, k, T) atol = 1.0e-3
 end
 
 @testset "PT2" begin
@@ -72,9 +73,15 @@ end
             -k * (-1 + cos(t * w))
         else
             d = complex(d)
-            real(k * (1 +
-                  (-cosh(sqrt(-1 + d^2) * t * w) -
-                   (d * sinh(sqrt(-1 + d^2) * t * w)) / sqrt(-1 + d^2)) / exp(d * t * w)))
+            real(
+                k * (
+                    1 +
+                        (
+                        -cosh(sqrt(-1 + d^2) * t * w) -
+                            (d * sinh(sqrt(-1 + d^2) * t * w)) / sqrt(-1 + d^2)
+                    ) / exp(d * t * w)
+                )
+            )
         end
     end
 
@@ -86,7 +93,7 @@ end
     prob = ODEProblem(sys, [unknowns(sys) .=> 0.0...; pt2.xd => 0.0], (0.0, 100.0))
     sol = solve(prob, Rodas4())
     @test sol.retcode == Success
-    @test sol[pt2.output.u]≈pt2_func.(sol.t, k, w, d) atol=1e-3
+    @test sol[pt2.output.u] ≈ pt2_func.(sol.t, k, w, d) atol = 1.0e-3
 end
 
 @testset "StateSpace" begin
@@ -96,40 +103,44 @@ end
     D = [0;;]
     @named ss = StateSpace(; A, B, C, D, x = zeros(2))
     @named c = Constant(; k = 1)
-    @named model = System([
-            connect(c.output, ss.input)
+    @named model = System(
+        [
+            connect(c.output, ss.input),
         ],
         t,
-        systems = [ss, c])
+        systems = [ss, c]
+    )
     sys = mtkcompile(model)
     prob = ODEProblem(sys, Pair[], (0.0, 100.0))
     sol = solve(prob, Rodas4())
     @test sol.retcode == Success
     # initial condition
-    @test sol[ss.x[1]][1]≈0 atol=1e-3
-    @test sol[ss.x[2]][1]≈0 atol=1e-3
+    @test sol[ss.x[1]][1] ≈ 0 atol = 1.0e-3
+    @test sol[ss.x[2]][1] ≈ 0 atol = 1.0e-3
     # equilibrium point is at [1, 0]
-    @test sol[ss.x[1]][end]≈1 atol=1e-3
-    @test sol[ss.x[2]][end]≈0 atol=1e-3
+    @test sol[ss.x[1]][end] ≈ 1 atol = 1.0e-3
+    @test sol[ss.x[2]][end] ≈ 0 atol = 1.0e-3
 
     # non-zero operating point
     u0 = [1] # This causes no effective input to the system since c.k = 1
     y0 = [2]
     @named ss = StateSpace(; A, B, C, D, x = zeros(2), u0, y0)
-    @named model = System([
-            connect(c.output, ss.input)
+    @named model = System(
+        [
+            connect(c.output, ss.input),
         ],
         t,
-        systems = [ss, c])
+        systems = [ss, c]
+    )
     sys = mtkcompile(model)
     prob = ODEProblem(sys, Pair[], (0.0, 100.0))
     sol = solve(prob, Rodas4())
     @test sol.retcode == Success
 
-    @test sol[ss.x[1]][end ÷ 2]≈0 atol=1e-3 # Test that x did not move
-    @test sol[ss.x[1]][end]≈0 atol=1e-3 # Test that x did not move
-    @test sol[ss.x[2]][end]≈0 atol=1e-3
-    @test sol[ss.output.u[1]][end]≈y0[] atol=1e-3 # Test that the output equals the operating point
+    @test sol[ss.x[1]][end ÷ 2] ≈ 0 atol = 1.0e-3 # Test that x did not move
+    @test sol[ss.x[1]][end] ≈ 0 atol = 1.0e-3 # Test that x did not move
+    @test sol[ss.x[2]][end] ≈ 0 atol = 1.0e-3
+    @test sol[ss.output.u[1]][end] ≈ y0[] atol = 1.0e-3 # Test that the output equals the operating point
 end
 
 """
@@ -139,10 +150,12 @@ Second order demo plant
     @named input = RealInput()
     @named output = RealOutput()
     D = Differential(t)
-    sts = @variables x1(t)=x[1] x2(t)=x[2]
-    eqs = [D(x1) ~ x2
-           D(x2) ~ -x1 - 0.5 * x2 + input.u
-           output.u ~ 0.9 * x1 + x2]
+    sts = @variables x1(t) = x[1] x2(t) = x[2]
+    eqs = [
+        D(x1) ~ x2
+        D(x2) ~ -x1 - 0.5 * x2 + input.u
+        output.u ~ 0.9 * x1 + x2
+    ]
     compose(System(eqs, t, sts, []; name), [input, output])
 end
 
@@ -157,17 +170,18 @@ end
             connect(ref.output, fb.input1),
             connect(plant.output, fb.input2),
             connect(fb.output, pi_controller.err_input),
-            connect(pi_controller.ctr_output, plant.input)
+            connect(pi_controller.ctr_output, plant.input),
         ],
         t,
-        systems = [pi_controller, plant, ref, fb])
+        systems = [pi_controller, plant, ref, fb]
+    )
     sys = mtkcompile(model)
     initial_conditions(sys)[sys.pi_controller.gainPI.k] = 1.0
     prob = ODEProblem(sys, Pair[], (0.0, 100.0))
     sol = solve(prob, Rodas4())
     @test sol.retcode == Success
-    @test all(isapprox.(sol[ref.output.u], re_val, atol = 1e-3))  # check reference
-    @test sol[plant.output.u][end]≈re_val atol=1e-3 # zero control error after 100s
+    @test all(isapprox.(sol[ref.output.u], re_val, atol = 1.0e-3))  # check reference
+    @test sol[plant.output.u][end] ≈ re_val atol = 1.0e-3 # zero control error after 100s
 end
 
 @testset "PID" begin
@@ -181,16 +195,17 @@ end
             connect(ref.output, fb.input1),
             connect(plant.output, fb.input2),
             connect(fb.output, pid_controller.err_input),
-            connect(pid_controller.ctr_output, plant.input)
+            connect(pid_controller.ctr_output, plant.input),
         ],
         t,
-        systems = [pid_controller, plant, ref, fb])
+        systems = [pid_controller, plant, ref, fb]
+    )
     sys = mtkcompile(model)
     prob = ODEProblem(sys, Pair[], (0.0, 100.0))
     sol = solve(prob, Rodas4())
     @test sol.retcode == Success
-    @test all(isapprox.(sol[ref.output.u], re_val, atol = 1e-3))  # check reference
-    @test sol[plant.output.u][end]≈re_val atol=1e-3 # zero control error after 100s
+    @test all(isapprox.(sol[ref.output.u], re_val, atol = 1.0e-3))  # check reference
+    @test sol[plant.output.u][end] ≈ re_val atol = 1.0e-3 # zero control error after 100s
 
     @testset "PI" begin
         @named pid_controller = PID(k = 3, Ti = 0.5, Td = false)
@@ -199,16 +214,17 @@ end
                 connect(ref.output, fb.input1),
                 connect(plant.output, fb.input2),
                 connect(fb.output, pid_controller.err_input),
-                connect(pid_controller.ctr_output, plant.input)
+                connect(pid_controller.ctr_output, plant.input),
             ],
             t,
-            systems = [pid_controller, plant, ref, fb])
+            systems = [pid_controller, plant, ref, fb]
+        )
         sys = mtkcompile(model)
         prob = ODEProblem(sys, Pair[], (0.0, 100.0))
         sol = solve(prob, Rodas4())
         @test sol.retcode == Success
-        @test all(isapprox.(sol[ref.output.u], re_val, atol = 1e-3))  # check reference
-        @test sol[plant.output.u][end]≈re_val atol=1e-3 # zero control error after 100s
+        @test all(isapprox.(sol[ref.output.u], re_val, atol = 1.0e-3))  # check reference
+        @test sol[plant.output.u][end] ≈ re_val atol = 1.0e-3 # zero control error after 100s
     end
 
     @testset "PD" begin
@@ -218,15 +234,16 @@ end
                 connect(ref.output, fb.input1),
                 connect(plant.output, fb.input2),
                 connect(fb.output, pid_controller.err_input),
-                connect(pid_controller.ctr_output, plant.input)
+                connect(pid_controller.ctr_output, plant.input),
             ],
             t,
-            systems = [pid_controller, plant, ref, fb])
+            systems = [pid_controller, plant, ref, fb]
+        )
         sys = mtkcompile(model)
         prob = ODEProblem(sys, Pair[], (0.0, 100.0))
         sol = solve(prob, Rodas4())
         @test sol.retcode == Success
-        @test all(isapprox.(sol[ref.output.u], re_val, atol = 1e-3))  # check reference
+        @test all(isapprox.(sol[ref.output.u], re_val, atol = 1.0e-3))  # check reference
         @test sol[plant.output.u][end] > 1 # without I there will be a steady-state error
     end
 end
@@ -234,11 +251,13 @@ end
 @testset "LimPI" begin
     re_val = 1
     @named ref = Constant(; k = re_val)
-    @named pi_controller_lim = LimPI(k = 3,
+    @named pi_controller_lim = LimPI(
+        k = 3,
         T = 0.5,
         u_max = 1.5,
         u_min = -1.5,
-        Ta = 0.1)
+        Ta = 0.1
+    )
     @named pi_controller = PI(T = 0.5)
     @named sat = Limiter(y_max = 1.5, y_min = -1.5)
     @named plant = Plant()
@@ -252,10 +271,11 @@ end
                 connect(plant.output, fb.input2),
                 connect(fb.output, pi_controller.err_input),
                 connect(pi_controller.ctr_output, sat.input),
-                connect(sat.output, plant.input)
+                connect(sat.output, plant.input),
             ],
             t,
-            systems = [pi_controller, plant, ref, fb, sat])
+            systems = [pi_controller, plant, ref, fb, sat]
+        )
         sys = mtkcompile(model)
         initial_conditions(sys)[sys.pi_controller.gainPI.k] = 1.0
         prob = ODEProblem(sys, Pair[], (0.0, 20.0))
@@ -270,10 +290,11 @@ end
                 connect(plant.output, fb.input2),
                 connect(fb.output, pi_controller_lim.err_input),
                 connect(pi_controller_lim.ctr_output, sat.input),
-                connect(sat.output, plant.input)
+                connect(sat.output, plant.input),
             ],
             t,
-            systems = [pi_controller_lim, plant, ref, fb, sat])
+            systems = [pi_controller_lim, plant, ref, fb, sat]
+        )
         sys = mtkcompile(model)
         prob = ODEProblem(sys, Pair[], (0.0, 20.0))
         sol = solve(prob, Rodas4())
@@ -281,10 +302,10 @@ end
 
     @test sol.retcode == Success
     @test sol_lim.retcode == ReturnCode.Success
-    @test all(isapprox.(sol[ref.output.u], re_val, atol = 1e-3))  # check reference
-    @test all(isapprox.(sol_lim[ref.output.u], re_val, atol = 1e-3))  # check reference
-    @test sol[plant.output.u][end]≈re_val atol=1e-3 # zero control error after 100s
-    @test sol_lim[plant.output.u][end]≈re_val atol=1e-3 # zero control error after 100s
+    @test all(isapprox.(sol[ref.output.u], re_val, atol = 1.0e-3))  # check reference
+    @test all(isapprox.(sol_lim[ref.output.u], re_val, atol = 1.0e-3))  # check reference
+    @test sol[plant.output.u][end] ≈ re_val atol = 1.0e-3 # zero control error after 100s
+    @test sol_lim[plant.output.u][end] ≈ re_val atol = 1.0e-3 # zero control error after 100s
     @test all(-1.5 .<= sol_lim[pi_controller_lim.ctr_output.u] .<= 1.5) # test limit
 
     # Plots.plot(sol; vars=[plant.output.u]) # without anti-windup measure
@@ -296,133 +317,150 @@ end
     @named ref = Constant(; k = re_val)
     @named pid_controller = LimPID(
         k = 3, Ti = 0.5, Td = 1 / 100, u_max = 1.5, u_min = -1.5,
-        Ni = 0.1 / 0.5)
+        Ni = 0.1 / 0.5
+    )
     @named plant = Plant()
     @named model = System(
         [
             connect(ref.output, pid_controller.reference),
             connect(plant.output, pid_controller.measurement),
-            connect(pid_controller.ctr_output, plant.input)
+            connect(pid_controller.ctr_output, plant.input),
         ],
         t,
-        systems = [pid_controller, plant, ref])
+        systems = [pid_controller, plant, ref]
+    )
     sys = mtkcompile(model)
     prob = ODEProblem(sys, Pair[], (0.0, 100.0))
     sol = solve(prob, Rodas4())
 
     # Plots.plot(sol, vars=[plant.output.u, plant.input.u])
     @test sol.retcode == Success
-    @test all(isapprox.(sol[ref.output.u], re_val, atol = 1e-3))  # check reference
-    @test sol[plant.output.u][end]≈re_val atol=1e-3 # zero control error after 100s
+    @test all(isapprox.(sol[ref.output.u], re_val, atol = 1.0e-3))  # check reference
+    @test sol[plant.output.u][end] ≈ re_val atol = 1.0e-3 # zero control error after 100s
     @test all(-1.5 .<= sol[pid_controller.ctr_output.u] .<= 1.5) # test limit
 
     @testset "PI" begin
-        @named pid_controller = LimPID(k = 3, Ti = 0.5, Td = false, u_max = 1.5,
-            u_min = -1.5, Ni = 0.1 / 0.5)
+        @named pid_controller = LimPID(
+            k = 3, Ti = 0.5, Td = false, u_max = 1.5,
+            u_min = -1.5, Ni = 0.1 / 0.5
+        )
         @named model = System(
             [
                 connect(ref.output, pid_controller.reference),
                 connect(plant.output, pid_controller.measurement),
-                connect(pid_controller.ctr_output, plant.input)
+                connect(pid_controller.ctr_output, plant.input),
             ],
             t,
-            systems = [pid_controller, plant, ref])
+            systems = [pid_controller, plant, ref]
+        )
         sys = mtkcompile(model)
         prob = ODEProblem(sys, Pair[], (0.0, 100.0))
         sol = solve(prob, Rodas4())
 
         # Plots.plot(sol, vars=[plant.output.u, plant.input.u])
         @test sol.retcode == Success
-        @test all(isapprox.(sol[ref.output.u], re_val, atol = 1e-3))  # check reference
-        @test sol[plant.output.u][end]≈re_val atol=1e-3 # zero control error after 100s
+        @test all(isapprox.(sol[ref.output.u], re_val, atol = 1.0e-3))  # check reference
+        @test sol[plant.output.u][end] ≈ re_val atol = 1.0e-3 # zero control error after 100s
         @test all(-1.5 .<= sol[pid_controller.ctr_output.u] .<= 1.5) # test limit
     end
     @testset "PD" begin
-        @named pid_controller = LimPID(k = 10, Ti = false, Td = 1, u_max = 1.5,
-            u_min = -1.5)
+        @named pid_controller = LimPID(
+            k = 10, Ti = false, Td = 1, u_max = 1.5,
+            u_min = -1.5
+        )
         @named model = System(
             [
                 connect(ref.output, pid_controller.reference),
                 connect(plant.output, pid_controller.measurement),
-                connect(pid_controller.ctr_output, plant.input)
+                connect(pid_controller.ctr_output, plant.input),
             ],
             t,
-            systems = [pid_controller, plant, ref])
+            systems = [pid_controller, plant, ref]
+        )
         sys = mtkcompile(model)
         prob = ODEProblem(sys, Pair[], (0.0, 100.0))
         sol = solve(prob, Rodas4())
 
         # Plots.plot(sol, vars=[plant.output.u, plant.input.u])
         @test sol.retcode == Success
-        @test all(isapprox.(sol[ref.output.u], re_val, atol = 1e-3))  # check reference
+        @test all(isapprox.(sol[ref.output.u], re_val, atol = 1.0e-3))  # check reference
         @test sol[plant.output.u][end] > 0.5 # without I there will be a steady-state error
         @test all(-1.5 .<= sol[pid_controller.ctr_output.u] .<= 1.5) # test limit
     end
     @testset "set-point weights" begin
         @testset "wp" begin
-            @named pid_controller = LimPID(k = 3, Ti = 0.5, Td = 1 / 100, u_max = 1.5,
-                u_min = -1.5, Ni = 0.1 / 0.5, wp = 0, wd = 1)
+            @named pid_controller = LimPID(
+                k = 3, Ti = 0.5, Td = 1 / 100, u_max = 1.5,
+                u_min = -1.5, Ni = 0.1 / 0.5, wp = 0, wd = 1
+            )
             @named model = System(
                 [
                     connect(ref.output, pid_controller.reference),
                     connect(plant.output, pid_controller.measurement),
-                    connect(pid_controller.ctr_output, plant.input)
+                    connect(pid_controller.ctr_output, plant.input),
                 ],
                 t,
-                systems = [pid_controller, plant, ref])
+                systems = [pid_controller, plant, ref]
+            )
             sys = mtkcompile(model)
             prob = ODEProblem(sys, Pair[], (0.0, 100.0))
             sol = solve(prob, Rodas4())
 
             # Plots.plot(sol, vars=[plant.output.u, plant.input.u])
             @test sol.retcode == Success
-            @test all(isapprox.(sol[ref.output.u], re_val, atol = 1e-3))  # check reference
+            @test all(isapprox.(sol[ref.output.u], re_val, atol = 1.0e-3))  # check reference
             sol[pid_controller.addP.output.u] == -sol[pid_controller.measurement.u]
-            @test sol[plant.output.u][end]≈re_val atol=1e-3 # zero control error after 100s
+            @test sol[plant.output.u][end] ≈ re_val atol = 1.0e-3 # zero control error after 100s
             @test all(-1.5 .<= sol[pid_controller.ctr_output.u] .<= 1.5) # test limit
         end
         @testset "wd" begin
-            @named pid_controller = LimPID(k = 3, Ti = 0.5, Td = 1 / 100, u_max = 1.5,
-                u_min = -1.5, Ni = 0.1 / 0.5, wp = 1, wd = 0)
+            @named pid_controller = LimPID(
+                k = 3, Ti = 0.5, Td = 1 / 100, u_max = 1.5,
+                u_min = -1.5, Ni = 0.1 / 0.5, wp = 1, wd = 0
+            )
             @named model = System(
                 [
                     connect(ref.output, pid_controller.reference),
                     connect(plant.output, pid_controller.measurement),
-                    connect(pid_controller.ctr_output, plant.input)
+                    connect(pid_controller.ctr_output, plant.input),
                 ],
                 t,
-                systems = [pid_controller, plant, ref])
+                systems = [pid_controller, plant, ref]
+            )
             sys = mtkcompile(model)
             prob = ODEProblem(sys, Pair[], (0.0, 100.0))
             sol = solve(prob, Rodas4())
 
             # Plots.plot(sol, vars=[plant.output.u, plant.input.u])
             @test sol.retcode == Success
-            @test all(isapprox.(sol[ref.output.u], re_val, atol = 1e-3))  # check reference
-            @test sol[plant.output.u][end]≈re_val atol=1e-3 # zero control error after 100s
+            @test all(isapprox.(sol[ref.output.u], re_val, atol = 1.0e-3))  # check reference
+            @test sol[plant.output.u][end] ≈ re_val atol = 1.0e-3 # zero control error after 100s
             sol[pid_controller.addD.output.u] == -sol[pid_controller.measurement.u]
             @test all(-1.5 .<= sol[pid_controller.ctr_output.u] .<= 1.5) # test limit
         end
     end
     @testset "PI without AWM" begin
-        @named pid_controller = LimPID(k = 3, Ti = 0.5, Td = false, u_max = 1.5,
-            u_min = -1.5, Ni = Inf)
+        @named pid_controller = LimPID(
+            k = 3, Ti = 0.5, Td = false, u_max = 1.5,
+            u_min = -1.5, Ni = Inf
+        )
         @named model = System(
             [
                 connect(ref.output, pid_controller.reference),
                 connect(plant.output, pid_controller.measurement),
-                connect(pid_controller.ctr_output, plant.input)
+                connect(pid_controller.ctr_output, plant.input),
             ],
             t,
-            systems = [pid_controller, plant, ref])
+            systems = [pid_controller, plant, ref]
+        )
         sys = mtkcompile(model)
         prob = ODEProblem(sys, Pair[], (0.0, 100.0))
         sol = solve(prob, Rodas4())
 
         # Plots.plot(sol, vars=[plant.output.u, plant.input.u])
         @test sol.retcode == Success
-        @test all(isapprox.(sol[ref.output.u], re_val, atol = 1e-3))  # check reference
-        @test sol[plant.output.u][end]≈re_val atol=1e-3 # zero control error after 100s
+        @test all(isapprox.(sol[ref.output.u], re_val, atol = 1.0e-3))  # check reference
+        @test sol[plant.output.u][end] ≈ re_val atol = 1.0e-3 # zero control error after 100s
         @test all(-1.5 .<= sol[pid_controller.ctr_output.u] .<= 1.5) # test limit
     end
 
@@ -436,7 +474,7 @@ end
         prob = ODEProblem(sys, Pair[], (0.0, 100.0))
         sol = solve(prob, Rodas4())
         @test sol.retcode == Success
-        @test sol[pt1.output.u]≈pt1_func.(sol.t, 1.2, 3.14) atol=1e-3
+        @test sol[pt1.output.u] ≈ pt1_func.(sol.t, 1.2, 3.14) atol = 1.0e-3
 
         # Test logic for a_end by constructing an integrator
         @named c = Constant(; k = 1)
@@ -456,10 +494,16 @@ end
                 -k * (-1 + cos(t * w))
             else
                 d = complex(d)
-                real(k * (1 +
-                      (-cosh(sqrt(-1 + d^2) * t * w) -
-                       (d * sinh(sqrt(-1 + d^2) * t * w)) / sqrt(-1 + d^2)) /
-                      exp(d * t * w)))
+                real(
+                    k * (
+                        1 +
+                            (
+                            -cosh(sqrt(-1 + d^2) * t * w) -
+                                (d * sinh(sqrt(-1 + d^2) * t * w)) / sqrt(-1 + d^2)
+                        ) /
+                            exp(d * t * w)
+                    )
+                )
             end
         end
 
@@ -470,7 +514,7 @@ end
         prob = ODEProblem(sys, Pair[], (0.0, 100.0))
         sol = solve(prob, Rodas4())
         @test sol.retcode == Success
-        @test sol[pt1.output.u]≈pt2_func.(sol.t, k, w, d) atol=1e-3
+        @test sol[pt1.output.u] ≈ pt2_func.(sol.t, k, w, d) atol = 1.0e-3
 
         # test zeros (high-pass version of first test)
         @named c = Constant(; k = 1)
@@ -480,8 +524,8 @@ end
         prob = ODEProblem(sys, Pair[], (0.0, 100.0))
         sol = solve(prob, Rodas4())
         @test sol.retcode == Success
-        @test sol[pt1.output.u]≈1 .- pt1_func.(sol.t, 1, 1) atol=1e-3
-        @test sol[pt1.x[1]]≈pt1_func.(sol.t, 1, 1) atol=1e-3 # Test that scaling of state works properly
+        @test sol[pt1.output.u] ≈ 1 .- pt1_func.(sol.t, 1, 1) atol = 1.0e-3
+        @test sol[pt1.x[1]] ≈ pt1_func.(sol.t, 1, 1) atol = 1.0e-3 # Test that scaling of state works properly
 
         # Test with no state
         @named pt1 = TransferFunction(b = [2.7], a = [pi])

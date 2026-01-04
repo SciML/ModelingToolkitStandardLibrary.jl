@@ -47,7 +47,7 @@ Component with two electrical pins `p` and `n` and current `i` flows from `p` to
     equations = Equation[
         v ~ p.v - n.v,
         0 ~ p.i + n.i,
-        i ~ p.i
+        i ~ p.i,
     ]
 
     return System(equations, t, vars, pars; name, systems)
@@ -96,7 +96,7 @@ Current `i1` flows from `p1` to `n1` and `i2` from `p2` to `n2`.
         i1 ~ p1.i,
         v2 ~ p2.v - n2.v,
         0 ~ p2.i + n2.i,
-        i2 ~ p2.i
+        i2 ~ p2.i,
     ]
 
     return System(equations, t, vars, pars; name, systems)
@@ -105,11 +105,15 @@ end
 @connector function DigitalPin(; name)
     @variables val(t) v(t) i(t)
     eqs = [
-        val ~ IfElse.ifelse((0.0 <= v) & (v <= 0.8) | (2.0 <= v) & (v <= 5.0),
-        IfElse.ifelse(v > 2.0, 1, 0), X)
+        val ~ IfElse.ifelse(
+            (0.0 <= v) & (v <= 0.8) | (2.0 <= v) & (v <= 5.0),
+            IfElse.ifelse(v > 2.0, 1, 0), X
+        ),
     ]
-    System(Equation[], t, [val, v, i], [], guesses = Dict(val => 0, i => 0),
-        name = name)
+    System(
+        Equation[], t, [val, v, i], [], guesses = Dict(val => 0, i => 0),
+        name = name
+    )
 end
 @doc """
     DigitalPin(; name)

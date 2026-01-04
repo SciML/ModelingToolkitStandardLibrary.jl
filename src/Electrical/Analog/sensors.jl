@@ -29,7 +29,7 @@ an ideal ammeter.
     equations = Equation[
         p.v ~ n.v,
         i ~ p.i,
-        i ~ -n.i
+        i ~ -n.i,
     ]
 
     return System(equations, t, vars, pars; name, systems)
@@ -62,7 +62,7 @@ Creates a circuit component which measures the potential at a pin.
 
     equations = Equation[
         p.i ~ 0,
-        phi ~ p.v
+        phi ~ p.v,
     ]
 
     return System(equations, t, vars, pars; name, systems)
@@ -98,7 +98,7 @@ Creates a circuit component that measures the voltage across it. Analogous to an
     equations = Equation[
         p.i ~ 0,
         n.i ~ 0,
-        v ~ p.v - n.v
+        v ~ p.v - n.v,
     ]
 
     return System(equations, t, vars, pars; name, systems)
@@ -145,7 +145,7 @@ consumed by a circuit.
         connect(voltage_sensor.n, nv),
         connect(current_sensor.p, pc),
         connect(current_sensor.n, nc),
-        power ~ current_sensor.i * voltage_sensor.v
+        power ~ current_sensor.i * voltage_sensor.v,
     ]
 
     return System(equations, t, vars, pars; name, systems)
@@ -192,7 +192,7 @@ Combines a [`VoltageSensor`](@ref) and a [`CurrentSensor`](@ref).
         connect(current_sensor.p, pc),
         connect(current_sensor.n, nc),
         i ~ current_sensor.i,
-        v ~ voltage_sensor.v
+        v ~ voltage_sensor.v,
     ]
 
     return System(equations, t, vars, pars; name, systems)

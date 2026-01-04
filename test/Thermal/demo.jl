@@ -15,11 +15,13 @@ using OrdinaryDiffEq: ReturnCode.Success
         connect(mass1.port, conduction.port_a),
         connect(conduction.port_b, mass2.port),
         connect(mass1.port, Tsensor1.port),
-        connect(mass2.port, Tsensor2.port)
+        connect(mass2.port, Tsensor2.port),
     ]
 
-    @named model = System(connections, t,
-        systems = [mass1, mass2, conduction, Tsensor1, Tsensor2])
+    @named model = System(
+        connections, t,
+        systems = [mass1, mass2, conduction, Tsensor1, Tsensor2]
+    )
     sys = mtkcompile(model)
     prob = ODEProblem(sys, [conduction.Q_flow => nothing, conduction.dT => nothing], (0, 3.0))
     sol = solve(prob, Tsit5())

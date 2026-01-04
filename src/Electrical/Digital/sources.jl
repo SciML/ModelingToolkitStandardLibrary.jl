@@ -18,10 +18,12 @@ function PulseDiff(; name, Val = 1, dt = 0.1)
     @variables val(t)
     D = ModelingToolkitBase.Difference(t; dt = dt)
 
-    eqs = [D(val) ~ Val
-           val ~ d.val]
+    eqs = [
+        D(val) ~ Val
+        val ~ d.val
+    ]
 
-    System(eqs, t, [val], [], systems = [d], initial_conditions = Dict(Val => 0), name = name)
+    return System(eqs, t, [val], [], systems = [d], initial_conditions = Dict(Val => 0), name = name)
 end
 
 """
@@ -40,9 +42,9 @@ function Set(; name)
     @named d = DigitalPin()
 
     eqs = [
-        d.val ~ 1
+        d.val ~ 1,
     ]
-    System(eqs, t, [], [], systems = [d], name = name)
+    return System(eqs, t, [], [], systems = [d], name = name)
 end
 
 """
@@ -61,9 +63,9 @@ function Reset(; name)
     @named d = DigitalPin()
 
     eqs = [
-        d.val ~ 0
+        d.val ~ 0,
     ]
-    System(eqs, t, [], [], systems = [d], name = name)
+    return System(eqs, t, [], [], systems = [d], name = name)
 end
 
 """
@@ -82,7 +84,7 @@ function Pulse(; name, duty_cycle = 0.5, T = 1.0)
     @named d = DigitalPin()
 
     eqs = [
-        d.val ~ IfElse.ifelse(t % T > duty_cycle * T, 1, 0)
+        d.val ~ IfElse.ifelse(t % T > duty_cycle * T, 1, 0),
     ]
-    System(eqs, t, [], [], systems = [d], name = name)
+    return System(eqs, t, [], [], systems = [d], name = name)
 end

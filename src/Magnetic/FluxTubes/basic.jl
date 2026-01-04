@@ -15,7 +15,7 @@ Zero magnetic potential.
     end
 
     equations = Equation[
-        port.V_m ~ 0
+        port.V_m ~ 0,
     ]
 
     return System(equations, t, vars, pars; name, systems)
@@ -40,7 +40,7 @@ Idle running branch.
     end
 
     equations = Equation[
-        Phi ~ 0
+        Phi ~ 0,
     ]
 
     sys = System(equations, t, vars, pars; name, systems)
@@ -66,7 +66,7 @@ Short cut branch.
     end
 
     equations = Equation[
-        V_m ~ 0
+        V_m ~ 0,
     ]
 
     sys = System(equations, t, vars, pars; name, systems)
@@ -96,7 +96,7 @@ This is a simple crossing of two branches. The ports port_p1 and port_p2 are con
 
     equations = Equation[
         connect(port_p1, port_p2),
-        connect(port_n1, port_n2)
+        connect(port_n1, port_n2),
     ]
 
     return System(equations, t, vars, pars; name, systems)
@@ -126,7 +126,7 @@ Constant permeance.
     end
 
     equations = Equation[
-        Phi ~ G_m * V_m
+        Phi ~ G_m * V_m,
     ]
 
     sys = System(equations, t, vars, pars; name, systems)
@@ -157,7 +157,7 @@ Constant reluctance.
     end
 
     equations = Equation[
-        V_m ~ Phi * R_m
+        V_m ~ Phi * R_m,
     ]
 
     sys = System(equations, t, vars, pars; name, systems)
@@ -203,7 +203,7 @@ Initial magnetic flux flowing into the port_p can be set with `Phi` ([Wb])
         i ~ p.i,
         #converter equations:
         V_m ~ i * N, # Ampere's law
-        D(Phi) ~ -v / N
+        D(Phi) ~ -v / N,
     ]
 
     sys = System(equations, t, vars, pars; name, systems)
@@ -242,7 +242,7 @@ Initial magnetic flux flowing into the port_p can be set with `Phi` ([`Wb`])
     end
 
     equations = Equation[
-        D(Phi) ~ V_m * R
+        D(Phi) ~ V_m * R,
     ]
 
     sys = System(equations, t, vars, pars; name, systems)

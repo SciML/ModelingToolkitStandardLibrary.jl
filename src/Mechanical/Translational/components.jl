@@ -20,7 +20,7 @@ Use to close a system that has un-connected `MechanicalPort`'s where the force s
     end
 
     equations = Equation[
-        flange.f ~ f
+        flange.f ~ f,
     ]
 
     return System(equations, t, vars, pars; name, systems)
@@ -47,7 +47,7 @@ Fixes a flange position (velocity = 0)
     end
 
     equations = Equation[
-        flange.v ~ 0
+        flange.v ~ 0,
     ]
 
     return System(equations, t, vars, pars; name, systems)
@@ -86,13 +86,17 @@ Sliding mass with inertia
         f(t), [guess = 0]
     end
 
-    eqs = [flange.v ~ v
-           flange.f ~ f
-           D(s) ~ v
-           D(v) ~ f / m + g]
+    eqs = [
+        flange.v ~ v
+        flange.f ~ f
+        D(s) ~ v
+        D(v) ~ f / m + g
+    ]
 
-    return compose(System(eqs, t, vars, pars; name = name),
-        flange)
+    return compose(
+        System(eqs, t, vars, pars; name = name),
+        flange
+    )
 end
 
 const REL = Val(:relative)
@@ -130,13 +134,17 @@ end # default
     @named flange_a = MechanicalPort()
     @named flange_b = MechanicalPort()
 
-    eqs = [D(delta_s) ~ flange_a.v - flange_b.v
-           f ~ k * delta_s
-           flange_a.f ~ +f
-           flange_b.f ~ -f]
-    return compose(System(eqs, t, vars, pars; name = name),
+    eqs = [
+        D(delta_s) ~ flange_a.v - flange_b.v
+        f ~ k * delta_s
+        flange_a.f ~ +f
+        flange_b.f ~ -f
+    ]
+    return compose(
+        System(eqs, t, vars, pars; name = name),
         flange_a,
-        flange_b) #flange_a.f => +k*delta_s, flange_b.f => -k*delta_s
+        flange_b
+    ) #flange_a.f => +k*delta_s, flange_b.f => -k*delta_s
 end
 
 const ABS = Val(:absolute)
@@ -154,14 +162,18 @@ const ABS = Val(:absolute)
     @named flange_a = MechanicalPort()
     @named flange_b = MechanicalPort()
 
-    eqs = [D(sa) ~ flange_a.v
-           D(sb) ~ flange_b.v
-           f ~ k * (sa - sb - l) #delta_s
-           flange_a.f ~ +f
-           flange_b.f ~ -f]
-    return compose(System(eqs, t, vars, pars; name = name),
+    eqs = [
+        D(sa) ~ flange_a.v
+        D(sb) ~ flange_b.v
+        f ~ k * (sa - sb - l) #delta_s
+        flange_a.f ~ +f
+        flange_b.f ~ -f
+    ]
+    return compose(
+        System(eqs, t, vars, pars; name = name),
         flange_a,
-        flange_b) #, flange_a.f => k * (flange_a__s - flange_b__s - l)
+        flange_b
+    ) #, flange_a.f => k * (flange_a__s - flange_b__s - l)
 end
 
 """
@@ -197,7 +209,7 @@ Linear 1D translational damper
         v ~ flange_a.v - flange_b.v,
         f ~ v * d,
         flange_a.f ~ +f,
-        flange_b.f ~ -f
+        flange_b.f ~ -f,
     ]
 
     return System(equations, t, vars, pars; name, systems)

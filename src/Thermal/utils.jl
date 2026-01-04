@@ -57,7 +57,7 @@ flow rate through the element from `port_a` to `port_b`, `Q_flow`.
     equations = Equation[
         dT ~ port_a.T - port_b.T,
         port_a.Q_flow ~ Q_flow,
-        port_a.Q_flow + port_b.Q_flow ~ 0
+        port_a.Q_flow + port_b.Q_flow ~ 0,
     ]
 
     return System(equations, t, vars, pars; name, systems)
@@ -98,7 +98,7 @@ flow rate through the element from `solid` to `fluid`, `Q_flow`.
     equations = Equation[
         dT ~ solid.T - fluid.T,
         solid.Q_flow ~ Q_flow,
-        solid.Q_flow + fluid.Q_flow ~ 0
+        solid.Q_flow + fluid.Q_flow ~ 0,
     ]
 
     return System(equations, t, vars, pars; name, systems)

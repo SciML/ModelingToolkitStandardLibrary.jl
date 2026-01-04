@@ -13,7 +13,7 @@
     end
 
     equations = Equation[
-        phi ~ flange.phi - phi_support
+        phi ~ flange.phi - phi_support,
     ]
 
     sys = System(equations, t, vars, pars; name, systems)
@@ -53,7 +53,7 @@ Input signal acting as external torque on a flange
     end
 
     equations = Equation[
-        flange.tau ~ -tau.u
+        flange.tau ~ -tau.u,
     ]
 
     sys = System(equations, t, vars, pars; name, systems)
@@ -97,7 +97,7 @@ Constant torque source
     equations = Equation[
         w ~ D(phi),
         tau ~ -flange.tau,
-        tau ~ tau_constant
+        tau ~ tau_constant,
     ]
 
     sys = System(equations, t, vars, pars; name, systems)
@@ -152,14 +152,14 @@ Forced movement of a flange according to a reference angular velocity signal
             phi ~ flange.phi - phi_support,
             D(phi) ~ w,
             w ~ w_ref.u,
-            a ~ 0
+            a ~ 0,
         ]
     else
         Equation[
             phi ~ flange.phi - phi_support,
             D(phi) ~ w,
             D(w) ~ a,
-            a ~ (w_ref.u - w) * tau_filt
+            a ~ (w_ref.u - w) * tau_filt,
         ]
     end
 
@@ -203,26 +203,32 @@ The input signal `phi_ref` defines the reference angle in [rad]. Flange is force
 
     w_crit = 2 * π * f_crit
     af = 1.3617 # s coefficient of Bessel filter
-    bf = 0.6180 # s*s coefficient of Bessel filter
+    bf = 0.618 # s*s coefficient of Bessel filter
 
     vars = @variables begin
         phi(t),
-        [guess = 0.0, description = "Rotation angle of flange with respect to support"]
+            [guess = 0.0, description = "Rotation angle of flange with respect to support"]
         w(t),
-        [guess = 0.0, description = "Angular velocity of flange with respect to support"]
+            [guess = 0.0, description = "Angular velocity of flange with respect to support"]
         a(t),
-        [guess = 0.0,
-            description = "Angular acceleration of flange with respect to support"]
+            [
+                guess = 0.0,
+                description = "Angular acceleration of flange with respect to support",
+            ]
     end
 
     equations = if exact
-        [phi ~ flange.phi - phi_support
-         phi ~ phi_ref.u]
+        [
+            phi ~ flange.phi - phi_support
+            phi ~ phi_ref.u
+        ]
     else
-        [phi ~ flange.phi - phi_support
-         D(phi) ~ w
-         D(w) ~ a
-         a ~ ((phi_ref.u - phi) * w_crit - af * w) * (w_crit / bf)]
+        [
+            phi ~ flange.phi - phi_support
+            D(phi) ~ w
+            D(w) ~ a
+            a ~ ((phi_ref.u - phi) * w_crit - af * w) * (w_crit / bf)
+        ]
     end
     extend(System(equations, t; name, systems = [phi_ref]), partial_element)
 end

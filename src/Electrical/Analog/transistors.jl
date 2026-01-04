@@ -42,21 +42,23 @@ Early voltage effect.
         - `NF`: Forward emission coefficient
         - `NR`: Reverse emission coefficient
 """
-@component function NPN(; name,
-                         use_substrate = false,
-                         use_Early = true,
-                         use_advanced_continuation = false,
-                         V_BE = nothing, V_BC = nothing, ICC = nothing, IEC = nothing,
-                         C_jC = nothing, C_jE = nothing, C_DC = nothing, C_DE = nothing,
-                         I_sub = nothing, V_sub = nothing, V_CS = nothing,
-                         B_F = 50.0, B_R = 0.1, Is = 1e-16, V_T = 0.026,
-                         V_A = 0.02, phi_C = 0.8, phi_E = 0.6,
-                         Z_C = 0.1, Z_E = 0.1,
-                         Tau_f = 0.12e-9, Tau_r = 5e-9,
-                         C_jC0 = 0.5e-12, C_jE0 = 0.4e-12,
-                         C_CS = 1e-12,
-                         gamma_C = 0.5, gamma_E = 1.0/3.0,
-                         NF = 1.0, NR = 1.0)
+@component function NPN(;
+        name,
+        use_substrate = false,
+        use_Early = true,
+        use_advanced_continuation = false,
+        V_BE = nothing, V_BC = nothing, ICC = nothing, IEC = nothing,
+        C_jC = nothing, C_jE = nothing, C_DC = nothing, C_DE = nothing,
+        I_sub = nothing, V_sub = nothing, V_CS = nothing,
+        B_F = 50.0, B_R = 0.1, Is = 1.0e-16, V_T = 0.026,
+        V_A = 0.02, phi_C = 0.8, phi_E = 0.6,
+        Z_C = 0.1, Z_E = 0.1,
+        Tau_f = 0.12e-9, Tau_r = 5.0e-9,
+        C_jC0 = 0.5e-12, C_jE0 = 0.4e-12,
+        C_CS = 1.0e-12,
+        gamma_C = 0.5, gamma_E = 1.0 / 3.0,
+        NF = 1.0, NR = 1.0
+    )
 
     pars = @parameters begin
         B_F = B_F, [description = "Forward beta"]
@@ -113,30 +115,46 @@ Early voltage effect.
         V_BE ~ b.v - e.v,
         V_BC ~ b.v - c.v,
         ICC ~ Is * (exp(V_BE / V_T) - 1),
-        IEC ~ Is * (exp(V_BC / V_T) - 1)
+        IEC ~ Is * (exp(V_BC / V_T) - 1),
     ]
 
     if !use_advanced_continuation
-        push!(equations, C_jC ~ ifelse(V_BC / phi_C > 0.0, 1 + gamma_C * V_BC / phi_C,
-            (C_jC0) / (1 - V_BC / phi_C)^gamma_C))
-        push!(equations, C_jE ~ ifelse(V_BE / phi_E > 0.0, 1 + gamma_E * V_BE / phi_E,
-            (C_jE0) / (1 - V_BE / phi_E)^gamma_E))
+        push!(
+            equations, C_jC ~ ifelse(
+                V_BC / phi_C > 0.0, 1 + gamma_C * V_BC / phi_C,
+                (C_jC0) / (1 - V_BC / phi_C)^gamma_C
+            )
+        )
+        push!(
+            equations, C_jE ~ ifelse(
+                V_BE / phi_E > 0.0, 1 + gamma_E * V_BE / phi_E,
+                (C_jE0) / (1 - V_BE / phi_E)^gamma_E
+            )
+        )
     end
 
     if use_advanced_continuation
-        push!(equations, C_jC ~ ifelse(V_BC > phi_C - Z_C,
-            ((C_jC0 * gamma_C * (1 - ((phi_C - Z_C) / phi_C))^(-gamma_C - 1)) / phi_C) *
-            V_BC -
-            ((C_jC0 * gamma_C * (1 - ((phi_C - Z_C) / phi_C))^(-gamma_C - 1)) / phi_C) *
-            (phi_C - Z_C) + (C_jC0) / (1 - (phi_C - Z_C) / phi_C)^gamma_C,
-            (C_jC0) / (1 - V_BC / phi_C)^gamma_C))
+        push!(
+            equations, C_jC ~ ifelse(
+                V_BC > phi_C - Z_C,
+                ((C_jC0 * gamma_C * (1 - ((phi_C - Z_C) / phi_C))^(-gamma_C - 1)) / phi_C) *
+                    V_BC -
+                    ((C_jC0 * gamma_C * (1 - ((phi_C - Z_C) / phi_C))^(-gamma_C - 1)) / phi_C) *
+                    (phi_C - Z_C) + (C_jC0) / (1 - (phi_C - Z_C) / phi_C)^gamma_C,
+                (C_jC0) / (1 - V_BC / phi_C)^gamma_C
+            )
+        )
 
-        push!(equations, C_jE ~ ifelse(V_BE > phi_E - Z_E,
-            ((C_jE0 * gamma_E * (1 - ((phi_E - Z_E) / phi_E))^(-gamma_E - 1)) / phi_E) *
-            V_BE -
-            ((C_jE0 * gamma_E * (1 - ((phi_E - Z_E) / phi_E))^(-gamma_E - 1)) / phi_E) *
-            (phi_E - Z_E) + (C_jE0) / (1 - (phi_E - Z_E) / phi_E)^gamma_E,
-            (C_jE0) / (1 - V_BE / phi_E)^gamma_E))
+        push!(
+            equations, C_jE ~ ifelse(
+                V_BE > phi_E - Z_E,
+                ((C_jE0 * gamma_E * (1 - ((phi_E - Z_E) / phi_E))^(-gamma_E - 1)) / phi_E) *
+                    V_BE -
+                    ((C_jE0 * gamma_E * (1 - ((phi_E - Z_E) / phi_E))^(-gamma_E - 1)) / phi_E) *
+                    (phi_E - Z_E) + (C_jE0) / (1 - (phi_E - Z_E) / phi_E)^gamma_E,
+                (C_jE0) / (1 - V_BE / phi_E)^gamma_E
+            )
+        )
     end
 
     push!(equations, C_DE ~ Tau_f * (Is / (NF * V_T)) * exp(V_BE / (NF * V_T)))
@@ -205,21 +223,23 @@ Early voltage effect.
         - `NF`: Forward emission coefficient
         - `NR`: Reverse emission coefficient
 """
-@component function PNP(; name,
-                         use_substrate = false,
-                         use_Early = true,
-                         use_advanced_continuation = false,
-                         V_EB = nothing, V_CB = nothing, ICC = nothing, IEC = nothing,
-                         C_jC = nothing, C_jE = nothing, C_DC = nothing, C_DE = nothing,
-                         I_sub = nothing, V_sub = nothing, V_CS = nothing,
-                         B_F = 50.0, B_R = 0.1, Is = 1e-16, V_T = 0.026,
-                         V_A = 0.02, phi_C = 0.8, phi_E = 0.6,
-                         Z_C = 0.1, Z_E = 0.1,
-                         Tau_f = 0.12e-9, Tau_r = 5e-9,
-                         C_jC0 = 0.5e-12, C_jE0 = 0.4e-12,
-                         C_CS = 1e-12,
-                         gamma_C = 0.5, gamma_E = 1.0/3.0,
-                         NF = 1.0, NR = 1.0)
+@component function PNP(;
+        name,
+        use_substrate = false,
+        use_Early = true,
+        use_advanced_continuation = false,
+        V_EB = nothing, V_CB = nothing, ICC = nothing, IEC = nothing,
+        C_jC = nothing, C_jE = nothing, C_DC = nothing, C_DE = nothing,
+        I_sub = nothing, V_sub = nothing, V_CS = nothing,
+        B_F = 50.0, B_R = 0.1, Is = 1.0e-16, V_T = 0.026,
+        V_A = 0.02, phi_C = 0.8, phi_E = 0.6,
+        Z_C = 0.1, Z_E = 0.1,
+        Tau_f = 0.12e-9, Tau_r = 5.0e-9,
+        C_jC0 = 0.5e-12, C_jE0 = 0.4e-12,
+        C_CS = 1.0e-12,
+        gamma_C = 0.5, gamma_E = 1.0 / 3.0,
+        NF = 1.0, NR = 1.0
+    )
 
     pars = @parameters begin
         B_F = B_F, [description = "Forward beta"]
@@ -276,30 +296,46 @@ Early voltage effect.
         V_EB ~ e.v - b.v,
         V_CB ~ c.v - b.v,
         ICC ~ Is * (exp(V_EB / V_T) - 1),
-        IEC ~ Is * (exp(V_CB / V_T) - 1)
+        IEC ~ Is * (exp(V_CB / V_T) - 1),
     ]
 
     if !use_advanced_continuation
-        push!(equations, C_jC ~ ifelse(V_CB / phi_C > 0.0, 1 + gamma_C * V_CB / phi_C,
-            (C_jC0) / (1 - V_CB / phi_C)^gamma_C))
-        push!(equations, C_jE ~ ifelse(V_EB / phi_E > 0.0, 1 + gamma_E * V_EB / phi_E,
-            (C_jE0) / (1 - V_EB / phi_E)^gamma_E))
+        push!(
+            equations, C_jC ~ ifelse(
+                V_CB / phi_C > 0.0, 1 + gamma_C * V_CB / phi_C,
+                (C_jC0) / (1 - V_CB / phi_C)^gamma_C
+            )
+        )
+        push!(
+            equations, C_jE ~ ifelse(
+                V_EB / phi_E > 0.0, 1 + gamma_E * V_EB / phi_E,
+                (C_jE0) / (1 - V_EB / phi_E)^gamma_E
+            )
+        )
     end
 
     if use_advanced_continuation
-        push!(equations, C_jC ~ ifelse(V_CB > phi_C - Z_C,
-            ((C_jC0 * gamma_C * (1 - ((phi_C - Z_C) / phi_C))^(-gamma_C - 1)) / phi_C) *
-            V_CB -
-            ((C_jC0 * gamma_C * (1 - ((phi_C - Z_C) / phi_C))^(-gamma_C - 1)) / phi_C) *
-            (phi_C - Z_C) + (C_jC0) / (1 - (phi_C - Z_C) / phi_C)^gamma_C,
-            (C_jC0) / (1 - V_CB / phi_C)^gamma_C))
+        push!(
+            equations, C_jC ~ ifelse(
+                V_CB > phi_C - Z_C,
+                ((C_jC0 * gamma_C * (1 - ((phi_C - Z_C) / phi_C))^(-gamma_C - 1)) / phi_C) *
+                    V_CB -
+                    ((C_jC0 * gamma_C * (1 - ((phi_C - Z_C) / phi_C))^(-gamma_C - 1)) / phi_C) *
+                    (phi_C - Z_C) + (C_jC0) / (1 - (phi_C - Z_C) / phi_C)^gamma_C,
+                (C_jC0) / (1 - V_CB / phi_C)^gamma_C
+            )
+        )
 
-        push!(equations, C_jE ~ ifelse(V_EB > phi_E - Z_E,
-            ((C_jE0 * gamma_E * (1 - ((phi_E - Z_E) / phi_E))^(-gamma_E - 1)) / phi_E) *
-            V_EB -
-            ((C_jE0 * gamma_E * (1 - ((phi_E - Z_E) / phi_E))^(-gamma_E - 1)) / phi_E) *
-            (phi_E - Z_E) + (C_jE0) / (1 - (phi_E - Z_E) / phi_E)^gamma_E,
-            (C_jE0) / (1 - V_EB / phi_E)^gamma_E))
+        push!(
+            equations, C_jE ~ ifelse(
+                V_EB > phi_E - Z_E,
+                ((C_jE0 * gamma_E * (1 - ((phi_E - Z_E) / phi_E))^(-gamma_E - 1)) / phi_E) *
+                    V_EB -
+                    ((C_jE0 * gamma_E * (1 - ((phi_E - Z_E) / phi_E))^(-gamma_E - 1)) / phi_E) *
+                    (phi_E - Z_E) + (C_jE0) / (1 - (phi_E - Z_E) / phi_E)^gamma_E,
+                (C_jE0) / (1 - V_EB / phi_E)^gamma_E
+            )
+        )
     end
 
     push!(equations, C_DE ~ Tau_f * (Is / (NF * V_T)) * exp(V_EB / (NF * V_T)))

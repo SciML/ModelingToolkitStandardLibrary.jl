@@ -19,7 +19,7 @@ Input signal acting as external force on a flange
     end
 
     equations = Equation[
-        flange.f ~ -f.u
+        flange.f ~ -f.u,
     ]
 
     sys = System(equations, t, vars, pars; name, systems)

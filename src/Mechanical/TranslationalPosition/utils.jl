@@ -63,7 +63,7 @@ Partial model for the compliant connection of two translational 1-dim. flanges.
         D(flange_b.s) ~ v_b,
         D(s_rel) ~ v_b - v_a,
         flange_b.f ~ +f,
-        flange_a.f ~ -f
+        flange_a.f ~ -f,
     ]
 
     return System(equations, t, vars, pars; name, systems)
@@ -105,7 +105,7 @@ Partial model for the compliant connection of two translational 1-dim. flanges.
     equations = Equation[
         delta_s ~ flange_a.s - flange_b.s,
         flange_a.f ~ +f,
-        flange_b.f ~ -f
+        flange_b.f ~ -f,
     ]
 
     return System(equations, t, vars, pars; name, systems)
@@ -130,8 +130,10 @@ Partial model for a component with one translational 1-dim. shaft flange and a s
     @variables s_support(t)
     if use_support
         @named support = Support()
-        eqs = [support.s ~ s_support
-               support.f ~ -flange.f]
+        eqs = [
+            support.s ~ s_support
+            support.f ~ -flange.f
+        ]
         push!(sys, support)
     else
         eqs = [s_support ~ 0]
@@ -159,8 +161,10 @@ Partial model for a component with two translational 1-dim. flanges and a suppor
     @variables s_support(t)
     if use_support
         @named support = Support()
-        eqs = [support.s ~ s_support
-               support.f ~ -flange_a.f - flange_b.f]
+        eqs = [
+            support.s ~ s_support
+            support.f ~ -flange_a.f - flange_b.f
+        ]
         push!(sys, support)
     else
         eqs = [s_support ~ 0]

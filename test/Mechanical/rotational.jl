@@ -1,6 +1,6 @@
 using ModelingToolkitStandardLibrary.Mechanical.Rotational,
-      ModelingToolkit, OrdinaryDiffEq,
-      Test
+    ModelingToolkit, OrdinaryDiffEq,
+    Test
 using SciCompDSL
 using ModelingToolkit: t_nounits as t, D_nounits as D
 import ModelingToolkitStandardLibrary.Blocks
@@ -13,7 +13,7 @@ using OrdinaryDiffEq: ReturnCode.Success
         @components begin
             fixed = Fixed()
             inertia1 = Inertia(J = 2) # this one is fixed
-            spring = Spring(c = 1e4)
+            spring = Spring(c = 1.0e4)
             damper = Damper(d = 10)
             inertia2 = Inertia(J = 2, phi = pi / 2)
         end
@@ -31,17 +31,18 @@ using OrdinaryDiffEq: ReturnCode.Success
     @test SciMLBase.successful_retcode(sol1)
 
     prob = DAEProblem(
-        sys, D.(unknowns(sys)) .=> prob.f(sol1.u[1], prob.p, 0.0), (0, 10.0))
+        sys, D.(unknowns(sys)) .=> prob.f(sol1.u[1], prob.p, 0.0), (0, 10.0)
+    )
     dae_sol = solve(prob, DFBDF())
     @test SciMLBase.successful_retcode(dae_sol)
     @test all(dae_sol[sys.inertia1.w] .== 0)
-    @test dae_sol[sys.inertia2.w][end]≈0 atol=1e-3 # all energy has dissipated
+    @test dae_sol[sys.inertia2.w][end] ≈ 0 atol = 1.0e-3 # all energy has dissipated
 
     @mtkmodel WithSpringDamper begin
         @components begin
             fixed = Fixed()
             inertia1 = Inertia(J = 2) # this one is fixed
-            springdamper = SpringDamper(; c = 1e4, d = 10)
+            springdamper = SpringDamper(; c = 1.0e4, d = 10)
             inertia2 = Inertia(J = 2, phi = pi / 2)
         end
         @equations begin
@@ -56,7 +57,7 @@ using OrdinaryDiffEq: ReturnCode.Success
     prob = ODEProblem(sys, [D(D(sys.inertia2.phi)) => 0], (0, 10.0))
     sol2 = solve(prob, Rodas4())
     @test SciMLBase.successful_retcode(sol2)
-    @test sol2(0:1:10, idxs = sys.inertia2.w).u≈sol1(0:1:10, idxs = sys.inertia2.w).u atol=1e-3
+    @test sol2(0:1:10, idxs = sys.inertia2.w).u ≈ sol1(0:1:10, idxs = sys.inertia2.w).u atol = 1.0e-3
 
     # Plots.plot(sol; vars=[inertia1.w, inertia2.w])
 end
@@ -73,7 +74,7 @@ end
             fixed = Fixed()
             torque = Torque(; use_support = true)
             inertia1 = Inertia(J = 2, phi = pi / 2)
-            spring = Rotational.Spring(c = 1e4)
+            spring = Rotational.Spring(c = 1.0e4)
             damper = Damper(d = 10)
             inertia2 = Inertia(J = 4)
             sine = Blocks.Sine(amplitude = amplitude, frequency = frequency)
@@ -91,19 +92,26 @@ end
     @mtkcompile sys = TwoInertiasWithDrivingTorque()
     deqs = [eq.lhs => eq.rhs for eq in equations(sys)]
     prob = DAEProblem(
-        sys, [deqs;
-              D(D(sys.inertia2.phi)) => 1.0; sys.spring.flange_b.phi => 0.0], (0, 10.0))
+        sys, [
+            deqs;
+            D(D(sys.inertia2.phi)) => 1.0; sys.spring.flange_b.phi => 0.0
+        ], (0, 10.0)
+    )
     sol = solve(prob, DFBDF())
     @test SciMLBase.successful_retcode(sol)
 
     prob = ODEProblem(
-        sys, [D(D(sys.inertia2.phi)) => 0.0, sys.spring.flange_b.phi => 0.0], (0, 1.0))
+        sys, [D(D(sys.inertia2.phi)) => 0.0, sys.spring.flange_b.phi => 0.0], (0, 1.0)
+    )
     sol = solve(prob, Rodas4())
     @test SciMLBase.successful_retcode(sol)
 
     # exact opposite oscillation with smaller amplitude J2 = 2*J1 and with an offset.
-    @test all(isapprox.(
-        sol[sys.inertia1.w], -sol[sys.inertia2.w] * 2 .+ sol[sys.inertia1.w][1], atol = 1))
+    @test all(
+        isapprox.(
+            sol[sys.inertia1.w], -sol[sys.inertia2.w] * 2 .+ sol[sys.inertia1.w][1], atol = 1
+        )
+    )
     @test all(sol[sys.torque.flange.tau] .== -sol[sys.sine.output.u]) # torque source is equal to negative sine
 
     ## Test with constant torque source
@@ -112,7 +120,7 @@ end
             fixed = Fixed()
             torque = ConstantTorque(use_support = true, tau_constant = 1)
             inertia1 = Inertia(J = 2, phi = pi / 2)
-            spring = Rotational.Spring(c = 1e4)
+            spring = Rotational.Spring(c = 1.0e4)
             damper = Damper(d = 10)
             inertia2 = Inertia(J = 4)
         end
@@ -127,10 +135,11 @@ end
     @mtkcompile sys = TwoInertiasWitConstantTorque()
 
     prob = ODEProblem(
-        sys, [D(D(sys.inertia2.phi)) => 1.0, sys.spring.flange_b.phi => 0.0], (0, 10.0))
+        sys, [D(D(sys.inertia2.phi)) => 1.0, sys.spring.flange_b.phi => 0.0], (0, 10.0)
+    )
     sol = solve(prob, Rodas4())
     @test SciMLBase.successful_retcode(sol)
-    @test sol(sol.t[end], idxs = sys.inertia1.w)≈sol(sol.t[end], idxs = sys.inertia2.w) rtol=0.1 # both inertias have same angular velocity after initial transient
+    @test sol(sol.t[end], idxs = sys.inertia1.w) ≈ sol(sol.t[end], idxs = sys.inertia2.w) rtol = 0.1 # both inertias have same angular velocity after initial transient
 end
 
 # see: https://doc.modelica.org/Modelica%204.0.0/Resources/helpWSM/Modelica/Modelica.Mechanics.Rotational.Examples.First.html
@@ -151,7 +160,7 @@ end
             inertia1 = Inertia(J = J_motor)
             idealGear = IdealGear(ratio = ratio, use_support = true)
             inertia2 = Inertia(J = 2)
-            spring = Spring(c = 1e4)
+            spring = Spring(c = 1.0e4)
             inertia3 = Inertia(J = J_load)
             damper = Damper(d = damping)
             sine = Blocks.Sine(amplitude = amplitude, frequency = frequency)
@@ -173,7 +182,8 @@ end
 
     @mtkcompile sys = FirstExample()
     prob = ODEProblem(
-        sys, [sys.inertia3.w => 0.0, sys.spring.flange_a.phi => 0.0], (0, 1.0))
+        sys, [sys.inertia3.w => 0.0, sys.spring.flange_a.phi => 0.0], (0, 1.0)
+    )
     sol = solve(prob, Rodas4())
     @test SciMLBase.successful_retcode(sol)
     # Plots.plot(sol; vars=[inertia2.w, inertia3.w])
@@ -200,8 +210,10 @@ end
             spring = Spring(c = 6.5)
             damper = Damper(d = 0.01)
             inertia = Inertia(J = 0.0001)
-            friction = RotationalFriction(f = 0.001, tau_c = 20, w_brk = 0.06035,
-                tau_brk = 25)
+            friction = RotationalFriction(
+                f = 0.001, tau_c = 20, w_brk = 0.06035,
+                tau_brk = 25
+            )
             vel_profile = VelocityProfile()
             source = Speed()
             angle_sensor = AngleSensor()
@@ -218,10 +230,14 @@ end
     end
 
     @mtkcompile sys = StickSlip()
-    prob = DAEProblem(sys,
-        [D.(unknowns(sys)) .=> 0.0;
-         [sys.inertia.flange_b.tau => 0.0; unknowns(sys) .=> 0.0...]],
-        (0, 10.0))
+    prob = DAEProblem(
+        sys,
+        [
+            D.(unknowns(sys)) .=> 0.0;
+            [sys.inertia.flange_b.tau => 0.0; unknowns(sys) .=> 0.0...]
+        ],
+        (0, 10.0)
+    )
 
     sol = solve(prob, DFBDF())
     @test SciMLBase.successful_retcode(sol)
@@ -240,7 +256,7 @@ end
         @components begin
             fixed = Fixed()
             inertia1 = Inertia(J = 2) # this one is fixed
-            spring = Spring(c = 1e4)
+            spring = Spring(c = 1.0e4)
             damper = Damper(d = 10)
             inertia2 = Inertia(J = 2, phi = pi / 2)
             speed_sensor = SpeedSensor()
@@ -251,8 +267,10 @@ end
         @equations begin
             connect(fixed.flange, inertia1.flange_b, rel_speed_sensor.flange_b)
             connect(inertia1.flange_b, torque_sensor.flange_a)
-            connect(torque_sensor.flange_b, spring.flange_a, damper.flange_a,
-                speed_sensor.flange, rel_speed_sensor.flange_a)
+            connect(
+                torque_sensor.flange_b, spring.flange_a, damper.flange_a,
+                speed_sensor.flange, rel_speed_sensor.flange_a
+            )
             connect(spring.flange_b, damper.flange_b, inertia2.flange_a)
         end
     end
@@ -264,17 +282,18 @@ end
     @test SciMLBase.successful_retcode(sol)
     @test all(sol[sys.inertia1.w] .== 0)
     @test all(sol[sys.inertia1.w] .== sol[sys.speed_sensor.w.u])
-    @test sol[sys.inertia2.w][end]≈0 atol=1e-3 # all energy has dissipated
+    @test sol[sys.inertia2.w][end] ≈ 0 atol = 1.0e-3 # all energy has dissipated
     @test all(sol[sys.rel_speed_sensor.w_rel.u] .== sol[sys.speed_sensor.w.u])
     @test all(sol[sys.torque_sensor.tau.u] .== -sol[sys.inertia1.flange_b.tau])
 
     prob = DAEProblem(
-        sys, D.(unknowns(sys)) .=> prob.f(sol.u[1], prob.p, 0.0), (0, 10.0))
+        sys, D.(unknowns(sys)) .=> prob.f(sol.u[1], prob.p, 0.0), (0, 10.0)
+    )
     sol = solve(prob, DFBDF())
     @test SciMLBase.successful_retcode(sol)
     @test all(sol[sys.inertia1.w] .== 0)
     @test all(sol[sys.inertia1.w] .== sol[sys.speed_sensor.w.u])
-    @test sol[sys.inertia2.w][end]≈0 atol=1e-3 # all energy has dissipated
+    @test sol[sys.inertia2.w][end] ≈ 0 atol = 1.0e-3 # all energy has dissipated
     @test all(sol[sys.rel_speed_sensor.w_rel.u] .== sol[sys.speed_sensor.w.u])
     @test all(sol[sys.torque_sensor.tau.u] .== -sol[sys.inertia1.flange_b.tau])
 
@@ -298,7 +317,7 @@ end
     sol = solve(prob, Tsit5())
     @test SciMLBase.successful_retcode(sol)
     tv = 0:0.01:10
-    @test sol(tv, idxs = sys.inertia.phi).u≈sin.(2pi .* tv) atol=1e-12
+    @test sol(tv, idxs = sys.inertia.phi).u ≈ sin.(2pi .* tv) atol = 1.0e-12
 
     @mtkmodel TestPosition begin
         @components begin
@@ -312,12 +331,14 @@ end
         end
     end
     @mtkcompile sys = TestPosition()
-    prob = ODEProblem(sys, [
+    prob = ODEProblem(
+        sys, [
             sys.inertia.phi => 0,
-            sys.inertia.w => 0
-        ], (0, 10.0))
+            sys.inertia.w => 0,
+        ], (0, 10.0)
+    )
     sol = solve(prob, Tsit5())
     @test SciMLBase.successful_retcode(sol)
     tv = 0:0.01:10
-    @test sol(tv, idxs = sys.inertia.phi).u≈sin.(2pi .* tv) atol=1e-1
+    @test sol(tv, idxs = sys.inertia.phi).u ≈ sin.(2pi .* tv) atol = 1.0e-1
 end
