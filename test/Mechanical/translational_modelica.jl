@@ -4,9 +4,9 @@ using ModelingToolkit: t_nounits as t, D_nounits as D
 
 using ModelingToolkitStandardLibrary.Blocks: Sine
 using ModelingToolkitStandardLibrary.Mechanical.TranslationalModelica: Damper, Spring, Mass,
-                                                                       Fixed, Force,
-                                                                       SpringDamper,
-                                                                       Position
+    Fixed, Force,
+    SpringDamper,
+    Position
 
 @testset "spring damper mass fixed" begin
     @mtkmodel SpringDamperMassFixed begin
@@ -28,7 +28,7 @@ using ModelingToolkitStandardLibrary.Mechanical.TranslationalModelica: Damper, S
     sol = solve(prob, ImplicitMidpoint(), dt = 0.01)
 
     @test sol[sys.mass.v][1] == 1.0
-    @test sol[sys.mass.v][end]≈0.0 atol=1e-4
+    @test sol[sys.mass.v][end] ≈ 0.0 atol = 1.0e-4
 end
 
 @testset "driven spring damper mass" begin
@@ -56,7 +56,7 @@ end
     sol = solve(prob, Rodas4())
 
     lb, ub = extrema(sol(15:0.05:20, idxs = sys.mass.v).u)
-    @test -lb≈ub atol=1e-2
+    @test -lb ≈ ub atol = 1.0e-2
     @test -0.11 < lb < -0.1
 end
 
@@ -84,7 +84,7 @@ end
     sol = solve(prob, Rodas4())
 
     lb, ub = extrema(sol(15:0.05:20, idxs = sys.mass.v).u)
-    @test -lb≈ub atol=1e-2
+    @test -lb ≈ ub atol = 1.0e-2
     @test -0.11 < lb < -0.1
 end
 
@@ -106,5 +106,5 @@ end
     prob = ODEProblem(sys, [], (0, 2pi))
     sol = solve(prob, Rodas4())
     tv = 0:0.1:(2pi)
-    @test sol(tv, idxs = sys.mass.s).u≈@.(2sin(2pi * tv * 3)) atol=1e-2
+    @test sol(tv, idxs = sys.mass.s).u ≈ @.(2sin(2pi * tv * 3)) atol = 1.0e-2
 end

@@ -21,7 +21,7 @@ Linear 1D force input source
     end
 
     equations = Equation[
-        flange.f ~ -f.u
+        flange.f ~ -f.u,
     ]
 
     return System(equations, t, vars, pars; name, systems)
@@ -46,13 +46,15 @@ Linear 1D position input source.  Set `solves_force=false` to force input force 
     end
 
     eqs = [
-        D(s.u) ~ flange.v
+        D(s.u) ~ flange.v,
     ]
 
     !solves_force && push!(eqs, 0 ~ flange.f)
 
-    System(eqs, t, vars, [];
-        name, systems)
+    System(
+        eqs, t, vars, [];
+        name, systems
+    )
 end
 
 """
@@ -72,7 +74,7 @@ Linear 1D position input source.  Set `solves_force=false` to force input force 
     end
 
     eqs = [
-        v.u ~ flange.v
+        v.u ~ flange.v,
     ]
 
     !solves_force && push!(eqs, 0 ~ flange.f)
@@ -98,8 +100,10 @@ Linear 1D position input source.  Set `solves_force=false` to force input force 
 
     vars = @variables v(t)
 
-    eqs = [v ~ flange.v
-           D(v) ~ a.u]
+    eqs = [
+        v ~ flange.v
+        D(v) ~ a.u
+    ]
 
     !solves_force && push!(eqs, 0 ~ flange.f)
 

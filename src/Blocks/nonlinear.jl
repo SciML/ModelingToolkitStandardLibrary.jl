@@ -20,11 +20,11 @@ Limit the range of a signal.
     m = (y_max + y_min) / 2
     siso = SISO(u_start = m, y_start = m, name = :siso) # Default signals to center of saturation to minimize risk of saturation while linearizing etc.
     @unpack u, y = siso
-    pars = @parameters y_max=y_max [description="Maximum allowed output of Limiter $name"] y_min=y_min [
-        description="Minimum allowed output of Limiter $name"
+    pars = @parameters y_max = y_max [description = "Maximum allowed output of Limiter $name"] y_min = y_min [
+        description = "Minimum allowed output of Limiter $name",
     ]
     eqs = [
-        y ~ clamp(u, y_min, y_max)
+        y ~ clamp(u, y_min, y_max),
     ]
     extend(System(eqs, t, [], pars; name = name), siso)
 end
@@ -80,7 +80,7 @@ If the input is within `u_min` ... `u_max`, the output is zero. Outside of this 
     end
 
     equations = Equation[
-        y ~ _dead_zone(u, u_min, u_max)
+        y ~ _dead_zone(u, u_min, u_max),
     ]
 
     sys = System(equations, t, vars, pars; name, systems)
@@ -106,7 +106,8 @@ Initial value of state `Y` can be set with `int.y`
   - `output`
 """
 @component function SlewRateLimiter(;
-        name, y_start = 0.0, rising = 1.0, falling = -rising, Td = 0.001)
+        name, y_start = 0.0, rising = 1.0, falling = -rising, Td = 0.001
+    )
     pars = @parameters begin
         rising = rising, [description = "Maximum rising slew rate of SlewRateLimiter"]
         falling = falling, [description = "Derivative time constant of SlewRateLimiter"]
@@ -123,11 +124,11 @@ Initial value of state `Y` can be set with `int.y`
     @unpack y, u = siso
 
     eqs = [
-        D(y) ~ clamp((u - y) / Td, falling, rising)
+        D(y) ~ clamp((u - y) / Td, falling, rising),
     ]
 
     initialization_eqs = [
-        y ~ y_start
+        y ~ y_start,
     ]
 
     return extend(System(eqs, t, [], pars; name, initialization_eqs), siso)

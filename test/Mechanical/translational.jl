@@ -15,8 +15,10 @@ import ModelingToolkitStandardLibrary.Mechanical.TranslationalPosition as TP
             free = TV.Free()
         end
 
-        eqs = [connect(a.output, acc.a)
-               connect(mass.flange, acc.flange, free.flange)]
+        eqs = [
+            connect(a.output, acc.a)
+            connect(mass.flange, acc.flange, free.flange)
+        ]
 
         System(eqs, t, [], []; name, systems)
     end
@@ -27,7 +29,7 @@ import ModelingToolkitStandardLibrary.Mechanical.TranslationalPosition as TP
     prob = ODEProblem(sys, [s.mass.s => 0], (0, 0.1))
     sol = solve(prob, Rosenbrock23())
 
-    @test sol[s.mass.flange.v][end]≈-0.1 * 10 atol=1e-3
+    @test sol[s.mass.flange.v][end] ≈ -0.1 * 10 atol = 1.0e-3
     @test sol[s.free.f][end] ≈ 100 * 10
 end
 
@@ -45,30 +47,35 @@ end
     @named gp = TP.Fixed(s_0 = 1)
 
     function simplify_and_solve(
-            damping, spring, body, ground; initialization_eqs = Equation[])
-        eqs = [connect(spring.flange_a, body.flange, damping.flange_a)
-               connect(spring.flange_b, damping.flange_b, ground.flange)]
+            damping, spring, body, ground; initialization_eqs = Equation[]
+        )
+        eqs = [
+            connect(spring.flange_a, body.flange, damping.flange_a)
+            connect(spring.flange_b, damping.flange_b, ground.flange)
+        ]
 
         @named model = System(eqs, t; systems = [ground, body, spring, damping])
 
         sys = mtkcompile(model)
 
         prob = ODEProblem(
-            sys, [], (0, 20.0); initialization_eqs, fully_determined = true)
-        sol = solve(prob; abstol = 1e-9, reltol = 1e-9)
+            sys, [], (0, 20.0); initialization_eqs, fully_determined = true
+        )
+        sol = solve(prob; abstol = 1.0e-9, reltol = 1.0e-9)
 
         return sol
     end
 
     solv = simplify_and_solve(
-        dv, sv, bv, gv; initialization_eqs = [bv.s ~ 3, bv.v ~ 1, sv.delta_s ~ 1])
+        dv, sv, bv, gv; initialization_eqs = [bv.s ~ 3, bv.v ~ 1, sv.delta_s ~ 1]
+    )
     solp = simplify_and_solve(dp, sp, bp, gp)
 
     @test solv[bv.v][1] == 1.0
-    @test solv[bv.v][end]≈0.0 atol=1e-4
+    @test solv[bv.v][end] ≈ 0.0 atol = 1.0e-4
 
     @test solp[bp.v][1] == 1.0
-    @test solp[bp.v][end]≈0.0 atol=1e-4
+    @test solp[bp.v][end] ≈ 0.0 atol = 1.0e-4
 end
 
 @testset "driven spring damper mass" begin
@@ -90,13 +97,17 @@ end
     @named source = Sine(frequency = 3, amplitude = 2)
 
     function TestSystem(damping, spring, body, ground, f, source)
-        eqs = [connect(f.f, source.output)
-               connect(f.flange, body.flange)
-               connect(spring.flange_a, body.flange, damping.flange_a)
-               connect(spring.flange_b, damping.flange_b, ground.flange)]
+        eqs = [
+            connect(f.f, source.output)
+            connect(f.flange, body.flange)
+            connect(spring.flange_a, body.flange, damping.flange_a)
+            connect(spring.flange_b, damping.flange_b, ground.flange)
+        ]
 
-        @named model = System(eqs, t;
-            systems = [ground, body, spring, damping, f, source])
+        @named model = System(
+            eqs, t;
+            systems = [ground, body, spring, damping, f, source]
+        )
 
         return model
     end
@@ -104,7 +115,8 @@ end
     model = TestSystem(dv, sv, bv, gv, fv, source)
     sys = mtkcompile(model)
     prob = ODEProblem(
-        sys, [bv.s => 0, sv.delta_s => 1], (0, 20.0), fully_determined = true)
+        sys, [bv.s => 0, sv.delta_s => 1], (0, 20.0), fully_determined = true
+    )
     solv = solve(prob, Rodas4())
 
     model = TestSystem(dp, sp, bp, gp, fp, source)
@@ -114,7 +126,7 @@ end
 
     for sol in (solv, solp)
         lb, ub = extrema(solv(15:0.05:20, idxs = bv.v).u)
-        @test -lb≈ub atol=1e-2
+        @test -lb ≈ ub atol = 1.0e-2
         @test -0.11 < lb < -0.1
     end
 end
@@ -138,13 +150,15 @@ end
                     force_output = RealOutput()
                 end
 
-                eqs = [connect(pos.s, src1.output)
-                       connect(force.f, src2.output)
-                       connect(pos.flange, force_sensor.flange_a)
-                       connect(force_sensor.flange_b, spring.flange_a)
-                       connect(spring.flange_b, force.flange, pos_sensor.flange)
-                       connect(pos_value, pos_sensor.output)
-                       connect(force_output, force_sensor.output)]
+                eqs = [
+                    connect(pos.s, src1.output)
+                    connect(force.f, src2.output)
+                    connect(pos.flange, force_sensor.flange_a)
+                    connect(force_sensor.flange_b, spring.flange_a)
+                    connect(spring.flange_b, force.flange, pos_sensor.flange)
+                    connect(pos_value, pos_sensor.output)
+                    connect(force_output, force_sensor.output)
+                ]
 
                 System(eqs, t, [], []; name, systems)
             end
@@ -158,7 +172,7 @@ end
             delta_s = 1 / 1000
             s_b = 2 - delta_s + 1
 
-            @test sol[s.pos_value.u][end]≈1.0 atol=1e-3
+            @test sol[s.pos_value.u][end] ≈ 1.0 atol = 1.0e-3
             @test all(sol[s.spring.flange_a.f] .== sol[s.force_output.u])
         end
 
@@ -173,10 +187,11 @@ end
                 connect(force.f, source.output),
                 connect(force.flange, mass.flange),
                 connect(acc.flange, mass.flange),
-                connect(acc_output, acc.output)
+                connect(acc_output, acc.output),
             ]
             @named sys = System(
-                eqs, t, [], []; systems = [force, source, mass, acc, acc_output])
+                eqs, t, [], []; systems = [force, source, mass, acc, acc_output]
+            )
             s = complete(mtkcompile(sys))
             prob = ODEProblem(s, [mass.s => 0], (0.0, pi))
             sol = solve(prob, Tsit5())
@@ -201,7 +216,7 @@ end
                     connect(force_sensor.flange_b, spring.flange_a),
                     connect(spring.flange_b, mass.flange, pos_sensor.flange),
                     connect(pos_sensor.output, pos_value),
-                    connect(force_sensor.output, force_value)
+                    connect(force_sensor.output, force_value),
                 ]
                 System(eqs, t, [], []; name, systems)
             end
@@ -227,10 +242,11 @@ end
                 connect(force.f, source.output),
                 connect(force.flange, mass.flange),
                 connect(acc.flange, mass.flange),
-                connect(acc_output, acc.output)
+                connect(acc_output, acc.output),
             ]
             @named sys = System(
-                eqs, t, [], []; systems = [force, source, mass, acc, acc_output])
+                eqs, t, [], []; systems = [force, source, mass, acc, acc_output]
+            )
             s = complete(mtkcompile(sys))
             prob = ODEProblem(s, [], (0.0, pi), fully_determined = true)
             sol = solve(prob, Tsit5())

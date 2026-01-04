@@ -26,7 +26,7 @@ lags are associated with this sensor model.
 
     equations = Equation[
         T.u ~ port.T,
-        port.Q_flow ~ 0
+        port.Q_flow ~ 0,
     ]
 
     return System(equations, t, vars, pars; name, systems)
@@ -62,7 +62,7 @@ output signal in kelvin.
     equations = Equation[
         T.u ~ port_a.T - port_b.T,
         port_a.Q_flow ~ 0,
-        port_b.Q_flow ~ 0
+        port_b.Q_flow ~ 0,
     ]
 
     return System(equations, t, vars, pars; name, systems)
@@ -100,7 +100,7 @@ The output signal is positive, if the heat flows from `port_a` to `port_b`.
     equations = Equation[
         port_a.T ~ port_b.T,
         port_a.Q_flow + port_b.Q_flow ~ 0,
-        Q_flow.u ~ port_a.Q_flow
+        Q_flow.u ~ port_a.Q_flow,
     ]
 
     return System(equations, t, vars, pars; name, systems)

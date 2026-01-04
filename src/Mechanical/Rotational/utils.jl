@@ -88,7 +88,7 @@ Partial model for the compliant connection of two rotational 1-dim. shaft flange
     equations = Equation[
         phi_rel ~ flange_b.phi - flange_a.phi,
         flange_b.tau ~ tau,
-        flange_a.tau ~ -tau
+        flange_a.tau ~ -tau,
     ]
 
     return System(equations, t, vars, pars; name, systems)
@@ -124,7 +124,7 @@ Partial model for the compliant connection of two rotational 1-dim. shaft flange
         phi_rel(t) = phi_rel, [description = "Relative rotation angle between flanges", guess = 0.0]
         w_rel(t) = w_rel, [description = "Relative angular velocity between flanges", guess = 0.0]
         a_rel(t) = a_rel,
-        [description = "Relative angular acceleration between flanges", guess = 0.0]
+            [description = "Relative angular acceleration between flanges", guess = 0.0]
         tau(t) = tau, [description = "Torque between flanges", guess = 0.0]
     end
 
@@ -133,7 +133,7 @@ Partial model for the compliant connection of two rotational 1-dim. shaft flange
         D(phi_rel) ~ w_rel,
         D(w_rel) ~ a_rel,
         flange_b.tau ~ tau,
-        flange_a.tau ~ -tau
+        flange_a.tau ~ -tau,
     ]
 
     return System(equations, t, vars, pars; name, systems)
@@ -160,11 +160,14 @@ Partial model for a component with one rotational 1-dim. shaft flange and a supp
     @named flange = Flange()
     sys = [flange]
     @variables phi_support(t) [
-        description = "Absolute angle of support flange", guess = 0.0]
+        description = "Absolute angle of support flange", guess = 0.0,
+    ]
     if use_support
         @named support = Support()
-        eqs = [support.phi ~ phi_support
-               support.tau ~ -flange.tau]
+        eqs = [
+            support.phi ~ phi_support
+            support.tau ~ -flange.tau
+        ]
         push!(sys, support)
     else
         eqs = [phi_support ~ 0]
@@ -196,11 +199,14 @@ Partial model for a component with two rotational 1-dim. shaft flanges and a sup
     @named flange_b = Flange()
     sys = [flange_a, flange_b]
     @variables phi_support(t) [
-        description = "Absolute angle of support flange", guess = 0.0]
+        description = "Absolute angle of support flange", guess = 0.0,
+    ]
     if use_support
         @named support = Support()
-        eqs = [support.phi ~ phi_support
-               support.tau ~ -flange_a.tau - flange_b.tau]
+        eqs = [
+            support.phi ~ phi_support
+            support.tau ~ -flange_a.tau - flange_b.tau
+        ]
         push!(sys, support)
     else
         eqs = [phi_support ~ 0]

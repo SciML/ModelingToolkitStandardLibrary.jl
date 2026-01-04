@@ -18,7 +18,7 @@ Input signal acting as external force on a flange
     end
 
     equations = Equation[
-        flange.f ~ -f.u
+        flange.f ~ -f.u,
     ]
 
     sys = System(equations, t, vars, pars; name, systems)
@@ -47,7 +47,7 @@ The input signal can be provided from one of the signal generator blocks of the 
 
     w_crit = 2π * f_crit
     af = 1.3617
-    bf = 0.6180
+    bf = 0.618
 
     systems = @named begin
         s_ref = RealInput()
@@ -62,13 +62,13 @@ The input signal can be provided from one of the signal generator blocks of the 
         Equation[
             s ~ s_ref.u,
             v ~ D(s),
-            a ~ D(v)
+            a ~ D(v),
         ]
     else
         Equation[
             a ~ ((s_ref.u - s) * w_crit - af * v) * (w_crit / bf),
             v ~ D(s),
-            a ~ D(v)
+            a ~ D(v),
         ]
     end
 

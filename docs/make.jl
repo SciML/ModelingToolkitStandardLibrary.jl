@@ -17,9 +17,11 @@ ENV["GKSwstype"] = "100"
 
 include("pages.jl")
 
-makedocs(sitename = "ModelingToolkitStandardLibrary.jl",
+makedocs(
+    sitename = "ModelingToolkitStandardLibrary.jl",
     authors = "Julia Computing",
-    modules = [ModelingToolkit,
+    modules = [
+        ModelingToolkit,
         ModelingToolkitStandardLibrary,
         ModelingToolkitStandardLibrary.Blocks,
         ModelingToolkitStandardLibrary.Mechanical,
@@ -29,13 +31,19 @@ makedocs(sitename = "ModelingToolkitStandardLibrary.jl",
         ModelingToolkitStandardLibrary.Electrical,
         ModelingToolkitStandardLibrary.Thermal,
         ModelingToolkitStandardLibrary.Hydraulic,
-        ModelingToolkitStandardLibrary.Hydraulic.IsothermalCompressible],
+        ModelingToolkitStandardLibrary.Hydraulic.IsothermalCompressible,
+    ],
     clean = true, doctest = false, linkcheck = true,
     linkcheck_ignore = ["https://www.mathworks.com/help/simscape/ug/basic-principles-of-modeling-physical-networks.html#bq89sba-6"],
     warnonly = [:docs_block, :missing_docs, :cross_references],
-    format = Documenter.HTML(assets = ["assets/favicon.ico"],
-        canonical = "https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/"),
-    pages = pages)
+    format = Documenter.HTML(
+        assets = ["assets/favicon.ico"],
+        canonical = "https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/"
+    ),
+    pages = pages
+)
 
-deploydocs(repo = "github.com/SciML/ModelingToolkitStandardLibrary.jl";
-    push_preview = true)
+deploydocs(
+    repo = "github.com/SciML/ModelingToolkitStandardLibrary.jl";
+    push_preview = true
+)

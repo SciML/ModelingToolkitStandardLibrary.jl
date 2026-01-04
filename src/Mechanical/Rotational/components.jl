@@ -24,7 +24,7 @@ Flange fixed in housing at a given angle.
     end
 
     equations = Equation[
-        flange.phi ~ phi0
+        flange.phi ~ phi0,
     ]
 
     return System(equations, t, vars, pars; name, systems)
@@ -73,7 +73,7 @@ end
         phi ~ flange_b.phi,
         D(phi) ~ w,
         D(w) ~ a,
-        J * a ~ flange_a.tau + flange_b.tau
+        J * a ~ flange_a.tau + flange_b.tau,
     ]
 
     return System(equations, t, vars, pars; name, systems)
@@ -117,7 +117,7 @@ Linear 1D rotational spring
     end
 
     equations = Equation[
-        tau ~ c * (phi_rel - phi_rel0)
+        tau ~ c * (phi_rel - phi_rel0),
     ]
 
     sys = System(equations, t, vars, pars; name, systems)
@@ -162,7 +162,7 @@ Linear 1D rotational damper
     end
 
     equations = Equation[
-        tau ~ d * w_rel
+        tau ~ d * w_rel,
     ]
 
     sys = System(equations, t, vars, pars; name, systems)
@@ -212,7 +212,7 @@ Linear 1D rotational spring and damper
     equations = Equation[
         tau_c ~ c * (phi_rel - phi_rel0),
         tau_d ~ d * w_rel,
-        tau ~ tau_c + tau_d
+        tau ~ tau_c + tau_d,
     ]
 
     sys = System(equations, t, vars, pars; name, systems)
@@ -262,7 +262,7 @@ This element characterizes any type of gear box which is fixed in the ground and
         phi_a ~ flange_a.phi - phi_support,
         phi_b ~ flange_b.phi - phi_support,
         phi_a ~ ratio * phi_b,
-        0 ~ ratio * flange_a.tau + flange_b.tau
+        0 ~ ratio * flange_a.tau + flange_b.tau,
     ]
 
     sys = System(equations, t, vars, pars; name, systems)
@@ -319,8 +319,8 @@ Friction model: "Armstrong, B. and C.C. de Wit, Friction Modeling and Compensati
 
     equations = Equation[
         tau ~
-        str_scale * (exp(-(w_rel / w_st)^2) * w_rel / w_st) +
-        tau_c * tanh(w_rel / w_coul) + f * w_rel  # Stribeck friction + Coulomb friction + Viscous friction
+            str_scale * (exp(-(w_rel / w_st)^2) * w_rel / w_st) +
+            tau_c * tanh(w_rel / w_coul) + f * w_rel,  # Stribeck friction + Coulomb friction + Viscous friction
     ]
 
     sys = System(equations, t, vars, pars; name, systems)

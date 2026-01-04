@@ -25,7 +25,7 @@ Linear 1D force sensor, measures the force between two flanges.
     equations = Equation[
         flange_a.s ~ flange_b.s,
         flange_a.f + flange_b.f ~ 0.0,
-        output.u ~ flange_a.f
+        output.u ~ flange_a.f,
     ]
 
     return System(equations, t, vars, pars; name, systems)
@@ -59,7 +59,7 @@ Linear 1D position sensor.
 
     equations = Equation[
         output.u ~ flange.s,
-        flange.f ~ 0.0
+        flange.f ~ 0.0,
     ]
 
     return System(equations, t, vars, pars; name, systems)
@@ -95,7 +95,7 @@ Linear 1D acceleration sensor.
     equations = Equation[
         a ~ D(D(flange.s)),
         output.u ~ a,
-        flange.f ~ 0.0
+        flange.f ~ 0.0,
     ]
 
     return System(equations, t, vars, pars; name, systems)

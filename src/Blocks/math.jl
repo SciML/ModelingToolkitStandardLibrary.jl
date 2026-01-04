@@ -27,7 +27,7 @@ Output the product of a gain value with the input signal.
     end
 
     equations = Equation[
-        y ~ k * u
+        y ~ k * u,
     ]
 
     sys = System(equations, t, vars, pars; name, systems)
@@ -65,8 +65,10 @@ Output the product of a gain matrix with the input signal vector.
     end
 
     equations = Equation[
-        [output.u[i] ~ sum(K[i, j] * input.u[j] for j in 1:nin)
-         for i in 1:nout]...
+        [
+            output.u[i] ~ sum(K[i, j] * input.u[j] for j in 1:nin)
+                for i in 1:nout
+        ]...,
     ]
 
     return System(equations, t, vars, pars; name, systems)
@@ -96,7 +98,7 @@ Input port dimension can be set with `input__nin`
     end
 
     equations = Equation[
-        output.u ~ sum(input.u)
+        output.u ~ sum(input.u),
     ]
 
     return System(equations, t, vars, pars; name, systems)
@@ -127,7 +129,7 @@ Output difference between reference input (input1) and feedback input (input2).
     end
 
     equations = Equation[
-        output.u ~ input1.u - input2.u
+        output.u ~ input1.u - input2.u,
     ]
 
     return System(equations, t, vars, pars; name, systems)
@@ -165,7 +167,7 @@ Output the sum of the two scalar inputs.
     end
 
     equations = Equation[
-        output.u ~ k1 * input1.u + k2 * input2.u
+        output.u ~ k1 * input1.u + k2 * input2.u,
     ]
 
     return System(equations, t, vars, pars; name, systems)
@@ -207,7 +209,7 @@ Output the sum of the three scalar inputs.
     end
 
     equations = Equation[
-        output.u ~ k1 * input1.u + k2 * input2.u + k3 * input3.u
+        output.u ~ k1 * input1.u + k2 * input2.u + k3 * input3.u,
     ]
 
     return System(equations, t, vars, pars; name, systems)
@@ -238,7 +240,7 @@ Output product of the two inputs.
     end
 
     equations = Equation[
-        output.u ~ input1.u * input2.u
+        output.u ~ input1.u * input2.u,
     ]
 
     return System(equations, t, vars, pars; name, systems)
@@ -269,7 +271,7 @@ Output first input divided by second input.
     end
 
     equations = Equation[
-        output.u ~ input1.u / input2.u
+        output.u ~ input1.u / input2.u,
     ]
 
     return System(equations, t, vars, pars; name, systems)
@@ -300,7 +302,7 @@ Output the exponential with base as the first input and exponent as second input
     end
 
     equations = Equation[
-        output.u ~ base.u^exponent.u
+        output.u ~ base.u^exponent.u,
     ]
 
     return System(equations, t, vars, pars; name, systems)
@@ -331,7 +333,7 @@ Output the remainder when the first input is divided by second input.
     end
 
     equations = Equation[
-        remainder.u ~ mod(dividend.u, divisor.u)
+        remainder.u ~ mod(dividend.u, divisor.u),
     ]
 
     return System(equations, t, vars, pars; name, systems)
@@ -360,7 +362,7 @@ Output the product of -1 and the input.
     end
 
     equations = Equation[
-        output.u ~ -(input.u)
+        output.u ~ -(input.u),
     ]
 
     return System(equations, t, vars, pars; name, systems)
@@ -389,7 +391,7 @@ Output the floor rounding of the input.
     end
 
     equations = Equation[
-        output.u ~ floor(input.u)
+        output.u ~ floor(input.u),
     ]
 
     return System(equations, t, vars, pars; name, systems)
@@ -418,7 +420,7 @@ Output the ceiling rounding of the input.
     end
 
     equations = Equation[
-        output.u ~ ceil(input.u)
+        output.u ~ ceil(input.u),
     ]
 
     return System(equations, t, vars, pars; name, systems)
@@ -450,7 +452,7 @@ If the given function is not composed of simple core methods (e.g. sin, abs, ...
     end
 
     equations = Equation[
-        y ~ func(u)
+        y ~ func(u),
     ]
 
     sys = System(equations, t, vars, pars; name, systems)
@@ -582,7 +584,7 @@ Output the arc tangent of the input.
     end
 
     equations = Equation[
-        output.u ~ atan(input1.u, input2.u)
+        output.u ~ atan(input1.u, input2.u),
     ]
 
     return System(equations, t, vars, pars; name, systems)

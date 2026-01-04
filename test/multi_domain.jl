@@ -61,13 +61,13 @@ using OrdinaryDiffEq: ReturnCode.Success
     @test -0.5 .* sol[dc_motor.emf.i] == sol[dc_motor.emf.flange.tau]
     @test sol[dc_motor.emf.v] == 0.5 .* sol[dc_motor.emf.w]
     # test steady-state values
-    dc_gain = [f/(k^2 + f * R) k/(k^2 + f * R); k/(k^2 + f * R) -R/(k^2 + f * R)]
+    dc_gain = [f / (k^2 + f * R) k / (k^2 + f * R); k / (k^2 + f * R) -R / (k^2 + f * R)]
     idx_t = findfirst(sol.t .> 2.5)
-    @test sol[dc_motor.inertia.w][idx_t]≈(dc_gain * [V_step; 0])[2] rtol=1e-3
-    @test sol[dc_motor.emf.i][idx_t]≈(dc_gain * [V_step; 0])[1] rtol=1e-3
+    @test sol[dc_motor.inertia.w][idx_t] ≈ (dc_gain * [V_step; 0])[2] rtol = 1.0e-3
+    @test sol[dc_motor.emf.i][idx_t] ≈ (dc_gain * [V_step; 0])[1] rtol = 1.0e-3
     idx_t = findfirst(sol.t .> 5.5)
-    @test sol[dc_motor.inertia.w][idx_t]≈(dc_gain * [V_step; -tau_L_step])[2] rtol=1e-3
-    @test sol[dc_motor.emf.i][idx_t]≈(dc_gain * [V_step; -tau_L_step])[1] rtol=1e-3
+    @test sol[dc_motor.inertia.w][idx_t] ≈ (dc_gain * [V_step; -tau_L_step])[2] rtol = 1.0e-3
+    @test sol[dc_motor.emf.i][idx_t] ≈ (dc_gain * [V_step; -tau_L_step])[1] rtol = 1.0e-3
 
     @test_skip begin
         prob = DAEProblem(dc_motor, D.(unknowns(dc_motor)) .=> 0.0, (0, 6.0))
@@ -77,13 +77,13 @@ using OrdinaryDiffEq: ReturnCode.Success
         @test -0.5 .* sol[dc_motor.emf.i] == sol[dc_motor.emf.flange.tau]
         @test sol[dc_motor.emf.v] == 0.5 .* sol[dc_motor.emf.w]
         # test steady-state values
-        dc_gain = [f/(k^2 + f * R) k/(k^2 + f * R); k/(k^2 + f * R) -R/(k^2 + f * R)]
+        dc_gain = [f / (k^2 + f * R) k / (k^2 + f * R); k / (k^2 + f * R) -R / (k^2 + f * R)]
         idx_t = findfirst(sol.t .> 2.5)
-        @test sol[dc_motor.inertia.w][idx_t]≈(dc_gain * [V_step; 0])[2] rtol=1e-3
-        @test sol[dc_motor.emf.i][idx_t]≈(dc_gain * [V_step; 0])[1] rtol=1e-3
+        @test sol[dc_motor.inertia.w][idx_t] ≈ (dc_gain * [V_step; 0])[2] rtol = 1.0e-3
+        @test sol[dc_motor.emf.i][idx_t] ≈ (dc_gain * [V_step; 0])[1] rtol = 1.0e-3
         idx_t = findfirst(sol.t .> 5.5)
-        @test sol[dc_motor.inertia.w][idx_t]≈(dc_gain * [V_step; -tau_L_step])[2] rtol=1e-3
-        @test sol[dc_motor.emf.i][idx_t]≈(dc_gain * [V_step; -tau_L_step])[1] rtol=1e-3
+        @test sol[dc_motor.inertia.w][idx_t] ≈ (dc_gain * [V_step; -tau_L_step])[2] rtol = 1.0e-3
+        @test sol[dc_motor.emf.i][idx_t] ≈ (dc_gain * [V_step; -tau_L_step])[1] rtol = 1.0e-3
     end
     # p1 = Plots.plot(sol, vars=[inertia.w], ylabel="Angular Vel. in rad/s", label="")
     # p2 = Plots.plot(sol, vars=[emf.i], ylabel="Current in A", label="")
@@ -147,13 +147,13 @@ end
     @test sol[sys.emf.v] == 0.5 .* sol[sys.emf.w]
 
     # test steady-state values
-    dc_gain = [f/(k^2 + f * R) k/(k^2 + f * R); k/(k^2 + f * R) -R/(k^2 + f * R)]
+    dc_gain = [f / (k^2 + f * R) k / (k^2 + f * R); k / (k^2 + f * R) -R / (k^2 + f * R)]
     idx_t = findfirst(sol.t .> 2.5)
-    @test sol[sys.inertia.w][idx_t]≈(dc_gain * [V_step; 0])[2] rtol=1e-3
-    @test sol[sys.emf.i][idx_t]≈(dc_gain * [V_step; 0])[1] rtol=1e-3
+    @test sol[sys.inertia.w][idx_t] ≈ (dc_gain * [V_step; 0])[2] rtol = 1.0e-3
+    @test sol[sys.emf.i][idx_t] ≈ (dc_gain * [V_step; 0])[1] rtol = 1.0e-3
     idx_t = findfirst(sol.t .> 5.5)
-    @test sol[sys.inertia.w][idx_t]≈(dc_gain * [V_step; -tau_L_step])[2] rtol=1e-3
-    @test sol[sys.emf.i][idx_t]≈(dc_gain * [V_step; -tau_L_step])[1] rtol=1e-3
+    @test sol[sys.inertia.w][idx_t] ≈ (dc_gain * [V_step; -tau_L_step])[2] rtol = 1.0e-3
+    @test sol[sys.emf.i][idx_t] ≈ (dc_gain * [V_step; -tau_L_step])[1] rtol = 1.0e-3
     @test all(sol[sys.inertia.w] .== sol[sys.speed_sensor.w.u])
 
     @test_skip begin
@@ -164,13 +164,13 @@ end
         @test -0.5 .* sol[sys.emf.i] == sol[sys.emf.flange.tau]
         @test sol[sys.emf.v] == 0.5 .* sol[sys.emf.w]
         # test steady-state values
-        dc_gain = [f/(k^2 + f * R) k/(k^2 + f * R); k/(k^2 + f * R) -R/(k^2 + f * R)]
+        dc_gain = [f / (k^2 + f * R) k / (k^2 + f * R); k / (k^2 + f * R) -R / (k^2 + f * R)]
         idx_t = findfirst(sol.t .> 2.5)
-        @test sol[sys.inertia.w][idx_t]≈(dc_gain * [V_step; 0])[2] rtol=1e-3
-        @test sol[sys.emf.i][idx_t]≈(dc_gain * [V_step; 0])[1] rtol=1e-3
+        @test sol[sys.inertia.w][idx_t] ≈ (dc_gain * [V_step; 0])[2] rtol = 1.0e-3
+        @test sol[sys.emf.i][idx_t] ≈ (dc_gain * [V_step; 0])[1] rtol = 1.0e-3
         idx_t = findfirst(sol.t .> 5.5)
-        @test sol[sys.inertia.w][idx_t]≈(dc_gain * [V_step; -tau_L_step])[2] rtol=1e-3
-        @test sol[sys.emf.i][idx_t]≈(dc_gain * [V_step; -tau_L_step])[1] rtol=1e-3
+        @test sol[sys.inertia.w][idx_t] ≈ (dc_gain * [V_step; -tau_L_step])[2] rtol = 1.0e-3
+        @test sol[sys.emf.i][idx_t] ≈ (dc_gain * [V_step; -tau_L_step])[1] rtol = 1.0e-3
         #
         @test all(sol[sys.inertia.w] .== sol[sys.speed_sensor.w.u])
     end
@@ -182,8 +182,10 @@ end
             ground = Ground()
             source = Voltage()
             voltage_sine = Blocks.Sine(amplitude = 220, frequency = 1)
-            heating_resistor = Resistor(R = 100, alpha = 1e-3,
-                T_ref = 293.15, T_dep = true)
+            heating_resistor = Resistor(
+                R = 100, alpha = 1.0e-3,
+                T_ref = 293.15, T_dep = true
+            )
             thermal_conductor = ThermalConductor(G = 50)
             env = FixedTemperature(T = 273.15 + 20)
         end

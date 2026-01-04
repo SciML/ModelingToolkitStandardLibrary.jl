@@ -28,7 +28,7 @@ See [OnePort](@ref)
     end
 
     equations = Equation[
-        v ~ V.u
+        v ~ V.u,
     ]
 
     sys = System(equations, t, vars, pars; name, systems)
@@ -65,7 +65,7 @@ See [OnePort](@ref)
     end
 
     equations = Equation[
-        i ~ I.u
+        i ~ I.u,
     ]
 
     sys = System(equations, t, vars, pars; name, systems)

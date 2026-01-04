@@ -10,7 +10,7 @@ macro symcheck(ex)
     ex.args[1].head === :call ||
         error("Expected an expression on the form sym > val || error()")
     sym = ex.args[1].args[2]
-    quote
+    return quote
         _issymbolic(x) = !(unwrap(x) isa Real)
         _issymbolic($(esc(sym))) || ($(esc(ex)))
     end

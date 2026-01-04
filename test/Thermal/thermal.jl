@@ -17,9 +17,11 @@ using OrdinaryDiffEq: ReturnCode.Success
     @named tem_src = FixedTemperature(T = T)
 
     @info "Building a single-body system..."
-    eqs = [connect(mass1.port, th_conductor.port_a)
-           connect(th_conductor.port_b, reltem_sensor.port_a)
-           connect(reltem_sensor.port_b, tem_src.port)]
+    eqs = [
+        connect(mass1.port, th_conductor.port_a)
+        connect(th_conductor.port_b, reltem_sensor.port_a)
+        connect(reltem_sensor.port_b, tem_src.port)
+    ]
     @named h1 = System(eqs, t, systems = [mass1, reltem_sensor, tem_src, th_conductor])
     sys = mtkcompile(h1)
 
@@ -31,15 +33,19 @@ using OrdinaryDiffEq: ReturnCode.Success
     # when connected to a thermal conductor and a fixed temperature source
     @test SciMLBase.successful_retcode(sol)
     @test sol[reltem_sensor.T.u] + sol[tem_src.port.T] ==
-          sol[mass1.T] + sol[th_conductor.dT]
+        sol[mass1.T] + sol[th_conductor.dT]
 
     @info "Building a two-body system..."
-    eqs = [connect(T_sensor1.port, mass1.port, th_conductor.port_a)
-           connect(th_conductor.port_b, mass2.port, T_sensor2.port)
-           final_T ~ (mass1.C * mass1.T + mass2.C * mass2.T) /
-                     (mass1.C + mass2.C)]
-    @named h2 = System(eqs, t, [final_T], [],
-        systems = [mass1, mass2, T_sensor1, T_sensor2, th_conductor])
+    eqs = [
+        connect(T_sensor1.port, mass1.port, th_conductor.port_a)
+        connect(th_conductor.port_b, mass2.port, T_sensor2.port)
+        final_T ~ (mass1.C * mass1.T + mass2.C * mass2.T) /
+            (mass1.C + mass2.C)
+    ]
+    @named h2 = System(
+        eqs, t, [final_T], [],
+        systems = [mass1, mass2, T_sensor1, T_sensor2, th_conductor]
+    )
     sys = mtkcompile(h2)
 
     prob = ODEProblem(sys, [], (0, 3.0))
@@ -47,7 +53,7 @@ using OrdinaryDiffEq: ReturnCode.Success
 
     @test SciMLBase.successful_retcode(sol)
     m1, m2 = sol.u[end]
-    @test m1≈m2 atol=1e-1
+    @test m1 ≈ m2 atol = 1.0e-1
     @test sol[T_sensor1.T.u] == sol[sys.mass1.T]
     @test sol[T_sensor2.T.u] == sol[sys.mass2.T]
 end
@@ -64,14 +70,24 @@ end
     @named th_ground = FixedTemperature(T = 0)
 
     @info "Building a heat-flow system..."
-    eqs = [connect(mass1.port, th_resistor.port_a, th_conductor.port_a)
-           connect(th_conductor.port_b, flow_src.port, hf_sensor1.port_a,
-               hf_sensor2.port_a)
-           connect(th_resistor.port_b, hf_sensor1.port_b, hf_sensor2.port_b,
-               th_ground.port)]
-    @named h2 = System(eqs, t,
-        systems = [mass1, hf_sensor1, hf_sensor2,
-            th_resistor, flow_src, th_ground, th_conductor])
+    eqs = [
+        connect(mass1.port, th_resistor.port_a, th_conductor.port_a)
+        connect(
+            th_conductor.port_b, flow_src.port, hf_sensor1.port_a,
+            hf_sensor2.port_a
+        )
+        connect(
+            th_resistor.port_b, hf_sensor1.port_b, hf_sensor2.port_b,
+            th_ground.port
+        )
+    ]
+    @named h2 = System(
+        eqs, t,
+        systems = [
+            mass1, hf_sensor1, hf_sensor2,
+            th_resistor, flow_src, th_ground, th_conductor,
+        ]
+    )
     sys = mtkcompile(h2)
 
     u0 = [mass1.T => 10.0, th_conductor.dT => nothing, th_conductor.Q_flow => nothing, th_resistor.Q_flow => nothing, th_resistor.dT => nothing]
@@ -101,17 +117,21 @@ end
     @named mass = HeatCapacitor(C = 10)
 
     @info "Building a radiator..."
-    eqs = [connect(gas_tem.port, radiator.port_a, base.port_a, dissipator.solid, mass.port)
-           connect(coolant_tem.port, base.port_b, radiator.port_b, dissipator.fluid)]
-    @named rad = System(eqs, t,
+    eqs = [
+        connect(gas_tem.port, radiator.port_a, base.port_a, dissipator.solid, mass.port)
+        connect(coolant_tem.port, base.port_b, radiator.port_b, dissipator.fluid)
+    ]
+    @named rad = System(
+        eqs, t,
         systems = [
             base,
             gas_tem,
             radiator,
             dissipator,
             coolant_tem,
-            mass
-        ])
+            mass,
+        ]
+    )
     sys = mtkcompile(rad)
 
     u0 = [mass.T => T_gas]
@@ -133,13 +153,19 @@ end
     @named mass = HeatCapacitor(C = 10)
 
     @info "Building a heat collector..."
-    eqs = [connect(flow_src.port, collector.port_a_1, th_resistor.port_a)
-           connect(tem_src.port, collector.port_a_2)
-           connect(hf_sensor.port_a, collector.port_b)
-           connect(hf_sensor.port_b, mass.port, th_resistor.port_b)]
-    @named coll = System(eqs, t,
-        systems = [hf_sensor, flow_src, tem_src,
-            collector, th_resistor, mass])
+    eqs = [
+        connect(flow_src.port, collector.port_a_1, th_resistor.port_a)
+        connect(tem_src.port, collector.port_a_2)
+        connect(hf_sensor.port_a, collector.port_b)
+        connect(hf_sensor.port_b, mass.port, th_resistor.port_b)
+    ]
+    @named coll = System(
+        eqs, t,
+        systems = [
+            hf_sensor, flow_src, tem_src,
+            collector, th_resistor, mass,
+        ]
+    )
     sys = mtkcompile(coll)
 
     prob = ODEProblem(sys, [mass.T => nothing, th_resistor.Q_flow => nothing, th_resistor.dT => nothing], (0, 3.0))
@@ -147,8 +173,8 @@ end
 
     @test SciMLBase.successful_retcode(sol)
     @test sol[collector.port_b.Q_flow] + sol[collector.port_a_1.Q_flow] +
-          sol[collector.port_a_2.Q_flow] ==
-          zeros(length(sol[collector.port_b.Q_flow]))
+        sol[collector.port_a_2.Q_flow] ==
+        zeros(length(sol[collector.port_b.Q_flow]))
     @test sol[collector.port_b.T] == sol[collector.port_a_1.T] == sol[collector.port_a_2.T]
 end
 
@@ -174,5 +200,5 @@ end
     heat_flow = sol[test_model.heatflow.port.Q_flow]
 
     @test SciMLBase.successful_retcode(sol) # Ensure the simulation is successful
-    @test all(isapprox.(heat_flow, 1.0, rtol = 1e-6)) # Heat flow value should be equal to the fixed value defined
+    @test all(isapprox.(heat_flow, 1.0, rtol = 1.0e-6)) # Heat flow value should be equal to the fixed value defined
 end

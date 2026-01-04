@@ -1,15 +1,17 @@
-@component function Link(; name,
-                          m = nothing, l = nothing, I = nothing, g = nothing,
-                          x1_0 = 0.0, y1_0 = 0.0,
-                          A = nothing, dA = nothing, ddA = nothing,
-                          fx1 = nothing, fy1 = nothing,
-                          fx2 = nothing, fy2 = nothing,
-                          x1 = nothing, dx1 = nothing,
-                          y1 = nothing, dy1 = nothing,
-                          x2 = nothing, dx2 = nothing,
-                          y2 = nothing, dy2 = nothing,
-                          x_cm = nothing, dx_cm = nothing, ddx_cm = nothing,
-                          y_cm = nothing, dy_cm = nothing, ddy_cm = nothing)
+@component function Link(;
+        name,
+        m = nothing, l = nothing, I = nothing, g = nothing,
+        x1_0 = 0.0, y1_0 = 0.0,
+        A = nothing, dA = nothing, ddA = nothing,
+        fx1 = nothing, fy1 = nothing,
+        fx2 = nothing, fy2 = nothing,
+        x1 = nothing, dx1 = nothing,
+        y1 = nothing, dy1 = nothing,
+        x2 = nothing, dx2 = nothing,
+        y2 = nothing, dy2 = nothing,
+        x_cm = nothing, dx_cm = nothing, ddx_cm = nothing,
+        y_cm = nothing, dy_cm = nothing, ddy_cm = nothing
+    )
     pars = @parameters begin
         m = m
         l = l
@@ -83,8 +85,8 @@
 
         # torques
         I * ddA ~
-        -fy1 * (x2 - x1) / 2 + fy2 * (x2 - x1) / 2 + fx1 * (y2 - y1) / 2 -
-        fx2 * (y2 - y1) / 2,
+            -fy1 * (x2 - x1) / 2 + fy2 * (x2 - x1) / 2 + fx1 * (y2 - y1) / 2 -
+            fx2 * (y2 - y1) / 2,
 
         # geometry
         x2 ~ l * cos(A) + x1,
@@ -98,7 +100,7 @@
         TX2.f ~ fx2,
         TX2.s ~ x2,
         TY2.f ~ fy2,
-        TY2.s ~ y2
+        TY2.s ~ y2,
     ]
 
     return System(equations, t, vars, pars; name, systems)

@@ -13,8 +13,8 @@ using ModelingToolkitStandardLibrary.Blocks
             Tᵧ = 1000, [description = "Temperature of gas"]
             Tᵪ = 10, [description = "Temperature of coolant"]
             # R = 1/h; h is convection co-efficient
-            Rᵧ = 50e-4, [description = "Thermal resistance of gas"]
-            Rᵪ = 10e-4, [description = "Thermal resistance of coolant"]
+            Rᵧ = 50.0e-4, [description = "Thermal resistance of gas"]
+            Rᵪ = 10.0e-4, [description = "Thermal resistance of coolant"]
             R_wall = 1.5e-4
         end
         @components begin
@@ -42,6 +42,6 @@ using ModelingToolkitStandardLibrary.Blocks
     @test SciMLBase.successful_retcode(sol)
     # The initial value doesn't add up to absolute zero, while the rest do. To avoid
     # tolerance on the latter, the test is split in two parts.
-    @test sol[piston.gas.Q_flow][1]≈-sol[piston.coolant.Q_flow][1] rtol=1e-6
-    @test sol[piston.gas.Q_flow][2:end]≈-sol[piston.coolant.Q_flow][2:end] rtol=1e-6
+    @test sol[piston.gas.Q_flow][1] ≈ -sol[piston.coolant.Q_flow][1] rtol = 1.0e-6
+    @test sol[piston.gas.Q_flow][2:end] ≈ -sol[piston.coolant.Q_flow][2:end] rtol = 1.0e-6
 end

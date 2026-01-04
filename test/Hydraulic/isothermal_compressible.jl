@@ -8,7 +8,8 @@ import ModelingToolkitStandardLibrary.Mechanical.Translational as T
 using ModelingToolkitStandardLibrary.Blocks: Parameter
 
 NEWTON = NLNewton(
-    check_div = false, always_new = true, max_iter = 100, relax = 9 // 10, κ = 1e-6)
+    check_div = false, always_new = true, max_iter = 100, relax = 9 // 10, κ = 1.0e-6
+)
 
 @testset "Fluid Domain and Tube" begin
     function FluidSystem(N; bulk_modulus, name)
@@ -19,24 +20,28 @@ NEWTON = NLNewton(
 
         systems = @named begin
             fluid = IC.HydraulicFluid(; bulk_modulus)
-            stp = B.Step(; height = 10e5, offset = 0, start_time = 0.005,
-                duration = Inf, smooth = true)
+            stp = B.Step(;
+                height = 10.0e5, offset = 0, start_time = 0.005,
+                duration = Inf, smooth = true
+            )
             src = IC.Pressure()
             vol = IC.FixedVolume(; vol = 10.0, p_int)
             res = IC.Tube(N; area = 0.01, length = 50.0, p_int)
         end
 
-        eqs = [connect(stp.output, src.p)
-               connect(fluid, src.port)
-               connect(src.port, res.port_a)
-               connect(res.port_b, vol.port)]
+        eqs = [
+            connect(stp.output, src.p)
+            connect(fluid, src.port)
+            connect(src.port, res.port_a)
+            connect(res.port_b, vol.port)
+        ]
 
         System(eqs, t, [], pars; name, systems)
     end
 
-    @mtkcompile s1_1 = FluidSystem(1; bulk_modulus = 1e9)
-    @mtkcompile s1_2 = FluidSystem(1; bulk_modulus = 2e9)
-    @mtkcompile s5_1 = FluidSystem(5; bulk_modulus = 1e9)
+    @mtkcompile s1_1 = FluidSystem(1; bulk_modulus = 1.0e9)
+    @mtkcompile s1_2 = FluidSystem(1; bulk_modulus = 2.0e9)
+    @mtkcompile s5_1 = FluidSystem(5; bulk_modulus = 1.0e9)
 
     p1_1 = ODEProblem(s1_1, [], (0, 0.05))
     p1_2 = ODEProblem(s1_2, [], (0, 0.05))
@@ -67,17 +72,20 @@ end
 
         systems = @named begin
             fluid = IC.HydraulicFluid()
-            sink = IC.FixedPressure(; p = 10e5)
-            vol = IC.FixedVolume(; vol = 5, p_int = 1e5)
-            valve = IC.Valve(; Cd = 1e5, minimum_area = 0)
+            sink = IC.FixedPressure(; p = 10.0e5)
+            vol = IC.FixedVolume(; vol = 5, p_int = 1.0e5)
+            valve = IC.Valve(; Cd = 1.0e5, minimum_area = 0)
             ramp = B.Ramp(;
-                height = 0.1, duration = 0.1, offset = 0, start_time = 0.1, smooth = true)
+                height = 0.1, duration = 0.1, offset = 0, start_time = 0.1, smooth = true
+            )
         end
 
-        eqs = [connect(fluid, sink.port)
-               connect(sink.port, valve.port_a)
-               connect(valve.port_b, vol.port)
-               connect(valve.area, ramp.output)]
+        eqs = [
+            connect(fluid, sink.port)
+            connect(sink.port, valve.port_a)
+            connect(valve.port_b, vol.port)
+            connect(valve.area, ramp.output)
+        ]
 
         System(eqs, t, [], pars; name, systems)
     end
@@ -85,67 +93,77 @@ end
     @named valve_system = ValveSystem()
     sys = mtkcompile(valve_system)
     prob = ODEProblem(sys, [], (0, 1))
-    sol = solve(prob, Rodas5P(); abstol = 1e-6, reltol = 1e-9)
+    sol = solve(prob, Rodas5P(); abstol = 1.0e-6, reltol = 1.0e-9)
     s = complete(valve_system)
 
     # the volume should discharge to 10bar
-    @test sol[s.vol.port.p][end]≈10e5 atol=1e5
+    @test sol[s.vol.port.p][end] ≈ 10.0e5 atol = 1.0e5
 
     # fig = Figure()
     # tm = 0:0.01:1 |> collect
     # ax = Axis(fig[1,1])
-    # lines!(ax, tm, sol.(tm; idxs=sys.vol.port.p));  
+    # lines!(ax, tm, sol.(tm; idxs=sys.vol.port.p));
     # fig
 end
 
 @testset "DynamicVolume and minimum_volume feature" begin # Need help here
-    function TestSystem(; name, area = 0.01, length = 0.1, damping_volume = length * area *
-                                                                            0.1)
+    function TestSystem(;
+            name, area = 0.01, length = 0.1, damping_volume = length * area *
+                0.1
+        )
         pars = []
 
         # DynamicVolume values
         systems = @named begin
-            fluid = IC.HydraulicFluid(; bulk_modulus = 1e9)
+            fluid = IC.HydraulicFluid(; bulk_modulus = 1.0e9)
 
-            src1 = IC.Pressure(;)
-            src2 = IC.Pressure(;)
+            src1 = IC.Pressure()
+            src2 = IC.Pressure()
 
-            vol1 = IC.DynamicVolume(; direction = +1,
+            vol1 = IC.DynamicVolume(;
+                direction = +1,
                 area,
                 x_int = length,
                 x_max = length * 2,
                 x_min = length * 0.1,
                 x_damp = damping_volume / area + length * 0.1,
-                d = 1e3,
-                p_int = 10e5)
+                d = 1.0e3,
+                p_int = 10.0e5
+            )
             # vol1 = IC.Volume(;area, direction = +1, x_int=length)
 
-            vol2 = IC.DynamicVolume(; direction = -1,
+            vol2 = IC.DynamicVolume(;
+                direction = -1,
                 area,
                 x_int = length,
                 x_max = length * 2,
                 x_min = length * 0.1,
                 x_damp = damping_volume / area + length * 0.1,
-                d = 1e3,
-                p_int = 10e5)
+                d = 1.0e3,
+                p_int = 10.0e5
+            )
             # vol2 = IC.Volume(;area, direction = -1, x_int=length)
 
             mass = T.Mass(; m = 10)
 
-            sin1 = B.Sine(; frequency = 0.5, amplitude = +1e5, offset = 10e5)
-            sin2 = B.Sine(; frequency = 0.5, amplitude = -1e5, offset = 10e5)
+            sin1 = B.Sine(; frequency = 0.5, amplitude = +1.0e5, offset = 10.0e5)
+            sin2 = B.Sine(; frequency = 0.5, amplitude = -1.0e5, offset = 10.0e5)
         end
 
-        eqs = [connect(fluid, src1.port)
-               connect(fluid, src2.port)
-               connect(src1.port, vol1.port)
-               connect(src2.port, vol2.port)
-               connect(vol1.flange, mass.flange, vol2.flange)
-               connect(src1.p, sin1.output)
-               connect(src2.p, sin2.output)]
+        eqs = [
+            connect(fluid, src1.port)
+            connect(fluid, src2.port)
+            connect(src1.port, vol1.port)
+            connect(src2.port, vol2.port)
+            connect(vol1.flange, mass.flange, vol2.flange)
+            connect(src1.p, sin1.output)
+            connect(src2.p, sin2.output)
+        ]
 
-        initialization_eqs = [mass.s ~ 0.0
-                              mass.v ~ 0.0]
+        initialization_eqs = [
+            mass.s ~ 0.0
+            mass.v ~ 0.0
+        ]
 
         System(eqs, t, [], pars; name, systems, initialization_eqs)
     end
@@ -153,7 +171,7 @@ end
     @named sys = TestSystem()
     sys = mtkcompile(sys; allow_symbolic = true)
     prob = ODEProblem(sys, [], (0, 5))
-    sol = solve(prob, Rodas5P(); abstol = 1e-6, reltol = 1e-9)
+    sol = solve(prob, Rodas5P(); abstol = 1.0e-6, reltol = 1.0e-9)
     # begin
     #     fig = Figure()
 
@@ -194,21 +212,21 @@ end
 @testset "Actuator System" begin
     function ActuatorSystem(use_input; name)
         pars = @parameters begin
-            p_s = 200e5
-            p_r = 5e5
+            p_s = 200.0e5
+            p_r = 5.0e5
 
-            A_1 = 360e-4
-            A_2 = 360e-4
+            A_1 = 360.0e-4
+            A_2 = 360.0e-4
 
-            p_1 = 45e5
-            p_2 = 45e5
+            p_1 = 45.0e5
+            p_2 = 45.0e5
 
             l_1 = 1.5
             l_2 = 1.5
             m_f = 250
             g = 0
 
-            d = 100e-3
+            d = 100.0e-3
 
             Cd = 0.01
 
@@ -229,12 +247,13 @@ end
                 area_b = A_2,
                 m = m_piston,
                 g = 0,
-                minimum_volume_a = A_1 * 1e-3,
-                minimum_volume_b = A_2 * 1e-3,
-                damping_volume_a = A_1 * 5e-3,
-                damping_volume_b = A_2 * 5e-3,
+                minimum_volume_a = A_1 * 1.0e-3,
+                minimum_volume_b = A_2 * 1.0e-3,
+                damping_volume_a = A_1 * 5.0e-3,
+                damping_volume_b = A_2 * 5.0e-3,
                 p_a_int = p_1,
-                p_b_int = p_2)
+                p_b_int = p_2
+            )
             # body = T.Mass(; m = 1500)
             # pipe = IC.Tube(1; area = A_2, length = 2.0, p_int = p_2)
             snk = IC.FixedPressure(; p = p_r)
@@ -255,28 +274,30 @@ end
 
         push!(systems, input)
 
-        eqs = [connect(input.output, pos.s)
-               connect(valve.flange, pos.flange)
-               connect(valve.port_a, piston.port_a)
-               #    connect(piston.flange, body.flange)
+        eqs = [
+            connect(input.output, pos.s)
+            connect(valve.flange, pos.flange)
+            connect(valve.port_a, piston.port_a)
+            #    connect(piston.flange, body.flange)
 
-               connect(piston.port_b, valve.port_b)
+            connect(piston.port_b, valve.port_b)
 
-               #    connect(piston.port_b, pipe.port_b)
-               # #    connect(piston.port_b, m1.port_a)
-               # #    connect(m1.port_b, pipe.port_b)
+            #    connect(piston.port_b, pipe.port_b)
+            # #    connect(piston.port_b, m1.port_a)
+            # #    connect(m1.port_b, pipe.port_b)
 
-               # connect(pipe.port_a, valve.port_b)
-               # #    connect(pipe.port_a, m2.port_b)
-               # #    connect(m2.port_a, valve.port_b)
+            # connect(pipe.port_a, valve.port_b)
+            # #    connect(pipe.port_a, m2.port_b)
+            # #    connect(m2.port_a, valve.port_b)
 
-               connect(src.port, valve.port_s)
-               connect(snk.port, valve.port_r)
-               connect(fluid, src.port, snk.port)
-               D(piston.mass.v) ~ ddx]
+            connect(src.port, valve.port_s)
+            connect(snk.port, valve.port_r)
+            connect(fluid, src.port, snk.port)
+            D(piston.mass.v) ~ ddx
+        ]
 
         initialization_eqs = [
-        # body.s ~ 0
+            # body.s ~ 0
         ]
 
         System(eqs, t, vars, pars; name, systems, initialization_eqs)
@@ -289,7 +310,7 @@ end
 
     @mtkcompile sys = ActuatorSystem(true)
 
-    dt = 1e-4
+    dt = 1.0e-4
     time = 0:dt:0.1
 
     x = @. (time - 0.015)^2 - 10 * (time - 0.02)^3
@@ -325,17 +346,23 @@ end
 
         systems = @named begin
             fluid = IC.HydraulicFluid(; let_gas)
-            vol = IC.DynamicVolume(; area = 0.001, x_int = 0.05,
-                x_max = 0.1, x_damp = 0.02, x_min = 0.01, direction = +1, p_int = 100e5)
+            vol = IC.DynamicVolume(;
+                area = 0.001, x_int = 0.05,
+                x_max = 0.1, x_damp = 0.02, x_min = 0.01, direction = +1, p_int = 100.0e5
+            )
             mass = T.Mass(; m = 100, g = -9.807) # s = 0.05
             cap = IC.Cap()
         end
 
-        eqs = [connect(fluid, cap.port, vol.port)
-               connect(vol.flange, mass.flange)]
+        eqs = [
+            connect(fluid, cap.port, vol.port)
+            connect(vol.flange, mass.flange)
+        ]
 
-        initialization_eqs = [mass.s ~ 0.05
-                              mass.v ~ 0]
+        initialization_eqs = [
+            mass.s ~ 0.05
+            mass.v ~ 0
+        ]
 
         return System(eqs, t, [], pars; name, systems, initialization_eqs)
     end
@@ -347,7 +374,7 @@ end
     prob2 = ODEProblem(sys, [sys.let_gas => 0], (0, 0.05))
 
     # @time sol1 = solve(prob1, Rodas5P(); abstol=1e-9, reltol=1e-9) #BUG: Using BigFloat gives... ERROR: MethodError: no method matching getindex(::Missing, ::Int64)
-    @time sol1 = solve(prob1, Rodas5P(); adaptive = false, dt = 1e-6) #TODO: fix BigFloat to implement abstol=1e-9, reltol=1e-9
+    @time sol1 = solve(prob1, Rodas5P(); adaptive = false, dt = 1.0e-6) #TODO: fix BigFloat to implement abstol=1e-9, reltol=1e-9
     @time sol2 = solve(prob2, Rodas5P())
 
     # case 1: no negative pressure will only have gravity pulling mass back down

@@ -11,13 +11,17 @@ using IfElse: ifelse
     @component function NonlinearResistor(; name, Ga, Gb, Ve)
         @named oneport = OnePort()
         @unpack v, i = oneport
-        pars = @parameters Ga=Ga Gb=Gb Ve=Ve
+        pars = @parameters Ga = Ga Gb = Gb Ve = Ve
         eqs = [
-            i ~ ifelse(v < -Ve,
-            Gb * (v + Ve) - Ga * Ve,
-            ifelse(v > Ve,
-                Gb * (v - Ve) + Ga * Ve,
-                Ga * v))
+            i ~ ifelse(
+                v < -Ve,
+                Gb * (v + Ve) - Ga * Ve,
+                ifelse(
+                    v > Ve,
+                    Gb * (v - Ve) + Ga * Ve,
+                    Ga * v
+                )
+            ),
         ]
         extend(System(eqs, t, [], pars; name = name), oneport)
     end
@@ -27,24 +31,28 @@ using IfElse: ifelse
     @named G = Conductor(G = 0.565)
     @named C1 = Capacitor(C = 10, v = 4)
     @named C2 = Capacitor(C = 100, v = 0.0)
-    @named Nr = NonlinearResistor(Ga = -0.757576,
+    @named Nr = NonlinearResistor(
+        Ga = -0.757576,
         Gb = -0.409091,
-        Ve = 1)
+        Ve = 1
+    )
     @named Gnd = Ground()
 
-    connections = [connect(L.p, G.p)
-                   connect(G.n, Nr.p)
-                   connect(Nr.n, Gnd.g)
-                   connect(C1.p, G.n)
-                   connect(L.n, Ro.p)
-                   connect(G.p, C2.p)
-                   connect(C1.n, Gnd.g)
-                   connect(C2.n, Gnd.g)
-                   connect(Ro.n, Gnd.g)]
+    connections = [
+        connect(L.p, G.p)
+        connect(G.n, Nr.p)
+        connect(Nr.n, Gnd.g)
+        connect(C1.p, G.n)
+        connect(L.n, Ro.p)
+        connect(G.p, C2.p)
+        connect(C1.n, Gnd.g)
+        connect(C2.n, Gnd.g)
+        connect(Ro.n, Gnd.g)
+    ]
 
     @named model = System(connections, t, systems = [L, Ro, G, C1, C2, Nr, Gnd])
     sys = mtkcompile(model)
-    prob = ODEProblem(sys, Pair[], (0, 5e4), saveat = 0.01)
+    prob = ODEProblem(sys, Pair[], (0, 5.0e4), saveat = 0.01)
     sol = solve(prob, Rodas4())
 
     @test sol.retcode == Success

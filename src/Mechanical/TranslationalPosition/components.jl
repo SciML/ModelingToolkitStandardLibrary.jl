@@ -24,7 +24,7 @@ Flange fixed in housing at a given position.
     end
 
     equations = Equation[
-        flange.s ~ s_0
+        flange.s ~ s_0,
     ]
 
     return System(equations, t, vars, pars; name, systems)
@@ -69,15 +69,17 @@ Sliding mass with inertia
         flange.s ~ s,
         flange.f ~ f,
         D(s) ~ v,
-        D(v) ~ f / m
+        D(v) ~ f / m,
     ]
 
     return System(equations, t, vars, pars; name, systems)
 end
 
 const REL = Val(:relative)
-@component function Spring(::Val{:relative}; name, k = nothing, va = 0.0, vb = 0.0,
-        delta_s = 0)
+@component function Spring(
+        ::Val{:relative}; name, k = nothing, va = 0.0, vb = 0.0,
+        delta_s = 0
+    )
     pars = @parameters begin
         k = k
     end
@@ -91,17 +93,20 @@ const REL = Val(:relative)
     @named flange_a = Flange()
     @named flange_b = Flange()
 
-    eqs = [D(flange_a.s) ~ va
-           D(flange_b.s) ~ vb
-           D(delta_s) ~ va - vb
-           f ~ k * delta_s
-           flange_a.f ~ +f
-           flange_b.f ~ -f]
+    eqs = [
+        D(flange_a.s) ~ va
+        D(flange_b.s) ~ vb
+        D(delta_s) ~ va - vb
+        f ~ k * delta_s
+        flange_a.f ~ +f
+        flange_b.f ~ -f
+    ]
 
     return compose(
         System(eqs, t, vars, pars; name = name),
         flange_a,
-        flange_b)
+        flange_b
+    )
 end
 
 const ABS = Val(:absolute)
@@ -122,11 +127,13 @@ Linear 1D translational spring
   - `flange_b: 1-dim. translational flange on opposite side of spring` #default function
 """
 function Spring(; name, k = nothing, l = 0)
-    Spring(ABS; name, k, l)
+    return Spring(ABS; name, k, l)
 end #default function
 
-@component function Spring(::Val{:absolute};
-        name, k = nothing, l = 0)
+@component function Spring(
+        ::Val{:absolute};
+        name, k = nothing, l = 0
+    )
     pars = @parameters begin
         k = k
         l = l
@@ -139,10 +146,11 @@ end #default function
     @named flange_b = Flange()
 
     eqs = [
-           #   delta_s ~ flange_a.s - flange_b.s
-           f ~ k * (flange_a.s - flange_b.s - l) #delta_s
-           flange_a.f ~ +f
-           flange_b.f ~ -f]
+        #   delta_s ~ flange_a.s - flange_b.s
+        f ~ k * (flange_a.s - flange_b.s - l) #delta_s
+        flange_a.f ~ +f
+        flange_b.f ~ -f
+    ]
     return compose(System(eqs, t, vars, pars; name = name), flange_a, flange_b)
 end
 
@@ -183,7 +191,7 @@ Linear 1D translational damper
         D(flange_b.s) ~ vb,
         f ~ (va - vb) * d,
         flange_a.f ~ +f,
-        flange_b.f ~ -f
+        flange_b.f ~ -f,
     ]
 
     return System(equations, t, vars, pars; name, systems)

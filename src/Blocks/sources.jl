@@ -6,60 +6,62 @@ using PreallocationTools
 # These are "smooth" aka differentiable and avoid Gibbs effect
 # These follow: `offset` + `smooth_wave` * `smooth_step` with zero output for `t < start_time`
 function smooth_cos(x, δ, f, amplitude, ϕ, offset, start_time)
-    offset +
-    amplitude * cos(2 * π * f * (x - start_time) + ϕ) *
-    smooth_step(x, δ, one(x), zero(x), start_time)
+    return offset +
+        amplitude * cos(2 * π * f * (x - start_time) + ϕ) *
+        smooth_step(x, δ, one(x), zero(x), start_time)
 end
 
 function smooth_damped_sin(x, δ, f, amplitude, damping, ϕ, offset, start_time)
-    offset +
-    exp((start_time - x) * damping) * amplitude * sin(2 * π * f * (x - start_time) + ϕ) *
-    smooth_step(x, δ, one(x), zero(x), start_time)
+    return offset +
+        exp((start_time - x) * damping) * amplitude * sin(2 * π * f * (x - start_time) + ϕ) *
+        smooth_step(x, δ, one(x), zero(x), start_time)
 end
 
 function smooth_ramp(x, δ, height, duration, offset, start_time)
-    offset +
-    height / (duration) *
-    (smooth_xH(x, δ, start_time) - smooth_xH(x, δ, start_time + duration))
+    return offset +
+        height / (duration) *
+        (smooth_xH(x, δ, start_time) - smooth_xH(x, δ, start_time + duration))
 end
 
 function smooth_sin(x, δ, f, amplitude, ϕ, offset, start_time)
-    offset +
-    amplitude * sin(2 * pi * f * (x - start_time) + ϕ) *
-    smooth_step(x, δ, one(x), zero(x), start_time)
+    return offset +
+        amplitude * sin(2 * pi * f * (x - start_time) + ϕ) *
+        smooth_step(x, δ, one(x), zero(x), start_time)
 end
 
 function smooth_square(x, δ, f, amplitude, offset, start_time)
-    offset +
-    amplitude * 2atan(sin(2π * (x - start_time) * f) / δ) / π *
-    smooth_step(x, δ, one(x), zero(x), start_time)
+    return offset +
+        amplitude * 2atan(sin(2π * (x - start_time) * f) / δ) / π *
+        smooth_step(x, δ, one(x), zero(x), start_time)
 end
 
 function smooth_step(x, δ, height, offset, start_time)
-    offset + height * (atan((x - start_time) / δ) / π + 0.5)
+    return offset + height * (atan((x - start_time) / δ) / π + 0.5)
 end
 
 function smooth_triangular(x, δ, f, amplitude, offset, start_time)
-    offset +
-    amplitude * (1 - 2acos((1 - δ)sin(2π * (x - start_time) * f)) / π) *
-    smooth_step(x, δ, one(x), zero(x), start_time)
+    return offset +
+        amplitude * (1 - 2acos((1 - δ)sin(2π * (x - start_time) * f)) / π) *
+        smooth_step(x, δ, one(x), zero(x), start_time)
 end
 
 function smooth_xH(x, δ, tₒ)
-    0.5 * (x - tₒ) * (1 + ((x - tₒ) / sqrt((x - tₒ)^2 + δ^2)))
+    return 0.5 * (x - tₒ) * (1 + ((x - tₒ) / sqrt((x - tₒ)^2 + δ^2)))
 end
 
 function square(x, f, amplitude, offset, start_time)
-    offset +
-    (x > start_time) * (amplitude *
-     (4 * floor(f * (x - start_time)) - 2 * floor(2 * (x - start_time) * f) + 1))
+    return offset +
+        (x > start_time) * (
+        amplitude *
+            (4 * floor(f * (x - start_time)) - 2 * floor(2 * (x - start_time) * f) + 1)
+    )
 end
 
 function triangular(x, f, amplitude, offset, start_time)
     p = 1 / f # period
-    offset +
-    (x > start_time) *
-    (4 * amplitude * f * abs(abs((x - p / 4 - start_time) % p) - p / 2) - amplitude)
+    return offset +
+        (x > start_time) *
+        (4 * amplitude * f * abs(abs((x - p / 4 - start_time) % p) - p / 2) - amplitude)
 end
 
 """
@@ -88,7 +90,7 @@ Generate constant signal.
     end
 
     equations = Equation[
-        output.u ~ k
+        output.u ~ k,
     ]
 
     return System(equations, t, vars, pars; name, systems)
@@ -116,7 +118,7 @@ The input variable `t` can be changed by passing a different variable as the key
     end
 
     equations = Equation[
-        output.u ~ f(t)
+        output.u ~ f(t),
     ]
 
     return System(equations, t, vars, pars; name, systems)
@@ -143,25 +145,29 @@ Generate sine signal.
 
   - `output`
 """
-@component function Sine(; name,
+@component function Sine(;
+        name,
         frequency = nothing,
         amplitude = 1,
         phase = 0,
         offset = 0,
         start_time = 0,
-        smooth = false)
+        smooth = false
+    )
     @named output = RealOutput()
-    pars = @parameters offset=offset start_time=start_time amplitude=amplitude frequency=frequency phase=phase
+    pars = @parameters offset = offset start_time = start_time amplitude = amplitude frequency = frequency phase = phase
     equation = if smooth == false
-        offset + ifelse(t < start_time, 0,
-            amplitude * sin(2 * pi * frequency * (t - start_time) + phase))
+        offset + ifelse(
+            t < start_time, 0,
+            amplitude * sin(2 * pi * frequency * (t - start_time) + phase)
+        )
     else
-        smooth === true && (smooth = 1e-5)
+        smooth === true && (smooth = 1.0e-5)
         smooth_sin(t, smooth, frequency, amplitude, phase, offset, start_time)
     end
 
     eqs = [
-        output.u ~ equation
+        output.u ~ equation,
     ]
 
     compose(System(eqs, t, [], pars; name = name), [output])
@@ -185,24 +191,28 @@ Generate cosine signal.
 # Connectors:
 - `output`
 """
-@component function Cosine(; name,
+@component function Cosine(;
+        name,
         frequency = nothing,
         amplitude = 1,
         phase = 0,
         offset = 0,
         start_time = 0,
-        smooth = false)
+        smooth = false
+    )
     @named output = RealOutput()
-    pars = @parameters offset=offset start_time=start_time amplitude=amplitude frequency=frequency phase=phase
+    pars = @parameters offset = offset start_time = start_time amplitude = amplitude frequency = frequency phase = phase
     equation = if smooth == false
-        offset + ifelse(t < start_time, zero(t),
-            amplitude * cos(2 * pi * frequency * (t - start_time) + phase))
+        offset + ifelse(
+            t < start_time, zero(t),
+            amplitude * cos(2 * pi * frequency * (t - start_time) + phase)
+        )
     else
-        smooth === true && (smooth = 1e-5)
+        smooth === true && (smooth = 1.0e-5)
         smooth_cos(t, smooth, frequency, amplitude, phase, offset, start_time)
     end
     eqs = [
-        output.u ~ equation
+        output.u ~ equation,
     ]
 
     compose(System(eqs, t, [], pars; name = name), [output])
@@ -224,9 +234,9 @@ Generate current time signal.
 """
 @component function ContinuousClock(; name, offset = 0, start_time = 0)
     @named output = RealOutput()
-    pars = @parameters offset=offset start_time=start_time
+    pars = @parameters offset = offset start_time = start_time
     eqs = [
-        output.u ~ offset + ifelse(t < start_time, zero(t), t - start_time)
+        output.u ~ offset + ifelse(t < start_time, zero(t), t - start_time),
     ]
 
     compose(System(eqs, t, [], pars; name = name), [output])
@@ -250,25 +260,31 @@ Generate ramp signal.
 
   - `output`
 """
-@component function Ramp(; name,
+@component function Ramp(;
+        name,
         height = 1.0,
         duration = 1.0,
         offset = 0.0,
         start_time = 0.0,
-        smooth = false)
+        smooth = false
+    )
     @named output = RealOutput()
-    pars = @parameters offset=offset start_time=start_time height=height duration=duration
+    pars = @parameters offset = offset start_time = start_time height = height duration = duration
     equation = if smooth == false
-        offset + ifelse(t < start_time, zero(height),
-            ifelse(t < (start_time + duration), (t - start_time) * height / duration,
-                height))
+        offset + ifelse(
+            t < start_time, zero(height),
+            ifelse(
+                t < (start_time + duration), (t - start_time) * height / duration,
+                height
+            )
+        )
     else
-        smooth === true && (smooth = 1e-5)
+        smooth === true && (smooth = 1.0e-5)
         smooth_ramp(t, smooth, height, duration, offset, start_time)
     end
 
     eqs = [
-        output.u ~ equation
+        output.u ~ equation,
     ]
 
     compose(System(eqs, t, [], pars; name = name), [output])
@@ -292,8 +308,10 @@ Generate smooth square signal.
 
   - `output`
 """
-@component function Square(; name, frequency = 1.0, amplitude = 1.0,
-        offset = 0.0, start_time = 0.0, smooth = false)
+@component function Square(;
+        name, frequency = 1.0, amplitude = 1.0,
+        offset = 0.0, start_time = 0.0, smooth = false
+    )
     @named output = RealOutput()
     pars = @parameters begin
         frequency = frequency
@@ -305,12 +323,12 @@ Generate smooth square signal.
     equation = if smooth == false
         square(t, frequency, amplitude, offset, start_time)
     else
-        smooth === true && (smooth = 1e-5)
+        smooth === true && (smooth = 1.0e-5)
         smooth_square(t, smooth, frequency, amplitude, offset, start_time)
     end
 
     eqs = [
-        output.u ~ equation
+        output.u ~ equation,
     ]
 
     compose(System(eqs, t, [], pars; name = name), [output])
@@ -336,25 +354,26 @@ Generate step signal.
 """
 @component function Step(;
         name, height = 1.0, offset = 0.0, start_time = 0.0, duration = Inf,
-        smooth = 1e-5)
+        smooth = 1.0e-5
+    )
     @named output = RealOutput()
     duration_numeric = duration
-    pars = @parameters offset=offset start_time=start_time height=height duration=duration
+    pars = @parameters offset = offset start_time = start_time height = height duration = duration
     equation = if smooth == false # use comparison in case smooth is a float
         offset +
-        ifelse((start_time <= t) & (t < start_time + duration), height, zero(height))
+            ifelse((start_time <= t) & (t < start_time + duration), height, zero(height))
     else
-        smooth === true && (smooth = 1e-5)
+        smooth === true && (smooth = 1.0e-5)
         if duration_numeric == Inf
             smooth_step(t, smooth, height, offset, start_time)
         else
             smooth_step(t, smooth, height, offset, start_time) -
-            smooth_step(t, smooth, height, zero(start_time), start_time + duration)
+                smooth_step(t, smooth, height, zero(start_time), start_time + duration)
         end
     end
 
     eqs = [
-        output.u ~ equation
+        output.u ~ equation,
     ]
 
     compose(System(eqs, t, [], pars; name = name), [output])
@@ -380,29 +399,35 @@ Exponentially damped sine signal.
 
   - `output`
 """
-@component function ExpSine(; name,
+@component function ExpSine(;
+        name,
         frequency = nothing,
         amplitude = 1.0,
         damping = 0.1,
         phase = 0.0,
         offset = 0.0,
         start_time = 0.0,
-        smooth = false)
+        smooth = false
+    )
     @named output = RealOutput()
-    pars = @parameters offset=offset start_time=start_time amplitude=amplitude frequency=frequency phase=phase damping=damping
+    pars = @parameters offset = offset start_time = start_time amplitude = amplitude frequency = frequency phase = phase damping = damping
 
     equation = if smooth == false
-        offset + ifelse(t < start_time, zero(amplitude),
+        offset + ifelse(
+            t < start_time, zero(amplitude),
             amplitude * exp(-damping * (t - start_time)) *
-            sin(2 * pi * frequency * (t - start_time) + phase))
+                sin(2 * pi * frequency * (t - start_time) + phase)
+        )
     else
-        smooth === true && (smooth = 1e-5)
-        smooth_damped_sin(t, smooth, frequency, amplitude, damping, phase, offset,
-            start_time)
+        smooth === true && (smooth = 1.0e-5)
+        smooth_damped_sin(
+            t, smooth, frequency, amplitude, damping, phase, offset,
+            start_time
+        )
     end
 
     eqs = [
-        output.u ~ equation
+        output.u ~ equation,
     ]
 
     compose(System(eqs, t, [], pars; name = name), [output])
@@ -427,8 +452,10 @@ Generate smooth triangular signal for frequencies less than or equal to 25 Hz
 
   - `output`
 """
-@component function Triangular(; name, amplitude = 1.0, frequency = 1.0,
-        offset = 0.0, start_time = 0.0, smooth = false)
+@component function Triangular(;
+        name, amplitude = 1.0, frequency = 1.0,
+        offset = 0.0, start_time = 0.0, smooth = false
+    )
     @named output = RealOutput()
     pars = @parameters begin
         amplitude = amplitude
@@ -440,12 +467,12 @@ Generate smooth triangular signal for frequencies less than or equal to 25 Hz
     equation = if smooth == false
         triangular(t, frequency, amplitude, offset, start_time)
     else
-        smooth === true && (smooth = 1e-5)
+        smooth === true && (smooth = 1.0e-5)
         smooth_triangular(t, smooth, frequency, amplitude, offset, start_time)
     end
 
     eqs = [
-        output.u ~ equation
+        output.u ~ equation,
     ]
 
     compose(System(eqs, t, [], pars; name = name), [output])
@@ -528,7 +555,7 @@ Base.min(x::Parameter, y::Number) = min(x.ref, y)
 Base.min(x::Parameter, y::Parameter) = min(x.ref, y.ref)
 
 function Base.show(io::IO, m::MIME"text/plain", p::Parameter)
-    if !isempty(p.data)
+    return if !isempty(p.data)
         print(io, p.data)
     else
         print(io, p.ref)
@@ -540,7 +567,7 @@ Symbolics.@register_symbolic get_sample_time(memory::Parameter)
 
 Base.convert(::Type{T}, x::Parameter{T}) where {T <: Real} = x.ref
 function Base.convert(::Type{<:Parameter{T}}, x::Number) where {T <: Real}
-    Parameter{T}(T[], x, true)
+    return Parameter{T}(T[], x, true)
 end
 
 # SampledData utilities ----------------
@@ -552,7 +579,7 @@ function linear_interpolation(x1::Real, x2::Real, t1::Real, t2::Real, t)
 
         return slope * t + intercept
     else
-        @assert x1==x2 "x1 ($x1) and x2 ($x2) should be equal if t1 == t2"
+        @assert x1 == x2 "x1 ($x1) and x2 ($x2) should be equal if t1 == t2"
 
         return x2
     end
@@ -573,10 +600,12 @@ function first_order_backwards_difference(t, buffer, Δt, circular_buffer)
     return (x1 - x0) / Δt
 end
 
-function get_sampled_data(t,
+function get_sampled_data(
+        t,
         buffer::Vector{T},
         dt::T,
-        circular_buffer = true) where {T <: Real}
+        circular_buffer = true
+    ) where {T <: Real}
     if t < 0
         t = zero(t)
     end
@@ -616,31 +645,33 @@ function get_sampled_data(t,
     end
 end
 function get_sampled_data(t, buffer)
-    get_sampled_data(t, buffer.data, buffer.ref, buffer.circular_buffer)
+    return get_sampled_data(t, buffer.data, buffer.ref, buffer.circular_buffer)
 end
 Symbolics.@register_symbolic Parameter(data::Vector, ref, circular_buffer::Bool)
 Symbolics.@register_symbolic get_sampled_data(t, buffer::Parameter)
 Symbolics.@register_symbolic get_sampled_data(t, buffer::Vector, dt, circular_buffer) false
 Symbolics.@register_derivative get_sampled_data(t, buffer) 1 first_order_backwards_difference(t, buffer)
 function ChainRulesCore.frule((_, ẋ, _), ::typeof(get_sampled_data), t, buffer)
-    first_order_backwards_difference(t, buffer) * ẋ
+    return first_order_backwards_difference(t, buffer) * ẋ
 end
 Symbolics.@register_derivative get_sampled_data(t, buffer, dt, circular_buffer) 1 begin
     first_order_backwards_difference(t, buffer, dt, circular_buffer)
 end
-function ChainRulesCore.frule((_, ẋ, _),
+function ChainRulesCore.frule(
+        (_, ẋ, _),
         ::typeof(get_sampled_data),
         t,
         buffer,
         sample_time,
-        circular_buffer)
-    first_order_backwards_difference(t, buffer, sample_time, circular_buffer) * ẋ
+        circular_buffer
+    )
+    return first_order_backwards_difference(t, buffer, sample_time, circular_buffer) * ẋ
 end
 
 # SampledData component ----------------
 
 module SampledDataType
-@enum Option vector_based struct_based
+    @enum Option vector_based struct_based
 end
 
 """
@@ -656,11 +687,13 @@ data input component.
 # Connectors:
   - `output`
 """
-@component function SampledData(::Val{SampledDataType.vector_based};
+@component function SampledData(
+        ::Val{SampledDataType.vector_based};
         name,
         buffer = nothing,
         sample_time = nothing,
-        circular_buffer = true)
+        circular_buffer = true
+    )
     T = eltype(buffer)
     pars = @parameters begin
         buffer::Vector{T} = buffer #::Vector{Real}
@@ -673,7 +706,7 @@ data input component.
         output = RealOutput()
     end
     eqs = [
-        output.u ~ get_sampled_data(t, p)
+        output.u ~ get_sampled_data(t, p),
     ]
     return System(eqs, t, vars, [pars; p]; name, systems)
 end
@@ -690,7 +723,8 @@ data input component.
   - `output`
 """
 @component function SampledData(
-        ::Val{SampledDataType.struct_based}; name, buffer::Parameter)
+        ::Val{SampledDataType.struct_based}; name, buffer::Parameter
+    )
     pars = @parameters begin
         buffer::typeof(buffer) = buffer #::Parameter
     end
@@ -699,7 +733,7 @@ data input component.
         output = RealOutput()
     end
     eqs = [
-        output.u ~ get_sampled_data(t, buffer)
+        output.u ~ get_sampled_data(t, buffer),
     ]
     return System(eqs, t, vars, pars; name, systems)
 end
@@ -708,27 +742,33 @@ SampledData(x::SampledDataType.Option; kwargs...) = SampledData(Val(x); kwargs..
 
 # struct_based
 function SampledData(T::Type, circular_buffer = true; name)
-    SampledData(SampledDataType.struct_based;
+    return SampledData(
+        SampledDataType.struct_based;
         name,
-        buffer = Parameter(T[], zero(T), circular_buffer))
+        buffer = Parameter(T[], zero(T), circular_buffer)
+    )
 end
 
 # vector_based
 function SampledData(sample_time::T, circular_buffer = true; name) where {T <: Real}
-    SampledData(SampledDataType.vector_based;
+    return SampledData(
+        SampledDataType.vector_based;
         name,
         buffer = T[],
         sample_time,
-        circular_buffer)
+        circular_buffer
+    )
 end
-function SampledData(buffer::Vector{<:Real},
+function SampledData(
+        buffer::Vector{<:Real},
         sample_time::Real,
         circular_buffer = true;
-        name)
-    SampledData(SampledDataType.vector_based; name, buffer, sample_time, circular_buffer)
+        name
+    )
+    return SampledData(SampledDataType.vector_based; name, buffer, sample_time, circular_buffer)
 end
 function SampledData(; name, buffer, sample_time, circular_buffer)
-    SampledData(SampledDataType.vector_based; name, buffer, sample_time, circular_buffer)
+    return SampledData(SampledDataType.vector_based; name, buffer, sample_time, circular_buffer)
 end
 
 """
@@ -758,7 +798,7 @@ such as `LinearInterpolation`, `ConstantInterpolation` or `CubicSpline`.
 """
 function Interpolation(interp_type, u, x, args...; name)
     itp = interp_type(u, x, args...)
-    Interpolation(; itp, name)
+    return Interpolation(; itp, name)
 end
 
 @deprecate Interpolation(itp; name) Interpolation(; itp, name)
@@ -770,8 +810,9 @@ function Interpolation(; itp, name)
 
     eqs = [output.u ~ interpolator(input.u)]
 
-    System(
-        eqs, t, [], [interpolator]; name, systems = [input, output])
+    return System(
+        eqs, t, [], [interpolator]; name, systems = [input, output]
+    )
 end
 
 """
@@ -801,7 +842,7 @@ struct CachedInterpolation{T, I, U, X, C}
         X = typeof(prev_x)
         C = typeof(cache)
 
-        new{T, I, U, X, C}(interpolation_type, prev_u, prev_x, cache)
+        return new{T, I, U, X, C}(interpolation_type, prev_u, prev_x, cache)
     end
 end
 
@@ -812,7 +853,8 @@ function (f::CachedInterpolation{T})(u, x, args) where {T}
         get_tmp(prev_u, u) .= u
         get_tmp(prev_x, x) .= x
         cache.bufs[(u, x)] = interpolation_type(
-            get_tmp(prev_u, u), get_tmp(prev_x, x), args...)
+            get_tmp(prev_u, u), get_tmp(prev_x, x), args...
+        )
     else
         cache[(u, x)]
     end
@@ -852,12 +894,13 @@ such as `LinearInterpolation`, `ConstantInterpolation` or `CubicSpline`.
 """
 function ParametrizedInterpolation(
         interp_type::T, u::AbstractVector, x::AbstractVector, args...;
-        name) where {T}
+        name
+    ) where {T}
     build_interpolation = CachedInterpolation(interp_type, u, x, args)
 
     @parameters data[1:length(x)] = u
     @parameters ts[1:length(x)] = x
-    @parameters interpolation_type::T=interp_type [tunable = false]
+    @parameters interpolation_type::T = interp_type [tunable = false]
     @parameters (interpolator::interp_type)(..)::eltype(u)
 
     @named input = RealInput()
@@ -865,15 +908,17 @@ function ParametrizedInterpolation(
 
     eqs = [output.u ~ interpolator(input.u)]
 
-    System(eqs, ModelingToolkitBase.t_nounits, [],
+    return System(
+        eqs, ModelingToolkitBase.t_nounits, [],
         [data, ts, interpolation_type, interpolator];
         bindings = [
-            interpolator => build_interpolation(data, ts, args)
+            interpolator => build_interpolation(data, ts, args),
         ],
         systems = [input, output],
-        name)
+        name
+    )
 end
 
 function ParametrizedInterpolation(; interp_type, u::AbstractVector, x::AbstractVector, name)
-    ParametrizedInterpolation(interp_type, u, x; name)
+    return ParametrizedInterpolation(interp_type, u, x; name)
 end

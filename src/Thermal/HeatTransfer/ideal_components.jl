@@ -33,7 +33,7 @@ Lumped thermal element storing heat
     equations = Equation[
         T ~ port.T,
         der_T ~ port.Q_flow / C,
-        D(T) ~ der_T
+        D(T) ~ der_T,
     ]
 
     return System(equations, t, vars, pars; name, systems)
@@ -72,7 +72,7 @@ see [`Element1D`](@ref)
     end
 
     equations = Equation[
-        Q_flow ~ G * dT
+        Q_flow ~ G * dT,
     ]
 
     sys = System(equations, t, vars, pars; name, systems)
@@ -113,7 +113,7 @@ Lumped thermal element transporting heat without storing it.
     end
 
     equations = Equation[
-        dT ~ R * Q_flow
+        dT ~ R * Q_flow,
     ]
 
     sys = System(equations, t, vars, pars; name, systems)
@@ -154,7 +154,7 @@ Lumped thermal element for heat convection.
     end
 
     equations = Equation[
-        Q_flow ~ G * dT
+        Q_flow ~ G * dT,
     ]
 
     sys = System(equations, t, vars, pars; name, systems)
@@ -195,7 +195,7 @@ Lumped thermal element for heat convection.
     end
 
     equations = Equation[
-        dT ~ R * Q_flow
+        dT ~ R * Q_flow,
     ]
 
     sys = System(equations, t, vars, pars; name, systems)
@@ -238,7 +238,7 @@ Lumped thermal element for radiation heat transfer.
     end
 
     equations = Equation[
-        Q_flow ~ G * sigma * (port_a.T^4 - port_b.T^4)
+        Q_flow ~ G * sigma * (port_a.T^4 - port_b.T^4),
     ]
 
     sys = System(equations, t, vars, pars; name, systems)
@@ -282,7 +282,7 @@ This is a model to collect the heat flows from `m` heatports to one single heatp
     equations = Equation[
         port_b.Q_flow + sum(k -> k.Q_flow, port_a) ~ 0,
         port_b.T ~ port_a[1].T,
-        [port_a[i].T ~ port_a[i + 1].T for i in 1:(m - 1)]...
+        [port_a[i].T ~ port_a[i + 1].T for i in 1:(m - 1)]...,
     ]
 
     return System(equations, t, vars, pars; name, systems)

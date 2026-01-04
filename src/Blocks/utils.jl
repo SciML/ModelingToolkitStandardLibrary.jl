@@ -1,19 +1,21 @@
 @connector function RealInput(;
-        name, nin = 1, u_start = nothing, guess = nin > 1 ? zeros(nin) : 0.0)
+        name, nin = 1, u_start = nothing, guess = nin > 1 ? zeros(nin) : 0.0
+    )
     if u_start !== nothing
         Base.depwarn(
-            "The keyword argument `u_start` is deprecated. Use `guess` instead.", :u_start)
+            "The keyword argument `u_start` is deprecated. Use `guess` instead.", :u_start
+        )
         guess = u_start
     end
     if nin == 1
         @variables u(t) [
             input = true,
-            description = "Inner variable in RealInput $name"
+            description = "Inner variable in RealInput $name",
         ]
     else
         @variables u(t)[1:nin] [
             input = true,
-            description = "Inner variable in RealInput $name"
+            description = "Inner variable in RealInput $name",
         ]
     end
     System(Equation[], t, [u;], []; name = name, guesses = [u => guess])
@@ -33,12 +35,13 @@ Connector with one input signal of type Real.
 @connector function RealInputArray(; name, nin, u_start = nothing, guess = zeros(nin))
     if u_start !== nothing
         Base.depwarn(
-            "The keyword argument `u_start` is deprecated. Use `guess` instead.", :u_start)
+            "The keyword argument `u_start` is deprecated. Use `guess` instead.", :u_start
+        )
         guess = u_start
     end
     @variables u(t)[1:nin] [
         input = true,
-        description = "Inner variable in RealInputArray $name"
+        description = "Inner variable in RealInputArray $name",
     ]
     System(Equation[], t, [u], []; name = name, guesses = [u => guess])
 end
@@ -56,21 +59,23 @@ Connector with an array of input signals of type Real.
 """ RealInputArray
 
 @connector function RealOutput(;
-        name, nout = 1, u_start = nothing, guess = nout > 1 ? zeros(nout) : 0.0)
+        name, nout = 1, u_start = nothing, guess = nout > 1 ? zeros(nout) : 0.0
+    )
     if u_start !== nothing
         Base.depwarn(
-            "The keyword argument `u_start` is deprecated. Use `guess` instead.", :u_start)
+            "The keyword argument `u_start` is deprecated. Use `guess` instead.", :u_start
+        )
         guess = u_start
     end
     if nout == 1
         @variables u(t) [
             output = true,
-            description = "Inner variable in RealOutput $name"
+            description = "Inner variable in RealOutput $name",
         ]
     else
         @variables u(t)[1:nout] [
             output = true,
-            description = "Inner variable in RealOutput $name"
+            description = "Inner variable in RealOutput $name",
         ]
     end
     System(Equation[], t, [u;], []; name = name, guesses = [u => guess])
@@ -90,12 +95,13 @@ Connector with one output signal of type Real.
 @connector function RealOutputArray(; name, nout, u_start = nothing, guess = zeros(nout))
     if u_start !== nothing
         Base.depwarn(
-            "The keyword argument `u_start` is deprecated. Use `guess` instead.", :u_start)
+            "The keyword argument `u_start` is deprecated. Use `guess` instead.", :u_start
+        )
         guess = u_start
     end
     @variables u(t)[1:nout] [
         output = true,
-        description = "Inner variable in RealOutputArray $name"
+        description = "Inner variable in RealOutputArray $name",
     ]
     System(Equation[], t, [u], []; name = name, guesses = [u => guess])
 end
@@ -140,7 +146,7 @@ Single input single output (SISO) continuous system block.
 
     equations = Equation[
         u ~ input.u,
-        y ~ output.u
+        y ~ output.u,
     ]
 
     return System(equations, t, vars, pars; name, systems)
@@ -158,15 +164,19 @@ Base class for a multiple input multiple output (MIMO) continuous system block.
   - `u_start`: Initial value for the input
   - `y_start`: Initial value for the output
 """
-@component function MIMO(; name, nin = 1, nout = 1, u_start = zeros(nin),
-        y_start = zeros(nout))
+@component function MIMO(;
+        name, nin = 1, nout = 1, u_start = zeros(nin),
+        y_start = zeros(nout)
+    )
     @named input = RealInput(nin = nin, guess = u_start)
     @named output = RealOutput(nout = nout, guess = y_start)
-    @variables(u(t)[1:nin]=u_start, [description="Input of MIMO system $name"],
-        y(t)[1:nout]=y_start, [description="Output of MIMO system $name"],)
+    @variables(
+        u(t)[1:nin] = u_start, [description = "Input of MIMO system $name"],
+        y(t)[1:nout] = y_start, [description = "Output of MIMO system $name"],
+    )
     eqs = [
         [u[i] ~ input.u[i] for i in 1:nin]...,
-        [y[i] ~ output.u[i] for i in 1:nout]...
+        [y[i] ~ output.u[i] for i in 1:nout]...,
     ]
     return System(eqs, t, vcat(u..., y...), []; name = name, systems = [input, output])
 end

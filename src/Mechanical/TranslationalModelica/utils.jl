@@ -77,7 +77,7 @@ Partial model for the compliant connection of two translational 1-dim. flanges.
     equations = Equation[
         s_rel ~ flange_b.s - flange_a.s,
         flange_b.f ~ +f,
-        flange_a.f ~ -f
+        flange_a.f ~ -f,
     ]
 
     sys = System(equations, t, vars, pars; name, systems)
@@ -115,7 +115,7 @@ Partial model for the compliant connection of two translational 1-dim. flanges.
         s_rel ~ flange_b.s - flange_a.s,
         v_rel ~ D(s_rel),
         flange_b.f ~ f,
-        flange_a.f ~ -f
+        flange_a.f ~ -f,
     ]
 
     sys = System(equations, t, vars, pars; name, systems)
@@ -139,10 +139,10 @@ function PartialElementaryOneFlangeAndSupport2(; name, use_support = false)
     @named flange = Flange()
     @variables s_support(t) [description = "Absolute position of support flange"]
     @variables s(t) [
-        description = "Distance between flange and support (= flange.s - support.s)"
+        description = "Distance between flange and support (= flange.s - support.s)",
     ]
     eqs = [s ~ flange.s - s_support]
-    if use_support
+    return if use_support
         @named support = Support()
         push!(eqs, support.f ~ -flange.f)
         compose(System(eqs, t; name = name), flange, support)
@@ -172,9 +172,11 @@ function PartialElementaryTwoFlangesAndSupport2(; name, use_support = false)
     @variables s_b(t) [description = "Distance between right flange and support"]
     @variables s_support(t) [description = "Absolute position of support flange"]
 
-    eqs = [s_a ~ flange_a.s - s_support
-           s_b ~ flange_b.s - s_support]
-    if use_support
+    eqs = [
+        s_a ~ flange_a.s - s_support
+        s_b ~ flange_b.s - s_support
+    ]
+    return if use_support
         @named support = Support()
         push!(eqs, support.f ~ -flange_a.f - flange_b.f)
         compose(System(eqs, t; name = name), flange, support)
@@ -201,7 +203,7 @@ end
 
     equations = Equation[
         flange_a.s ~ s - L / 2,
-        flange_b.s ~ s + L / 2
+        flange_b.s ~ s + L / 2,
     ]
 
     sys = System(equations, t, vars, pars; name, systems)

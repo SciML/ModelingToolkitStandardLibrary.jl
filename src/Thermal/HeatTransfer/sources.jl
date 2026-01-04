@@ -32,9 +32,11 @@ the component FixedHeatFlow is connected, if parameter `Q_flow` is positive.
     end
 
     equations = Equation[
-        port.Q_flow ~ ifelse(alpha == 0.0,
+        port.Q_flow ~ ifelse(
+            alpha == 0.0,
             -Q_flow,  # Simplified equation when alpha is 0
-            -Q_flow * (1 + alpha * (port.T - T_ref)))
+            -Q_flow * (1 + alpha * (port.T - T_ref))
+        ),
     ]
 
     return System(equations, t, vars, pars; name, systems)
@@ -68,7 +70,7 @@ This model defines a fixed temperature `T` at its port in kelvin, i.e., it defin
     end
 
     equations = Equation[
-        port.T ~ T
+        port.T ~ T,
     ]
 
     return System(equations, t, vars, pars; name, systems)
@@ -110,7 +112,7 @@ dependent losses (which are given a reference temperature T_ref).
     end
 
     equations = Equation[
-        port.Q_flow ~ -Q_flow.u * (1 + alpha * (port.T - T_ref))
+        port.Q_flow ~ -Q_flow.u * (1 + alpha * (port.T - T_ref)),
     ]
 
     return System(equations, t, vars, pars; name, systems)
@@ -143,7 +145,7 @@ the temperature at the specified value.
     end
 
     equations = Equation[
-        port.T ~ T.u
+        port.T ~ T.u,
     ]
 
     return System(equations, t, vars, pars; name, systems)

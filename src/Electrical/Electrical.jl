@@ -14,8 +14,8 @@ export Pin, OnePort
 include("utils.jl")
 
 export Capacitor,
-       Ground, Inductor, Resistor, Conductor, Short, IdealOpAmp, EMF,
-       Diode, VariableResistor
+    Ground, Inductor, Resistor, Conductor, Short, IdealOpAmp, EMF,
+    Diode, VariableResistor
 include("Analog/ideal_components.jl")
 
 export CurrentSensor, PotentialSensor, VoltageSensor, PowerSensor, MultiSensor
@@ -42,12 +42,12 @@ export Logic
 include("Digital/logic.jl")
 
 export StdLogicVector, StdULogicVector,
-       std_ulogic, UX01, UX01Z, X01, X01Z,
-       get_logic_level
+    std_ulogic, UX01, UX01Z, X01, X01Z,
+    get_logic_level
 include("Digital/logic_vectors.jl")
 
 export LogicTable,
-       AndTable, OrTable, NotTable, XorTable
+    AndTable, OrTable, NotTable, XorTable
 include("Digital/tables.jl")
 
 end
