@@ -7,6 +7,9 @@ const GROUP = get(ENV, "GROUP", "All")
         @time @safetestset "Aqua" begin
             include("aqua.jl")
         end
+        @time @safetestset "JET" begin
+            include("jet.jl")
+        end
     end
 
     if GROUP == "Core" || GROUP == "All"

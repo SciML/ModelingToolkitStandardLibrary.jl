@@ -16,6 +16,7 @@ Symbolics = "0c5d862f-8b57-4792-8d23-62f2024744c7"
 ADTypes = "1"
 Aqua = "0.8"
 ChainRulesCore = "1.24"
+JET = "0.9"
 ControlSystemsBase = "1.4"
 DataFrames = "1.7"
 DataInterpolations = "8"
@@ -40,6 +41,7 @@ julia = "1.10"
 ADTypes = "47edcb42-4c32-4615-8424-f2b9edc5f35b"
 Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
 ControlSystemsBase = "aaaaaaaa-a6ca-5380-bf3e-84a91bcd477e"
+JET = "c3a54625-cd67-489e-a8e7-0a5a0ff4e31b"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 DataInterpolations = "82cc6244-b520-54b8-b5a6-8a565e85f1d0"
 ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
@@ -54,4 +56,4 @@ SymbolicIndexingInterface = "2efcf032-c050-4f8e-a9bb-153293bab1f5"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["ADTypes", "Aqua", "LinearAlgebra", "OrdinaryDiffEqDefault", "OrdinaryDiffEq", "SafeTestsets", "Test", "ControlSystemsBase", "DataFrames", "DataInterpolations", "SciMLStructures", "SymbolicIndexingInterface", "ForwardDiff", "SciCompDSL", "ModelingToolkit"]
+test = ["ADTypes", "Aqua", "JET", "LinearAlgebra", "OrdinaryDiffEqDefault", "OrdinaryDiffEq", "SafeTestsets", "Test", "ControlSystemsBase", "DataFrames", "DataInterpolations", "SciMLStructures", "SymbolicIndexingInterface", "ForwardDiff", "SciCompDSL", "ModelingToolkit"]
