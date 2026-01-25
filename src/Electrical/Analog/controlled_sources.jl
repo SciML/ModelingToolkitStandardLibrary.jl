@@ -98,6 +98,7 @@ Current Controlled Voltage Source (SPICE H-element).
 
 A four-terminal device where the output voltage is proportional to the input current.
 The input port has zero impedance (no voltage drop across the sensing terminals).
+The controlling current is measured as current flowing from p1 to n1 (through the input port).
 
 # Parameters
 - `Rm`: [V/A or Ω] Transresistance (default: 1000.0 Ω = 1 kΩ)
@@ -110,7 +111,7 @@ The input port has zero impedance (no voltage drop across the sensing terminals)
 
 # Equations
 ```
-v2 = Rm × i1
+v2 = Rm × i_through  (where i_through = current from p1 to n1)
 v1 = 0  (zero input impedance)
 ```
 
@@ -127,8 +128,10 @@ v1 = 0  (zero input impedance)
         Rm = Rm, [description = "Transresistance [V/A]"]
     end
 
+    # Note: i1 = p1.i = current INTO p1. The controlling current is current
+    # flowing THROUGH the input port (from p1 to n1), which equals -i1.
     eqs = Equation[
-        v2 ~ Rm * i1,
+        v2 ~ -Rm * i1,
         v1 ~ 0,
     ]
 
@@ -143,6 +146,7 @@ Current Controlled Current Source (SPICE F-element).
 
 A four-terminal device where the output current is proportional to the input current.
 The input port has zero impedance (no voltage drop across the sensing terminals).
+The controlling current is measured as current flowing from p1 to n1 (through the input port).
 
 # Parameters
 - `α`: [A/A] Current gain (default: 1.0). Can be negative for inverting behavior.
@@ -155,7 +159,7 @@ The input port has zero impedance (no voltage drop across the sensing terminals)
 
 # Equations
 ```
-i2 = α × i1
+i2 = α × i_through  (where i_through = current from p1 to n1)
 v1 = 0  (zero input impedance)
 ```
 
@@ -172,8 +176,10 @@ v1 = 0  (zero input impedance)
         α = α, [description = "Current gain [A/A]"]
     end
 
+    # Note: i1 = p1.i = current INTO p1. The controlling current is current
+    # flowing THROUGH the input port (from p1 to n1), which equals -i1.
     eqs = Equation[
-        i2 ~ α * i1,
+        i2 ~ -α * i1,
         v1 ~ 0,
     ]
 
