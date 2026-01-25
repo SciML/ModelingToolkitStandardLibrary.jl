@@ -100,7 +100,7 @@ A four-terminal device where the output voltage is proportional to the input cur
 The input port has zero impedance (no voltage drop across the sensing terminals).
 
 # Parameters
-- `Rm`: [V/A or Ω] Transimpedance (default: 1000.0 Ω = 1 kΩ)
+- `Rm`: [V/A or Ω] Transresistance (default: 1000.0 Ω = 1 kΩ)
 
 # Connectors
 - `p1` Positive input (sensing) terminal
@@ -116,7 +116,7 @@ v1 = 0  (zero input impedance)
 
 # Example
 ```julia
-@named ccvs = CCVS(Rm = 1000.0)  # Transimpedance amplifier with Rm = 1 kΩ
+@named ccvs = CCVS(Rm = 1000.0)  # Transresistance amplifier with Rm = 1 kΩ
 ```
 """
 @component function CCVS(; name, Rm = 1000.0)
@@ -124,7 +124,7 @@ v1 = 0  (zero input impedance)
     @unpack v1, v2, i1, i2 = twoport
 
     pars = @parameters begin
-        Rm = Rm, [description = "Transimpedance [V/A]"]
+        Rm = Rm, [description = "Transresistance [V/A]"]
     end
 
     eqs = Equation[
