@@ -24,7 +24,7 @@ Port for a thermal system.
 """ HeatPort
 
 """
-    Element1D(; name, dT = 0.0, Q_flow = 0.0)
+    Element1D(; name, dT_guess = 0.0, Q_flow_guess = 0.0)
 
 This partial model contains the basic connectors and variables to allow heat transfer models to be created that do not
 store energy. This model defines and includes equations for the temperature drop across the element, `dT`, and the heat
@@ -32,15 +32,15 @@ flow rate through the element from `port_a` to `port_b`, `Q_flow`.
 
 # States:
 
-  - `dT`:  [`K`] Temperature difference across the component a.T - b.T. It accepts an initial value, which defaults to 0.0.
-  - `Q_flow`: [`W`] Heat flow rate from port a -> port b. It accepts an initial value, which defaults to 0.0.
+  - `dT`:  [`K`] Temperature difference across the component a.T - b.T (algebraically constrained).
+  - `Q_flow`: [`W`] Heat flow rate from port a -> port b (algebraically constrained).
 
 # Connectors:
 
 `port_a`
 `port_b`
 """
-@component function Element1D(; dT = 0.0, Q_flow = 0.0, name)
+@component function Element1D(; name, dT_guess = 0.0, Q_flow_guess = 0.0)
     pars = @parameters begin
     end
 
@@ -50,8 +50,8 @@ flow rate through the element from `port_a` to `port_b`, `Q_flow`.
     end
 
     vars = @variables begin
-        dT(t) = dT, [guess = 0.0]
-        Q_flow(t) = Q_flow, [guess = 0.0]
+        dT(t), [guess = dT_guess]
+        Q_flow(t), [guess = Q_flow_guess]
     end
 
     equations = Equation[
@@ -64,7 +64,7 @@ flow rate through the element from `port_a` to `port_b`, `Q_flow`.
 end
 
 """
-    ConvectiveElement1D(; name, dT = 0.0, Q_flow = 0.0)
+    ConvectiveElement1D(; name, dT_guess = 0.0, Q_flow_guess = 0.0)
 
 This partial model contains the basic connectors and variables to allow heat
 transfer models to be created that do not store energy. This model defines and
@@ -73,15 +73,15 @@ flow rate through the element from `solid` to `fluid`, `Q_flow`.
 
 # States:
 
-  - `dT`:  [`K`] Temperature difference across the component `solid.T` - `fluid.T`. It accepts an initial value, which defaults to 0.0.
-  - `Q_flow`: [`W`] Heat flow rate from `solid` -> `fluid`. It accepts an initial value, which defaults to 0.0.
+  - `dT`:  [`K`] Temperature difference across the component `solid.T` - `fluid.T` (algebraically constrained).
+  - `Q_flow`: [`W`] Heat flow rate from `solid` -> `fluid` (algebraically constrained).
 
 # Connectors:
 
 `solid`
 `fluid`
 """
-@component function ConvectiveElement1D(; dT = 0.0, Q_flow = 0.0, name)
+@component function ConvectiveElement1D(; name, dT_guess = 0.0, Q_flow_guess = 0.0)
     pars = @parameters begin
     end
 
@@ -91,8 +91,8 @@ flow rate through the element from `solid` to `fluid`, `Q_flow`.
     end
 
     vars = @variables begin
-        dT(t) = dT, [guess = 0.0]
-        Q_flow(t) = Q_flow, [guess = 0.0]
+        dT(t), [guess = dT_guess]
+        Q_flow(t), [guess = Q_flow_guess]
     end
 
     equations = Equation[
