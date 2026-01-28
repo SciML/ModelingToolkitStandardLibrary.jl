@@ -282,7 +282,7 @@ Text-book version of a PID-controller without actuator saturation and anti-windu
   - `k`: Gain
   - `Ti`: [s] Integrator time constant (Ti>0 required). If set to false, no integral action is used.
   - `Td`: [s] Derivative time constant (Td>0 required). If set to false, no derivative action is used.
-  - `Nd`: [s] Time constant for the derivative approximation (Nd>0 required; Nd=0 is ideal derivative).
+  - `Nd`: [s] Maximum derivative gain (inverse of filter time constant, Nd>0 required; Nd=0 is ideal derivative).
   - `int__x`: Initial value for the integrator.
   - `der__x`: Initial value for the derivative state.
 
@@ -441,7 +441,7 @@ where the transfer function for the derivative includes additional filtering, se
   - `Td`: [s] Derivative time constant. Set to `false` to turn off derivative action.
   - `wp`: [0,1] Set-point weighting in the proportional part.
   - `wd`: [0,1] Set-point weighting in the derivative part.
-  - `Nd`: [1/s] Derivative limit, limits the derivative gain to Nd/Td. Reasonable values are ∈ [8, 20]. A higher value gives a better approximation of an ideal derivative at the expense of higher noise amplification.
+  - `Nd`: [1/s] Derivative limit, limits the derivative gain to `Nd*Td`. Reasonable values are ∈ [8, 20]. A higher value gives a better approximation of an ideal derivative at the expense of higher noise amplification.
   - `Ni`: `Ni*Ti` controls the time constant `Ta` of anti-windup tracking. A common (default) choice is `Ta = √(Ti*Td)` which is realized by `Ni = √(Td / Ti)`. Anti-windup can be effectively turned off by setting `Ni = Inf`.
   - `gains`: If `gains = true`, `Ti` and `Td` will be interpreted as gains with a fundamental PID transfer function on parallel form `ki=Ti, kd=Td, k + ki/s + kd*s`.
 
