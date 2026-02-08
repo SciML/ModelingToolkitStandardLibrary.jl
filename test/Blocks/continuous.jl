@@ -90,7 +90,7 @@ end
     @named pt2 = SecondOrder(; k = k, w = w, d = d)
     @named iosys = System(connect(c.output, pt2.input), t, systems = [pt2, c])
     sys = mtkcompile(iosys)
-    prob = ODEProblem(sys, [unknowns(sys) .=> 0.0...; pt2.xd => 0.0], (0.0, 100.0))
+    prob = ODEProblem(sys, unknowns(sys) .=> 0.0, (0.0, 100.0))
     sol = solve(prob, Rodas4())
     @test sol.retcode == Success
     @test sol[pt2.output.u] ≈ pt2_func.(sol.t, k, w, d) atol = 1.0e-3
@@ -176,7 +176,6 @@ end
         systems = [pi_controller, plant, ref, fb]
     )
     sys = mtkcompile(model)
-    initial_conditions(sys)[sys.pi_controller.gainPI.k] = 1.0
     prob = ODEProblem(sys, Pair[], (0.0, 100.0))
     sol = solve(prob, Rodas4())
     @test sol.retcode == Success
@@ -277,7 +276,6 @@ end
             systems = [pi_controller, plant, ref, fb, sat]
         )
         sys = mtkcompile(model)
-        initial_conditions(sys)[sys.pi_controller.gainPI.k] = 1.0
         prob = ODEProblem(sys, Pair[], (0.0, 20.0))
         sol = solve(prob, Rodas4())
     end

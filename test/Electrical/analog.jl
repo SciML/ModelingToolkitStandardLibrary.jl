@@ -633,7 +633,7 @@ end
         end
     end
 
-    @mtkbuild sys = SimpleNMOSCircuit(V_cc = 5.0, V_b = 3.5)
+    @mtkcompile sys = SimpleNMOSCircuit(V_cc = 5.0, V_b = 3.5)
 
     prob = ODEProblem(sys, Pair[], (0.0, 10.0))
     sol = solve(prob)
@@ -673,7 +673,7 @@ end
         end
     end
 
-    @mtkbuild flipped_sys = FlippedNMOSCircuit(V_cc = 5.0, V_b = 3.5)
+    @mtkcompile flipped_sys = FlippedNMOSCircuit(V_cc = 5.0, V_b = 3.5)
 
     flipped_prob = ODEProblem(flipped_sys, Pair[], (0.0, 10.0))
     flipped_sol = solve(flipped_prob)
@@ -717,7 +717,7 @@ end
         end
     end
 
-    @mtkbuild sys = SimplePMOSCircuit(V_s = 5.0, V_b = 2.5, V_d = 3)
+    @mtkcompile sys = SimplePMOSCircuit(V_s = 5.0, V_b = 2.5, V_d = 3)
 
     prob = ODEProblem(sys, Pair[], (0.0, 10.0))
     sol = solve(prob)
@@ -760,7 +760,7 @@ end
         end
     end
 
-    @mtkbuild flipped_sys = FlippedPMOSCircuit(V_s = 5.0, V_b = 2.5, V_d = 3)
+    @mtkcompile flipped_sys = FlippedPMOSCircuit(V_s = 5.0, V_b = 2.5, V_d = 3)
 
     flipped_prob = ODEProblem(flipped_sys, Pair[], (0.0, 10.0))
     flipped_sol = solve(flipped_prob)
