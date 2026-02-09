@@ -3,7 +3,7 @@ using SciCompDSL
 using ModelingToolkit
 using ModelingToolkitStandardLibrary.Blocks
 using OrdinaryDiffEq
-using ModelingToolkit: get_eqs, vars, @set!, t_nounits as t
+using ModelingToolkit: t_nounits as t
 using ControlSystemsBase
 
 @named P = FirstOrder(k = 1, T = 1)
@@ -80,7 +80,7 @@ L = P*C
 open_sys, (u, y) = ModelingToolkit.open_loop(sys, :plant_input)
 
 # Linearizing the open-loop system should yield the same system as get_looptransfer
-matrices, _ = linearize(open_sys, [u], [y])
+matrices, _ = linearize(open_sys, u, y)
 @test matrices.A[] == -1
 @test matrices.B[] * matrices.C[] == -1 # either one negative
 @test matrices.D[] == 0

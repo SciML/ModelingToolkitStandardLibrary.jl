@@ -320,7 +320,7 @@ end
     defs[sys.input.buffer] = Parameter(0.5 * x, dt)
 
     # NOTE: bypassing initialization system: https://github.com/SciML/ModelingToolkit.jl/issues/3312
-    prob = ODEProblem(sys, [unknowns(initsys)[1] => initsol[1]], (0, 0.1); build_initializeprob = false)
+    prob = ODEProblem(sys, unknowns(initsys) .=> initsol.u[end], (0, 0.1); build_initializeprob = false)
 
     #TODO: Implement proper initialization system after issue is resolved
     #TODO: How to bring the body back and not have an overdetermined system?
