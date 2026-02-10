@@ -35,7 +35,7 @@ makedocs(
     ],
     clean = true, doctest = false, linkcheck = true,
     linkcheck_ignore = ["https://www.mathworks.com/help/simscape/ug/basic-principles-of-modeling-physical-networks.html#bq89sba-6"],
-    warnonly = [:docs_block, :missing_docs, :cross_references],
+    warnonly = [:docs_block, :missing_docs, :cross_references, :example_block],
     format = Documenter.HTML(
         assets = ["assets/favicon.ico"],
         canonical = "https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/"

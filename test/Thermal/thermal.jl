@@ -203,7 +203,7 @@ end
     local sol
     local solve_success = try
         sol = solve(prob)
-        true
+        SciMLBase.successful_retcode(sol)
     catch e
         @warn "FixedHeatFlow solve failed (may be Julia version specific)" exception = e
         false
