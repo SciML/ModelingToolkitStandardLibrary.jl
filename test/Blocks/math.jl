@@ -4,6 +4,7 @@ using ModelingToolkit, OrdinaryDiffEq, Test
 using ModelingToolkitStandardLibrary.Blocks: _clamp, _dead_zone
 using ModelingToolkit: inputs, unbound_inputs, bound_inputs, t_nounits as t
 using OrdinaryDiffEq: ReturnCode.Success
+using OrdinaryDiffEqRosenbrock: Rodas4
 
 @testset "Gain" begin
     @named c = Constant(; k = 1)

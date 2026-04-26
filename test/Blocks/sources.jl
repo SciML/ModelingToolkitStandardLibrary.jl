@@ -6,6 +6,7 @@ using ModelingToolkitStandardLibrary.Blocks: smooth_sin, smooth_cos, smooth_damp
     smooth_square, smooth_step, smooth_ramp,
     smooth_triangular, triangular, square
 using OrdinaryDiffEq: ReturnCode.Success
+using OrdinaryDiffEqRosenbrock: Rodas4
 using DataInterpolations
 using DataFrames
 using SymbolicIndexingInterface

@@ -3,6 +3,7 @@ using SciCompDSL
 using ModelingToolkitStandardLibrary.Blocks
 using ModelingToolkit: t_nounits as t
 using OrdinaryDiffEq: ReturnCode.Success
+using OrdinaryDiffEqRosenbrock: Rodas4
 using Test
 
 #=

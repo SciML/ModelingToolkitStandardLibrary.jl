@@ -7,6 +7,7 @@ using ModelingToolkitStandardLibrary.Blocks: Step,
 using ModelingToolkitStandardLibrary.Blocks: square, triangular
 using ModelingToolkitStandardLibrary.Thermal: FixedTemperature
 using OrdinaryDiffEq: ReturnCode.Success
+using OrdinaryDiffEqRosenbrock: Rodas4
 
 # using Plots
 
