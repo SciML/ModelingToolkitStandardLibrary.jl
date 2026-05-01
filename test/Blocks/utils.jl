@@ -32,7 +32,7 @@ end
     @named c = Constant(; k = 1)
     @named so = SecondOrder(; k = k, w = w, d = d, xd = 1)
     @named iosys = System(connect(c.output, so.input), t, systems = [so, c])
-    sys = mtkcompile(iosys)
+    sys = mtkcompile(iosys; outputs = [so.output.u])
 
     initsys = ModelingToolkit.generate_initializesystem(sys)
     initsys = mtkcompile(initsys)

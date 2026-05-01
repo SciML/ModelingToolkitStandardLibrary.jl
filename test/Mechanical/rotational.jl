@@ -278,7 +278,22 @@ end
         end
     end
 
-    @mtkcompile sys = Sensors()
+    @named model = Sensors()
+    sys = mtkcompile(model;
+        outputs = [
+            model.inertia1.w,
+            model.damper.phi_rel,
+            model.damper.w_rel,
+            model.damper.a_rel,
+            model.inertia2.phi,
+            model.inertia2.w,
+            model.rel_speed_sensor.phi_rel,
+            model.rel_speed_sensor.w_rel.u,
+            model.fixed.flange.phi,
+            model.fixed.flange.tau,
+            model.torque_sensor.flange_a.tau,
+        ]
+    )
 
     prob = ODEProblem(sys, [D(D(sys.inertia2.phi)) => 0.0], (0, 10.0))
     sol = solve(prob, Rodas4())

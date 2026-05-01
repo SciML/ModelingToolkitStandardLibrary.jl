@@ -90,7 +90,7 @@ end
             th_resistor, flow_src, th_ground, th_conductor,
         ]
     )
-    sys = mtkcompile(h2)
+    sys = mtkcompile(h2; outputs = [mass1.T, hf_sensor2.port_b.Q_flow])
 
     u0 = [mass1.T => 10.0, th_conductor.dT => nothing, th_conductor.Q_flow => nothing, th_resistor.Q_flow => nothing, th_resistor.dT => nothing]
     prob = ODEProblem(sys, u0, (0, 3.0))

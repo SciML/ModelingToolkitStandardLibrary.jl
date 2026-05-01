@@ -248,8 +248,13 @@ end
             @named sys = System(
                 eqs, t, [], []; systems = [force, source, mass, acc, acc_output]
             )
-            s = complete(mtkcompile(sys))
-            prob = ODEProblem(s, [], (0.0, pi), fully_determined = true)
+            s = complete(mtkcompile(sys;
+                outputs = [
+                    mass.v,
+                    mass.flange.s,
+                ]
+            ))
+            prob = ODEProblem(s, [], (0.0, pi))
             sol = solve(prob, Tsit5())
             @test sol[sys.acc_output.u] ≈ (sol[sys.mass.f] ./ m)
         end
