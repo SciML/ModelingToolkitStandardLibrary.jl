@@ -61,6 +61,7 @@ The flow variable (i.e. force) input component for the `Mechanical` domain is
 using ModelingToolkit
 using ModelingToolkitStandardLibrary.Mechanical.Translational
 using ModelingToolkit: t_nounits as t
+using SciCompDSL
 
 @mtkmodel ConstantForce begin
     @parameters begin

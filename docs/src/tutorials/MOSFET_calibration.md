@@ -10,6 +10,7 @@ using ModelingToolkitStandardLibrary.Electrical
 using ModelingToolkitStandardLibrary.Blocks: Constant
 using OrdinaryDiffEq
 using Plots
+using SciCompDSL
 ```
 
 Here we just connect the source pin to ground, the drain pin to a voltage source named `Vcc`, and the gate pin to a voltage source named `Vb`.

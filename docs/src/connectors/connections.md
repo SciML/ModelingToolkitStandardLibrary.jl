@@ -113,7 +113,7 @@ nothing # hide
 The solution shows what we would expect, a non-linear dissipation of voltage and related decrease in current flow…
 
 ```@example connections
-prob = ODEProblem(sys, [1.0], (0, 10.0))
+prob = ODEProblem(sys, [capacitor.v => 1.0], (0, 10.0))
 sol = solve(prob)
 
 p1 = plot(sol, idxs = [capacitor.v])
