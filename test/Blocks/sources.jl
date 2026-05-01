@@ -1,5 +1,6 @@
 using ModelingToolkit, ModelingToolkitStandardLibrary, OrdinaryDiffEq
 using SciCompDSL
+using SciMLBase
 using ModelingToolkitStandardLibrary.Blocks
 using ModelingToolkit: t_nounits as t, D_nounits as D
 using ModelingToolkitStandardLibrary.Blocks: smooth_sin, smooth_cos, smooth_damped_sin,
