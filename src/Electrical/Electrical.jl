@@ -30,6 +30,26 @@ include("Analog/mosfets.jl")
 export NPN, PNP
 include("Analog/transistors.jl")
 
+# Controlled Sources (SPICE-equivalent)
+export VCVS, VCCS, CCVS, CCCS
+include("Analog/controlled_sources.jl")
+
+# Op-Amp Models (realistic non-ideal models)
+export OpAmpFiniteGain, OpAmpGBW, OpAmpFull
+include("Analog/opamps.jl")
+
+# Two-Port Networks
+export IdealTransformer, Gyrator
+include("Analog/two_port_networks.jl")
+
+# Small-Signal Semiconductor Models
+export BJT_SmallSignal, MOSFET_SmallSignal
+include("Analog/small_signal.jl")
+
+# Linearized Components
+export LinearizedDiode
+include("Analog/linearized.jl")
+
 # include("Digital/gates.jl")
 # include("Digital/sources.jl")
 

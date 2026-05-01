@@ -39,6 +39,21 @@ const GROUP = get(ENV, "GROUP", "All")
             @safetestset "Digital Circuits" begin
                 include("Electrical/digital.jl")
             end
+            @safetestset "Controlled Sources" begin
+                include("Electrical/controlled_sources.jl")
+            end
+            @safetestset "Op-Amp Models" begin
+                include("Electrical/opamps.jl")
+            end
+            @safetestset "Two-Port Networks" begin
+                include("Electrical/two_port_networks.jl")
+            end
+            @safetestset "Small-Signal Models" begin
+                include("Electrical/small_signal.jl")
+            end
+            @safetestset "Linearized Components" begin
+                include("Electrical/linearized.jl")
+            end
             @safetestset "Chua Circuit Demo" begin
                 include("chua_circuit.jl")
             end
