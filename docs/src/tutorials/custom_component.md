@@ -12,6 +12,7 @@ using ModelingToolkit: t_nounits as t
 using ModelingToolkitStandardLibrary.Electrical
 using OrdinaryDiffEq
 using Plots
+using SciCompDSL
 ```
 
 ## Custom Component

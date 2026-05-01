@@ -20,6 +20,7 @@ using ModelingToolkitStandardLibrary.Mechanical.Rotational
 using ModelingToolkitStandardLibrary.Blocks
 using OrdinaryDiffEq
 using Plots
+using SciCompDSL
 ```
 
 The actual model can now be composed.

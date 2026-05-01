@@ -32,6 +32,7 @@ using DataInterpolations
 using OrdinaryDiffEq
 using DataFrames
 using Plots
+using SciCompDSL
 
 function MassSpringDamper(; name)
     @named input = RealInput()

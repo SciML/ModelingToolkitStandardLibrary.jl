@@ -11,6 +11,7 @@ using ModelingToolkit, OrdinaryDiffEq, Plots
 using ModelingToolkitStandardLibrary.Electrical
 using ModelingToolkitStandardLibrary.Blocks: Constant
 using ModelingToolkit: t_nounits as t
+using SciCompDSL
 
 @mtkmodel RC begin
     @parameters begin

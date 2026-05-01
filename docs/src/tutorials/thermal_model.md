@@ -9,6 +9,7 @@ from dividing the total initial energy in the system by the sum of the heat capa
 ```@example
 using ModelingToolkitStandardLibrary.Thermal, ModelingToolkit, OrdinaryDiffEq, Plots
 using ModelingToolkit: t_nounits as t
+using SciCompDSL
 
 @mtkmodel HeatConductionModel begin
     @parameters begin
