@@ -1,9 +1,11 @@
 using ModelingToolkit, OrdinaryDiffEq
 using SciCompDSL
+using SciMLBase
 using ModelingToolkitStandardLibrary.Blocks
 using ModelingToolkit: t_nounits as t
 using ModelingToolkitStandardLibrary.Blocks: _dead_zone
 using OrdinaryDiffEq: ReturnCode.Success
+using OrdinaryDiffEqRosenbrock: Rodas4
 
 @testset "Limiter" begin
     @testset "Constant" begin

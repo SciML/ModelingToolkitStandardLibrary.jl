@@ -1,5 +1,6 @@
 using ModelingToolkitStandardLibrary.Electrical, ModelingToolkit, OrdinaryDiffEq, Test
 using SciCompDSL
+using SciMLBase
 using ModelingToolkit: t_nounits as t, D_nounits as D
 using ModelingToolkitStandardLibrary.Blocks: Step,
     Constant, Sine, Cosine, ExpSine, Ramp,
@@ -7,6 +8,7 @@ using ModelingToolkitStandardLibrary.Blocks: Step,
 using ModelingToolkitStandardLibrary.Blocks: square, triangular
 using ModelingToolkitStandardLibrary.Thermal: FixedTemperature
 using OrdinaryDiffEq: ReturnCode.Success
+using OrdinaryDiffEqRosenbrock: Rodas4
 
 # using Plots
 

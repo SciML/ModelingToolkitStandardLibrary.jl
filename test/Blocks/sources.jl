@@ -1,11 +1,13 @@
 using ModelingToolkit, ModelingToolkitStandardLibrary, OrdinaryDiffEq
 using SciCompDSL
+using SciMLBase
 using ModelingToolkitStandardLibrary.Blocks
 using ModelingToolkit: t_nounits as t, D_nounits as D
 using ModelingToolkitStandardLibrary.Blocks: smooth_sin, smooth_cos, smooth_damped_sin,
     smooth_square, smooth_step, smooth_ramp,
     smooth_triangular, triangular, square
 using OrdinaryDiffEq: ReturnCode.Success
+using OrdinaryDiffEqRosenbrock: Rodas4
 using DataInterpolations
 using DataFrames
 using SymbolicIndexingInterface

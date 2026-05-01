@@ -2,9 +2,12 @@ using ModelingToolkitStandardLibrary.Mechanical.Rotational,
     ModelingToolkit, OrdinaryDiffEq,
     Test
 using SciCompDSL
+using SciMLBase
 using ModelingToolkit: t_nounits as t, D_nounits as D
 import ModelingToolkitStandardLibrary.Blocks
 using OrdinaryDiffEq: ReturnCode.Success
+using OrdinaryDiffEqRosenbrock: Rodas4
+using OrdinaryDiffEqBDF: DFBDF
 
 # using Plots
 

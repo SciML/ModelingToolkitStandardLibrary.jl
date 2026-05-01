@@ -1,5 +1,6 @@
 using ModelingToolkitStandardLibrary.Magnetic, ModelingToolkit, OrdinaryDiffEq, Test
 using SciCompDSL
+using SciMLBase
 
 import ModelingToolkitStandardLibrary.Electrical
 import ModelingToolkitStandardLibrary.Blocks
@@ -7,6 +8,7 @@ import ModelingToolkitStandardLibrary.Magnetic
 using ModelingToolkit, OrdinaryDiffEq, Test
 using ModelingToolkit: t_nounits as t
 using OrdinaryDiffEq: ReturnCode.Success
+using OrdinaryDiffEqRosenbrock: Rodas4
 # using Plots
 
 @testset "Inductor" begin

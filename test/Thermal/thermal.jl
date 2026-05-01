@@ -1,8 +1,10 @@
 using ModelingToolkitStandardLibrary.Thermal, ModelingToolkit, OrdinaryDiffEq, Test
 using SciCompDSL
+using SciMLBase
 using ModelingToolkit: t_nounits as t, D_nounits as D
 using ModelingToolkitStandardLibrary.Blocks: Constant, Step
 using OrdinaryDiffEq: ReturnCode.Success
+using OrdinaryDiffEqRosenbrock: Rodas4
 
 # Test HeatCapacitor, TemperatureSensor, RelativeTemperatureSensor, FixedTemperature
 @testset "Heat systems" begin

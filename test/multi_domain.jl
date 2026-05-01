@@ -7,6 +7,8 @@ import ModelingToolkitStandardLibrary
 using ModelingToolkit, OrdinaryDiffEq, Test
 using ModelingToolkit: t_nounits as t, D_nounits as D
 using OrdinaryDiffEq: ReturnCode.Success
+using OrdinaryDiffEqRosenbrock: Rodas4
+using OrdinaryDiffEqBDF: DFBDF
 # using Plots
 
 @testset "DC motor" begin
