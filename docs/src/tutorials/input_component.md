@@ -187,6 +187,7 @@ using ModelingToolkit
 using ModelingToolkit: t_nounits as t, D_nounits as D
 using ModelingToolkitStandardLibrary.Blocks
 using OrdinaryDiffEq
+using OrdinaryDiffEqSDIRK: ImplicitEuler
 
 const rdata = Ref{Vector{Float64}}()
 
