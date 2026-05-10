@@ -258,10 +258,10 @@ end
     @mtkmodel Sensors begin
         @components begin
             fixed = Fixed()
-            inertia1 = Inertia(J = 2) # this one is fixed
+            inertia1 = Inertia(J = 2, phi = 0, w = 0) # this one is fixed
             spring = Spring(c = 1.0e4)
             damper = Damper(d = 10)
-            inertia2 = Inertia(J = 2, phi = pi / 2)
+            inertia2 = Inertia(J = 2, phi = pi / 2, w = 0)
             speed_sensor = SpeedSensor()
             torque_sensor = TorqueSensor()
             rel_speed_sensor = RelSpeedSensor()

@@ -66,7 +66,6 @@ end
     @named flow_src = FixedHeatFlow(Q_flow = 50, alpha = 100)
     @named mass1 = HeatCapacitor(C = C)
     @named hf_sensor1 = HeatFlowSensor()
-    @named hf_sensor2 = HeatFlowSensor()
     @named th_conductor = ThermalConductor(G = G)
     @named th_resistor = ThermalResistor(R = R)
     @named th_ground = FixedTemperature(T = 0)
@@ -75,24 +74,23 @@ end
     eqs = [
         connect(mass1.port, th_resistor.port_a, th_conductor.port_a)
         connect(
-            th_conductor.port_b, flow_src.port, hf_sensor1.port_a,
-            hf_sensor2.port_a
+            th_conductor.port_b, flow_src.port, hf_sensor1.port_a
         )
         connect(
-            th_resistor.port_b, hf_sensor1.port_b, hf_sensor2.port_b,
+            th_resistor.port_b, hf_sensor1.port_b,
             th_ground.port
         )
     ]
     @named h2 = System(
         eqs, t,
         systems = [
-            mass1, hf_sensor1, hf_sensor2,
+            mass1, hf_sensor1,
             th_resistor, flow_src, th_ground, th_conductor,
         ]
     )
     sys = mtkcompile(h2)
 
-    u0 = [mass1.T => 10.0, th_conductor.dT => nothing, th_conductor.Q_flow => nothing, th_resistor.Q_flow => nothing, th_resistor.dT => nothing]
+    u0 = [mass1.T => 10.0]
     prob = ODEProblem(sys, u0, (0, 3.0))
     sol = solve(prob, Tsit5())
 
