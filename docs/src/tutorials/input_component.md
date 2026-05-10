@@ -124,18 +124,19 @@ using DataInterpolations
 using OrdinaryDiffEq
 using DataFrames
 using Plots
+using SciCompDSL
 
 function MassSpringDamper(; name)
     @named input = RealInput()
-    vars = @variables f(t) x(t)=0 dx(t) [guess = 0] ddx(t)
-    pars = @parameters m=10 k=1000 d=1
+    @variables f(t) x(t)=0 dx(t)=0 ddx(t)
+    @parameters m=10 k=1000 d=1
 
     eqs = [f ~ input.u
            ddx * 10 ~ k * x + d * dx + f
            D(x) ~ dx
            D(dx) ~ ddx]
 
-    System(eqs, t, vars, pars; name, systems = [input])
+    System(eqs, t; name, systems = [input])
 end
 
 function MassSpringDamperSystem(data, time; name)

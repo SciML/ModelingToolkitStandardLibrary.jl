@@ -36,7 +36,7 @@ this can almost be directly translated to the syntax of `ModelingToolkit`.
 
 ```@example components
 @mtkmodel NonlinearResistor begin
-    @extend OnePort()
+    @extend v, i = oneport = OnePort()
     @parameters begin
         Ga
         Gb
@@ -58,7 +58,7 @@ nothing # hide
 Since the non-linear resistor is essentially a standard electrical component with two ports, we can extend from the `OnePort` component of the library.
 
 ```julia
-@extend OnePort()
+@extend v, i = oneport = OnePort()
 ```
 
 This extends `OnePort` and unpacks `v` and `i` variables.
