@@ -307,7 +307,7 @@ end
             piston.mass.s => 0.0,
             piston.mass.v => 0.0,
             valve.mass.s => 0.0,
-            valve.mass.v => 0.0
+            valve.mass.v => 0.0,
         ]
 
         System(eqs, t, vars, pars; name, systems, initialization_eqs, defaults)
