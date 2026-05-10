@@ -166,7 +166,9 @@ end
             mass.v ~ 0.0
         ]
 
-        System(eqs, t, [], pars; name, systems, initialization_eqs)
+        defaults = [mass.s => 0.0, mass.v => 0.0]
+
+        System(eqs, t, [], pars; name, systems, initialization_eqs, defaults)
     end
 
     @named sys = TestSystem()
@@ -365,7 +367,9 @@ end
             mass.v ~ 0
         ]
 
-        return System(eqs, t, [], pars; name, systems, initialization_eqs)
+        defaults = [mass.s => 0.05, mass.v => 0.0]
+
+        return System(eqs, t, [], pars; name, systems, initialization_eqs, defaults)
     end
 
     @mtkcompile sys = HydraulicSystem()
