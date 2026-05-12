@@ -5,6 +5,7 @@ using ModelingToolkit: t_nounits as t, D_nounits as D
 using ModelingToolkitStandardLibrary.Blocks: Constant, Step
 using OrdinaryDiffEq: ReturnCode.Success
 using OrdinaryDiffEqRosenbrock: Rodas4
+using OrdinaryDiffEqSDIRK: ImplicitEuler
 
 # Test HeatCapacitor, TemperatureSensor, RelativeTemperatureSensor, FixedTemperature
 @testset "Heat systems" begin
@@ -195,7 +196,11 @@ end
     @info "Building a FixedHeatFlow with alpha=0.0"
     @mtkcompile test_model = TestModel() allow_parameter = false
     prob = ODEProblem(test_model, [test_model.wall.Q_flow => nothing, test_model.wall.dT => nothing], (0, 10.0); guesses = [test_model.heatflow.port.T => 1.0])
-    sol = solve(prob)
+    # The compiled system has no differential states (purely algebraic). The
+    # auto-switching default algorithm cannot make forward progress on this
+    # and hangs the test runner indefinitely; ImplicitEuler with a fixed dt
+    # handles the trivially-constant trajectory.
+    sol = solve(prob, ImplicitEuler(); dt = 1.0, adaptive = false)
 
     heat_flow = sol[test_model.heatflow.port.Q_flow]
 

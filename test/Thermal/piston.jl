@@ -1,4 +1,5 @@
-using ModelingToolkit, Test
+using ModelingToolkit, OrdinaryDiffEq, Test
+using ModelingToolkit: t_nounits as t, D_nounits as D
 using SciCompDSL
 using SciMLBase
 using ModelingToolkitStandardLibrary.Thermal
