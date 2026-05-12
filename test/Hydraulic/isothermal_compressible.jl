@@ -166,7 +166,9 @@ end
             mass.v ~ 0.0
         ]
 
-        System(eqs, t, [], pars; name, systems, initialization_eqs)
+        initial_conditions = [mass.s => 0.0, mass.v => 0.0]
+
+        System(eqs, t, [], pars; name, systems, initialization_eqs, initial_conditions)
     end
 
     @named sys = TestSystem()
@@ -301,7 +303,14 @@ end
             # body.s ~ 0
         ]
 
-        System(eqs, t, vars, pars; name, systems, initialization_eqs)
+        initial_conditions = [
+            piston.mass.s => 0.0,
+            piston.mass.v => 0.0,
+            valve.mass.s => 0.0,
+            valve.mass.v => 0.0,
+        ]
+
+        System(eqs, t, vars, pars; name, systems, initialization_eqs, initial_conditions)
     end
 
     @mtkcompile initsys = ActuatorSystem(false)
@@ -365,7 +374,9 @@ end
             mass.v ~ 0
         ]
 
-        return System(eqs, t, [], pars; name, systems, initialization_eqs)
+        initial_conditions = [mass.s => 0.05, mass.v => 0.0]
+
+        return System(eqs, t, [], pars; name, systems, initialization_eqs, initial_conditions)
     end
 
     @mtkcompile sys = HydraulicSystem()

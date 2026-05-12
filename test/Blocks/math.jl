@@ -1,7 +1,6 @@
 using ModelingToolkitStandardLibrary.Blocks
 using SciCompDSL
 using ModelingToolkit, OrdinaryDiffEq, Test
-using ModelingToolkitStandardLibrary.Blocks: _clamp, _dead_zone
 using ModelingToolkit: inputs, unbound_inputs, bound_inputs, t_nounits as t
 using OrdinaryDiffEq: ReturnCode.Success
 using OrdinaryDiffEqRosenbrock: Rodas4

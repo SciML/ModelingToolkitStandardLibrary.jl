@@ -63,5 +63,15 @@ using OrdinaryDiffEqRosenbrock: Rodas4
 
     @test SciMLBase.successful_retcode(sol)
     @test sol[r_mFe.Phi] == sol[r_mAirPar.Phi]
-    @test all(sol[coil.port_p.Phi] + sol[r_mLeak.Phi] + sol[r_mAirPar.Phi] .== 0)
+    # Conservation of flux at the shared node is structural (a `connect` flow
+    # equation), but observed via numerical reconstruction. Roundoff in the
+    # observable substitution accumulates to ~1e-19; use isapprox with a
+    # tolerance well above that (and far below any physical scale).
+    @test all(
+        isapprox.(
+            sol[coil.port_p.Phi] + sol[r_mLeak.Phi] + sol[r_mAirPar.Phi],
+            0;
+            atol = 1.0e-12
+        )
+    )
 end
