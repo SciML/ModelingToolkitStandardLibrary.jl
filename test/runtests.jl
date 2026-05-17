@@ -39,6 +39,9 @@ const GROUP = get(ENV, "GROUP", "All")
             @safetestset "Digital Circuits" begin
                 include("Electrical/digital.jl")
             end
+            @safetestset "Electrical Machines" begin
+                include("Electrical/machines.jl")
+            end
             @safetestset "Chua Circuit Demo" begin
                 include("chua_circuit.jl")
             end

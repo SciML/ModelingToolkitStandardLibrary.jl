@@ -88,3 +88,13 @@ Set
 Reset
 Pulse
 ```
+
+## Machines
+
+```@meta
+CurrentModule = ModelingToolkitStandardLibrary.Electrical.Machines
+```
+
+```@docs
+PMSM
+```
