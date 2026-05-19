@@ -35,7 +35,6 @@ include("Analog/transistors.jl")
 
 # TODO:
 # - digital
-# - machines
 # - multi-phase
 
 export Logic
@@ -49,5 +48,8 @@ include("Digital/logic_vectors.jl")
 export LogicTable,
     AndTable, OrTable, NotTable, XorTable
 include("Digital/tables.jl")
+
+# Machines (Electrical.Machines submodule)
+include("Machines/Machines.jl")
 
 end
