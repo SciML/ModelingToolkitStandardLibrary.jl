@@ -12,7 +12,7 @@ on:
       - 'docs/**'
 jobs:
   test:
-    if: false
+    # Runs strict (allow_reresolve=false); expected RED until fntype regression (#458/#452) is resolved.
     uses: "SciML/.github/.github/workflows/downgrade.yml@v1"
     with:
       julia-version: "1.10"
