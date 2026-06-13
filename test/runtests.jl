@@ -1,15 +1,8 @@
 using SafeTestsets, Test
+using SciMLTesting
 
-const GROUP = get(ENV, "GROUP", "All")
-
-@time begin
-    if GROUP == "QA" || GROUP == "All"
-        @time @safetestset "Aqua" begin
-            include("aqua.jl")
-        end
-    end
-
-    if GROUP == "Core" || GROUP == "All"
+run_tests(;
+    core = () -> begin
         @testset "Core" begin
             # Blocks
             @safetestset "Blocks: utils" begin
@@ -77,5 +70,12 @@ const GROUP = get(ENV, "GROUP", "All")
                 include("Hydraulic/isothermal_compressible.jl")
             end
         end
-    end
-end
+    end,
+    # QA (Aqua) runs in the main test env; pass via `qa` so it also runs under "All",
+    # matching the original `GROUP == "QA" || GROUP == "All"` dispatch.
+    qa = () -> begin
+        @time @safetestset "Aqua" begin
+            include("aqua.jl")
+        end
+    end,
+)
