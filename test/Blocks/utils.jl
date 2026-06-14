@@ -34,9 +34,7 @@ end
     @named iosys = System(connect(c.output, so.input), t, systems = [so, c])
     sys = mtkcompile(iosys)
 
-    initsys = ModelingToolkit.generate_initializesystem(sys)
-    initsys = mtkcompile(initsys)
-    initprob = NonlinearProblem(initsys, merge(initial_conditions(sys), Dict([t => 0])))
+    initprob = ModelingToolkit.InitializationProblem(sys, 0.0)
     initsol = solve(initprob)
 
     @test initsol[sys.so.xd] == 1.0
