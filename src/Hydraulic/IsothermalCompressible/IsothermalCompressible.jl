@@ -6,7 +6,7 @@ module IsothermalCompressible
 using ModelingToolkitBase, Symbolics
 using ModelingToolkitBase: t_nounits as t, D_nounits as D
 
-using ...Blocks: RealInput, RealOutput
+using ...Blocks: RealInput
 using ...Mechanical.Translational: MechanicalPort, Mass
 
 using IfElse: ifelse

@@ -5,7 +5,7 @@ module TranslationalModelica
 
 using ModelingToolkitBase, Symbolics, IfElse
 using ModelingToolkitBase: t_nounits as t, D_nounits as D
-using ...Blocks: RealInput, RealOutput
+using ...Blocks: RealInput
 
 export Flange
 include("utils.jl")
