@@ -3,11 +3,11 @@ Library to model 1-dimensional, translational mechanical systems
 """
 module Translational
 
-using ModelingToolkitBase, Symbolics
-using ModelingToolkitBase: getdefault, t_nounits as t, D_nounits as D
+using ModelingToolkitBase: ModelingToolkitBase, @component, @connector, @named,
+    @parameters, Flow, System, compose, t_nounits as t, D_nounits as D
+using Symbolics: Symbolics, @variables, Equation
 
 using ModelingToolkitStandardLibrary.Blocks: RealInput, RealOutput
-using IfElse: ifelse
 
 export MechanicalPort
 include("utils.jl")
