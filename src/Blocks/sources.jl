@@ -1,6 +1,6 @@
-using DiffEqBase
+using DiffEqBase: DiffEqBase
 import ChainRulesCore
-using PreallocationTools
+using PreallocationTools: DiffCache, GeneralLazyBufferCache, get_tmp
 
 # Define and register smooth functions
 # These are "smooth" aka differentiable and avoid Gibbs effect

@@ -2,8 +2,10 @@
 Library of thermal system components to model heat transfer.
 """
 module Thermal
-using ModelingToolkitBase, Symbolics, IfElse
-using ModelingToolkitBase: t_nounits as t, D_nounits as D
+using IfElse: IfElse
+using ModelingToolkitBase: ModelingToolkitBase, @component, @connector, @named,
+    @parameters, @unpack, Flow, System, extend, t_nounits as t, D_nounits as D
+using Symbolics: Symbolics, @variables, Equation
 using ...Blocks: RealInput, RealOutput
 
 export HeatPort, Element1D
