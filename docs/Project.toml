@@ -13,7 +13,7 @@ SciCompDSL = "91a8cdf1-4ca6-467b-a780-87fda3fff15e"
 [compat]
 ControlSystemsBase = "1.1"
 DataFrames = "1.7"
-DataInterpolations = "6.4, 7, 8"
+DataInterpolations = "6.4, 7, 8, 9.0"
 Documenter = "1"
 IfElse = "0.1"
 ModelingToolkit = "11"
