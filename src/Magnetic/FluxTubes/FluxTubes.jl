@@ -1,6 +1,7 @@
 module FluxTubes
-using ModelingToolkitBase
-using ModelingToolkitBase: t_nounits as t, D_nounits as D
+using ModelingToolkitBase: ModelingToolkitBase, @component, @connector, @named,
+    @parameters, @unpack, @variables, Equation, Flow, System, connect, extend,
+    t_nounits as t, D_nounits as D
 using ...Electrical: Pin
 
 export PositiveMagneticPort, NegativeMagneticPort, TwoPort

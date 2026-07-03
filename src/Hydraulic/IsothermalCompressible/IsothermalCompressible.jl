@@ -3,10 +3,12 @@ Library to model iso-thermal compressible liquid fluid flow
 """
 module IsothermalCompressible
 
-using ModelingToolkitBase, Symbolics
-using ModelingToolkitBase: t_nounits as t, D_nounits as D
+using ModelingToolkitBase: ModelingToolkitBase, @component, @connector, @named,
+    @parameters, Flow, ParentScope, System, connect, domain_connect,
+    t_nounits as t, D_nounits as D
+using Symbolics: Symbolics, @register_derivative, @register_symbolic, @variables, Equation
 
-using ...Blocks: RealInput, RealOutput
+using ...Blocks: RealInput
 using ...Mechanical.Translational: MechanicalPort, Mass
 
 using IfElse: ifelse
