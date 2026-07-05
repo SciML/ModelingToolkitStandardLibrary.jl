@@ -105,9 +105,9 @@ end
 @connector function DigitalPin(; name)
     @variables val(t) v(t) i(t)
     eqs = [
-        val ~ IfElse.ifelse(
+        val ~ ifelse(
             (0.0 <= v) & (v <= 0.8) | (2.0 <= v) & (v <= 5.0),
-            IfElse.ifelse(v > 2.0, 1, 0), X
+            ifelse(v > 2.0, 1, 0), X
         ),
     ]
     System(

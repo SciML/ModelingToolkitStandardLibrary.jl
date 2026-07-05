@@ -84,7 +84,7 @@ function Pulse(; name, duty_cycle = 0.5, T = 1.0)
     @named d = DigitalPin()
 
     eqs = [
-        d.val ~ IfElse.ifelse(t % T > duty_cycle * T, 1, 0),
+        d.val ~ ifelse(t % T > duty_cycle * T, 1, 0),
     ]
     return System(eqs, t, [], [], systems = [d], name = name)
 end

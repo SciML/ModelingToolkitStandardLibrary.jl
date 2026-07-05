@@ -11,8 +11,6 @@ using Symbolics: Symbolics, @register_derivative, @register_symbolic, @variables
 using ...Blocks: RealInput
 using ...Mechanical.Translational: MechanicalPort, Mass
 
-using IfElse: ifelse
-
 export HydraulicPort, HydraulicFluid
 include("utils.jl")
 

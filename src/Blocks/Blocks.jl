@@ -6,7 +6,7 @@ using ModelingToolkitBase: ModelingToolkitBase, @component, @connector, @named,
     @parameters, @unpack, System, compose, connect, extend,
     getdefault, t_nounits as t, D_nounits as D
 using Symbolics: Symbolics, @register_symbolic, @variables, Differential, Equation
-import IfElse: ifelse
+import Base: ifelse
 import ..@symcheck
 
 export RealInput, RealInputArray, RealOutput, RealOutputArray, SISO
