@@ -4,7 +4,6 @@ This library contains electrical components to build up analog circuits.
 """
 module Electrical
 
-using IfElse: IfElse
 using ModelingToolkitBase: ModelingToolkitBase, @component, @connector, @constants,
     @named, @parameters, @unpack, Flow, System, connect, extend,
     t_nounits as t, D_nounits as D

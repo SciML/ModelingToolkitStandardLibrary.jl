@@ -2,7 +2,6 @@
 Library of thermal system components to model heat transfer.
 """
 module Thermal
-using IfElse: IfElse
 using ModelingToolkitBase: ModelingToolkitBase, @component, @connector, @named,
     @parameters, @unpack, Flow, System, extend, t_nounits as t, D_nounits as D
 using Symbolics: Symbolics, @variables, Equation

@@ -1,6 +1,5 @@
 module MultiBody2D
 
-using IfElse: IfElse
 using ModelingToolkitBase: ModelingToolkitBase, @component, @named, @parameters,
     System, t_nounits as t, D_nounits as D
 using Symbolics: Symbolics, @variables, Equation
