@@ -1,5 +1,5 @@
 module ModelingToolkitStandardLibrary
-import Symbolics: unwrap
+import SymbolicUtils: unwrap
 
 """
   @symcheck J > 0 || throw(ArgumentError("Expected `J` to be positive"))

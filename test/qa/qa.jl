@@ -3,6 +3,7 @@ using SciMLTesting, ModelingToolkitStandardLibrary, Test
 run_qa(
     ModelingToolkitStandardLibrary;
     explicit_imports = true,
+    api_docs_kwargs = (; rendered = true),
     aqua_kwargs = (; ambiguities = (; recursive = false)),
     ei_kwargs = (;
         # `ifelse` is IfElse's sole export but it is not declared public in IfElse.
