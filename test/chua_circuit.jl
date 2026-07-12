@@ -6,7 +6,6 @@ using ModelingToolkitStandardLibrary.Electrical: OnePort
 using OrdinaryDiffEq
 using OrdinaryDiffEq: ReturnCode.Success
 using OrdinaryDiffEqRosenbrock: Rodas4
-using IfElse: ifelse
 
 @testset "Chua Circuit" begin
     @component function NonlinearResistor(; name, Ga, Gb, Ve)
