@@ -522,6 +522,7 @@ end
     @mtkcompile sys = HeatingDiodeTest()
     prob = ODEProblem(sys, Pair[], (0.0, 10.0))
     sol = solve(prob, Rodas4())
+    @test SciMLBase.successful_retcode(sol)
 
     # Extract solutions for testing
     diode_voltage = sol[sys.heating_diode.v]
