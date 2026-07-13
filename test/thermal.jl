@@ -196,7 +196,17 @@ end
 
     @info "Building a FixedHeatFlow with alpha=0.0"
     @mtkcompile test_model = TestModel() allow_parameter = false
-    prob = ODEProblem(test_model, [test_model.wall.Q_flow => nothing, test_model.wall.dT => nothing], (0, 10.0); guesses = [test_model.heatflow.port.T => 1.0])
+    # A 1 W flow across the 1 K/W wall puts this port 1 K below the 300 K source.
+    prob = ODEProblem(
+        test_model,
+        [
+            test_model.wall.Q_flow => nothing,
+            test_model.wall.dT => nothing,
+            test_model.heatflow.port.T => 299.0,
+        ],
+        (0, 10.0);
+        guesses = [test_model.heatflow.port.T => 1.0],
+    )
     sol = solve(prob)
 
     heat_flow = sol[test_model.heatflow.port.Q_flow]
