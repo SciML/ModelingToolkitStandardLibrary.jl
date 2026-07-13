@@ -104,7 +104,13 @@ end
     @test SciMLBase.successful_retcode(sol)
 
     prob = ODEProblem(
-        sys, [D(D(sys.inertia2.phi)) => 0.0, sys.spring.flange_b.phi => 0.0], (0, 1.0)
+        sys,
+        [
+            sys.inertia1.w => 0.0,
+            sys.inertia2.w => 0.0,
+            sys.spring.flange_b.phi => 0.0,
+        ],
+        (0, 1.0)
     )
     sol = solve(prob, Rodas4())
     @test SciMLBase.successful_retcode(sol)
@@ -287,7 +293,7 @@ end
     @test all(sol[sys.inertia1.w] .== sol[sys.speed_sensor.w.u])
     @test sol[sys.inertia2.w][end] ≈ 0 atol = 1.0e-3 # all energy has dissipated
     @test all(sol[sys.rel_speed_sensor.w_rel.u] .== sol[sys.speed_sensor.w.u])
-    @test all(sol[sys.torque_sensor.tau.u] .== -sol[sys.inertia1.flange_b.tau])
+    @test all(sol[sys.torque_sensor.tau.u] .== -sol[sys.fixed.flange.tau])
 
     prob = DAEProblem(
         sys, D.(unknowns(sys)) .=> prob.f(sol.u[1], prob.p, 0.0), (0, 10.0)
@@ -298,7 +304,7 @@ end
     @test all(sol[sys.inertia1.w] .== sol[sys.speed_sensor.w.u])
     @test sol[sys.inertia2.w][end] ≈ 0 atol = 1.0e-3 # all energy has dissipated
     @test all(sol[sys.rel_speed_sensor.w_rel.u] .== sol[sys.speed_sensor.w.u])
-    @test all(sol[sys.torque_sensor.tau.u] .== -sol[sys.inertia1.flange_b.tau])
+    @test all(sol[sys.torque_sensor.tau.u] .== -sol[sys.fixed.flange.tau])
 
     # Plots.plot(sol; vars=[inertia1.w, inertia2.w])
 end

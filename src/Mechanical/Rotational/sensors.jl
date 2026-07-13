@@ -83,6 +83,7 @@ Ideal sensor to measure the torque between two flanges (`= flange_a.tau`)
     end
 
     equations = Equation[
+        0 ~ flange_a.tau + flange_b.tau,
         flange_a.phi ~ flange_b.phi,
         tau.u ~ flange_a.tau,
     ]
