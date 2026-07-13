@@ -1,4 +1,6 @@
 using ModelingToolkit, OrdinaryDiffEq, Test
+using ModelingToolkitBase: bindings, domain_connect, unknowns
+using SciMLBase: NoInit
 using SciCompDSL
 using OrdinaryDiffEqNonlinearSolve: NLNewton
 using ModelingToolkit: t_nounits as t, D_nounits as D
@@ -152,8 +154,7 @@ end
         end
 
         eqs = [
-            connect(fluid, src1.port)
-            connect(fluid, src2.port)
+            domain_connect(fluid, src1.port, src2.port)
             connect(src1.port, vol1.port)
             connect(src2.port, vol2.port)
             connect(vol1.flange, mass.flange, vol2.flange)
@@ -196,6 +197,8 @@ end
     # volume/mass should stop moving at opposite ends
     @test sol(0; idxs = sys.vol1.x) == 0.1
     @test sol(0; idxs = sys.vol2.x) == 0.1
+    @test sol[sys.src1.port.dm] ≈ -sol[sys.vol1.port.dm]
+    @test sol[sys.src2.port.dm] ≈ -sol[sys.vol2.port.dm]
 
     @test round(sol(1; idxs = sys.vol1.x); digits = 2) == 0.19
     @test round(sol(1; idxs = sys.vol2.x); digits = 2) == 0.01
@@ -293,7 +296,7 @@ end
 
             connect(src.port, valve.port_s)
             connect(snk.port, valve.port_r)
-            connect(fluid, src.port, snk.port)
+            domain_connect(fluid, src.port, snk.port)
             D(piston.mass.v) ~ ddx
         ]
 
@@ -307,7 +310,7 @@ end
     @mtkcompile initsys = ActuatorSystem(false)
 
     initprob = ODEProblem(initsys, [], (0, 0))
-    initsol = solve(initprob, Rodas5P())
+    initial_state = [v => initprob[v] for v in unknowns(initsys)]
 
     @mtkcompile sys = ActuatorSystem(true)
 
@@ -321,18 +324,19 @@ end
     defs[sys.input.buffer] = Parameter(0.5 * x, dt)
 
     # NOTE: bypassing initialization system: https://github.com/SciML/ModelingToolkit.jl/issues/3312
-    prob = ODEProblem(sys, unknowns(initsys) .=> initsol.u[end], (0, 0.1); build_initializeprob = false)
+    prob = ODEProblem(sys, initial_state, (0, 0.1); build_initializeprob = false)
 
     #TODO: Implement proper initialization system after issue is resolved
     #TODO: How to bring the body back and not have an overdetermined system?
 
     # check the fluid domain
-    @test Symbol(defs[sys.src.port.ρ]) == Symbol(sys.fluid.ρ)
-    @test Symbol(defs[sys.valve.port_s.ρ]) == Symbol(sys.fluid.ρ)
-    @test Symbol(defs[sys.valve.port_a.ρ]) == Symbol(sys.fluid.ρ)
-    @test Symbol(defs[sys.valve.port_b.ρ]) == Symbol(sys.fluid.ρ)
-    @test Symbol(defs[sys.valve.port_r.ρ]) == Symbol(sys.fluid.ρ)
-    @test Symbol(defs[sys.snk.port.ρ]) == Symbol(sys.fluid.ρ)
+    binds = bindings(sys)
+    @test Symbol(binds[sys.src.port.ρ]) == Symbol(sys.fluid.ρ)
+    @test Symbol(binds[sys.valve.port_s.ρ]) == Symbol(sys.fluid.ρ)
+    @test Symbol(binds[sys.valve.port_a.ρ]) == Symbol(sys.fluid.ρ)
+    @test Symbol(binds[sys.valve.port_b.ρ]) == Symbol(sys.fluid.ρ)
+    @test Symbol(binds[sys.valve.port_r.ρ]) == Symbol(sys.fluid.ρ)
+    @test Symbol(binds[sys.snk.port.ρ]) == Symbol(sys.fluid.ρ)
 
     @time sol = solve(prob, Rodas5P(); initializealg = NoInit())
 
@@ -356,7 +360,8 @@ end
         end
 
         eqs = [
-            connect(fluid, cap.port, vol.port)
+            domain_connect(fluid, cap.port, vol.port)
+            connect(cap.port, vol.port)
             connect(vol.flange, mass.flange)
         ]
 
