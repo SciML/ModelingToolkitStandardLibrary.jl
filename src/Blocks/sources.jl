@@ -864,7 +864,15 @@ end
 
 Base.nameof(::CachedInterpolation) = :CachedInterpolation
 
-@register_symbolic (f::CachedInterpolation)(u::AbstractArray, x::AbstractArray, args::Tuple)
+const _INTERPOLATOR_SYMTYPE = let
+    @syms interpolator(::Real)::Real
+    symtype(interpolator)
+end
+
+# Calling the builder returns the interpolation function, not an interpolated scalar.
+@register_symbolic (f::CachedInterpolation)(
+    u::AbstractArray, x::AbstractArray, args::Tuple
+)::_INTERPOLATOR_SYMTYPE
 
 """
     ParametrizedInterpolation(interp_type, u, x, args...; name, t = ModelingToolkitBase.t_nounits)
