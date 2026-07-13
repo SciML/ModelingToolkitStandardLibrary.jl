@@ -1,8 +1,11 @@
 using ModelingToolkit, Test
+using ModelingToolkitBase: @independent_variables
 using SciCompDSL
 using SciMLBase
 using ModelingToolkitStandardLibrary.Thermal
 using ModelingToolkitStandardLibrary.Blocks
+
+@independent_variables t
 
 # https://doc.modelica.org/Modelica%204.0.0/Resources/helpWSM/Modelica/Modelica.Thermal.HeatTransfer.Examples.Motor.html
 
