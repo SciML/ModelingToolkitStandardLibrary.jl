@@ -191,7 +191,8 @@ nothing # hide
 As can be seen, we get exactly the same result.  The only difference here is that we are solving an extra equation, which allows us to plot the body position as well.
 
 ```@example connections
-prob = ODEProblem(sys, [], (0, 10.0), fully_determined = true)
+prob = ODEProblem(
+    sys, [], (0, 10.0); initialization_eqs = [sys.body.s ~ 0, sys.body.v ~ 1])
 sol_p = solve(prob)
 
 p1 = plot(sol_p, idxs = [body.v])
