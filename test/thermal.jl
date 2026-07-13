@@ -74,14 +74,9 @@ end
     @info "Building a heat-flow system..."
     eqs = [
         connect(mass1.port, th_resistor.port_a, th_conductor.port_a)
-        connect(
-            th_conductor.port_b, flow_src.port, hf_sensor1.port_a,
-            hf_sensor2.port_a
-        )
-        connect(
-            th_resistor.port_b, hf_sensor1.port_b, hf_sensor2.port_b,
-            th_ground.port
-        )
+        connect(th_conductor.port_b, flow_src.port, hf_sensor1.port_a)
+        connect(hf_sensor1.port_b, hf_sensor2.port_a)
+        connect(th_resistor.port_b, hf_sensor2.port_b, th_ground.port)
     ]
     @named h2 = System(
         eqs, t,
@@ -99,6 +94,7 @@ end
     @test SciMLBase.successful_retcode(sol)
     @test sol[th_conductor.dT] .* G == sol[th_conductor.Q_flow]
     @test sol[th_conductor.Q_flow] ≈ sol[hf_sensor1.Q_flow.u] + sol[flow_src.port.Q_flow]
+    @test sol[hf_sensor1.Q_flow.u] == sol[hf_sensor2.Q_flow.u]
 
     @test sol[mass1.T] == sol[th_resistor.port_a.T]
     @test sol[th_resistor.dT] ./ R ≈ sol[th_resistor.Q_flow]
