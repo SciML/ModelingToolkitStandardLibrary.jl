@@ -235,7 +235,7 @@ end
         @testset "AccelerationSensor" begin
             @named acc = TP.AccelerationSensor()
             m = 4
-            @named mass = TP.Mass(m = m)
+            @named mass = TP.Mass(m = m, s = 0, v = 0)
             @named force = TP.Force()
             @named source = Sine(frequency = 2, amplitude = 1)
             @named acc_output = RealOutput()
