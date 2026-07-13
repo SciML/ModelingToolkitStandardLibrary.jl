@@ -1,4 +1,5 @@
 using ModelingToolkit, Test
+using ModelingToolkitBase: @independent_variables
 using SciCompDSL
 using SciMLBase
 using ModelingToolkitStandardLibrary.Thermal
