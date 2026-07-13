@@ -63,5 +63,12 @@ using OrdinaryDiffEqRosenbrock: Rodas4
 
     @test SciMLBase.successful_retcode(sol)
     @test sol[r_mFe.Phi] == sol[r_mAirPar.Phi]
-    @test all(sol[coil.port_p.Phi] + sol[r_mLeak.Phi] + sol[r_mAirPar.Phi] .== 0)
+    coil_flux = sol[coil.port_p.Phi]
+    leakage_flux = sol[r_mLeak.Phi]
+    air_flux = sol[r_mAirPar.Phi]
+    flux_balance = coil_flux + leakage_flux + air_flux
+    flux_scale = maximum(maximum(abs, flux) for flux in (coil_flux, leakage_flux, air_flux))
+    # Exact cancellation is lost when observables are reconstructed; four ULPs covers that
+    # roundoff and the two additions.
+    @test maximum(abs, flux_balance) <= 4 * eps(flux_scale)
 end
