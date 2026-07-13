@@ -1,7 +1,7 @@
 using ModelingToolkitStandardLibrary.Blocks
 using SciCompDSL
 using ModelingToolkit
-using OrdinaryDiffEq
+using SciMLBase: ODEProblem
 using ModelingToolkit: t_nounits as t, D_nounits as D
 using Symbolics
 
@@ -34,11 +34,10 @@ end
     @named iosys = System(connect(c.output, so.input), t, systems = [so, c])
     sys = mtkcompile(iosys)
 
-    initprob = ModelingToolkit.InitializationProblem(sys, 0.0)
-    initsol = solve(initprob)
+    prob = ODEProblem(sys, Dict{Any, Any}(), (0.0, 1.0))
 
-    @test initsol[sys.so.xd] == 1.0
-    @test initsol[sys.so.u] == 1.0
+    @test prob[sys.so.xd] == 1.0
+    @test prob[sys.so.u] == 1.0
 end
 
 @test_deprecated RealInput(; name = :a, u_start = 1.0)
