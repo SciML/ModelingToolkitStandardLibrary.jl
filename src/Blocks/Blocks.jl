@@ -5,6 +5,7 @@ module Blocks
 using ModelingToolkitBase: ModelingToolkitBase, @component, @connector, @named,
     @parameters, @unpack, System, compose, connect, extend,
     getdefault, t_nounits as t, D_nounits as D
+using SymbolicUtils: @syms, symtype
 using Symbolics: Symbolics, @register_symbolic, @variables, Differential, Equation
 import Base: ifelse
 import ..@symcheck

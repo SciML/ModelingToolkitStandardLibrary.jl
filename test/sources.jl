@@ -14,6 +14,7 @@ using SymbolicIndexingInterface
 using SciMLStructures: SciMLStructures, Tunable
 using ForwardDiff
 using ADTypes
+using SymbolicUtils: symtype
 
 @testset "Constant" begin
     @named src = Constant(k = 2)
@@ -650,6 +651,9 @@ end
 
     @testset "LinearInterpolation" begin
         @named i = ParametrizedInterpolation(LinearInterpolation, u, x)
+        interpolator = only(values(bindings(i)))
+        @test symtype(interpolator(0.0)) === Real
+
         eqs = [i.input.u ~ t, D(y) ~ i.output.u]
 
         @named model = System(eqs, t, systems = [i])
