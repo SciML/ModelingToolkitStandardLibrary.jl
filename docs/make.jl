@@ -21,7 +21,6 @@ makedocs(
     sitename = "ModelingToolkitStandardLibrary.jl",
     authors = "Julia Computing",
     modules = [
-        ModelingToolkit,
         ModelingToolkitStandardLibrary,
         ModelingToolkitStandardLibrary.Blocks,
         ModelingToolkitStandardLibrary.Mechanical,
@@ -33,9 +32,10 @@ makedocs(
         ModelingToolkitStandardLibrary.Hydraulic,
         ModelingToolkitStandardLibrary.Hydraulic.IsothermalCompressible,
     ],
-    clean = true, doctest = false, linkcheck = true,
-    linkcheck_ignore = ["https://www.mathworks.com/help/simscape/ug/basic-principles-of-modeling-physical-networks.html#bq89sba-6"],
-    warnonly = [:docs_block, :missing_docs, :cross_references],
+    clean = true,
+    checkdocs = :exports,
+    doctest = true,
+    linkcheck = true,
     format = Documenter.HTML(
         assets = ["assets/favicon.ico"],
         canonical = "https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/"

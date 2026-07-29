@@ -1,3 +1,14 @@
+"""
+    HeatPort(; name, T = nothing, T_guess = 293.15, Q_flow = nothing, Q_flow_guess = 0.0)
+
+Port for a thermal system.
+
+# Keyword Arguments
+- `T_guess`: [`K`] Initial temperature guess.
+- `Q_flow_guess`: [`W`] Initial heat-flow guess.
+- `T`: Default value for the temperature state.
+- `Q_flow`: Default value for the heat-flow state.
+"""
 @connector function HeatPort(; name, T_guess = 273.15 + 20, Q_flow_guess = 0.0, T = nothing, Q_flow = nothing)
     pars = @parameters begin
         T_guess = 273.15 + 20
@@ -10,18 +21,6 @@
     end
     System(Equation[], t, vars, pars; name)
 end
-Base.@doc """
-    HeatPort(; T = nothing, T_guess = 273.15 + 20, Q_flow = nothing, Q_flow_guess = 0.0, name)
-
-Port for a thermal system.
-# Parameters: 
-- `T_guess`: [K] Initial guess for the temperature of the port (set to 273.15 + 20).
-- `Q_flow_guess`: [W] Initial guess for the heat flow rate at the port (set to 0.0).
-
-# States:
-- `T`: [K] Temperature of the port. Guess set to `T_guess`. Passing a value for `T` will set its default.
-- `Q_flow`: [W] Heat flow rate at the port. Guess set to `Q_flow_guess`. Passing a value for `Q_flow` will set its default.
-""" HeatPort
 
 """
     Element1D(; name, dT_guess = 0.0, Q_flow_guess = 0.0)

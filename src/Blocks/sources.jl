@@ -492,6 +492,9 @@ struct Parameter{T <: Real}
     circular_buffer::Bool
 end
 
+Parameter(data::Symbolics.Arr, ref, circular_buffer) =
+    Symbolics.term(Parameter, data, ref, circular_buffer)
+
 Parameter(data::Vector{T}, ref::T) where {T <: Real} = Parameter(data, ref, true)
 Parameter(x::Parameter) = x
 function Parameter(x::T; tofloat = true) where {T <: Real}
@@ -565,7 +568,6 @@ end
 get_sample_time(memory::Parameter) = memory.ref
 Symbolics.@register_symbolic get_sample_time(memory::Parameter)
 
-Base.convert(::Type{T}, x::Parameter{T}) where {T <: Real} = x.ref
 function Base.convert(::Type{<:Parameter{T}}, x::Number) where {T <: Real}
     return Parameter{T}(T[], x, true)
 end
@@ -647,18 +649,44 @@ end
 function get_sampled_data(t, buffer)
     return get_sampled_data(t, buffer.data, buffer.ref, buffer.circular_buffer)
 end
-Symbolics.@register_symbolic Parameter(data::Vector, ref, circular_buffer::Bool)
 Symbolics.@register_symbolic get_sampled_data(t, buffer::Parameter)
 Symbolics.@register_symbolic get_sampled_data(t, buffer::Vector, dt, circular_buffer) false
+
+for (t_type, circular_buffer_type) in (
+        (Real, Real),
+        (Real, Symbolics.Num),
+        (Real, BasicSymbolic{SymReal}),
+        (Symbolics.Num, Real),
+        (Symbolics.Num, Symbolics.Num),
+        (Symbolics.Num, BasicSymbolic{SymReal}),
+        (BasicSymbolic{SymReal}, Real),
+        (BasicSymbolic{SymReal}, Symbolics.Num),
+        (BasicSymbolic{SymReal}, BasicSymbolic{SymReal}),
+    )
+    @eval function get_sampled_data(
+            t::$(t_type), buffer::Vector{T}, dt::Symbolics.Num,
+            circular_buffer::$(circular_buffer_type)
+        ) where {T <: Real}
+        return invoke(
+            get_sampled_data,
+            Tuple{typeof(t), Vector, Symbolics.Num, typeof(circular_buffer)},
+            t,
+            buffer,
+            dt,
+            circular_buffer,
+        )
+    end
+end
+
 Symbolics.@register_derivative get_sampled_data(t, buffer) 1 first_order_backwards_difference(t, buffer)
-function ChainRulesCore.frule((_, ẋ, _), ::typeof(get_sampled_data), t, buffer)
+function ChainRulesCore.frule((_, ẋ, _)::Tuple, ::typeof(get_sampled_data), t, buffer)
     return first_order_backwards_difference(t, buffer) * ẋ
 end
 Symbolics.@register_derivative get_sampled_data(t, buffer, dt, circular_buffer) 1 begin
     first_order_backwards_difference(t, buffer, dt, circular_buffer)
 end
 function ChainRulesCore.frule(
-        (_, ẋ, _),
+        (_, ẋ, _)::Tuple,
         ::typeof(get_sampled_data),
         t,
         buffer,

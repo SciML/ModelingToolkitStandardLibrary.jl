@@ -268,7 +268,13 @@ P_not_broken, _ = linearize(sys_inner, :u, :y)
 @test P_not_broken.A[] == -2
 P_broken, _ = linearize(sys_inner, :u, :y, loop_openings = [:u])
 @test P_broken.A[] == -1
-P_broken, _ = linearize(sys_inner, :u, :y, loop_openings = [:y])
+P_broken, _ = linearize(
+    sys_inner,
+    :u,
+    :y,
+    loop_openings = [:y],
+    op = Dict(feedback.input2.u => 0.0),
+)
 @test P_broken.A[] == -1
 
 Sinner = sminreal(ss(get_sensitivity(sys_inner, :u)[1]...))
@@ -298,7 +304,10 @@ Souter = sminreal(ss(get_sensitivity(sys_outer, sys_outer.sys_inner.u)[1]...))
 Sinner2 = sminreal(
     ss(
         get_sensitivity(
-            sys_outer, sys_outer.sys_inner.u, loop_openings = [:y2]
+            sys_outer,
+            sys_outer.sys_inner.u,
+            loop_openings = [:y2],
+            op = Dict(P_outer.input.u => 0.0),
         )[1]...
     )
 )

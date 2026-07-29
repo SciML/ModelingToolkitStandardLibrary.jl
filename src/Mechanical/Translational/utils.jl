@@ -1,3 +1,12 @@
+"""
+    MechanicalPort(; name)
+
+One-dimensional translational mechanical port.
+
+# States
+- `v(t)`: [`m/s`] Velocity of the node.
+- `f(t)`: [`N`] Force entering the node.
+"""
 @connector function MechanicalPort(; name, v = nothing, f = nothing)
     vars = @variables begin
         v(t) = v
@@ -5,12 +14,3 @@
     end
     return System(Equation[], t, vars, []; name)
 end
-Base.@doc """
-    MechanicalPort(;name)
-
-1-dim. rotational flange of a shaft.
-
-# States:
-- `v`: [m/s] velocity of the node
-- `f`: [N] force entering the node
-""" MechanicalPort

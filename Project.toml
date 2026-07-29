@@ -1,6 +1,6 @@
 name = "ModelingToolkitStandardLibrary"
 uuid = "16a59e39-deab-5bd0-87e4-056b12336739"
-version = "2.29.5"
+version = "2.29.6"
 authors = ["Chris Rackauckas and Julia Computing"]
 
 [deps]
@@ -34,7 +34,7 @@ SafeTestsets = "0.1"
 SciCompDSL = "1"
 SciMLBase = "2, 3"
 SciMLStructures = "1.7.0"
-SciMLTesting = "2.1"
+SciMLTesting = "2.4"
 SymbolicIndexingInterface = "0.3.39"
 SymbolicUtils = "4.38.1"
 Symbolics = "7.4.1"

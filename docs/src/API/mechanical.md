@@ -1,5 +1,9 @@
 # ModelingToolkit Standard Library: Mechanical Components
 
+```@docs
+ModelingToolkitStandardLibrary.Mechanical
+```
+
 ```@contents
 Pages = ["mechanical.md"]
 Depth = 3

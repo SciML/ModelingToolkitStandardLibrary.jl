@@ -19,5 +19,7 @@ pages = [
         "Thermal Components" => "API/thermal.md",
         "Hydraulic Components" => "API/hydraulic.md",
         "Linear Analysis" => "API/linear_analysis.md",
+        "API Reference" => "API/reference.md",
+        "Domain API Reference" => "API/domain_reference.md",
     ],
 ]

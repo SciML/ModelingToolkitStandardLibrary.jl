@@ -1,3 +1,12 @@
+"""
+    Flange(; name)
+
+One-dimensional rotational flange of a shaft.
+
+# States
+- `phi(t)`: [`rad`] Absolute rotation angle of the flange.
+- `tau(t)`: [`N.m`] Cut torque in the flange.
+"""
 @connector function Flange(; name, phi = nothing, tau = nothing)
     vars = @variables begin
         phi(t) = phi, [description = "Rotation angle of flange"]
@@ -6,16 +15,15 @@
     System(Equation[], t, vars, []; name)
 end
 
-Base.@doc """
-    Support(;name)
+"""
+    Support(; name)
 
-1-dim. rotational flange of a shaft.
+Support or housing of a one-dimensional rotational shaft.
 
-# States:
-- `phi(t)`: [`rad`] Absolute rotation angle of flange
-- `tau(t)`: [`N.m`] Cut torque in the flange
-""" Flange
-
+# States
+- `phi(t)`: [`rad`] Absolute rotation angle of the support or housing.
+- `tau(t)`: [`N.m`] Cut torque in the support or housing.
+"""
 @connector function Support(; name, phi = nothing, tau = nothing)
     vars = @variables begin
         phi(t) = phi, [description = "Rotation angle of flange"]
@@ -23,18 +31,6 @@ Base.@doc """
     end
     System(Equation[], t, vars, []; name)
 end
-
-# Base.@doc """
-#     InternalSupport(;name, tau)
-
-# 1-dim. rotational flange of a shaft.
-
-# - `tau`: External support torque (must be computed via torque balance in model where InternalSupport is used; = flange.tau)
-
-# # States:
-# - `phi(t)`: [`rad`] Absolute rotation angle of flange
-# - `tau(t)`: [`N.m`] Cut torque in the flange
-# """ Flange
 
 # @connector function InternalSupport(; name, tau)
 #     @named flange = Flange()
@@ -44,16 +40,6 @@ end
 #                  flange.phi ~ phi]
 #     System(equations, t, [phi], [], name = name, systems = [flange]) # NOTE: tau not included since it belongs elsewhere
 # end
-
-Base.@doc """
-    Support(;name)
-
-Support/housing of a 1-dim. rotational shaft
-
-# States:
-- `phi(t)`: [`rad`] Absolute rotation angle of the support/housing
-- `tau(t)`: [`N.m`] Cut torque in the support/housing
-""" Support
 
 """
     PartialCompliant(;  name, phi_rel = 0.0, tau = 0.0)

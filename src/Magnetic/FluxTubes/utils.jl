@@ -1,3 +1,12 @@
+"""
+    MagneticPort(; name, V_m = nothing, Phi = nothing)
+
+Port for a magnetic system.
+
+# States
+- `V_m(t)`: Magnetic potential at the port.
+- `Phi(t)`: Magnetic flux flowing into the port.
+"""
 @connector function MagneticPort(; name, V_m = nothing, Phi = nothing)
     vars = @variables begin
         V_m(t) = V_m, [description = "Magnetic potential at the port"]
@@ -5,7 +14,6 @@
     end
     System(Equation[], t, vars, []; name)
 end
-Base.@doc "Port for a Magnetic system." MagneticPort
 
 """
 Positive magnetic port

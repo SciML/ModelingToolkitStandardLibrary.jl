@@ -61,7 +61,7 @@ If the input is within `u_min` ... `u_max`, the output is zero. Outside of this 
     _u_min = isnothing(u_min) ? (isnothing(u_max) ? nothing : -u_max) : u_min
 
     # Validation (only if u_max is a concrete value)
-    if !isnothing(u_max) && !ModelingToolkitBase.isvariable(u_max)
+    if !isnothing(u_max) && !(u_max isa Symbolics.Num)
         u_max ≥ _u_min || throw(ArgumentError("`u_min` must be smaller than `u_max`"))
     end
 

@@ -1,11 +1,4 @@
-@connector function Pin(; name, v = nothing, i = nothing)
-    vars = @variables begin
-        v(t) = v                  # Potential at the pin [V]
-        i(t) = i, [connect = Flow]    # Current flowing into the pin [A]
-    end
-    System(Equation[], t, vars, []; name)
-end
-@doc """
+"""
     Pin(; name)
 
 A pin in an analog circuit.
@@ -13,7 +6,14 @@ A pin in an analog circuit.
 # States:
 - `v(t)`: [`V`] The voltage at this pin
 - `i(t)`: [`A`] The current passing through this pin
-""" Pin
+"""
+@connector function Pin(; name, v = nothing, i = nothing)
+    vars = @variables begin
+        v(t) = v                  # Potential at the pin [V]
+        i(t) = i, [connect = Flow]    # Current flowing into the pin [A]
+    end
+    System(Equation[], t, vars, []; name)
+end
 
 """
     OnePort(; name, v = nothing, i = nothing)
@@ -102,6 +102,17 @@ Current `i1` flows from `p1` to `n1` and `i2` from `p2` to `n2`.
     return System(equations, t, vars, pars; name, systems)
 end
 
+"""
+    DigitalPin(; name)
+
+A pin in a digital circuit.
+
+# States:
+- `v(t)`: [`V`] The voltage at this pin
+- `i(t)`: [`A`] The current passing through this pin
+- `val(t)`: The binary value of the pin at this point. A voltage from `0V` to `0.8V` is a binary value of `0`.
+A voltage in the range `2.0V` to `5.0V` is `1`. Any other value is `X`.
+"""
 @connector function DigitalPin(; name)
     @variables val(t) v(t) i(t)
     eqs = [
@@ -115,14 +126,3 @@ end
         name = name
     )
 end
-@doc """
-    DigitalPin(; name)
-
-A pin in a digital circuit.
-
-# States:
-- `v(t)`: [`V`] The voltage at this pin
-- `i(t)`: [`A`] The current passing through this pin
-- `val(t)`: The binary value of the pin at this point. A voltage from `0V` to `0.8V` is a binary value of `0`.
-A voltage in the range `2.0V` to `5.0V` is `1`. Any other value is `X`.
-""" DigitalPin
