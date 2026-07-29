@@ -1,3 +1,12 @@
+"""
+    Flange(; name)
+
+One-dimensional translational flange.
+
+# States
+- `s(t)`: [`m`] Absolute position of the flange.
+- `f(t)`: [`N`] Cut force into the flange.
+"""
 @connector function Flange(; name, s = nothing, f = nothing)
     vars = @variables begin
         s(t) = s
@@ -5,16 +14,16 @@
     end
     System(Equation[], t, vars, []; name)
 end
-Base.@doc """
-    Flange(;name)
 
-1-dim. translational flange.
+"""
+    Support(; name)
 
-# States:
-- `s`: [m] Absolute position of flange
-- `f`: [N] Cut force into the flange
-""" Flange
+Support or housing of a one-dimensional translational flange.
 
+# States
+- `s(t)`: [`m`] Absolute position of the support or housing.
+- `f(t)`: [`N`] Cut force into the flange.
+"""
 @connector function Support(; name, s = nothing, f = nothing)
     vars = @variables begin
         s(t) = s
@@ -22,15 +31,6 @@ Base.@doc """
     end
     System(Equation[], t, vars, []; name)
 end
-Base.@doc """
-    Support(;name)
-
-Support/housing 1-dim. translational flange.
-
-# States:
-- `s`: [m] Absolute position of the support/housing
-- `f`: [N] Cut force into the flange
-""" Support
 
 @component function PartialTwoFlanges(; name)
     pars = @parameters begin

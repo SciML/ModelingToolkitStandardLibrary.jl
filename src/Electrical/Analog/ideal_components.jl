@@ -224,7 +224,7 @@ At the right port both any voltage `v2` and any current `i2` are possible (norat
 
 # States:
 
-See [TwoPort](@ref)
+See `ModelingToolkitStandardLibrary.Magnetic.FluxTubes.TwoPort`.
 
 # Connectors:
 

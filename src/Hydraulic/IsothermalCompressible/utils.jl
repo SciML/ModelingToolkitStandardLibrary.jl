@@ -123,8 +123,8 @@ function friction_factor(dm, area, d_h, viscosity, shape_factor)
     end
 end
 @register_symbolic friction_factor(dm, area, d_h, viscosity, shape_factor)
-@register_derivative friction_factor(dm, area, d_h, viscosity, shape_factor) 1 Symbolics.SConst(0)
-@register_derivative friction_factor(dm, area, d_h, viscosity, shape_factor) 4 Symbolics.SConst(0)
+@register_derivative friction_factor(dm, area, d_h, viscosity, shape_factor) 1 0
+@register_derivative friction_factor(dm, area, d_h, viscosity, shape_factor) 4 0
 
 density_ref(port) = port.ρ
 density_exp(port) = port.n

@@ -3,7 +3,7 @@
 In Physical Network Acausal modeling, each physical domain must define a **connector** to combine model components.  Each physical domain **connector** defines a minimum of 2 variables, one which is called a *Through* variable, and one which is called an *Across* variable.  Both Modelica and SimScape define these variables in the same way:
 
   - [Modelica Connectors](https://mbe.modelica.university/components/connectors/#acausal-connection)
-  - [SimScape Connectors](https://www.mathworks.com/help/simscape/ug/basic-principles-of-modeling-physical-networks.html#bq89sba-6)
+  - Simscape connector documentation
 
 However, the standard libraries differ on the selection of the Across variable for the Mechanical Translation and Rotation libraries, Modelica choosing position and angle and SimScape choosing velocity and angular velocity, respectively for Translation and Rotation.  Modelica describes their decision [here](https://mbe.modelica.university/components/connectors/simple_domains/).  In summary, they would like to provide less integration in the model to avoid lossy numerical behavior, but this decision assumes the lowest order derivative is needed by the model.  Numerically it is possible to define the connector either way, but there are some consequences of this decision, and therefore we will study them in detail here as they relate to ModelingToolkit.
 

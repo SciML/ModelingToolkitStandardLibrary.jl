@@ -1,5 +1,9 @@
 # [ModelingToolkit Standard Library: Hydraulic Components](@id hydraulic)
 
+```@docs
+ModelingToolkitStandardLibrary.Hydraulic
+```
+
 ```@contents
 Pages = ["hydraulic.md"]
 Depth = 3

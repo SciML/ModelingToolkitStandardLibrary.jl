@@ -32,7 +32,6 @@ Capacitor
 Inductor
 IdealOpAmp
 Diode
-HeatingDiode
 VariableResistor
 NMOS
 PMOS
@@ -55,36 +54,4 @@ MultiSensor
 ```@docs
 Voltage
 Current
-```
-
-## Digital Gates
-
-```@docs
-Not
-And
-Nand
-Or
-Nor
-Xor
-Xnor
-```
-
-## Digital Components
-
-```@docs
-HalfAdder
-FullAdder
-MUX
-DEMUX
-Encoder
-Decoder
-```
-
-## Digital Sources
-
-```@docs
-PulseDiff
-Set
-Reset
-Pulse
 ```

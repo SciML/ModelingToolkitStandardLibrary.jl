@@ -1,3 +1,14 @@
+"""
+    RealInput(; name, guess)
+
+Connector with one input signal of type Real.
+
+# Parameters:
+- `guess=0`: Guess value for `u`.
+
+# States:
+- `u`: Value of the connector which is a scalar.
+"""
 @connector function RealInput(;
         name, nin = 1, u_start = nothing, guess = nin > 1 ? zeros(nin) : 0.0
     )
@@ -20,18 +31,19 @@
     end
     System(Equation[], t, [u;], []; name = name, guesses = [u => guess])
 end
-@doc """
-    RealInput(;name, guess)
 
-Connector with one input signal of type Real.
+"""
+    RealInputArray(; name, nin, guess)
+
+Connector with an array of input signals of type Real.
 
 # Parameters:
-- `guess=0`: Guess value for `u`.
+- `nin`: Number of inputs.
+- `guess=zeros(nin)`: Guess value for `u`.
 
 # States:
-- `u`: Value of the connector which is a scalar.
-""" RealInput
-
+- `u`: Value of the connector which is an array.
+"""
 @connector function RealInputArray(; name, nin, u_start = nothing, guess = zeros(nin))
     if u_start !== nothing
         Base.depwarn(
@@ -45,19 +57,18 @@ Connector with one input signal of type Real.
     ]
     System(Equation[], t, [u], []; name = name, guesses = [u => guess])
 end
-@doc """
-    RealInputArray(;name, nin, guess)
 
-Connector with an array of input signals of type Real.
+"""
+    RealOutput(; name, guess)
+
+Connector with one output signal of type Real.
 
 # Parameters:
-- `nin`: Number of inputs.
-- `guess=zeros(nin)`: Guess value for `u`.
+- `guess=0`: Guess value for `u`.
 
 # States:
-- `u`: Value of the connector which is an array.
-""" RealInputArray
-
+- `u`: Value of the connector which is a scalar.
+"""
 @connector function RealOutput(;
         name, nout = 1, u_start = nothing, guess = nout > 1 ? zeros(nout) : 0.0
     )
@@ -80,18 +91,19 @@ Connector with an array of input signals of type Real.
     end
     System(Equation[], t, [u;], []; name = name, guesses = [u => guess])
 end
-@doc """
-    RealOutput(;name, guess)
 
-Connector with one output signal of type Real.
+"""
+    RealOutputArray(; name, nout, guess)
+
+Connector with an array of output signals of type Real.
 
 # Parameters:
-- `guess=0`: Guess value for `u`.
+- `nout`: Number of outputs.
+- `guess=zeros(nout)`: Guess value for `u`.
 
 # States:
-- `u`: Value of the connector which is a scalar.
-""" RealOutput
-
+- `u`: Value of the connector which is an array.
+"""
 @connector function RealOutputArray(; name, nout, u_start = nothing, guess = zeros(nout))
     if u_start !== nothing
         Base.depwarn(
@@ -105,18 +117,6 @@ Connector with one output signal of type Real.
     ]
     System(Equation[], t, [u], []; name = name, guesses = [u => guess])
 end
-@doc """
-    RealOutputArray(;name, nout, guess)
-
-Connector with an array of output signals of type Real.
-
-# Parameters:
-- `nout`: Number of outputs.
-- `guess=zeros(nout)`: Guess value for `u`.
-
-# States:
-- `u`: Value of the connector which is an array.
-""" RealOutputArray
 
 """
     SISO(;name, u_start = 0.0, y_start = 0.0)

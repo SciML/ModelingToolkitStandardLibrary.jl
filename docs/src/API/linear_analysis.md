@@ -4,15 +4,15 @@
     
     The interface described here is currently experimental and at any time subject to breaking changes not respecting semantic versioning.
 
-Linear analysis refers to the process of linearizing a nonlinear model and analysing the resulting linear dynamical system. To facilitate linear analysis, ModelingToolkitStandardLibrary provides the concept of an [`AnalysisPoint`](@ref), which can be inserted in-between two causal blocks (such as those from the `Blocks` sub module). Once a model containing analysis points is built, several operations are available:
+Linear analysis refers to the process of linearizing a nonlinear model and analysing the resulting linear dynamical system. To facilitate linear analysis, ModelingToolkitStandardLibrary provides the concept of an `AnalysisPoint`, which can be inserted in-between two causal blocks (such as those from the `Blocks` sub module). Once a model containing analysis points is built, several operations are available:
 
-  - [`get_sensitivity`](@ref) get the [sensitivity function (wiki)](https://en.wikipedia.org/wiki/Sensitivity_(control_systems)), $S(s)$, as defined in the field of control theory.
-  - [`get_comp_sensitivity`](@ref) get the complementary sensitivity function $T(s) : S(s)+T(s)=1$.
-  - [`get_looptransfer`](@ref) get the (open) loop-transfer function where the loop starts and ends in the analysis point. For a typical simple feedback connection with a plant $P(s)$ and a controller $C(s)$, the loop-transfer function at the plant output is $P(s)C(s)$.
-  - [`linearize`](@ref) can be called with two analysis points denoting the input and output of the linearized system.
-  - [`open_loop`](@ref) return a new (nonlinear) system where the loop has been broken in the analysis point, i.e., the connection the analysis point usually implies has been removed.
+  - `get_sensitivity` gets the [sensitivity function (wiki)](https://en.wikipedia.org/wiki/Sensitivity_(control_systems)), $S(s)$, as defined in the field of control theory.
+  - `get_comp_sensitivity` gets the complementary sensitivity function $T(s) : S(s)+T(s)=1$.
+  - `get_looptransfer` gets the (open) loop-transfer function where the loop starts and ends in the analysis point. For a typical simple feedback connection with a plant $P$ and a controller $C$, the loop-transfer function at the plant output is $P(s)C(s)$.
+  - `linearize` can be called with two analysis points denoting the input and output of the linearized system.
+  - `open_loop` returns a new nonlinear system where the loop has been broken at the analysis point.
 
-An analysis point can be created explicitly using the constructor [`AnalysisPoint`](@ref), or automatically when connecting two causal components using `connect`:
+An analysis point can be created explicitly using the `AnalysisPoint` constructor, or automatically when connecting two causal components using `connect`:
 
 ```julia
 connect(comp1.output, :analysis_point_name, comp2.input)
@@ -34,7 +34,7 @@ The directionality of an analysis point can be thought of as an arrow in a block
 
 This is signified by the name being the middle argument to `connect`.
 
-Of the above mentioned functions, all except for [`open_loop`](@ref) return the output of [`ModelingToolkit.linearize`](@ref), which is
+Of the above mentioned functions, all except for `open_loop` return the output of `ModelingToolkit.linearize`, which is
 
 ```julia
 matrices, simplified_sys = linearize(...)
@@ -147,8 +147,4 @@ Modules = [ModelingToolkitStandardLibrary.Blocks]
 Pages   = ["Blocks/analysis_points.jl"]
 Order   = [:function, :type]
 Private = false
-```
-
-```@docs
-ModelingToolkit.linearize
 ```
