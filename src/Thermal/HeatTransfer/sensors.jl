@@ -9,8 +9,8 @@ lags are associated with this sensor model.
 
 # Connectors:
 
-  - `port`: [HeatPort](@ref) Thermal port from which sensor information shall be measured
-  - `T`: [RealOutput](@ref) [K] Absolute temperature of port
+  - `port`: [`HeatPort`](@ref) Thermal port from which sensor information shall be measured
+  - `T`: [`RealOutput`](@ref) [K] Absolute temperature of port
 """
 @component function TemperatureSensor(; name)
     pars = @parameters begin
@@ -42,9 +42,9 @@ output signal in kelvin.
 
 # Connectors:
 
-  - `port_a`: [HeatPort](@ref) Thermal port from which sensor information shall be measured
-  - `port_b`: [HeatPort](@ref) Thermal port from which sensor information shall be measured
-  - `T`: [RealOutput](@ref) [K] Relative temperature `a.T - b.T`
+  - `port_a`: [`HeatPort`](@ref) Thermal port from which sensor information shall be measured
+  - `port_b`: [`HeatPort`](@ref) Thermal port from which sensor information shall be measured
+  - `T`: [`RealOutput`](@ref) [K] Relative temperature `a.T - b.T`
 """
 @component function RelativeTemperatureSensor(; name)
     pars = @parameters begin
@@ -80,9 +80,9 @@ The output signal is positive, if the heat flows from `port_a` to `port_b`.
 
 # Connectors:
 
-  - `port_a`: [HeatPort](@ref) Thermal port from which sensor information shall be measured
-  - `port_b`: [HeatPort](@ref) Thermal port from which sensor information shall be measured
-  - `Q_flow`: [RealOutput](@ref) [W] Heat flow from `port_a` to `port_b` 
+  - `port_a`: [`HeatPort`](@ref) Thermal port from which sensor information shall be measured
+  - `port_b`: [`HeatPort`](@ref) Thermal port from which sensor information shall be measured
+  - `Q_flow`: [`RealOutput`](@ref) [W] Heat flow from `port_a` to `port_b`
 """
 @component function HeatFlowSensor(; name)
     pars = @parameters begin

@@ -31,8 +31,8 @@ Input signal acting as external torque on a flange
 
 # Connectors:
 
-  - `flange` [Flange](@ref)
-  - `tau` [RealInput](@ref)  Accelerating torque acting at flange `-flange.tau`
+  - `flange` [`Flange`](@ref)
+  - `tau` [`RealInput`](@ref)  Accelerating torque acting at flange `-flange.tau`
 
 # Parameters:
 
@@ -72,7 +72,7 @@ Constant torque source
 - `w`: Angular velocity of flange with respect to support (= der(phi))
 
 # Connectors:
-- `flange` [Flange](@ref)
+- `flange` [`Flange`](@ref)
 
 # Arguments:
 - `tau_constant`: The constant torque applied by the source
@@ -115,8 +115,8 @@ Forced movement of a flange according to a reference angular velocity signal
 
 # Connectors:
 
-  - `flange` [Flange](@ref)
-  - `w_ref` [RealInput](@ref) Reference angular velocity of flange with respect to support as input signal needs to be continuously differential
+  - `flange` [`Flange`](@ref)
+  - `w_ref` [`RealInput`](@ref) Reference angular velocity of flange with respect to support as input signal needs to be continuously differential
 
 # Parameters:
 

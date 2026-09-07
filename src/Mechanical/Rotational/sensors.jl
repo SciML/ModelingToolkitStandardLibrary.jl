@@ -5,8 +5,8 @@ Ideal sensor to measure the absolute flange angle
 
 # Connectors:
 
-  - `flange`: [Flange](@ref) Flange of shaft from which sensor information shall be measured
-  - `phi`: [RealOutput](@ref) Absolute angle of flange
+  - `flange`: [`Flange`](@ref) Flange of shaft from which sensor information shall be measured
+  - `phi`: [`RealOutput`](@ref) Absolute angle of flange
 """
 @component function AngleSensor(; name)
     pars = @parameters begin
@@ -35,8 +35,8 @@ Ideal sensor to measure the absolute flange angular velocity
 
 # Connectors:
 
-  - `flange`: [Flange](@ref) Flange of shaft from which sensor information shall be measured
-  - `w`: [RealOutput](@ref) Absolute angular velocity of flange
+  - `flange`: [`Flange`](@ref) Flange of shaft from which sensor information shall be measured
+  - `w`: [`RealOutput`](@ref) Absolute angular velocity of flange
 """
 @component function SpeedSensor(; name)
     pars = @parameters begin
@@ -65,9 +65,9 @@ Ideal sensor to measure the torque between two flanges (`= flange_a.tau`)
 
 # Connectors:
 
-  - `flange_a`: [Flange](@ref) Left flange of shaft
-  - `flange_b`: [Flange](@ref) Left flange of shaft
-  - `tau`: [RealOutput](@ref) Torque in flange flange_a and flange_b (`tau = flange_a.tau = -flange_b.tau`)
+  - `flange_a`: [`Flange`](@ref) Left flange of shaft
+  - `flange_b`: [`Flange`](@ref) Left flange of shaft
+  - `tau`: [`RealOutput`](@ref) Torque in flange flange_a and flange_b (`tau = flange_a.tau = -flange_b.tau`)
 """
 @component function TorqueSensor(; name)
     pars = @parameters begin
@@ -98,9 +98,9 @@ Ideal sensor to measure the relative angular velocity
 
 # Connectors:
 
-  - `flange_a`: [Flange](@ref) Flange of shaft from which sensor information shall be measured
-  - `flange_b`: [Flange](@ref) Flange of shaft from which sensor information shall be measured
-  - `w`: [RealOutput](@ref) Absolute angular velocity of flange
+  - `flange_a`: [`Flange`](@ref) Flange of shaft from which sensor information shall be measured
+  - `flange_b`: [`Flange`](@ref) Flange of shaft from which sensor information shall be measured
+  - `w`: [`RealOutput`](@ref) Absolute angular velocity of flange
 """
 @component function RelSpeedSensor(; name, phi_rel = nothing)
     pars = @parameters begin

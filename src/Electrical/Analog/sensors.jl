@@ -113,8 +113,8 @@ consumed by a circuit.
 # States:
 
   - `power(t)`: [`W`] The power being consumed, given by the product of voltage and current
-  - See [VoltageSensor](@ref)
-  - See [CurrentSensor](@ref)
+  - See [`VoltageSensor`](@ref)
+  - See [`CurrentSensor`](@ref)
 
 # Connectors:
 

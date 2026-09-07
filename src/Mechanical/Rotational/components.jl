@@ -5,7 +5,7 @@ Flange fixed in housing at a given angle.
 
 # Connectors:
 
-  - `flange` [Flange](@ref)
+  - `flange` [`Flange`](@ref)
 
 # Parameters:
 
@@ -43,8 +43,8 @@ end
 
 # Connectors:
 
-  - `flange_a` [Flange](@ref) Left flange
-  - `flange_b` [Flange](@ref) Right flange
+  - `flange_a` [`Flange`](@ref) Left flange
+  - `flange_b` [`Flange`](@ref) Right flange
 
 # Parameters:
 
@@ -91,8 +91,8 @@ Linear 1D rotational spring
 
 # Connectors:
 
-  - `flange_a` [Flange](@ref)
-  - `flange_b` [Flange](@ref)
+  - `flange_a` [`Flange`](@ref)
+  - `flange_b` [`Flange`](@ref)
 
 # Parameters:
 
@@ -138,8 +138,8 @@ Linear 1D rotational damper
 
 # Connectors:
 
-  - `flange_a` [Flange](@ref)
-  - `flange_b` [Flange](@ref)
+  - `flange_a` [`Flange`](@ref)
+  - `flange_b` [`Flange`](@ref)
 
 # Parameters:
 
@@ -182,8 +182,8 @@ Linear 1D rotational spring and damper
 
 # Connectors:
 
-  - `flange_a` [Flange](@ref)
-  - `flange_b` [Flange](@ref)
+  - `flange_a` [`Flange`](@ref)
+  - `flange_b` [`Flange`](@ref)
 
 # Parameters:
 
@@ -233,9 +233,9 @@ This element characterizes any type of gear box which is fixed in the ground and
 
 # Connectors:
 
-  - `flange_a` [Flange](@ref)
-  - `flange_b` [Flange](@ref)
-  - `support` [Support](@ref) if `use_support == true`
+  - `flange_a` [`Flange`](@ref)
+  - `flange_b` [`Flange`](@ref)
+  - `support` [`Support`](@ref) if `use_support == true`
 
 # Parameters:
 
@@ -286,8 +286,8 @@ Friction model: "Armstrong, B. and C.C. de Wit, Friction Modeling and Compensati
 
 # Connectors:
 
-  - `flange_a` [Flange](@ref)
-  - `flange_b` [Flange](@ref)
+  - `flange_a` [`Flange`](@ref)
+  - `flange_b` [`Flange`](@ref)
 
 # Parameters:
 

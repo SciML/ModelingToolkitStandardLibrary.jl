@@ -53,8 +53,8 @@ Partial model for the compliant connection of two rotational 1-dim. shaft flange
 
 # Connectors:
 
-  - `flange_a` [Flange](@ref)
-  - `flange_b` [Flange](@ref)
+  - `flange_a` [`Flange`](@ref)
+  - `flange_b` [`Flange`](@ref)
 
 """
 @component function PartialCompliant(; name, phi_rel = nothing, tau = nothing)
@@ -94,8 +94,8 @@ Partial model for the compliant connection of two rotational 1-dim. shaft flange
 
 # Connectors:
 
-  - `flange_a` [Flange](@ref)
-  - `flange_b` [Flange](@ref)
+  - `flange_a` [`Flange`](@ref)
+  - `flange_b` [`Flange`](@ref)
 """
 @component function PartialCompliantWithRelativeStates(; name, phi_rel = nothing, w_rel = nothing, a_rel = nothing, tau = nothing)
     pars = @parameters begin
@@ -136,7 +136,7 @@ Partial model for a component with one rotational 1-dim. shaft flange and a supp
 
 # Connectors:
 
-  - `flange` [Flange](@ref)
+  - `flange` [`Flange`](@ref)
 
 # Parameters:
 
@@ -172,9 +172,9 @@ Partial model for a component with two rotational 1-dim. shaft flanges and a sup
 
 # Connectors:
 
-  - `flange_a` [Flange](@ref)
-  - `flange_b` [Flange](@ref)
-  - `support` [Support](@ref)  if `use_support == true`
+  - `flange_a` [`Flange`](@ref)
+  - `flange_b` [`Flange`](@ref)
+  - `support` [`Support`](@ref)  if `use_support == true`
 
 # Parameters:
 

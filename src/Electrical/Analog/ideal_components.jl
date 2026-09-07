@@ -33,14 +33,14 @@ Generic resistor with optional temperature dependency.
 
 # States:
 
-  - See [OnePort](@ref)
+  - See [`OnePort`](@ref)
   - `R(t)`: [`Ω`] Resistance (temperature dependent if `T_dep = true`)
 
 # Connectors:
 
   - `p` Positive pin
   - `n` Negative pin
-  - `heat_port` [HeatPort](@ref) (only if `T_dep = true`) Heat port to model the temperature dependency
+  - `heat_port` [`HeatPort`](@ref) (only if `T_dep = true`) Heat port to model the temperature dependency
 
 # Parameters:
 
@@ -100,7 +100,7 @@ Creates an ideal conductor.
 
 # States:
 
-See [OnePort](@ref)
+See [`OnePort`](@ref)
 
 # Connectors:
 
@@ -141,7 +141,7 @@ Initial voltage of capacitor can be set with `v` ([`V`])
 
 # States:
 
-See [OnePort](@ref)
+See [`OnePort`](@ref)
 
 # Connectors:
 
@@ -182,7 +182,7 @@ Initial current through inductor can be set with `i` ([`A`]).
 
 # States:
 
-See [OnePort](@ref)
+See [`OnePort`](@ref)
 
 # Connectors:
 
@@ -262,7 +262,7 @@ Short is a simple short cut branch. That means the voltage drop between both pin
 
 # States:
 
-See [OnePort](@ref)
+See [`OnePort`](@ref)
 
 # Connectors:
 
@@ -304,10 +304,10 @@ Electromotoric force (electric/mechanic transformer)
 
 # Connectors
 
-  - `p` [Pin](@ref) Positive pin
-  - `n` [Pin](@ref) Negative pin
-  - `flange` [Flange](@ref) Shaft of EMF shaft
-  - `support` [Support](@ref) Support/housing of emf shaft
+  - `p` [`Pin`](@ref) Positive pin
+  - `n` [`Pin`](@ref) Negative pin
+  - `flange` [`Flange`](@ref) Shaft of EMF shaft
+  - `support` [`Support`](@ref) Support/housing of emf shaft
 
 # Parameters:
 
@@ -350,13 +350,13 @@ Generic diode with optional temperature dependency.
 
 # States
 
-    - See [OnePort](@ref)
+    - See [`OnePort`](@ref)
 
 # Connectors
 
     - `p` Positive pin
     - `n` Negative pin
-    - `port` [HeatPort](@ref) (only if `T_dep = true`) Heat port to model variable temperature dependency
+    - `port` [`HeatPort`](@ref) (only if `T_dep = true`) Heat port to model variable temperature dependency
 
 # Parameters:
     
@@ -433,7 +433,7 @@ R = R_const + pos * R_ref * (1 + alpha * (port.T - T_ref))
 
 # States
 
-    - See [OnePort](@ref)
+    - See [`OnePort`](@ref)
     - `pos(t)`: Position of the wiper (normally 0-1)
     - `R(t)`: Resistance
 
@@ -442,7 +442,7 @@ R = R_const + pos * R_ref * (1 + alpha * (port.T - T_ref))
         - `p` Positive pin
         - `n` Negative pin
         - `position` RealInput to set the position of the wiper
-        - `port` [HeatPort](@ref) Heat port to model the temperature dependency
+        - `port` [`HeatPort`](@ref) Heat port to model the temperature dependency
 
 # Parameters
 
