@@ -3,11 +3,11 @@
 Pkg.add(&quot;ModelingToolkitStandardLibrary&quot;)</code></pre><h2 id="Tutorials"><a class="docs-heading-anchor" href="#Tutorials">Tutorials</a><a id="Tutorials-1"></a><a class="docs-heading-anchor-permalink" href="#Tutorials" title="Permalink"></a></h2><ul><li><a href="https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/tutorials/rc_circuit/">RC Circuit</a></li><li><a href="https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/tutorials/custom_component/">Custom Component</a></li><li><a href="https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/tutorials/thermal_model/">Thermal Model</a></li><li><a href="https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/tutorials/dc_motor_pi/">DC Motor with PI-controller</a></li></ul><h2 id="Libraries"><a class="docs-heading-anchor" href="#Libraries">Libraries</a><a id="Libraries-1"></a><a class="docs-heading-anchor-permalink" href="#Libraries" title="Permalink"></a></h2><p>The following are the constituent libraries of the ModelingToolkit Standard Library.</p><ul><li><a href="https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/API/blocks/">Basic Blocks</a></li><li><a href="https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/API/mechanical/">Mechanical Components</a></li><li><a href="https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/API/electrical/">Electrical Components</a></li><li><a href="https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/API/magnetic/">Magnetic Components</a></li><li><a href="https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/API/thermal/">Thermal Components</a></li><li><a href="API/hydraulic/#hydraulic">Hydraulic Components</a></li></ul><h2 id="Contributing"><a class="docs-heading-anchor" href="#Contributing">Contributing</a><a id="Contributing-1"></a><a class="docs-heading-anchor-permalink" href="#Contributing" title="Permalink"></a></h2><ul><li><p>Please refer to the SciML ColPrac: Contributor&#39;s Guide on Collaborative Practices for Community Packages for guidance on PRs, issues, and other matters relating to contributing to SciML.</p></li><li><p>See the <a href="https://github.com/SciML/SciMLStyle">SciML Style Guide</a> for common coding practices and other style decisions.</p></li><li><p>There are a few community forums:</p><ul><li>The #diffeq-bridged and #sciml-bridged channels in the <a href="https://julialang.org/slack/">Julia Slack</a></li><li>The #diffeq-bridged and #sciml-bridged channels in the <a href="https://julialang.zulipchat.com/#narrow/stream/279055-sciml-bridged">Julia Zulip</a></li><li>On the <a href="https://discourse.julialang.org">Julia Discourse forums</a></li><li>See also <a href="https://sciml.ai/community/">SciML Community page</a></li></ul></li></ul><h2 id="Reproducibility"><a class="docs-heading-anchor" href="#Reproducibility">Reproducibility</a><a id="Reproducibility-1"></a><a class="docs-heading-anchor-permalink" href="#Reproducibility" title="Permalink"></a></h2><details><summary>The documentation of this SciML package was built using these direct dependencies,</summary><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr32"><span class="sgr1">Status</span></span> `~/_work/ModelingToolkitStandardLibrary.jl/ModelingToolkitStandardLibrary.jl/docs/Project.toml`
   <span class="sgr90">[aaaaaaaa] </span>ControlSystemsBase v1.21.0
   <span class="sgr90">[a93c6f00] </span>DataFrames v1.8.2
-  <span class="sgr90">[82cc6244] </span>DataInterpolations v10.1.1
+  <span class="sgr90">[82cc6244] </span>DataInterpolations v10.1.2
   <span class="sgr90">[e30172f5] </span>Documenter v1.19.0
   <span class="sgr90">[615f187c] </span>IfElse v0.1.1
-  <span class="sgr90">[961ee093] </span>ModelingToolkit v11.41.0
-  <span class="sgr90">[16a59e39] </span>ModelingToolkitStandardLibrary v2.29.7 `~/_work/ModelingToolkitStandardLibrary.jl/ModelingToolkitStandardLibrary.jl`
+  <span class="sgr90">[961ee093] </span>ModelingToolkit v11.42.0
+  <span class="sgr90">[16a59e39] </span>ModelingToolkitStandardLibrary v2.29.8 `~/_work/ModelingToolkitStandardLibrary.jl/ModelingToolkitStandardLibrary.jl`
   <span class="sgr90">[1dea7af3] </span>OrdinaryDiffEq v7.8.1
   <span class="sgr90">[2d112036] </span>OrdinaryDiffEqSDIRK v2.9.2
   <span class="sgr90">[91a5bcdd] </span>Plots v1.41.7
@@ -17,9 +17,9 @@ Build Info:
   Official https://julialang.org release
 Platform Info:
   OS: Linux (x86_64-linux-gnu)
-  CPU: 112 × AMD EPYC 7663 56-Core Processor
+  CPU: 40 × Intel(R) Xeon(R) Silver 4114 CPU @ 2.20GHz
   WORD_SIZE: 64
-  LLVM: libLLVM-18.1.7 (ORCJIT, znver3)
+  LLVM: libLLVM-18.1.7 (ORCJIT, skylake-avx512)
   GC: Built with stock GC
 Threads: 1 default, 1 interactive, 1 GC (on 4 virtual cores)
 Environment:
@@ -62,7 +62,7 @@ Environment:
   <span class="sgr90">[a8cc5b0e] </span>Crayons v4.2.0
   <span class="sgr90">[9a962f9c] </span>DataAPI v1.16.0
   <span class="sgr90">[a93c6f00] </span>DataFrames v1.8.2
-  <span class="sgr90">[82cc6244] </span>DataInterpolations v10.1.1
+  <span class="sgr90">[82cc6244] </span>DataInterpolations v10.1.2
   <span class="sgr90">[864edb3b] </span>DataStructures v0.19.6
   <span class="sgr90">[e2d170a0] </span>DataValueInterfaces v1.0.0
   <span class="sgr90">[8bb1440f] </span>DelimitedFiles v1.9.1
@@ -95,11 +95,11 @@ Environment:
   <span class="sgr90">[46192b85] </span>GPUArraysCore v0.2.0
   <span class="sgr90">[28b8d3ca] </span>GR v0.73.27
   <span class="sgr90">[d7ba0133] </span>Git v1.5.0
-  <span class="sgr90">[86223c79] </span>Graphs v1.14.0
+  <span class="sgr90">[86223c79] </span>Graphs v1.15.0
   <span class="sgr90">[e91730f6] </span>Hungarian v0.7.0
   <span class="sgr90">[b5f81e59] </span>IOCapture v1.0.0
   <span class="sgr90">[615f187c] </span>IfElse v0.1.1
-  <span class="sgr90">[3263718b] </span>ImplicitDiscreteSolve v2.2.1
+  <span class="sgr90">[3263718b] </span>ImplicitDiscreteSolve v2.3.0
   <span class="sgr90">[d25df0c9] </span>Inflate v0.1.5
 <span class="sgr33">⌅</span> <span class="sgr90">[842dd82b] </span>InlineStrings v1.4.6
   <span class="sgr90">[18e54dd8] </span>IntegerMathUtils v0.1.4
@@ -112,7 +112,7 @@ Environment:
   <span class="sgr90">[692b3bcd] </span>JLLWrappers v1.8.0
   <span class="sgr90">[682c06a0] </span>JSON v1.8.0
   <span class="sgr90">[ae98c720] </span>Jieko v0.2.1
-  <span class="sgr90">[ccbc3e58] </span>JumpProcesses v9.32.1
+  <span class="sgr90">[ccbc3e58] </span>JumpProcesses v9.32.2
   <span class="sgr90">[ba0b0d4f] </span>Krylov v0.10.9
   <span class="sgr90">[2faa5264] </span>LHLFactorization v2.2.2
   <span class="sgr90">[b964fa9f] </span>LaTeXStrings v1.4.1
@@ -131,27 +131,27 @@ Environment:
   <span class="sgr90">[bb5d69b7] </span>MaybeInplace v0.1.8
   <span class="sgr90">[442fdcdd] </span>Measures v0.3.3
   <span class="sgr90">[e1d29d7a] </span>Missings v1.2.0
-  <span class="sgr90">[961ee093] </span>ModelingToolkit v11.41.0
-  <span class="sgr90">[7771a370] </span>ModelingToolkitBase v1.68.3
-  <span class="sgr90">[16a59e39] </span>ModelingToolkitStandardLibrary v2.29.7 `~/_work/ModelingToolkitStandardLibrary.jl/ModelingToolkitStandardLibrary.jl`
+  <span class="sgr90">[961ee093] </span>ModelingToolkit v11.42.0
+  <span class="sgr90">[7771a370] </span>ModelingToolkitBase v1.69.0
+  <span class="sgr90">[16a59e39] </span>ModelingToolkitStandardLibrary v2.29.8 `~/_work/ModelingToolkitStandardLibrary.jl/ModelingToolkitStandardLibrary.jl`
   <span class="sgr90">[6bb917b9] </span>ModelingToolkitTearing v1.20.6
   <span class="sgr90">[2e0e35c7] </span>Moshi v0.3.12
   <span class="sgr90">[46d2c3a1] </span>MuladdMacro v0.2.7
   <span class="sgr90">[102ac46a] </span>MultivariatePolynomials v0.5.19
   <span class="sgr90">[d8a4904e] </span>MutableArithmetics v1.8.0
   <span class="sgr90">[77ba4419] </span>NaNMath v1.1.4
-  <span class="sgr90">[8913a72c] </span>NonlinearSolve v4.29.1
-  <span class="sgr90">[be0214bd] </span>NonlinearSolveBase v2.49.3
+  <span class="sgr90">[8913a72c] </span>NonlinearSolve v4.29.2
+  <span class="sgr90">[be0214bd] </span>NonlinearSolveBase v2.49.4
   <span class="sgr90">[5959db7a] </span>NonlinearSolveFirstOrder v2.5.1
   <span class="sgr90">[9a2c21bd] </span>NonlinearSolveQuasiNewton v1.15.3
-  <span class="sgr90">[26075421] </span>NonlinearSolveSpectralMethods v1.8.1
+  <span class="sgr90">[26075421] </span>NonlinearSolveSpectralMethods v1.8.2
   <span class="sgr90">[6fe1bfb0] </span>OffsetArrays v1.17.0
 <span class="sgr33">⌅</span> <span class="sgr90">[bac558e1] </span>OrderedCollections v1.8.2
   <span class="sgr90">[1dea7af3] </span>OrdinaryDiffEq v7.8.1
   <span class="sgr90">[6ad6398a] </span>OrdinaryDiffEqBDF v2.4.6
-  <span class="sgr90">[bbf590c4] </span>OrdinaryDiffEqCore v4.16.1
+  <span class="sgr90">[bbf590c4] </span>OrdinaryDiffEqCore v4.17.0
   <span class="sgr90">[50262376] </span>OrdinaryDiffEqDefault v2.6.0
-  <span class="sgr90">[4302a76b] </span>OrdinaryDiffEqDifferentiation v3.11.4
+  <span class="sgr90">[4302a76b] </span>OrdinaryDiffEqDifferentiation v3.11.5
   <span class="sgr90">[127b3ac7] </span>OrdinaryDiffEqNonlinearSolve v2.9.5
   <span class="sgr90">[43230ef6] </span>OrdinaryDiffEqRosenbrock v2.7.1
   <span class="sgr90">[b4bd8bb3] </span>OrdinaryDiffEqRosenbrockTableaus v2.4.2
@@ -185,8 +185,8 @@ Environment:
   <span class="sgr90">[7e49a35a] </span>RuntimeGeneratedFunctions v0.5.26
   <span class="sgr90">[9dfe8606] </span>SCCNonlinearSolve v1.15.2
   <span class="sgr90">[91a8cdf1] </span>SciCompDSL v1.0.3
-  <span class="sgr90">[0bca4576] </span>SciMLBase v3.53.0
-  <span class="sgr90">[19f34311] </span>SciMLJacobianOperators v0.1.18
+  <span class="sgr90">[0bca4576] </span>SciMLBase v3.53.1
+  <span class="sgr90">[19f34311] </span>SciMLJacobianOperators v0.1.19
   <span class="sgr90">[a6db7da4] </span>SciMLLogging v2.1.0
   <span class="sgr90">[c0aeaf25] </span>SciMLOperators v1.30.0
   <span class="sgr90">[431bcebd] </span>SciMLPublic v1.3.0
@@ -195,7 +195,7 @@ Environment:
   <span class="sgr90">[91c51154] </span>SentinelArrays v1.4.10
   <span class="sgr90">[efcf1570] </span>Setfield v1.1.2
   <span class="sgr90">[992d4aef] </span>Showoff v1.1.1
-  <span class="sgr90">[727e6d20] </span>SimpleNonlinearSolve v2.14.1
+  <span class="sgr90">[727e6d20] </span>SimpleNonlinearSolve v2.14.2
   <span class="sgr90">[699a6c99] </span>SimpleTraits v0.9.6
   <span class="sgr90">[a2af1166] </span>SortingAlgorithms v1.2.3
   <span class="sgr90">[a57abbd0] </span>SparseColumnPivotedQR v2.1.8
@@ -361,4 +361,4 @@ Environment:
   <span class="sgr90">[8e850b90] </span>libblastrampoline_jll v5.15.0+0
   <span class="sgr90">[8e850ede] </span>nghttp2_jll v1.64.0+1
   <span class="sgr90">[3f19e933] </span>p7zip_jll v17.7.0+0
-<span class="sgr36"><span class="sgr1">Info</span></span> Packages marked with <span class="sgr32">⌃</span> and <span class="sgr33">⌅</span> have new versions available. Those with <span class="sgr32">⌃</span> may be upgradable, but those with <span class="sgr33">⌅</span> are restricted by compatibility constraints from upgrading. To see why use `status --outdated -m`</code></pre></details><p>You can also download the <a href="https://github.com/SciML/ModelingToolkitStandardLibrary.jl/tree/gh-pages/v2.29.7/assets/Manifest.toml">manifest</a> file and the <a href="https://github.com/SciML/ModelingToolkitStandardLibrary.jl/tree/gh-pages/v2.29.7/assets/Project.toml">project</a> file.</p></article><nav class="docs-footer"><a class="docs-footer-nextpage" href="tutorials/rc_circuit/">RC Circuit »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.19.0 on <span class="colophon-date" title="Monday 7 September 2026 06:52">Monday 7 September 2026</span>. Using Julia version 1.12.7.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+<span class="sgr36"><span class="sgr1">Info</span></span> Packages marked with <span class="sgr32">⌃</span> and <span class="sgr33">⌅</span> have new versions available. Those with <span class="sgr32">⌃</span> may be upgradable, but those with <span class="sgr33">⌅</span> are restricted by compatibility constraints from upgrading. To see why use `status --outdated -m`</code></pre></details><p>You can also download the <a href="https://github.com/SciML/ModelingToolkitStandardLibrary.jl/tree/gh-pages/v2.29.8/assets/Manifest.toml">manifest</a> file and the <a href="https://github.com/SciML/ModelingToolkitStandardLibrary.jl/tree/gh-pages/v2.29.8/assets/Project.toml">project</a> file.</p></article><nav class="docs-footer"><a class="docs-footer-nextpage" href="tutorials/rc_circuit/">RC Circuit »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.19.0 on <span class="colophon-date" title="Monday 7 September 2026 17:14">Monday 7 September 2026</span>. Using Julia version 1.12.7.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
