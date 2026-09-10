@@ -11,6 +11,9 @@ OrdinaryDiffEqSDIRK = "2d112036-d095-4a1e-ab9a-08536f3ecdbf"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 SciCompDSL = "91a8cdf1-4ca6-467b-a780-87fda3fff15e"
 
+[sources]
+ModelingToolkitStandardLibrary = {path = "/home/runner/work/ModelingToolkitStandardLibrary.jl/ModelingToolkitStandardLibrary.jl"}
+
 [compat]
 ControlSystemsBase = "1.1"
 DataFrames = "1.7"
