@@ -15,6 +15,7 @@ using SciMLStructures: SciMLStructures, Tunable
 using ForwardDiff
 using ADTypes
 using SymbolicUtils: symtype
+using Symbolics: Symbolics
 
 @testset "Constant" begin
     @named src = Constant(k = 2)
@@ -771,5 +772,34 @@ end
         sol2 = solve(prob2)
 
         @test SciMLBase.successful_retcode(sol2)
+    end
+end
+
+@testset "Symbolic Jacobian of interpolation blocks" begin
+    data, ts = [0.0, 1.0, 4.0], [0.0, 1.0, 2.0]
+    blocks = (
+        "Interpolation" => Interpolation(; itp = LinearInterpolation(data, ts), name = :interp),
+        "ParametrizedInterpolation" =>
+            ParametrizedInterpolation(LinearInterpolation, data, ts; name = :interp),
+    )
+    @testset "$label" for (label, interp) in blocks
+        @variables x(t) = 1.0
+        eqs = [interp.input.u ~ x, D(x) ~ -interp.output.u]
+        @named model = System(eqs, t, [x], []; systems = [interp])
+        sys = mtkcompile(model)
+        @test !any(Symbolics.hasderiv, ModelingToolkit.calculate_jacobian(sys))
+
+        prob = ODEProblem(sys, [], (0.0, 1.0))
+        sol = solve(prob, Rodas4(); reltol = 1.0e-10, abstol = 1.0e-10)
+        prob_jac = ODEProblem(sys, [], (0.0, 1.0); jac = true)
+        J = zeros(1, 1)
+        prob_jac.f.jac(J, [0.5], prob_jac.p, 0.0)
+        @test J ≈ [-1.0]
+        prob_jac.f.jac(J, [1.5], prob_jac.p, 0.0)
+        @test J ≈ [-3.0]
+
+        sol_jac = solve(prob_jac, Rodas4(); reltol = 1.0e-10, abstol = 1.0e-10)
+        @test SciMLBase.successful_retcode(sol_jac)
+        @test sol_jac[x][end] ≈ sol[x][end] rtol = 1.0e-8
     end
 end

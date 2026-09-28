@@ -892,15 +892,22 @@ end
 
 Base.nameof(::CachedInterpolation) = :CachedInterpolation
 
-const _INTERPOLATOR_SYMTYPE = let
-    @syms interpolator(::Real)::Real
-    symtype(interpolator)
-end
+# Calling the builder returns the interpolation function, not an interpolated scalar. Its
+# symtype records the interpolation type, so derivative rules registered for it apply.
+interpolator_symtype(::CachedInterpolation{T}) where {T} = FnType{Tuple{Real}, Real, T}
 
-# Calling the builder returns the interpolation function, not an interpolated scalar.
 @register_symbolic (f::CachedInterpolation)(
     u::AbstractArray, x::AbstractArray, args::Tuple
-)::_INTERPOLATOR_SYMTYPE
+)::interpolator_symtype(f) false
+
+function SymbolicUtils.promote_symtype(f::CachedInterpolation, ::Type, ::Type, ::Type)
+    return interpolator_symtype(f)
+end
+
+function SymbolicUtils.promote_shape(::CachedInterpolation, args::SymbolicUtils.ShapeT...)
+    @nospecialize args
+    return SymbolicUtils.ShapeVecT()
+end
 
 """
     ParametrizedInterpolation(interp_type, u, x, args...; name, t = ModelingToolkitBase.t_nounits)
