@@ -345,6 +345,30 @@ end
     @test sol[sys.piston.x][end] > 0.6
 end
 
+@testset "Gas Pressure Interpolation" begin
+    # The helpers are not exported, so they are reached through the module. Rational
+    # inputs keep the roundtrip exact.
+    fluid = (
+        ρ = 1000 // 1, β = 1000 // 1, n = 1, let_gas = 1,
+        ρ_gas = 1 // 1, p_gas = -1000 // 1,
+    )
+
+    # `gas_pressure` must invert `gas_density`.
+    for p in (-1000 // 1, -500 // 1, -1 // 1, 0 // 1)
+        @test IC.gas_pressure(fluid, IC.gas_density(fluid, p)) == p
+    end
+
+    # Both ends of the interpolation are the specified endpoints, and the gas branch
+    # joins the liquid branch at (ρ, 0).
+    @test IC.gas_density(fluid, fluid.p_gas) == fluid.ρ_gas
+    @test IC.gas_pressure(fluid, fluid.ρ_gas) == fluid.p_gas
+    @test IC.gas_pressure(fluid, fluid.ρ) == 0
+    @test IC.full_pressure(fluid, fluid.ρ) == 0
+
+    # Pressure rises with density across the join.
+    @test IC.full_pressure(fluid, 999 // 1) < IC.full_pressure(fluid, fluid.ρ)
+end
+
 @testset "Prevent Negative Pressure" begin
     @component function HydraulicSystem(; name)
         pars = @parameters let_gas = 1
