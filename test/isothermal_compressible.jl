@@ -4,6 +4,7 @@ using SciMLBase: NoInit
 using SciCompDSL
 using OrdinaryDiffEqNonlinearSolve: NLNewton
 using ModelingToolkit: t_nounits as t, D_nounits as D
+using Symbolics: substitute, value
 import ModelingToolkitStandardLibrary.Hydraulic.IsothermalCompressible as IC
 import ModelingToolkitStandardLibrary.Blocks as B
 import ModelingToolkitStandardLibrary.Mechanical.Translational as T
@@ -67,6 +68,62 @@ NEWTON = NLNewton(
 
     # N=5 pipe is compressible, will pressurize more slowly
     @test sol1_1[s1_1.vol.port.p][end] > sol5_1[s5_1.vol.port.p][end]
+end
+
+@testset "Tube(N) friction length independent of N (#525)" begin
+    # Each of the N TubeBase segments must use length/N so total friction/inertia
+    # length equals the physical tube length for any discretization.
+    L = 1.0
+    for N in (1, 2, 3, 5)
+        @named tube = IC.Tube(N; area = 1.0e-4, length = L, p_int = 0.0)
+        total = 0.0
+        for i in 1:N
+            li = ModelingToolkit.getdefault(getproperty(tube, Symbol("p$i")).length_int)
+            length_sym = only(ModelingToolkit.get_variables(li))
+            @test isequal(li, length_sym / N)
+            total += value(substitute(li, length_sym => L))
+        end
+        @test total ≈ L
+    end
+
+    # Steady pressure drop for fixed mass flow must not depend on N.
+    function TubeDropSys(N; name)
+        systems = @named begin
+            fluid = IC.HydraulicFluid()
+            q = B.Constant(k = 1.0)
+            src = IC.MassFlow()
+            tube = IC.Tube(N; area = 1.0e-4, length = 1.0, p_int = 0.0)
+            snk = IC.FixedPressure(; p = 0.0)
+        end
+        System(
+            [
+                connect(q.output, src.dm),
+                connect(src.port, tube.port_a),
+                connect(tube.port_b, snk.port),
+                connect(fluid, src.port),
+            ],
+            t;
+            name,
+            systems
+        )
+    end
+
+    p_ref = NaN
+    for N in (1, 2, 3, 5)
+        sys = mtkcompile(TubeDropSys(N; name = :s))
+        sol = solve(
+            ODEProblem(sys, [], (0.0, 50.0); warn_initialize_determined = false),
+            Rodas5P();
+            abstol = 1.0e-9,
+            reltol = 1.0e-9
+        )
+        p = sol[sys.tube.port_a.p][end]
+        if N == 1
+            p_ref = p
+        else
+            @test p ≈ p_ref rtol = 1.0e-6
+        end
+    end
 end
 
 @testset "Valve" begin
