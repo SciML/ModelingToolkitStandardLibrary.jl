@@ -772,6 +772,33 @@ end
     @test flipped_sol[flipped_sys.Q1.s.i][1] < 0.0
 end
 
+@testset "PMOS drain-source leakage is passive" begin
+    # An OFF PMOS (gate tied to the higher-potential terminal) must discharge a
+    # capacitor through R_DS, not charge it.
+    for grounded_terminal in (:d, :s)
+        @named pmos = PMOS(R_DS = 1.0)
+        @named capacitor = Capacitor(C = 1.0, v = 1.0)
+        @named ground = Ground()
+        connections = if grounded_terminal === :d
+            [
+                connect(capacitor.p, pmos.s, pmos.g),
+                connect(capacitor.n, pmos.d, ground.g),
+            ]
+        else
+            [
+                connect(capacitor.p, pmos.d, pmos.g),
+                connect(capacitor.n, pmos.s, ground.g),
+            ]
+        end
+        @named model = System(connections, t; systems = [pmos, capacitor, ground])
+        sys = mtkcompile(model)
+        prob = ODEProblem(sys, [], (0.0, 5.0))
+        sol = solve(prob, Rodas4(); abstol = 1.0e-10, reltol = 1.0e-10)
+        @test SciMLBase.successful_retcode(sol)
+        @test sol[capacitor.v][end] ≈ exp(-5.0) rtol = 1.0e-6
+    end
+end
+
 @testset "NPN Tests" begin
     @mtkmodel SimpleNPNCircuit begin
         @components begin
