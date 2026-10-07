@@ -4,7 +4,7 @@ using ModelingToolkit: t_nounits as t, D_nounits as D
 using OrdinaryDiffEqRosenbrock: Rodas4
 using OrdinaryDiffEqSDIRK: ImplicitMidpoint
 
-using ModelingToolkitStandardLibrary.Blocks: Sine
+using ModelingToolkitStandardLibrary.Blocks: Sine, Constant
 using ModelingToolkitStandardLibrary.Mechanical.TranslationalModelica: Damper, Spring, Mass,
     Fixed, Force,
     SpringDamper,
@@ -109,4 +109,21 @@ end
     sol = solve(prob, Rodas4())
     tv = 0:0.1:(2pi)
     @test sol(tv, idxs = sys.mass.s).u ≈ @.(2sin(2pi * tv * 3)) atol = 1.0e-2
+end
+
+@testset "Force with use_support=true (#523)" begin
+    function build_force_mass(; use_support)
+        @named src = Constant(k = 1)
+        @named force = Force(; use_support)
+        @named mass = Mass(m = 1)
+        @named ground = Fixed()
+        eqs = [connect(src.output, force.f), connect(force.flange, mass.flange_a)]
+        use_support && push!(eqs, connect(force.support, ground.flange))
+        System(eqs, t; systems = [src, force, mass, ground], name = :model)
+    end
+
+    sys_false = mtkcompile(build_force_mass(; use_support = false))
+    sys_true = mtkcompile(build_force_mass(; use_support = true))
+    @test Set(string.(unknowns(sys_false))) == Set(string.(unknowns(sys_true)))
+    @test length(unknowns(sys_true)) == 2
 end
