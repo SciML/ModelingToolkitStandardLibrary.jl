@@ -70,9 +70,8 @@ NEWTON = NLNewton(
     @test sol1_1[s1_1.vol.port.p][end] > sol5_1[s5_1.vol.port.p][end]
 end
 
-@testset "Tube(N) friction length independent of N (#525)" begin
-    # Each of the N TubeBase segments must use length/N so total friction/inertia
-    # length equals the physical tube length for any discretization.
+@testset "Tube(N) friction length is independent of discretization" begin
+    # Summed TubeBase lengths equal the physical tube length for any N.
     L = 1.0
     for N in (1, 2, 3, 5)
         @named tube = IC.Tube(N; area = 1.0e-4, length = L, p_int = 0.0)
@@ -80,13 +79,14 @@ end
         for i in 1:N
             li = ModelingToolkit.getdefault(getproperty(tube, Symbol("p$i")).length_int)
             length_sym = only(ModelingToolkit.get_variables(li))
-            @test isequal(li, length_sym / N)
-            total += value(substitute(li, length_sym => L))
+            seg = value(substitute(li, length_sym => L))
+            @test seg ≈ L / N
+            total += seg
         end
         @test total ≈ L
     end
 
-    # Steady pressure drop for fixed mass flow must not depend on N.
+    # Steady pressure drop for fixed mass flow does not depend on N.
     function TubeDropSys(N; name)
         systems = @named begin
             fluid = IC.HydraulicFluid()
