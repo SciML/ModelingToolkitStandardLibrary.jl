@@ -1,5 +1,6 @@
 using ModelingToolkitStandardLibrary.Electrical, ModelingToolkit, OrdinaryDiffEq, Test
 using SciCompDSL
+using Symbolics
 using SciMLBase
 using ModelingToolkit: t_nounits as t, D_nounits as D
 using ModelingToolkitStandardLibrary.Blocks: Step,
@@ -939,4 +940,52 @@ end
         0.0,
         atol = 1.0e-16
     )
+end
+
+@testset "BJT emission coefficients" begin
+    # C_DE/C_DC are defined as Tau_f/Tau_r times the derivative of the
+    # transport currents, so ICC/IEC must use NF/NR (issue #527).
+    ev(x, d) = Symbolics.unwrap_const(
+        Symbolics.unwrap(Symbolics.substitute(x, d; fold = Val(true)))
+    )
+
+    @named npn = NPN()
+    eqs = equations(System(Equation[], t; systems = [npn], name = :w))
+    rhs(v) = only(eq.rhs for eq in eqs if isequal(eq.lhs, v))
+    for nf in (1.0, 2.0), v_be in (0.0, 0.4)
+        d = Dict(
+            npn.Is => 1.0, npn.V_T => 1.0, npn.Tau_f => 1.0,
+            npn.NF => nf, npn.V_BE => v_be
+        )
+        @test ev(rhs(npn.C_DE), d) ≈
+            ev(npn.Tau_f * Symbolics.derivative(rhs(npn.ICC), npn.V_BE), d)
+    end
+    for nr in (1.0, 3.0), v_bc in (0.0, -0.4)
+        d = Dict(
+            npn.Is => 1.0, npn.V_T => 1.0, npn.Tau_r => 1.0,
+            npn.NR => nr, npn.V_BC => v_bc
+        )
+        @test ev(rhs(npn.C_DC), d) ≈
+            ev(npn.Tau_r * Symbolics.derivative(rhs(npn.IEC), npn.V_BC), d)
+    end
+
+    @named pnp = PNP()
+    eqs = equations(System(Equation[], t; systems = [pnp], name = :w))
+    rhs(v) = only(eq.rhs for eq in eqs if isequal(eq.lhs, v))
+    for nf in (1.0, 2.0), v_eb in (0.0, 0.4)
+        d = Dict(
+            pnp.Is => 1.0, pnp.V_T => 1.0, pnp.Tau_f => 1.0,
+            pnp.NF => nf, pnp.V_EB => v_eb
+        )
+        @test ev(rhs(pnp.C_DE), d) ≈
+            ev(pnp.Tau_f * Symbolics.derivative(rhs(pnp.ICC), pnp.V_EB), d)
+    end
+    for nr in (1.0, 3.0), v_cb in (0.0, -0.4)
+        d = Dict(
+            pnp.Is => 1.0, pnp.V_T => 1.0, pnp.Tau_r => 1.0,
+            pnp.NR => nr, pnp.V_CB => v_cb
+        )
+        @test ev(rhs(pnp.C_DC), d) ≈
+            ev(pnp.Tau_r * Symbolics.derivative(rhs(pnp.IEC), pnp.V_CB), d)
+    end
 end
