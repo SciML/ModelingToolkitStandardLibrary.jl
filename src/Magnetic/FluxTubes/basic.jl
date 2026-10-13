@@ -226,13 +226,11 @@ Initial magnetic flux flowing into the port_p can be set with `Phi` ([`Wb`])
     @named two_port = TwoPort(; Phi)
     @unpack V_m, Phi = two_port
 
-    R = rho * l / A # Electrical resistance of eddy current path
-
     pars = @parameters begin
         rho = rho, [description = "Resistivity of flux tube material"]
         l = l, [description = "Average length of eddy current path"]
         A = A, [description = "Cross sectional area of eddy current path"]
-        R = R
+        R = rho * l / A, [description = "Electrical resistance of eddy current path"]
     end
 
     systems = @named begin
