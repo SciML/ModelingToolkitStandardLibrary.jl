@@ -1,7 +1,6 @@
 using ModelingToolkitStandardLibrary.Mechanical.Rotational,
     ModelingToolkit, OrdinaryDiffEq,
     Test
-using SciCompDSL
 using SciMLBase
 using ModelingToolkit: t_nounits as t, D_nounits as D
 import ModelingToolkitStandardLibrary.Blocks
@@ -69,8 +68,10 @@ end
 
 @testset "two inertias with driving torque" begin
     @component function TwoInertiasWithDrivingTorque(;
-            name, amplitude = 10,
-            frequency = 5, J_motor = 0.1
+            name,
+            amplitude = 10, # Amplitude of driving torque
+            frequency = 5, # Frequency of driving torque
+            J_motor = 0.1 # Motor inertia
         )
         systems = @named begin
             fixed = Fixed()
@@ -154,8 +155,13 @@ end
 # see: https://doc.modelica.org/Modelica%204.0.0/Resources/helpWSM/Modelica/Modelica.Mechanics.Rotational.Examples.First.html
 @testset "first example" begin
     @component function FirstExample(;
-            name, amplitude = 10, frequency = 5,
-            J_motor = 0.1, J_load = 2, ratio = 10, damping = 10
+            name,
+            amplitude = 10, # Amplitude of driving torque
+            frequency = 5, # Frequency of driving torque
+            J_motor = 0.1, # Motor inertia
+            J_load = 2, # Load inertia
+            ratio = 10, # Gear ratio
+            damping = 10 # Damping in bearing of gear
         )
         systems = @named begin
             fixed = Fixed()
@@ -324,7 +330,7 @@ end
     tv = 0:0.01:10
     @test sol(tv, idxs = sys.inertia.phi).u ≈ sin.(2pi .* tv) atol = 1.0e-12
 
-    @component function TestPosition(; name)
+    @component function TestPositionInexact(; name)
         systems = @named begin
             pos = Rotational.Position(exact = false, f_crit = 500)
             input = Blocks.Sine(frequency = 1, amplitude = 1)
@@ -336,7 +342,7 @@ end
         ]
         return System(eqs, t, [], []; name, systems)
     end
-    @mtkcompile sys = TestPosition()
+    @mtkcompile sys = TestPositionInexact()
     prob = ODEProblem(
         sys, [
             sys.inertia.phi => 0,

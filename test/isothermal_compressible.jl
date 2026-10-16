@@ -1,7 +1,6 @@
 using ModelingToolkit, OrdinaryDiffEq, Test
 using ModelingToolkitBase: bindings, domain_connect, unknowns
 using SciMLBase: NoInit
-using SciCompDSL
 using OrdinaryDiffEqNonlinearSolve: NLNewton
 using ModelingToolkit: t_nounits as t, D_nounits as D
 import ModelingToolkitStandardLibrary.Hydraulic.IsothermalCompressible as IC
