@@ -114,8 +114,8 @@ Early voltage effect.
     equations = Equation[
         V_BE ~ b.v - e.v,
         V_BC ~ b.v - c.v,
-        ICC ~ Is * (exp(V_BE / V_T) - 1),
-        IEC ~ Is * (exp(V_BC / V_T) - 1),
+        ICC ~ Is * (exp(V_BE / (NF * V_T)) - 1),
+        IEC ~ Is * (exp(V_BC / (NR * V_T)) - 1),
     ]
 
     if !use_advanced_continuation
@@ -295,8 +295,8 @@ Early voltage effect.
     equations = Equation[
         V_EB ~ e.v - b.v,
         V_CB ~ c.v - b.v,
-        ICC ~ Is * (exp(V_EB / V_T) - 1),
-        IEC ~ Is * (exp(V_CB / V_T) - 1),
+        ICC ~ Is * (exp(V_EB / (NF * V_T)) - 1),
+        IEC ~ Is * (exp(V_CB / (NR * V_T)) - 1),
     ]
 
     if !use_advanced_continuation
