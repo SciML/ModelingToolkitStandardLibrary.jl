@@ -150,7 +150,7 @@ end
 """
     Tube(N, add_inertia=true; p_int, area, length, head_factor=1, perimeter = 2 * sqrt(area * pi), shape_factor = 64, name)
 
-Constant length internal flow model discretized by `N` (`FixedVolume`: `N`, `TubeBase`:`N-1`) which models the fully developed flow friction, compressibility (when `N>1`), and inertia effects when `add_inertia = true`.  See `TubeBase` and `FixedVolume` for more information.
+Constant length internal flow model discretized by `N` (`TubeBase`: `N`, `FixedVolume`: `N-1`) which models the fully developed flow friction, compressibility (when `N>1`), and inertia effects when `add_inertia = true`.  See `TubeBase` and `FixedVolume` for more information.
 
 # Parameters:
 - `p_int`: [Pa] initial pressure
@@ -197,7 +197,7 @@ Constant length internal flow model discretized by `N` (`FixedVolume`: `N`, `Tub
             add_inertia, false; name = Symbol("p$i"),
             shape_factor = ParentScope(shape_factor),
             area = ParentScope(area),
-            length_int = N > 1 ? ParentScope(length) / (N - 1) : ParentScope(length),
+            length_int = ParentScope(length) / N,
             head_factor = ParentScope(head_factor),
             perimeter = ParentScope(perimeter)
         )
