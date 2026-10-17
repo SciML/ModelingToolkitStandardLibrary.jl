@@ -1,5 +1,4 @@
 using ModelingToolkitStandardLibrary.Electrical, ModelingToolkit, OrdinaryDiffEq, Test
-using SciCompDSL
 using SciMLBase
 using ModelingToolkit: t_nounits as t, D_nounits as D
 using ModelingToolkitStandardLibrary.Blocks: Step,
@@ -440,16 +439,19 @@ end
 end
 
 @testset "Diode component test" begin
-    @mtkmodel DiodeTest begin
-        @parameters begin
-            R = 1.0
-            C = 1.0
-            V = 10.0
-            n = 1.0
-            Is = 1.0e-3
-            f = 1.0
+    @component function DiodeTest(;
+            name, R = 1.0, C = 1.0, V = 10.0, n = 1.0,
+            Is = 1.0e-3, f = 1.0
+        )
+        pars = @parameters begin
+            R = R
+            C = C
+            V = V
+            n = n
+            Is = Is
+            f = f
         end
-        @components begin
+        systems = @named begin
             resistor = Resistor(R = R)
             capacitor = Capacitor(C = C, v = 0.0)
             source = Voltage()
@@ -457,13 +459,14 @@ end
             ac = Sine(frequency = f, amplitude = V)
             ground = Ground()
         end
-        @equations begin
+        eqs = [
             connect(ac.output, source.V)
             connect(source.p, diode.p)
             connect(diode.n, resistor.p)
             connect(resistor.n, capacitor.p)
             connect(capacitor.n, source.n, ground.g)
-        end
+        ]
+        return System(eqs, t, [], pars; name, systems)
     end
 
     @mtkcompile sys = DiodeTest()
@@ -489,17 +492,20 @@ end
 end
 
 @testset "HeatingDiode component test" begin
-    @mtkmodel HeatingDiodeTest begin
-        @parameters begin
-            R = 1.0
-            C = 1.0
-            V = 10.0
-            T = 300.0 # Ambient temperature in Kelvin
-            n = 2.0
-            Is = 1.0e-6
-            f = 1.0
+    @component function HeatingDiodeTest(;
+            name, R = 1.0, C = 1.0, V = 10.0,
+            T = 300.0, n = 2.0, Is = 1.0e-6, f = 1.0
+        )
+        pars = @parameters begin
+            R = R
+            C = C
+            V = V
+            T = T # Ambient temperature in Kelvin
+            n = n
+            Is = Is
+            f = f
         end
-        @components begin
+        systems = @named begin
             resistor = Resistor(R = R)
             capacitor = Capacitor(C = C, v = 0.0)
             source = Voltage()
@@ -508,7 +514,7 @@ end
             ground = Ground()
             temp = FixedTemperature(T = T)
         end
-        @equations begin
+        eqs = [
             connect(ac.output, source.V)
             connect(source.p, heating_diode.p)
             connect(heating_diode.n, resistor.p)
@@ -516,7 +522,8 @@ end
             connect(capacitor.n, ground.g)
             connect(source.n, ground.g)
             connect(temp.port, heating_diode.port)
-        end
+        ]
+        return System(eqs, t, [], pars; name, systems)
     end
 
     @mtkcompile sys = HeatingDiodeTest()
@@ -558,15 +565,18 @@ end
     R_const = 1.0
 
     # Define the RC model as described
-    @mtkmodel RC begin
-        @parameters begin
-            R = R_ref  # Variable resistance reference value
-            C = 1.0   # Capacitance
-            k = 10.0  # Voltage source scaling factor
-            f = 0.2   # Frequency of sine input
-            T = 300.0 # Ambient temperature in Kelvin
+    @component function RC(;
+            name, R = R_ref, C = 1.0, k = 10.0, f = 0.2,
+            T = 300.0
+        )
+        pars = @parameters begin
+            R = R # Variable resistance reference value
+            C = C # Capacitance
+            k = k # Voltage source scaling factor
+            f = f # Frequency of sine input
+            T = T # Ambient temperature in Kelvin
         end
-        @components begin
+        systems = @named begin
             res_input = Sine(frequency = f, amplitude = 1.0, offset = 0.0)
             volt_input = Constant(k = 1.0)
             resistor = VariableResistor(R_ref = R_ref, R_const = R_const, T_dep = true)
@@ -575,14 +585,15 @@ end
             temp = FixedTemperature(T = T)
             ground = Ground()
         end
-        @equations begin
+        eqs = [
             connect(temp.port, resistor.port)
             connect(res_input.output, resistor.position)
             connect(volt_input.output, source.V)
             connect(source.p, resistor.p)
             connect(resistor.n, capacitor.p)
             connect(capacitor.n, source.n, ground.g)
-        end
+        ]
+        return System(eqs, t, [], pars; name, systems)
     end
 
     # Build and solve the system
@@ -607,8 +618,8 @@ end
     # savefig(plt, "rc_circuit_test_variable_resistor")
 end
 @testset "NMOS Transistor" begin
-    @mtkmodel SimpleNMOSCircuit begin
-        @components begin
+    @component function SimpleNMOSCircuit(; name, V_cc = 5.0, V_b = 3.5)
+        systems = @named begin
             Q1 = NMOS()
             Vcc = Voltage()
             Vb = Voltage()
@@ -617,12 +628,11 @@ end
             Vcc_const = Constant(k = V_cc)
             Vb_const = Constant(k = V_b)
         end
-
-        @parameters begin
-            V_cc = 5.0
-            V_b = 3.5
+        pars = @parameters begin
+            V_cc = V_cc
+            V_b = V_b
         end
-        @equations begin
+        eqs = [
             #voltage sources
             connect(Vcc_const.output, Vcc.V)
             connect(Vb_const.output, Vb.V)
@@ -633,7 +643,8 @@ end
             #other stuff
             connect(Vcc.p, Q1.d)
             connect(Vb.p, Q1.g)
-        end
+        ]
+        return System(eqs, t, [], pars; name, systems)
     end
 
     @mtkcompile sys = SimpleNMOSCircuit(V_cc = 5.0, V_b = 3.5)
@@ -647,8 +658,8 @@ end
     @test sol[sys.Q1.s.v] < sol[sys.Q1.d.v]
 
     # test device symmetry
-    @mtkmodel FlippedNMOSCircuit begin
-        @components begin
+    @component function FlippedNMOSCircuit(; name, V_cc = 5.0, V_b = 3.5)
+        systems = @named begin
             Q1 = NMOS()
             Vcc = Voltage()
             Vb = Voltage()
@@ -657,12 +668,11 @@ end
             Vcc_const = Constant(k = V_cc)
             Vb_const = Constant(k = V_b)
         end
-
-        @parameters begin
-            V_cc = 5.0
-            V_b = 3.5
+        pars = @parameters begin
+            V_cc = V_cc
+            V_b = V_b
         end
-        @equations begin
+        eqs = [
             #voltage sources
             connect(Vcc_const.output, Vcc.V)
             connect(Vb_const.output, Vb.V)
@@ -673,7 +683,8 @@ end
             #other stuff
             connect(Vcc.p, Q1.s)
             connect(Vb.p, Q1.g)
-        end
+        ]
+        return System(eqs, t, [], pars; name, systems)
     end
 
     @mtkcompile flipped_sys = FlippedNMOSCircuit(V_cc = 5.0, V_b = 3.5)
@@ -686,8 +697,8 @@ end
 end
 
 @testset "PMOS Transistor" begin
-    @mtkmodel SimplePMOSCircuit begin
-        @components begin
+    @component function SimplePMOSCircuit(; name, V_s = 5.0, V_b = 3.5, V_d = 0.0)
+        systems = @named begin
             Q1 = PMOS()
             Vs = Voltage()
             Vb = Voltage()
@@ -698,13 +709,12 @@ end
             Vb_const = Constant(k = V_b)
             Vd_const = Constant(k = V_d)
         end
-
-        @parameters begin
-            V_s = 5.0
-            V_b = 3.5
-            V_d = 0.0
+        pars = @parameters begin
+            V_s = V_s
+            V_b = V_b
+            V_d = V_d
         end
-        @equations begin
+        eqs = [
             #voltage sources
             connect(Vs_const.output, Vs.V)
             connect(Vb_const.output, Vb.V)
@@ -717,7 +727,8 @@ end
             #other stuff
             connect(Vs.p, Q1.s)
             connect(Vb.p, Q1.g)
-        end
+        ]
+        return System(eqs, t, [], pars; name, systems)
     end
 
     @mtkcompile sys = SimplePMOSCircuit(V_s = 5.0, V_b = 2.5, V_d = 3)
@@ -729,8 +740,8 @@ end
     @test sol[sys.Q1.s.i][1] > 0.0
 
     # device symmetry
-    @mtkmodel FlippedPMOSCircuit begin
-        @components begin
+    @component function FlippedPMOSCircuit(; name, V_s = 5.0, V_b = 3.5, V_d = 0.0)
+        systems = @named begin
             Q1 = PMOS()
             Vs = Voltage()
             Vb = Voltage()
@@ -741,13 +752,12 @@ end
             Vb_const = Constant(k = V_b)
             Vd_const = Constant(k = V_d)
         end
-
-        @parameters begin
-            V_s = 5.0
-            V_b = 3.5
-            V_d = 0.0
+        pars = @parameters begin
+            V_s = V_s
+            V_b = V_b
+            V_d = V_d
         end
-        @equations begin
+        eqs = [
             #voltage sources
             connect(Vs_const.output, Vs.V)
             connect(Vb_const.output, Vb.V)
@@ -760,7 +770,8 @@ end
             #other stuff
             connect(Vs.p, Q1.d)
             connect(Vb.p, Q1.g)
-        end
+        ]
+        return System(eqs, t, [], pars; name, systems)
     end
 
     @mtkcompile flipped_sys = FlippedPMOSCircuit(V_s = 5.0, V_b = 2.5, V_d = 3)
@@ -773,8 +784,8 @@ end
 end
 
 @testset "NPN Tests" begin
-    @mtkmodel SimpleNPNCircuit begin
-        @components begin
+    @component function SimpleNPNCircuit(; name, V_cc = 0.0, V_b = 0.0)
+        systems = @named begin
             Q1 = NPN()
             Vcc = Voltage()
             Vb = Voltage()
@@ -783,12 +794,11 @@ end
             Vcc_const = Constant(k = V_cc)
             Vb_const = Constant(k = V_b)
         end
-
-        @parameters begin
-            V_cc = 0.0
-            V_b = 0.0
+        pars = @parameters begin
+            V_cc = V_cc
+            V_b = V_b
         end
-        @equations begin
+        eqs = [
             #voltage sources
             connect(Vcc_const.output, Vcc.V)
             connect(Vb_const.output, Vb.V)
@@ -799,7 +809,8 @@ end
             #other stuff
             connect(Vcc.p, Q1.c)
             connect(Vb.p, Q1.b)
-        end
+        ]
+        return System(eqs, t, [], pars; name, systems)
     end
 
     @mtkcompile sys = SimpleNPNCircuit(V_cc = 3.0, V_b = 0.7)
@@ -811,8 +822,8 @@ end
     @test sol[sys.Q1.b.i][1] + sol[sys.Q1.e.i][1] + sol[sys.Q1.c.i][1] ≈ 0.0
 
     # test NPN with substrate
-    @mtkmodel SimpleNPNCircuitSubstrate begin
-        @components begin
+    @component function SimpleNPNCircuitSubstrate(; name, V_cc = 0.0, V_b = 0.0)
+        systems = @named begin
             Q1 = NPN(use_substrate = true)
             Vcc = Voltage()
             Vb = Voltage()
@@ -822,12 +833,11 @@ end
             Vcc_sine = Sine(frequency = 0.5)
             Vb_const = Constant(k = V_b)
         end
-
-        @parameters begin
-            V_cc = 0.0
-            V_b = 0.0
+        pars = @parameters begin
+            V_cc = V_cc
+            V_b = V_b
         end
-        @equations begin
+        eqs = [
             #voltage sources
             connect(Vcc_sine.output, Vcc.V)
             connect(Vb_const.output, Vb.V)
@@ -839,7 +849,8 @@ end
             connect(Vcc.p, R1.p)
             connect(R1.n, Q1.c)
             connect(Vb.p, Q1.b)
-        end
+        ]
+        return System(eqs, t, [], pars; name, systems)
     end
 
     @mtkcompile sys = SimpleNPNCircuitSubstrate(V_b = 0.7)
@@ -857,8 +868,8 @@ end
 end
 
 @testset "PNP Tests" begin
-    @mtkmodel SimplePNPCircuit begin
-        @components begin
+    @component function SimplePNPCircuit(; name, V_cc = 0.0, V_b = 0.0)
+        systems = @named begin
             Q1 = PNP()
             Vcc = Voltage()
             Vb = Voltage()
@@ -867,12 +878,11 @@ end
             Vcc_const = Constant(k = V_cc)
             Vb_const = Constant(k = V_b)
         end
-
-        @parameters begin
-            V_cc = 0.0
-            V_b = 0.0
+        pars = @parameters begin
+            V_cc = V_cc
+            V_b = V_b
         end
-        @equations begin
+        eqs = [
             #voltage sources
             connect(Vcc_const.output, Vcc.V)
             connect(Vb_const.output, Vb.V)
@@ -883,7 +893,8 @@ end
             #other stuff
             connect(Vcc.p, Q1.c)
             connect(Vb.p, Q1.b)
-        end
+        ]
+        return System(eqs, t, [], pars; name, systems)
     end
 
     @mtkcompile sys = SimplePNPCircuit(V_cc = 3.0, V_b = 0.7)
@@ -895,8 +906,8 @@ end
     @test sol[sys.Q1.b.i][1] + sol[sys.Q1.e.i][1] + sol[sys.Q1.c.i][1] ≈ 0.0
 
     # test PNP with substrate
-    @mtkmodel SimplePNPCircuitSubstrate begin
-        @components begin
+    @component function SimplePNPCircuitSubstrate(; name, V_cc = 0.0, V_b = 0.0)
+        systems = @named begin
             Q1 = PNP(use_substrate = true)
             Vcc = Voltage()
             Vb = Voltage()
@@ -906,12 +917,11 @@ end
             Vcc_sine = Sine(frequency = 0.5)
             Vb_const = Constant(k = V_b)
         end
-
-        @parameters begin
-            V_cc = 0.0
-            V_b = 0.0
+        pars = @parameters begin
+            V_cc = V_cc
+            V_b = V_b
         end
-        @equations begin
+        eqs = [
             #voltage sources
             connect(Vcc_sine.output, Vcc.V)
             connect(Vb_const.output, Vb.V)
@@ -923,7 +933,8 @@ end
             connect(Vcc.p, R1.p)
             connect(R1.n, Q1.c)
             connect(Vb.p, Q1.b)
-        end
+        ]
+        return System(eqs, t, [], pars; name, systems)
     end
 
     @mtkcompile sys = SimplePNPCircuitSubstrate(V_b = 0.7)

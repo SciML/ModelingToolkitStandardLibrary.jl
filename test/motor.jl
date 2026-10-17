@@ -1,6 +1,5 @@
 using ModelingToolkit, Test
 using ModelingToolkitBase: @independent_variables
-using SciCompDSL
 using SciMLBase
 using ModelingToolkitStandardLibrary.Thermal
 using ModelingToolkitStandardLibrary.Blocks
@@ -12,11 +11,11 @@ using ModelingToolkitStandardLibrary.Blocks
 @testset "Thermal Motor Demo" begin
     k2c(T) = T - 273.15
 
-    @mtkmodel ThermalMotor begin
-        @parameters begin
-            T_amb = 293.15
+    @component function ThermalMotor(; name, T_amb = 293.15)
+        pars = @parameters begin
+            T_amb = T_amb
         end
-        @components begin
+        systems = @named begin
             windingLosses = PrescribedHeatFlow(T_ref = k2c(95), alpha = 3.03e-3)
             winding = HeatCapacitor(C = 2500, T = T_amb)
             T_winding = TemperatureSensor()
@@ -33,7 +32,7 @@ using ModelingToolkitStandardLibrary.Blocks
                 duration = Inf, smooth = false
             )
         end
-        @equations begin
+        eqs = [
             connect(windingLosses.port, winding.port)
             connect(coreLosses.port, core.port)
             connect(winding.port, winding2core.port_a)
@@ -45,7 +44,8 @@ using ModelingToolkitStandardLibrary.Blocks
             connect(amb.output, environment.T)
             connect(winding_losses.output, windingLosses.Q_flow)
             connect(core_losses_const.output, coreLosses.Q_flow)
-        end
+        ]
+        return System(eqs, t, [], pars; name, systems)
     end
 
     @mtkcompile motor = ThermalMotor()

@@ -1,5 +1,4 @@
 using ModelingToolkitStandardLibrary.Thermal, ModelingToolkit, OrdinaryDiffEq, Test
-using SciCompDSL
 using SciMLBase
 using ModelingToolkit: t_nounits as t, D_nounits as D
 using ModelingToolkitStandardLibrary.Blocks: Constant, Step
@@ -183,17 +182,17 @@ end
 end
 
 @testset "FixedHeatFlow with alpha=0.0 test" begin
-    @mtkmodel TestModel begin
-        @components begin
+    @component function TestModel(; name)
+        systems = @named begin
             temp = FixedTemperature(T = 300)
             heatflow = FixedHeatFlow(Q_flow = -1.0)
             wall = ThermalResistor(R = 1)
         end
-
-        @equations begin
+        eqs = [
             connect(temp.port, wall.port_a)
             connect(wall.port_b, heatflow.port)
-        end
+        ]
+        return System(eqs, t, [], []; name, systems)
     end
 
     @info "Building a FixedHeatFlow with alpha=0.0"

@@ -1,5 +1,4 @@
 using ModelingToolkit, ModelingToolkitStandardLibrary, OrdinaryDiffEq
-using SciCompDSL
 using SciMLBase
 using ModelingToolkitStandardLibrary.Blocks
 using ModelingToolkit: t_nounits as t, D_nounits as D
@@ -625,16 +624,17 @@ end
     table_bkp = [0.0, 0.5, 1.0]
     itp = LinearInterpolation(table_data, table_bkp)
 
-    @mtkmodel model_with_lut begin
-        @components begin
-            src = Interpolation(itp)
+    @component function model_with_lut(; name)
+        systems = @named begin
+            src = Interpolation(; itp)
             clk = ContinuousClock()
             model = MassSpringDamper()
         end
-        @equations begin
+        eqs = [
             connect(src.input, clk.output)
             connect(src.output, model.input)
-        end
+        ]
+        return System(eqs, t, [], []; name, systems)
     end
     @mtkcompile sys = model_with_lut()
 

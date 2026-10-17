@@ -1,6 +1,5 @@
 using ModelingToolkit, Test
 using ModelingToolkitBase: @independent_variables
-using SciCompDSL
 using SciMLBase
 using ModelingToolkitStandardLibrary.Thermal
 using ModelingToolkitStandardLibrary.Blocks
@@ -11,29 +10,33 @@ using ModelingToolkitStandardLibrary.Blocks
 
 @testset "Piston cylinder wall" begin
     @info "Building a piston-cylinder..."
-    @mtkmodel Piston begin
-        @parameters begin
+    @component function Piston(;
+            name, Tᵧ = 1000, Tᵪ = 10, Rᵧ = 50.0e-4,
+            Rᵪ = 10.0e-4, R_wall = 1.5e-4
+        )
+        pars = @parameters begin
             # ᵧ -> gas and ᵪ -> coolant
-            Tᵧ = 1000, [description = "Temperature of gas"]
-            Tᵪ = 10, [description = "Temperature of coolant"]
+            Tᵧ = Tᵧ, [description = "Temperature of gas"]
+            Tᵪ = Tᵪ, [description = "Temperature of coolant"]
             # R = 1/h; h is convection co-efficient
-            Rᵧ = 50.0e-4, [description = "Thermal resistance of gas"]
-            Rᵪ = 10.0e-4, [description = "Thermal resistance of coolant"]
-            R_wall = 1.5e-4
+            Rᵧ = Rᵧ, [description = "Thermal resistance of gas"]
+            Rᵪ = Rᵪ, [description = "Thermal resistance of coolant"]
+            R_wall = R_wall
         end
-        @components begin
+        systems = @named begin
             coolant = ConvectiveResistor(R = Rᵪ)
             gas = ConvectiveResistor(R = Rᵧ)
             wall = ThermalResistor(R = R_wall)
             gas_tem = FixedTemperature(T = Tᵧ)
             coolant_tem = FixedTemperature(T = Tᵪ)
         end
-        @equations begin
+        eqs = [
             connect(gas_tem.port, gas.solid)
             connect(gas.fluid, wall.port_a)
             connect(wall.port_b, coolant.fluid)
             connect(coolant.solid, coolant_tem.port)
-        end
+        ]
+        return System(eqs, t, [], pars; name, systems)
     end
 
     @mtkcompile piston = Piston()

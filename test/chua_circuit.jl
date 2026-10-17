@@ -1,5 +1,4 @@
 using ModelingToolkit
-using SciCompDSL
 using ModelingToolkit: t_nounits as t
 using ModelingToolkitStandardLibrary.Electrical
 using ModelingToolkitStandardLibrary.Electrical: OnePort

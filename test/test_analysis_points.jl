@@ -1,5 +1,4 @@
 using Test, LinearAlgebra
-using SciCompDSL
 using ModelingToolkit
 using ModelingToolkitStandardLibrary.Blocks
 using OrdinaryDiffEq

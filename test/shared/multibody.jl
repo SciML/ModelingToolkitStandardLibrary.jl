@@ -1,5 +1,4 @@
 using ModelingToolkit
-using SciCompDSL
 using ModelingToolkit: t_nounits as t
 using ModelingToolkitStandardLibrary.Mechanical.MultiBody2D
 using ModelingToolkitStandardLibrary.Mechanical.TranslationalPosition

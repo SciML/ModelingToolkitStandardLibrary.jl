@@ -1,7 +1,6 @@
 using ModelingToolkitStandardLibrary.Mechanical.Rotational,
     ModelingToolkit, OrdinaryDiffEq,
     Test
-using SciCompDSL
 using SciMLBase
 using ModelingToolkit: t_nounits as t, D_nounits as D
 import ModelingToolkitStandardLibrary.Blocks
@@ -12,19 +11,20 @@ using OrdinaryDiffEqBDF: DFBDF
 # using Plots
 
 @testset "two inertias" begin
-    @mtkmodel TwoInertia begin
-        @components begin
+    @component function TwoInertia(; name)
+        systems = @named begin
             fixed = Fixed()
             inertia1 = Inertia(J = 2) # this one is fixed
             spring = Spring(c = 1.0e4)
             damper = Damper(d = 10)
             inertia2 = Inertia(J = 2, phi = pi / 2)
         end
-        @equations begin
+        eqs = [
             connect(fixed.flange, inertia1.flange_b)
             connect(inertia1.flange_b, spring.flange_a, damper.flange_a)
             connect(spring.flange_b, damper.flange_b, inertia2.flange_a)
-        end
+        ]
+        return System(eqs, t, [], []; name, systems)
     end
 
     @mtkcompile sys = TwoInertia()
@@ -41,18 +41,19 @@ using OrdinaryDiffEqBDF: DFBDF
     @test all(dae_sol[sys.inertia1.w] .== 0)
     @test dae_sol[sys.inertia2.w][end] ≈ 0 atol = 1.0e-3 # all energy has dissipated
 
-    @mtkmodel WithSpringDamper begin
-        @components begin
+    @component function WithSpringDamper(; name)
+        systems = @named begin
             fixed = Fixed()
             inertia1 = Inertia(J = 2) # this one is fixed
             springdamper = SpringDamper(; c = 1.0e4, d = 10)
             inertia2 = Inertia(J = 2, phi = pi / 2)
         end
-        @equations begin
+        eqs = [
             connect(fixed.flange, inertia1.flange_b)
             connect(inertia1.flange_b, springdamper.flange_a)
             connect(springdamper.flange_b, inertia2.flange_a)
-        end
+        ]
+        return System(eqs, t, [], []; name, systems)
     end
 
     @mtkcompile sys = WithSpringDamper()
@@ -66,14 +67,13 @@ using OrdinaryDiffEqBDF: DFBDF
 end
 
 @testset "two inertias with driving torque" begin
-    @mtkmodel TwoInertiasWithDrivingTorque begin
-        @structural_parameters begin
-            amplitude = 10 # Amplitude of driving torque
-            frequency = 5 # Frequency of driving torque
+    @component function TwoInertiasWithDrivingTorque(;
+            name,
+            amplitude = 10, # Amplitude of driving torque
+            frequency = 5, # Frequency of driving torque
             J_motor = 0.1 # Motor inertia
-        end
-
-        @components begin
+        )
+        systems = @named begin
             fixed = Fixed()
             torque = Torque(; use_support = true)
             inertia1 = Inertia(J = 2, phi = pi / 2)
@@ -82,14 +82,14 @@ end
             inertia2 = Inertia(J = 4)
             sine = Blocks.Sine(amplitude = amplitude, frequency = frequency)
         end
-
-        @equations begin
+        eqs = [
             connect(sine.output, torque.tau)
             connect(torque.support, fixed.flange)
             connect(torque.flange, inertia1.flange_a)
             connect(inertia1.flange_b, spring.flange_a, damper.flange_a)
             connect(spring.flange_b, damper.flange_b, inertia2.flange_a)
-        end
+        ]
+        return System(eqs, t, [], []; name, systems)
     end
 
     @mtkcompile sys = TwoInertiasWithDrivingTorque()
@@ -124,8 +124,8 @@ end
     @test all(sol[sys.torque.flange.tau] .== -sol[sys.sine.output.u]) # torque source is equal to negative sine
 
     ## Test with constant torque source
-    @mtkmodel TwoInertiasWitConstantTorque begin
-        @components begin
+    @component function TwoInertiasWitConstantTorque(; name)
+        systems = @named begin
             fixed = Fixed()
             torque = ConstantTorque(use_support = true, tau_constant = 1)
             inertia1 = Inertia(J = 2, phi = pi / 2)
@@ -133,12 +133,13 @@ end
             damper = Damper(d = 10)
             inertia2 = Inertia(J = 4)
         end
-        @equations begin
+        eqs = [
             connect(torque.support, fixed.flange)
             connect(torque.flange, inertia1.flange_a)
             connect(inertia1.flange_b, spring.flange_a, damper.flange_a)
             connect(spring.flange_b, damper.flange_b, inertia2.flange_a)
-        end
+        ]
+        return System(eqs, t, [], []; name, systems)
     end
 
     @mtkcompile sys = TwoInertiasWitConstantTorque()
@@ -153,17 +154,16 @@ end
 
 # see: https://doc.modelica.org/Modelica%204.0.0/Resources/helpWSM/Modelica/Modelica.Mechanics.Rotational.Examples.First.html
 @testset "first example" begin
-    @mtkmodel FirstExample begin
-        @structural_parameters begin
-            amplitude = 10 # Amplitude of driving torque
-            frequency = 5 # Frequency of driving torque
-            J_motor = 0.1 # Motor inertia
-            J_load = 2 # Load inertia
-            ratio = 10 # Gear ratio
+    @component function FirstExample(;
+            name,
+            amplitude = 10, # Amplitude of driving torque
+            frequency = 5, # Frequency of driving torque
+            J_motor = 0.1, # Motor inertia
+            J_load = 2, # Load inertia
+            ratio = 10, # Gear ratio
             damping = 10 # Damping in bearing of gear
-        end
-
-        @components begin
+        )
+        systems = @named begin
             fixed = Fixed()
             torque = Torque(use_support = true)
             inertia1 = Inertia(J = J_motor)
@@ -174,8 +174,7 @@ end
             damper = Damper(d = damping)
             sine = Blocks.Sine(amplitude = amplitude, frequency = frequency)
         end
-
-        @equations begin
+        eqs = [
             connect(inertia1.flange_b, idealGear.flange_a)
             connect(idealGear.flange_b, inertia2.flange_a)
             connect(inertia2.flange_b, spring.flange_a)
@@ -186,7 +185,8 @@ end
             connect(torque.support, fixed.flange)
             connect(idealGear.support, fixed.flange)
             connect(torque.flange, inertia1.flange_a)
-        end
+        ]
+        return System(eqs, t, [], []; name, systems)
     end
 
     @mtkcompile sys = FirstExample()
@@ -199,22 +199,23 @@ end
 end
 
 @testset "Stick-Slip" begin
-    @mtkmodel VelocityProfile begin
-        @components begin
+    @component function VelocityProfile(; name)
+        systems = @named begin
             sine = Blocks.Sine(amplitude = 10, frequency = 0.1)
             dz = Blocks.DeadZone(u_max = 2)
             lim = Blocks.Limiter(y_max = 6)
             output = Blocks.RealOutput()
         end
-        @equations begin
+        eqs = [
             connect(sine.output, dz.input)
             connect(dz.output, lim.input)
             connect(lim.output, output)
-        end
+        ]
+        return System(eqs, t, [], []; name, systems)
     end
 
-    @mtkmodel StickSlip begin
-        @components begin
+    @component function StickSlip(; name)
+        systems = @named begin
             fixed = Fixed()
             spring = Spring(c = 6.5)
             damper = Damper(d = 0.01)
@@ -227,15 +228,15 @@ end
             source = Speed()
             angle_sensor = AngleSensor()
         end
-
-        @equations begin
+        eqs = [
             connect(vel_profile.output, source.w_ref)
             connect(source.flange, friction.flange_a)
             connect(friction.flange_b, inertia.flange_a)
             connect(inertia.flange_b, spring.flange_a, damper.flange_a)
             connect(spring.flange_b, damper.flange_b, fixed.flange)
             connect(angle_sensor.flange, inertia.flange_a)
-        end
+        ]
+        return System(eqs, t, [], []; name, systems)
     end
 
     @mtkcompile sys = StickSlip()
@@ -261,8 +262,8 @@ end
 end
 
 @testset "sensors" begin
-    @mtkmodel Sensors begin
-        @components begin
+    @component function Sensors(; name)
+        systems = @named begin
             fixed = Fixed()
             inertia1 = Inertia(J = 2) # this one is fixed
             spring = Spring(c = 1.0e4)
@@ -272,8 +273,7 @@ end
             torque_sensor = TorqueSensor()
             rel_speed_sensor = RelSpeedSensor()
         end
-
-        @equations begin
+        eqs = [
             connect(fixed.flange, inertia1.flange_b, rel_speed_sensor.flange_b)
             connect(inertia1.flange_b, torque_sensor.flange_a)
             connect(
@@ -281,7 +281,8 @@ end
                 speed_sensor.flange, rel_speed_sensor.flange_a
             )
             connect(spring.flange_b, damper.flange_b, inertia2.flange_a)
-        end
+        ]
+        return System(eqs, t, [], []; name, systems)
     end
 
     @mtkcompile sys = Sensors()
@@ -310,16 +311,17 @@ end
 end
 
 @testset "Position" begin
-    @mtkmodel TestPosition begin
-        @components begin
+    @component function TestPosition(; name)
+        systems = @named begin
             pos = Rotational.Position(exact = true, f_crit = 500)
             input = Blocks.Sine(frequency = 1, amplitude = 1)
             inertia = Rotational.Inertia(J = 1)
         end
-        @equations begin
+        eqs = [
             connect(input.output, pos.phi_ref)
             connect(pos.flange, inertia.flange_a)
-        end
+        ]
+        return System(eqs, t, [], []; name, systems)
     end
     @mtkcompile sys = TestPosition()
     prob = ODEProblem(sys, [], (0, 10.0))
@@ -328,18 +330,19 @@ end
     tv = 0:0.01:10
     @test sol(tv, idxs = sys.inertia.phi).u ≈ sin.(2pi .* tv) atol = 1.0e-12
 
-    @mtkmodel TestPosition begin
-        @components begin
+    @component function TestPositionInexact(; name)
+        systems = @named begin
             pos = Rotational.Position(exact = false, f_crit = 500)
             input = Blocks.Sine(frequency = 1, amplitude = 1)
             inertia = Rotational.Inertia(J = 1)
         end
-        @equations begin
+        eqs = [
             connect(input.output, pos.phi_ref)
             connect(pos.flange, inertia.flange_a)
-        end
+        ]
+        return System(eqs, t, [], []; name, systems)
     end
-    @mtkcompile sys = TestPosition()
+    @mtkcompile sys = TestPositionInexact()
     prob = ODEProblem(
         sys, [
             sys.inertia.phi => 0,

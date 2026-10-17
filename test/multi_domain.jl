@@ -1,5 +1,4 @@
 using ModelingToolkitStandardLibrary.Electrical
-using SciCompDSL
 using ModelingToolkitStandardLibrary.Mechanical.Rotational
 using ModelingToolkitStandardLibrary.Blocks
 using ModelingToolkitStandardLibrary.Thermal
@@ -18,17 +17,11 @@ using OrdinaryDiffEqBDF: DFBDF
     tau_L_step = -3
     V_step = 10
 
-    @mtkmodel DCMotor begin
-        @structural_parameters begin
-            R = 0.5
-            L = 4.5e-3
-            k = 0.5
-            J = 0.02
-            f = 0.01
-            V_step = 10
-            tau_L_step = -3
-        end
-        @components begin
+    @component function DCMotor(;
+            name, R = 0.5, L = 4.5e-3, k = 0.5, J = 0.02,
+            f = 0.01, V_step = 10, tau_L_step = -3
+        )
+        systems = @named begin
             ground = Ground()
             source = Voltage()
             voltage_step = Blocks.Step(height = V_step, start_time = 0)
@@ -41,7 +34,7 @@ using OrdinaryDiffEqBDF: DFBDF
             inertia = Inertia(J = J)
             friction = Damper(d = f)
         end
-        @equations begin
+        eqs = [
             connect(fixed.flange, emf.support, friction.flange_b)
             connect(emf.flange, friction.flange_a, inertia.flange_a)
             connect(inertia.flange_b, load.flange)
@@ -51,7 +44,8 @@ using OrdinaryDiffEqBDF: DFBDF
             connect(R1.n, L1.p)
             connect(L1.n, emf.p)
             connect(emf.n, source.n, ground.g)
-        end
+        ]
+        return System(eqs, t, [], []; name, systems)
     end
 
     @mtkcompile dc_motor = DCMotor(; f, k, R, V_step)
@@ -100,17 +94,11 @@ end
     V_step = 10
     tau_L_step = -3
 
-    @mtkmodel DCMotorWithSpeedSensor begin
-        @structural_parameters begin
-            R = 0.5
-            L = 4.5e-3
-            k = 0.5
-            J = 0.02
-            f = 0.01
-            V_step = 10
-            tau_L_step = -3
-        end
-        @components begin
+    @component function DCMotorWithSpeedSensor(;
+            name, R = 0.5, L = 4.5e-3,
+            k = 0.5, J = 0.02, f = 0.01, V_step = 10, tau_L_step = -3
+        )
+        systems = @named begin
             ground = Ground()
             source = Voltage()
             voltage_step = Blocks.Step(height = V_step, start_time = 0)
@@ -124,7 +112,7 @@ end
             friction = Damper(d = f)
             speed_sensor = SpeedSensor()
         end
-        @equations begin
+        eqs = [
             connect(fixed.flange, emf.support, friction.flange_b)
             connect(emf.flange, friction.flange_a, inertia.flange_a)
             connect(inertia.flange_b, load.flange)
@@ -135,7 +123,8 @@ end
             connect(R1.n, L1.p)
             connect(L1.n, emf.p)
             connect(emf.n, source.n, ground.g)
-        end
+        ]
+        return System(eqs, t, [], []; name, systems)
     end
 
     @mtkcompile sys = DCMotorWithSpeedSensor(; f, k, R, V_step, tau_L_step)
@@ -179,8 +168,8 @@ end
 end
 
 @testset "Electrical Heating Circuit" begin
-    @mtkmodel ElHeatingCircuit begin
-        @components begin
+    @component function ElHeatingCircuit(; name)
+        systems = @named begin
             ground = Ground()
             source = Voltage()
             voltage_sine = Blocks.Sine(amplitude = 220, frequency = 1)
@@ -191,13 +180,14 @@ end
             thermal_conductor = ThermalConductor(G = 50)
             env = FixedTemperature(T = 273.15 + 20)
         end
-        @equations begin
+        eqs = [
             connect(source.n, ground.g, heating_resistor.n)
             connect(source.p, heating_resistor.p)
             connect(voltage_sine.output, source.V)
             connect(heating_resistor.heat_port, thermal_conductor.port_a)
             connect(thermal_conductor.port_b, env.port)
-        end
+        ]
+        return System(eqs, t, [], []; name, systems)
     end
 
     @mtkcompile sys = ElHeatingCircuit()

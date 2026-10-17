@@ -1,5 +1,4 @@
 using ModelingToolkit, OrdinaryDiffEq, Test
-using SciCompDSL
 using ModelingToolkit: t_nounits as t, D_nounits as D
 using OrdinaryDiffEqRosenbrock: Rodas4
 using OrdinaryDiffEqSDIRK: ImplicitMidpoint
@@ -11,17 +10,18 @@ using ModelingToolkitStandardLibrary.Mechanical.TranslationalModelica: Damper, S
     Position
 
 @testset "spring damper mass fixed" begin
-    @mtkmodel SpringDamperMassFixed begin
-        @components begin
+    @component function SpringDamperMassFixed(; name)
+        systems = @named begin
             damper = Damper(; d = 1)
             spring = Spring(; c = 1, s_rel0 = 1)
             mass = Mass(; m = 1, v = 1, s = 0)
             fixed = Fixed(s0 = 1)
         end
-        @equations begin
+        eqs = [
             connect(spring.flange_a, mass.flange_a, damper.flange_a)
             connect(spring.flange_b, damper.flange_b, fixed.flange)
-        end
+        ]
+        return System(eqs, t, [], []; name, systems)
     end
 
     @mtkcompile sys = SpringDamperMassFixed()
@@ -34,8 +34,8 @@ using ModelingToolkitStandardLibrary.Mechanical.TranslationalModelica: Damper, S
 end
 
 @testset "driven spring damper mass" begin
-    @mtkmodel DrivenSpringDamperMass begin
-        @components begin
+    @component function DrivenSpringDamperMass(; name)
+        systems = @named begin
             damper = Damper(; d = 1)
             spring = Spring(; c = 1, s_rel0 = 1)
             mass = Mass(; m = 1, v = 1, s = 0)
@@ -43,13 +43,13 @@ end
             force = Force()
             source = Sine(frequency = 3, amplitude = 2)
         end
-
-        @equations begin
+        eqs = [
             connect(force.f, source.output)
             connect(force.flange, mass.flange_a)
             connect(spring.flange_a, mass.flange_b, damper.flange_a)
             connect(spring.flange_b, damper.flange_b, fixed.flange)
-        end
+        ]
+        return System(eqs, t, [], []; name, systems)
     end
 
     @mtkcompile sys = DrivenSpringDamperMass()
@@ -63,21 +63,21 @@ end
 end
 
 @testset "driven SpringDamper mass" begin
-    @mtkmodel DrivenSpringDamperMass2 begin
-        @components begin
+    @component function DrivenSpringDamperMass2(; name)
+        systems = @named begin
             springdamper = SpringDamper(; d = 1, c = 1, s_rel0 = 1)
             mass = Mass(; m = 1, v = 1, s = 0)
             fixed = Fixed(; s0 = 1)
             force = Force()
             source = Sine(frequency = 3, amplitude = 2)
         end
-
-        @equations begin
+        eqs = [
             connect(force.f, source.output)
             connect(force.flange, mass.flange_a)
             connect(springdamper.flange_a, mass.flange_b)
             connect(springdamper.flange_b, fixed.flange)
-        end
+        ]
+        return System(eqs, t, [], []; name, systems)
     end
 
     @mtkcompile sys = DrivenSpringDamperMass2()
@@ -91,17 +91,17 @@ end
 end
 
 @testset "Position source" begin
-    @mtkmodel TestPositionSource begin
-        @components begin
+    @component function TestPositionSource(; name)
+        systems = @named begin
             p1 = Position(exact = true)
             source = Sine(frequency = 3, amplitude = 2)
             mass = Mass(m = 1, v = 1, s = 0)
         end
-
-        @equations begin
+        eqs = [
             connect(source.output, p1.s_ref)
             connect(p1.flange, mass.flange_a)
-        end
+        ]
+        return System(eqs, t, [], []; name, systems)
     end
 
     @mtkcompile sys = TestPositionSource()

@@ -1,5 +1,4 @@
 using ModelingToolkitStandardLibrary.Blocks
-using SciCompDSL
 using ModelingToolkit
 using SciMLBase: ODEProblem
 using ModelingToolkit: t_nounits as t, D_nounits as D
