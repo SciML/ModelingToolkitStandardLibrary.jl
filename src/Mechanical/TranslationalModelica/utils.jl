@@ -144,7 +144,7 @@ function PartialElementaryOneFlangeAndSupport2(; name, use_support = false)
     eqs = [s ~ flange.s - s_support]
     return if use_support
         @named support = Support()
-        push!(eqs, support.f ~ -flange.f)
+        push!(eqs, support.s ~ s_support, support.f ~ -flange.f)
         compose(System(eqs, t; name = name), flange, support)
     else
         push!(eqs, s_support ~ 0)
