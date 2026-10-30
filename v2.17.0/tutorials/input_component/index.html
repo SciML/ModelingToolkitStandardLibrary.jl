@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>SampledData Component · ModelingToolkitStandardLibrary.jl</title><meta name="title" content="SampledData Component · ModelingToolkitStandardLibrary.jl"/><meta property="og:title" content="SampledData Component · ModelingToolkitStandardLibrary.jl"/><meta property="twitter:title" content="SampledData Component · ModelingToolkitStandardLibrary.jl"/><meta name="description" content="Documentation for ModelingToolkitStandardLibrary.jl."/><meta property="og:description" content="Documentation for ModelingToolkitStandardLibrary.jl."/><meta property="twitter:description" content="Documentation for ModelingToolkitStandardLibrary.jl."/><meta property="og:url" content="https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/tutorials/input_component/"/><meta property="twitter:url" content="https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/tutorials/input_component/"/><link rel="canonical" href="https://docs.sciml.ai/ModelingToolkitStandardLibrary/stable/tutorials/input_component/"/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script><link href="../../assets/favicon.ico" rel="icon" type="image/x-icon"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img src="../../assets/logo.png" alt="ModelingToolkitStandardLibrary.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">ModelingToolkitStandardLibrary.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">ModelingToolkitStandardLibrary.jl: A Standard Library for ModelingToolkit</a></li><li><span class="tocitem">Tutorials</span><ul><li><a class="tocitem" href="../rc_circuit/">RC Circuit</a></li><li><a class="tocitem" href="../custom_component/">Custom Components</a></li><li><a class="tocitem" href="../thermal_model/">Thermal Conduction Model</a></li><li><a class="tocitem" href="../dc_motor_pi/">DC Motor with Speed Controller</a></li><li class="is-active"><a class="tocitem" href>SampledData Component</a><ul class="internal"><li><a class="tocitem" href="#Interpolation-Block"><span><code>Interpolation</code> Block</span></a></li><li><a class="tocitem" href="#ParametrizedInterpolation-Block"><span><code>ParametrizedInterpolation</code> Block</span></a></li><li><a class="tocitem" href="#Custom-Component-with-External-Data"><span>Custom Component with External Data</span></a></li><li><a class="tocitem" href="#SampledData-Component"><span><code>SampledData</code> Component</span></a></li></ul></li></ul></li><li><span class="tocitem">About Acausal Connections</span><ul><li><a class="tocitem" href="../../connectors/connections/">Theory</a></li><li><a class="tocitem" href="../../connectors/sign_convention/">Sign Convention</a></li></ul></li><li><span class="tocitem">API</span><ul><li><a class="tocitem" href="../../API/blocks/">Basic Blocks</a></li><li><a class="tocitem" href="../../API/electrical/">Electrical Components</a></li><li><a class="tocitem" href="../../API/magnetic/">Magnetic Components</a></li><li><a class="tocitem" href="../../API/mechanical/">Mechanical Components</a></li><li><a class="tocitem" href="../../API/thermal/">Thermal Components</a></li><li><a class="tocitem" href="../../API/hydraulic/">Hydraulic Components</a></li><li><a class="tocitem" href="../../API/linear_analysis/">Linear Analysis</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Tutorials</a></li><li class="is-active"><a href>SampledData Component</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>SampledData Component</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/SciML/ModelingToolkitStandardLibrary.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/SciML/ModelingToolkitStandardLibrary.jl/blob/main/docs/src/tutorials/input_component.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Building-Models-with-Discrete-Data,-Interpolations,-and-Lookup-Tables"><a class="docs-heading-anchor" href="#Building-Models-with-Discrete-Data,-Interpolations,-and-Lookup-Tables">Building Models with Discrete Data, Interpolations, and Lookup Tables</a><a id="Building-Models-with-Discrete-Data,-Interpolations,-and-Lookup-Tables-1"></a><a class="docs-heading-anchor-permalink" href="#Building-Models-with-Discrete-Data,-Interpolations,-and-Lookup-Tables" title="Permalink"></a></h1><p>There are 4 ways to include data as part of a model.</p><ol><li>using <code>ModelingToolkitStandardLibrary.Blocks.Interpolation</code></li><li>using <code>ModelingToolkitStandardLibrary.Blocks.ParametrizedInterpolation</code></li><li>using a custom component with external data (not recommended)</li><li>using <code>ModelingToolkitStandardLibrary.Blocks.SampledData</code> (legacy)</li></ol><p>This tutorial demonstrate each case and explain the pros and cons of each.</p><h2 id="Interpolation-Block"><a class="docs-heading-anchor" href="#Interpolation-Block"><code>Interpolation</code> Block</a><a id="Interpolation-Block-1"></a><a class="docs-heading-anchor-permalink" href="#Interpolation-Block" title="Permalink"></a></h2><p>The <code>ModelingToolkitStandardLibrary.Blocks.Interpolation</code> component is easy to use and is performant. It is similar to using callable parameters, but it provides a block interface with <code>RealInput</code> and <code>RealOutput</code> connectors. The <code>Interpolation</code> is compatible with interpolation types from <code>DataInterpolation</code>.</p><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="ModelingToolkitStandardLibrary.Blocks.Interpolation" href="#ModelingToolkitStandardLibrary.Blocks.Interpolation"><code>ModelingToolkitStandardLibrary.Blocks.Interpolation</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">Interpolation(interp_type, u, x, args...; name)</code></pre><p>Represent function interpolation symbolically as a block component. By default interpolation types from <a href="https://github.com/SciML/DataInterpolations.jl"><code>DataInterpolations.jl</code></a> are supported, but in general any callable type that builds the interpolation object via <code>itp = interpolation_type(u, x, args...)</code> and calls the interpolation with <code>itp(t)</code> should work. This does not need to represent an interpolation, it can be any type that satisfies the interface, such as lookup tables.</p><p><strong>Arguments:</strong></p><ul><li><code>interp_type</code>: the type of the interpolation. For <code>DataInterpolations</code>,</li></ul><p>these would be any of <a href="https://github.com/SciML/DataInterpolations.jl?tab=readme-ov-file#available-interpolations">the available interpolations</a>, such as <code>LinearInterpolation</code>, <code>ConstantInterpolation</code> or <code>CubicSpline</code>.</p><ul><li><code>u</code>: the data used for interpolation. For <code>DataInterpolations</code> this will be an <code>AbstractVector</code></li><li><code>x</code>: the values that each data points correspond to, usually the times corresponding to each value in <code>u</code>.</li><li><code>args</code>: any other arguments needed to build the interpolation</li></ul><p><strong>Keyword arguments:</strong></p><ul><li><code>name</code>: the name of the component</li></ul><p><strong>Parameters:</strong></p><ul><li><code>interpolator</code>: the symbolic representation of the interpolation object, callable as <code>interpolator(t)</code></li></ul><p><strong>Connectors:</strong></p><ul><li><code>input</code>: a <a href="../../API/blocks/#ModelingToolkitStandardLibrary.Blocks.RealInput"><code>RealInput</code></a> connector corresponding to the input variable</li><li><code>output</code>: a <a href="../../API/blocks/#ModelingToolkitStandardLibrary.Blocks.RealOutput"><code>RealOutput</code></a> connector corresponding to the interpolated value</li></ul></div><a class="docs-sourcelink" target="_blank" href="https://github.com/SciML/ModelingToolkitStandardLibrary.jl/blob/5ff27c8cb58439d2b38703af989f0befd593ae1a/src/Blocks/sources.jl#L735-L759">source</a></section></article><p>Here is an example on how to use it. Let&#39;s consider a mass-spring-damper system, where we have an external force as an input. We then generate some example data in a <code>DataFrame</code> that would represent a measurement of the input. In a more realistic case, this <code>DataFrame</code> would be read from a file.</p><pre><code class="language-julia hljs">using ModelingToolkit
+using ModelingToolkit: t_nounits as t, D_nounits as D
+using ModelingToolkitStandardLibrary.Blocks
+using DataInterpolations
+using OrdinaryDiffEq
+using DataFrames
+using Plots
+
+function MassSpringDamper(; name)
+    @named input = RealInput()
+    @variables f(t)=0 x(t)=0 dx(t)=0 ddx(t)=0
+    @parameters m=10 k=1000 d=1
+
+    eqs = [
+           f ~ input.u
+           ddx * 10 ~ k * x + d * dx + f
+           D(x) ~ dx
+           D(dx) ~ ddx]
+
+    ODESystem(eqs, t; name, systems = [input])
+end
+
+function MassSpringDamperSystem(data, time; name)
+    @named src = Interpolation(LinearInterpolation, data, time)
+    @named clk = ContinuousClock()
+    @named model = MassSpringDamper()
+
+    eqs = [
+        connect(src.input, clk.output)
+        connect(src.output, model.input)
+    ]
+
+    ODESystem(eqs, t, [], []; name, systems = [src, clk, model])
+end
+
+function generate_data()
+    dt = 4e-4
+    time = 0:dt:0.1
+    data = sin.(2 * pi * time * 100)
+
+    return DataFrame(; time, data)
+end
+
+df = generate_data() # example data
+
+@named system = MassSpringDamperSystem(df.data, df.time)
+sys = structural_simplify(system)
+prob = ODEProblem(sys, [], (0, df.time[end]))
+sol = solve(prob)
+plot(sol)</code></pre><img src="49368a29.svg" alt="Example block output"/><h2 id="ParametrizedInterpolation-Block"><a class="docs-heading-anchor" href="#ParametrizedInterpolation-Block"><code>ParametrizedInterpolation</code> Block</a><a id="ParametrizedInterpolation-Block-1"></a><a class="docs-heading-anchor-permalink" href="#ParametrizedInterpolation-Block" title="Permalink"></a></h2><p>The <code>ModelingToolkitStandardLibrary.Blocks.ParametrizedInterpolation</code> component is similar to <code>Interpolation</code>, but as the name suggests, it is parametrized by the data, allowing one to change the underlying data without rebuilding the model as the data is represented via vector parameters. The main advantage of this block over the <a href="#ModelingToolkitStandardLibrary.Blocks.Interpolation"><code>Interpolation</code></a> one is that one can use it for optimization problems. Currently, this supports forward mode AD via ForwardDiff, but due to the increased flexibility of the types in the component, this is not as fast as the <code>Interpolation</code> block, so it is recommended to use only when the added flexibility is required.</p><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="ModelingToolkitStandardLibrary.Blocks.ParametrizedInterpolation" href="#ModelingToolkitStandardLibrary.Blocks.ParametrizedInterpolation"><code>ModelingToolkitStandardLibrary.Blocks.ParametrizedInterpolation</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">ParametrizedInterpolation(interp_type, u, x, args...; name, t = ModelingToolkit.t_nounits)</code></pre><p>Represent function interpolation symbolically as a block component, with the interpolation data represented parametrically. By default interpolation types from <a href="https://github.com/SciML/DataInterpolations.jl"><code>DataInterpolations.jl</code></a> are supported, but in general any callable type that builds the interpolation object via <code>itp = interpolation_type(u, x, args...)</code> and calls the interpolation with <code>itp(t)</code> should work. This does not need to represent an interpolation, it can be any type that satisfies the interface, such as lookup tables.</p><p><strong>Arguments:</strong></p><ul><li><code>interp_type</code>: the type of the interpolation. For <code>DataInterpolations</code>,</li></ul><p>these would be any of <a href="https://github.com/SciML/DataInterpolations.jl?tab=readme-ov-file#available-interpolations">the available interpolations</a>, such as <code>LinearInterpolation</code>, <code>ConstantInterpolation</code> or <code>CubicSpline</code>.</p><ul><li><code>u</code>: the data used for interpolation. For <code>DataInterpolations</code> this will be an <code>AbstractVector</code></li><li><code>x</code>: the values that each data points correspond to, usually the times corresponding to each value in <code>u</code>.</li><li><code>args</code>: any other arguments beeded to build the interpolation</li></ul><p><strong>Keyword arguments:</strong></p><ul><li><code>name</code>: the name of the component</li></ul><p><strong>Parameters:</strong></p><ul><li><code>data</code>: the symbolic representation of the data passed at construction time via <code>u</code>.</li><li><code>ts</code>: the symbolic representation of times corresponding to the data passed at construction time via <code>x</code>.</li></ul><p><strong>Connectors:</strong></p><ul><li><code>input</code>: a <a href="../../API/blocks/#ModelingToolkitStandardLibrary.Blocks.RealInput"><code>RealInput</code></a> connector corresponding to the independent variable</li><li><code>output</code>: a <a href="../../API/blocks/#ModelingToolkitStandardLibrary.Blocks.RealOutput"><code>RealOutput</code></a> connector corresponding to the interpolated value</li></ul></div><a class="docs-sourcelink" target="_blank" href="https://github.com/SciML/ModelingToolkitStandardLibrary.jl/blob/5ff27c8cb58439d2b38703af989f0befd593ae1a/src/Blocks/sources.jl#L826-L851">source</a></section></article><p>Here is an example on how to use it</p><pre><code class="language-julia hljs">using ModelingToolkit
+using ModelingToolkit: t_nounits as t, D_nounits as D
+using ModelingToolkitStandardLibrary.Blocks
+using DataInterpolations
+using OrdinaryDiffEq
+using DataFrames
+using Plots
+
+function MassSpringDamper(; name)
+    @named input = RealInput()
+    vars = @variables f(t) x(t)=0 dx(t) [guess=0] ddx(t)
+    pars = @parameters m=10 k=1000 d=1
+
+    eqs = [
+           f ~ input.u
+           ddx * 10 ~ k * x + d * dx + f
+           D(x) ~ dx
+           D(dx) ~ ddx]
+
+    ODESystem(eqs, t, vars, pars; name, systems = [input])
+end
+
+function MassSpringDamperSystem(data, time; name)
+    @named src = ParametrizedInterpolation(LinearInterpolation, data, time)
+    @named clk = ContinuousClock()
+    @named model = MassSpringDamper()
+
+    eqs = [
+        connect(model.input, src.output)
+        connect(src.input, clk.output)
+    ]
+
+    ODESystem(eqs, t; name, systems = [src, clk, model])
+end
+
+function generate_data()
+    dt = 4e-4
+    time = 0:dt:0.1
+    data = sin.(2 * pi * time * 100)
+
+    return DataFrame(; time, data)
+end
+
+df = generate_data() # example data
+
+@named system = MassSpringDamperSystem(df.data, df.time)
+sys = structural_simplify(system)
+prob = ODEProblem(sys, [], (0, df.time[end]))
+sol = solve(prob)
+plot(sol)</code></pre><img src="09d788a4.svg" alt="Example block output"/><p>If we want to run a new data set, this requires only remaking the problem and solving again</p><pre><code class="language-julia hljs">prob2 = remake(prob, p = [sys.src.data =&gt; ones(length(df.data))])
+sol2 = solve(prob2)
+plot(sol2)</code></pre><img src="c6d7b71a.svg" alt="Example block output"/><div class="admonition is-info"><header class="admonition-header">Note</header><div class="admonition-body"><p>Note that when changing the data, the length of the new data must be the same as the length of the original data.</p></div></div><h2 id="Custom-Component-with-External-Data"><a class="docs-heading-anchor" href="#Custom-Component-with-External-Data">Custom Component with External Data</a><a id="Custom-Component-with-External-Data-1"></a><a class="docs-heading-anchor-permalink" href="#Custom-Component-with-External-Data" title="Permalink"></a></h2><p>The below code shows how to include data using a <code>Ref</code> and registered <code>get_sampled_data</code> function.  This example uses a very basic function which requires non-adaptive solving and sampled data.  As can be seen, the data can easily be set and changed before solving.</p><pre><code class="language-julia hljs">using ModelingToolkit
+using ModelingToolkit: t_nounits as t, D_nounits as D
+using ModelingToolkitStandardLibrary.Blocks
+using OrdinaryDiffEq
+
+const rdata = Ref{Vector{Float64}}()
+
+dt = 4e-4
+time = 0:dt:0.1
+# Data Sets
+data1 = sin.(2 * pi * time * 100)
+data2 = cos.(2 * pi * time * 50)
+
+function get_sampled_data(t)
+    i = floor(Int, t / dt) + 1
+    x = rdata[][i]
+
+    return x
+end
+
+Symbolics.@register_symbolic get_sampled_data(t)
+
+function System(; name)
+    vars = @variables f(t)=0 x(t)=0 dx(t)=0 ddx(t)=0
+    pars = @parameters m=10 k=1000 d=1
+
+    eqs = [f ~ get_sampled_data(t)
+           ddx * 10 ~ k * x + d * dx + f
+           D(x) ~ dx
+           D(dx) ~ ddx]
+
+    ODESystem(eqs, t, vars, pars; name)
+end
+
+@named system = System()
+sys = structural_simplify(system)
+prob = ODEProblem(sys, [], (0, time[end]))
+
+rdata[] = data1
+sol1 = solve(prob, ImplicitEuler(); dt, adaptive = false)
+ddx1 = sol1[sys.ddx]
+
+rdata[] = data2
+sol2 = solve(prob, ImplicitEuler(); dt, adaptive = false)
+ddx2 = sol2[sys.ddx]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">1-element Vector{Float64}:
+ 0.1</code></pre><p>The drawback of this method is that the solution observables can be linked to the data <code>Ref</code>, which means that if the data changes then the observables are no longer valid.  In this case <code>ddx</code> is an observable that is derived directly from the data.  Therefore, <code>sol1[sys.ddx]</code> is no longer correct after the data is changed for <code>sol2</code>.</p><pre><code class="language-julia hljs"># the following test will fail
+@test all(ddx1 .== sol1[sys.ddx]) #returns false</code></pre><p>Additional code could be added to resolve this issue, for example by using a <code>Ref{Dict}</code> that could link a parameter of the model to the data source.  This would also be necessary for parallel processing.</p><h2 id="SampledData-Component"><a class="docs-heading-anchor" href="#SampledData-Component"><code>SampledData</code> Component</a><a id="SampledData-Component-1"></a><a class="docs-heading-anchor-permalink" href="#SampledData-Component" title="Permalink"></a></h2><p>To resolve the issues presented above, the <code>ModelingToolkitStandardLibrary.Blocks.SampledData</code> component can be used which allows for a resusable <code>ODESystem</code> and self contained data which ensures a solution which remains valid for it&#39;s lifetime.  Now it&#39;s possible to also parallelize the call to <code>solve()</code>.</p><pre><code class="language-julia hljs">using ModelingToolkit
+using ModelingToolkit: t_nounits as t, D_nounits as D
+using ModelingToolkitStandardLibrary.Blocks
+using OrdinaryDiffEq
+
+function System(; name)
+    src = SampledData(Float64, name=:src)
+
+    vars = @variables f(t)=0 x(t)=0 dx(t)=0 ddx(t)=0
+    pars = @parameters m=10 k=1000 d=1
+
+    eqs = [f ~ src.output.u
+           ddx * 10 ~ k * x + d * dx + f
+           D(x) ~ dx
+           D(dx) ~ ddx]
+
+    ODESystem(eqs, t, vars, pars; systems = [src], name)
+end
+
+@named system = System()
+sys = structural_simplify(system, split=false)
+s = complete(system)
+
+dt = 4e-4
+time = 0:dt:0.1
+data1 = sin.(2 * pi * time * 100)
+data2 = cos.(2 * pi * time * 50)
+
+prob = ODEProblem(sys, [], (0, time[end]); split=false, tofloat = false, use_union=true)
+defs = ModelingToolkit.defaults(sys)
+
+function get_prob(data)
+    defs[s.src.buffer] = Parameter(data, dt)
+    # ensure p is a uniform type of Vector{Parameter{Float64}} (converting from Vector{Any})
+    p = Parameter.(ModelingToolkit.varmap_to_vars(defs, parameters(sys); tofloat = false))
+    remake(prob; p, build_initializeprob=false)
+end
+
+prob1 = get_prob(data1)
+prob2 = get_prob(data2)
+
+sol1 = Ref{ODESolution}()
+sol2 = Ref{ODESolution}()
+@sync begin
+    @async sol1[] = solve(prob1, ImplicitEuler())
+    @async sol2[] = solve(prob2, ImplicitEuler())
+end</code></pre><p>Note, in the above example, we can build the system with an empty <code>SampledData</code> component, only setting the expected data type: <code>@named src = SampledData(Float64)</code>.  It&#39;s also possible to initialize the component with real sampled data: <code>@named src = SampledData(data, dt)</code>.  Additionally note that before running an <code>ODEProblem</code> using the <code>SampledData</code> component, one must be careful about the parameter vector Type.  The <code>SampledData</code> component contains a <code>buffer</code> parameter of type <code>Parameter</code>, therefore we must generate the problem using <code>tofloat=false</code>.  This will initially give a parameter vector of type <code>Vector{Any}</code> with a mix of numbers and <code>Parameter</code> type.  We can convert the vector to a uniform <code>Parameter</code> type by running <code>p = Parameter.(p)</code>.  This will wrap all the single values in a <code>Parameter</code> which will be mathematically equivalent to a <code>Number</code>.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../dc_motor_pi/">« DC Motor with Speed Controller</a><a class="docs-footer-nextpage" href="../../connectors/connections/">Theory »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.7.0 on <span class="colophon-date" title="Thursday 31 October 2024 18:38">Thursday 31 October 2024</span>. Using Julia version 1.11.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
