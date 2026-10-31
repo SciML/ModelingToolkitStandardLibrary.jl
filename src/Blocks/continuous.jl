@@ -116,9 +116,9 @@ sT + 1
 and if `lowpass=false`, by
 
 ```
-sT + 1 - k
-──────────
-  sT + 1
+ k*sT
+───────
+sT + 1
 ```
 
 Initial value of the state `x` can be set with `x`
