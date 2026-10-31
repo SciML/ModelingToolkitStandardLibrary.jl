@@ -12,7 +12,7 @@ Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 SciCompDSL = "91a8cdf1-4ca6-467b-a780-87fda3fff15e"
 
 [sources]
-ModelingToolkitStandardLibrary = {path = "/home/runner/_work/ModelingToolkitStandardLibrary.jl/ModelingToolkitStandardLibrary.jl"}
+ModelingToolkitStandardLibrary = {path = "/home/runner/work/ModelingToolkitStandardLibrary.jl/ModelingToolkitStandardLibrary.jl"}
 
 [compat]
 ControlSystemsBase = "1.1"
