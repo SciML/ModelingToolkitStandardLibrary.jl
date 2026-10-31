@@ -71,3 +71,24 @@ using OrdinaryDiffEqRosenbrock: Rodas4
     # roundoff and the two additions.
     @test maximum(abs, flux_balance) <= 4 * eps(flux_scale)
 end
+
+@testset "EddyCurrent" begin
+    # R is a dependent parameter bound to rho*l/A, so setting rho, l, A on a
+    # problem must change the eddy-current dynamics.
+    @named ec = Magnetic.FluxTubes.EddyCurrent(Phi = 0.0)
+    @named src = Magnetic.FluxTubes.ConstantMagneticPotentialDifference(V_m = 1.0)
+    @named g = Magnetic.FluxTubes.Ground()
+    @named model = System(
+        [
+            connect(src.port_p, ec.port_p),
+            connect(ec.port_n, src.port_n),
+            connect(src.port_n, g.port),
+        ], t; systems = [src, ec, g]
+    )
+    sys = mtkcompile(model)
+    for (rho, l, A) in ((0.098e-6, 1.0, 1.0), (1.0, 1.0, 1.0), (1.0, 2.0, 1 / 2))
+        prob = ODEProblem(sys, [ec.rho => rho, ec.l => l, ec.A => A], (0.0, 1.0))
+        @test prob.ps[ec.R] ≈ rho * l / A
+        @test prob.f(prob.u0, prob.p, 0.0)[1] ≈ rho * l / A
+    end
+end
