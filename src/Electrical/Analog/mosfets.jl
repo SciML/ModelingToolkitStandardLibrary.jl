@@ -154,12 +154,12 @@ Based on the MOSFET models in (Sedra, A. S., Smith, K. C., Carusone, T. C., & Ga
         d.i ~
             -ifelse(d.v > s.v, -1.0, 1.0) * ifelse(
             V_GS > V_tp,
-            V_DS / R_DS,
+            -V_DS / R_DS,
             ifelse(
                 V_DS > (V_GS - V_tp),
-                k_p * (1 + lambda * V_DS) * ((V_GS - V_tp) - V_DS / 2) * V_DS +
+                k_p * (1 + lambda * V_DS) * ((V_GS - V_tp) - V_DS / 2) * V_DS -
                     V_DS / R_DS,
-                ((k_p * (V_GS - V_tp)^2) / 2) * (1 + lambda * V_DS) + V_DS / R_DS
+                ((k_p * (V_GS - V_tp)^2) / 2) * (1 + lambda * V_DS) - V_DS / R_DS
             )
         ),
         g.i ~ 0,
