@@ -783,6 +783,68 @@ end
     @test flipped_sol[flipped_sys.Q1.s.i][1] < 0.0
 end
 
+@testset "PMOS drain-source leakage is passive" begin
+    # An OFF PMOS (gate tied to the higher-potential terminal) must discharge a
+    # capacitor through R_DS, not charge it.
+    for grounded_terminal in (:d, :s)
+        @named pmos = PMOS(R_DS = 1.0)
+        @named capacitor = Capacitor(C = 1.0, v = 1.0)
+        @named ground = Ground()
+        connections = if grounded_terminal === :d
+            [
+                connect(capacitor.p, pmos.s, pmos.g),
+                connect(capacitor.n, pmos.d, ground.g),
+            ]
+        else
+            [
+                connect(capacitor.p, pmos.d, pmos.g),
+                connect(capacitor.n, pmos.s, ground.g),
+            ]
+        end
+        @named model = System(connections, t; systems = [pmos, capacitor, ground])
+        sys = mtkcompile(model)
+        prob = ODEProblem(sys, [], (0.0, 5.0))
+        sol = solve(prob, Rodas4(); abstol = 1.0e-10, reltol = 1.0e-10)
+        @test SciMLBase.successful_retcode(sol)
+        @test sol[capacitor.v][end] ≈ exp(-5.0) rtol = 1.0e-6
+    end
+end
+
+@testset "PMOS ON-state drain current with leakage" begin
+    k_p, V_tp, R_DS = 20.0e-3, -1.5, 100.0
+    # Square law at lambda = 0; current flows from the higher of d/s to the lower one.
+    function expected_d_i(v_d, v_g, v_s)
+        v_hi, v_lo = max(v_d, v_s), min(v_d, v_s)
+        V_SD, V_ov = v_hi - v_lo, (v_hi - v_g) + V_tp
+        I_channel = V_SD < V_ov ? k_p * (V_ov - V_SD / 2) * V_SD : k_p * V_ov^2 / 2
+        I = I_channel + V_SD / R_DS
+        return v_d > v_s ? I : -I
+    end
+    # (v_d, v_g, v_s): saturation and triode, in both orientations
+    for (v_d, v_g, v_s) in ((0.0, 0.0, 5.0), (4.0, 0.0, 5.0), (5.0, 0.0, 0.0), (5.0, 0.0, 4.0))
+        @named pmos = PMOS(; k_p, V_tp, R_DS, lambda = 0.0)
+        @named Vd = Voltage()
+        @named Vg = Voltage()
+        @named Vs = Voltage()
+        @named cd = Constant(k = v_d)
+        @named cg = Constant(k = v_g)
+        @named cs = Constant(k = v_s)
+        @named ground = Ground()
+        connections = [
+            connect(cd.output, Vd.V), connect(cg.output, Vg.V), connect(cs.output, Vs.V),
+            connect(Vd.p, pmos.d), connect(Vg.p, pmos.g), connect(Vs.p, pmos.s),
+            connect(Vd.n, Vg.n, Vs.n, ground.g),
+        ]
+        @named model = System(
+            connections, t; systems = [pmos, Vd, Vg, Vs, cd, cg, cs, ground]
+        )
+        sys = mtkcompile(model)
+        sol = solve(ODEProblem(sys, [], (0.0, 1.0)), Rodas4())
+        @test SciMLBase.successful_retcode(sol)
+        @test sol[pmos.d.i][1] ≈ expected_d_i(v_d, v_g, v_s) rtol = 1.0e-10
+    end
+end
+
 @testset "NPN Tests" begin
     @component function SimpleNPNCircuit(; name, V_cc = 0.0, V_b = 0.0)
         systems = @named begin
