@@ -155,7 +155,7 @@ end
 
 function gas_pressure(port, rho)
     slope = (0 - gas_pressure_ref(port)) / (density_ref(port) - gas_density_ref(port))
-    b = 0
+    b = -density_ref(port) * slope
 
     return b + rho * slope
 end
